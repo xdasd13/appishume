@@ -269,7 +269,7 @@
                       </a>
                     </li>
                     <li>
-                      <a href="<?= base_url('/pagos/control') ?>">
+                      <a href="<?= base_url('/controlpagos') ?>">
                         <span class="sub-item">Control de Pagos</span>
                       </a>
                     </li>
@@ -617,4 +617,35 @@
               </ul>
             </div>
           </nav>
+<<<<<<< HEAD
         </div>
+=======
+        </div>
+
+        <!-- <div class="container">
+          <div class="page-inner">
+            <div class="page-header">
+              <h4 class="page-title">Dashboard</h4>
+              <ul class="breadcrumbs">
+                <li class="nav-home">
+                  <a href="#">
+                    <i class="icon-home"></i>
+                  </a>
+                </li>
+                <li class="separator">
+                  <i class="icon-arrow-right"></i>
+                </li>
+                <li class="nav-item">
+                  <a href="#">Pages</a>
+                </li>
+                <li class="separator">
+                  <i class="icon-arrow-right"></i>
+                </li>
+                <li class="nav-item">
+                  <a href="#">Starter Page</a>
+                </li>
+              </ul>
+            </div>
+            <div class="page-category"> -->
+            <!-- Aquí iría el contenido específico de cada página -->
+>>>>>>> 05bdfaf5a94b95d8439a50bfb9388a9a7943077f
