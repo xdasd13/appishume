@@ -1,0 +1,272 @@
+<?= $header; ?>
+
+<div class="container">
+    <div class="page-inner">
+        <!-- Encabezado mejorado -->
+        <div class="page-header">
+            <h4 class="page-title"><i class="fas fa-file-alt mr-2 text-primary"></i>Detalles de Entrega #<?= $entrega['identregable'] ?></h4>
+            <ul class="breadcrumbs">
+                <li class="nav-home">
+                    <a href="<?= base_url('/dashboard') ?>" class="text-muted">
+                        <i class="icon-home"></i>
+                    </a>
+                </li>
+                <li class="separator">
+                    <i class="icon-arrow-right text-muted"></i>
+                </li>
+                <li class="nav-item">
+                    <a href="<?= base_url('/entregas') ?>" class="text-muted">Gestión de Entregas</a>
+                </li>
+                <li class="separator">
+                    <i class="icon-arrow-right text-muted"></i>
+                </li>
+                <li class="nav-item">
+                    <span class="text-primary font-weight-bold">Detalles #<?= $entrega['identregable'] ?></span>
+                </li>
+            </ul>
+        </div>
+        
+        <div class="row">
+            <div class="col-md-12">
+                <!-- Tarjeta principal con mejor diseño -->
+                <div class="card card-border-top-primary">
+                    <div class="card-header bg-white">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <h4 class="card-title mb-0"><i class="fas fa-info-circle mr-2 text-primary"></i>Información de la Entrega</h4>
+                            <div class="d-flex">
+                                <a href="<?= base_url('/entregas') ?>" class="btn btn-light btn-sm mr-2">
+                                    <i class="fas fa-arrow-left mr-1"></i>Volver al Listado
+                                </a>
+                                <a href="<?= base_url('/entregas/editar/' . $entrega['identregable']) ?>" class="btn btn-primary btn-sm">
+                                    <i class="fas fa-edit mr-1"></i>Editar Entrega
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <!-- Primera fila de información -->
+                        <div class="row mb-4">
+                            <!-- Información del cliente -->
+                            <div class="col-md-6 mb-4">
+                                <div class="card card-info h-100">
+                                    <div class="card-header bg-primary text-white py-2">
+                                        <h5 class="card-title mb-0"><i class="fas fa-user-tie mr-2"></i>Información del Cliente</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="d-flex align-items-center mb-3">
+                                            <div class="avatar bg-primary text-white rounded-circle d-flex align-items-center justify-content-center mr-3" style="width: 48px; height: 48px;">
+                                                <?= substr($entrega['nombre_cliente'], 0, 1) . substr($entrega['apellido_cliente'], 0, 1) ?>
+                                            </div>
+                                            <div>
+                                                <h6 class="mb-0"><?= $entrega['nombre_cliente'] . ' ' . $entrega['apellido_cliente'] ?></h6>
+                                                <small class="text-muted">Cliente</small>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-6">
+                                                <small class="text-muted">Documento</small>
+                                                <p class="mb-2 font-weight-semibold"><?= $entrega['tipodoc'] ?>: <?= $entrega['numerodoc'] ?></p>
+                                            </div>
+                                            <div class="col-6">
+                                                <small class="text-muted">Teléfono</small>
+                                                <p class="mb-2 font-weight-semibold"><?= $entrega['telprincipal'] ?></p>
+                                            </div>
+                                        </div>
+                                        <small class="text-muted">Dirección</small>
+                                        <p class="mb-0"><?= $entrega['direccion'] ?></p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Información del servicio -->
+                            <div class="col-md-6 mb-4">
+                                <div class="card card-success h-100">
+                                    <div class="card-header bg-success text-white py-2">
+                                        <h5 class="card-title mb-0"><i class="fas fa-briefcase mr-2"></i>Información del Servicio</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <h6 class="text-success mb-2"><?= $entrega['servicio'] ?></h6>
+                                        <p class="text-muted mb-3 small"><?= $entrega['descripcion_servicio'] ?></p>
+                                        <div class="row">
+                                            <div class="col-4">
+                                                <small class="text-muted">Cantidad</small>
+                                                <p class="mb-2 font-weight-bold"><?= $entrega['cantidad'] ?></p>
+                                            </div>
+                                            <div class="col-4">
+                                                <small class="text-muted">Precio Unitario</small>
+                                                <p class="mb-2 font-weight-bold">S/ <?= number_format($entrega['precio'], 2) ?></p>
+                                            </div>
+                                            <div class="col-4">
+                                                <small class="text-muted">Total</small>
+                                                <p class="mb-2 font-weight-bold text-success">S/ <?= number_format($entrega['cantidad'] * $entrega['precio'], 2) ?></p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Segunda fila de información -->
+                        <div class="row mb-4">
+                            <!-- Detalles de entrega -->
+                            <div class="col-md-6 mb-4">
+                                <div class="card h-100">
+                                    <div class="card-header bg-white py-2">
+                                        <h5 class="card-title mb-0"><i class="fas fa-calendar-check mr-2 text-primary"></i>Detalles de Entrega</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="list-group list-group-flush">
+                                            <div class="list-group-item d-flex align-items-center px-0">
+                                                <div class="icon-circle bg-primary text-white mr-3">
+                                                    <i class="fas fa-calendar-alt"></i>
+                                                </div>
+                                                <div class="flex-fill">
+                                                    <h6 class="mb-1">Fecha y Hora de Entrega</h6>
+                                                    <p class="text-muted mb-0"><?= date('d/m/Y H:i', strtotime($entrega['fechahoraentrega'])) ?></p>
+                                                </div>
+                                            </div>
+                                            <div class="list-group-item d-flex align-items-center px-0">
+                                                <div class="icon-circle bg-success text-white mr-3">
+                                                    <i class="fas fa-map-marker-alt"></i>
+                                                </div>
+                                                <div class="flex-fill">
+                                                    <h6 class="mb-1">Ubicación del Servicio</h6>
+                                                    <p class="text-muted mb-0"><?= $entrega['direccion_servicio'] ?></p>
+                                                </div>
+                                            </div>
+                                            <div class="list-group-item d-flex align-items-center px-0">
+                                                <div class="icon-circle bg-info text-white mr-3">
+                                                    <i class="fas fa-clock"></i>
+                                                </div>
+                                                <div class="flex-fill">
+                                                    <h6 class="mb-1">Fecha del Servicio</h6>
+                                                    <p class="text-muted mb-0"><?= date('d/m/Y H:i', strtotime($entrega['fechahoraservicio'])) ?></p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Responsable de entrega -->
+                            <div class="col-md-6 mb-4">
+                                <div class="card h-100">
+                                    <div class="card-header bg-white py-2">
+                                        <h5 class="card-title mb-0"><i class="fas fa-user-check mr-2 text-info"></i>Responsable de Entrega</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <?php if (!empty($entrega['nombre_entrega'])): ?>
+                                            <div class="d-flex align-items-center mb-3">
+                                                <div class="avatar bg-info text-white rounded-circle d-flex align-items-center justify-content-center mr-3" style="width: 48px; height: 48px;">
+                                                    <?= substr($entrega['nombre_entrega'], 0, 1) . substr($entrega['apellido_entrega'], 0, 1) ?>
+                                                </div>
+                                                <div>
+                                                    <h6 class="mb-0"><?= $entrega['nombre_entrega'] . ' ' . $entrega['apellido_entrega'] ?></h6>
+                                                    <small class="text-muted">Responsable</small>
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-6">
+                                                    <small class="text-muted">Documento</small>
+                                                    <p class="mb-2 font-weight-semibold"><?= $entrega['tipodoc_entrega'] ?>: <?= $entrega['numerodoc_entrega'] ?></p>
+                                                </div>
+                                                <div class="col-6">
+                                                    <small class="text-muted">Teléfono</small>
+                                                    <p class="mb-2 font-weight-semibold"><?= $entrega['telefono_entrega'] ?? 'N/A' ?></p>
+                                                </div>
+                                            </div>
+                                        <?php else: ?>
+                                            <div class="text-center py-4">
+                                                <i class="fas fa-user-slash fa-2x text-muted mb-3"></i>
+                                                <p class="text-muted mb-0">No se especificó responsable de entrega</p>
+                                            </div>
+                                        <?php endif; ?>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Información adicional -->
+                        <div class="card mb-0">
+                            <div class="card-header bg-white py-2">
+                                <h5 class="card-title mb-0"><i class="fas fa-info-circle mr-2 text-secondary"></i>Información Adicional</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-4 mb-3 mb-md-0">
+                                        <div class="d-flex align-items-center p-3 bg-light rounded">
+                                            <div class="icon-circle bg-secondary text-white mr-3">
+                                                <i class="fas fa-file-contract"></i>
+                                            </div>
+                                            <div>
+                                                <span class="d-block text-muted small">ID de Cotización</span>
+                                                <span class="font-weight-bold"><?= $entrega['idcotizacion'] ?? 'N/A' ?></span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4 mb-3 mb-md-0">
+                                        <div class="d-flex align-items-center p-3 bg-light rounded">
+                                            <div class="icon-circle bg-primary text-white mr-3">
+                                                <i class="fas fa-handshake"></i>
+                                            </div>
+                                            <div>
+                                                <span class="d-block text-muted small">ID de Contrato</span>
+                                                <span class="font-weight-bold"><?= $entrega['idcontrato'] ?? 'N/A' ?></span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="d-flex align-items-center p-3 bg-light rounded">
+                                            <div class="icon-circle bg-success text-white mr-3">
+                                                <i class="fas fa-truck-loading"></i>
+                                            </div>
+                                            <div>
+                                                <span class="d-block text-muted small">ID de Entrega</span>
+                                                <span class="font-weight-bold">#<?= $entrega['identregable'] ?></span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .card-border-top-primary {
+        border-top: 4px solid #4e73df !important;
+    }
+    .card-info {
+        border: 1px solid #e3e6f0;
+        border-radius: 0.35rem;
+        box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
+    }
+    .avatar {
+        font-weight: bold;
+        font-size: 1rem;
+    }
+    .icon-circle {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .font-weight-semibold {
+        font-weight: 600;
+    }
+    .list-group-flush .list-group-item {
+        border: none;
+        padding: 0.75rem 0;
+    }
+    .bg-light {
+        background-color: #f8f9fc !important;
+    }
+</style>
+
+<?= $footer; ?>
