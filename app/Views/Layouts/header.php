@@ -264,7 +264,7 @@
                       </a>
                     </li>
                     <li>
-                      <a href="<?= base_url('/pagos/control') ?>">
+                      <a href="<?= base_url('/controlpagos') ?>">
                         <span class="sub-item">Control de Pagos</span>
                       </a>
                     </li>
@@ -614,7 +614,7 @@
           </nav>
         </div>
 
-        <div class="container">
+        <!-- <div class="container">
           <div class="page-inner">
             <div class="page-header">
               <h4 class="page-title">Dashboard</h4>
@@ -638,5 +638,5 @@
                 </li>
               </ul>
             </div>
-            <div class="page-category">
+            <div class="page-category"> -->
             <!-- Aquí iría el contenido específico de cada página -->
