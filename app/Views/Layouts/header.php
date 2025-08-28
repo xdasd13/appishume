@@ -69,7 +69,7 @@
               
               <!-- Dashboard -->
               <li class="nav-item">
-                <a href="<?= base_url('/dashboard') ?>">
+                <a href="<?= base_url('welcome') ?>">
                   <i class="fas fa-home"></i>
                   <p>Dashboard</p>
                 </a>
