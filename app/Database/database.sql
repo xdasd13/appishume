@@ -160,3 +160,233 @@ CREATE TABLE equipos (
     CONSTRAINT fk_equipo_servicio FOREIGN KEY (idserviciocontratado) REFERENCES servicioscontratados(idserviciocontratado),
     CONSTRAINT fk_equipo_usuario FOREIGN KEY (idusuario) REFERENCES usuarios(idusuario)
 );
+
+
+-- DATOS DE PRUEBA
+
+-- 1. DATOS BÁSICOS (Catálogos)
+-- Cargos
+INSERT INTO cargos (cargo) VALUES 
+('Gerente de Proyectos'),
+('Coordinador de Eventos'),
+('Técnico en Audio'),
+('Fotógrafo'),
+('Operador de Equipos');
+
+
+-- Categorías de servicios
+INSERT INTO categorias (categoria) VALUES 
+('Audio y Sonido'),
+('Fotografía y Video'),
+('Iluminación'),
+('Decoración'),
+('Catering');
+
+
+-- Condiciones
+INSERT INTO condiciones (condicion) VALUES 
+('Pago 50% adelanto'),
+('Entrega de equipos 2 horas antes'),
+('Cliente proporciona energía eléctrica'),
+('Acceso vehicular requerido'),
+('Cancelación con 48h anticipación');
+
+
+-- Tipos de contrato
+INSERT INTO tipocontrato (tipocontrato, vigenciadias) VALUES 
+('Evento Único', 1),
+('Paquete Mensual', 30),
+('Contrato Anual', 365),
+('Servicio Corporativo', 90);
+
+
+-- Tipos de eventos
+INSERT INTO tipoeventos (evento) VALUES 
+('Boda'),
+('Quinceañero'),
+('Evento Corporativo'),
+('Conferencia'),
+('Concierto');
+
+
+-- Tipos de pago
+INSERT INTO tipospago (tipopago) VALUES 
+('Efectivo'),
+('Transferencia Bancaria'),
+('Tarjeta de Crédito'),
+('Cheque'),
+('Yape/Plin');
+
+
+-- 2. PERSONAS Y EMPRESAS
+-- Personas (DNI 8 dígitos, teléfonos 9 dígitos, campos obligatorios)
+INSERT INTO personas (apellidos, nombres, tipodoc, numerodoc, telprincipal, telalternativo, direccion, referencia) VALUES 
+('García López', 'Carlos Eduardo', 'DNI', '12345678', '987654321', '945123456', 'Av. Los Álamos 123, San Isidro', 'Cerca al parque central'),
+('Rodríguez Silva', 'María Carmen', 'DNI', '87654321', '976543210', NULL, 'Jr. Las Flores 456, Miraflores', 'Frente a la iglesia San Antonio'),
+('Mendoza Torres', 'José Antonio', 'DNI', '11223344', '965432109', '912345678', 'Calle Los Pinos 789, Surco', 'A 2 cuadras del mercado central'),
+('Fernández Ruiz', 'Ana Lucía', 'DNI', '55667788', '954321098', NULL, 'Av. Industrial 321, Ate', 'Edificio azul, tercer piso'),
+('Vásquez Castro', 'Luis Miguel', 'DNI', '99887766', '943210987', '987123456', 'Urbanización El Sol 654, La Molina', 'Casa esquina con jardín'),
+('Morales Díaz', 'Patricia Isabel', 'DNI', '44556677', '932109876', NULL, 'Calle Real 987, Pueblo Libre', 'Portón verde, casa colonial'),
+('Jiménez Vargas', 'Ricardo Andrés', 'DNI', '33445566', '921098765', '956789012', 'Jr. Comercio 147, Breña', 'Al costado del Banco de Crédito'),
+('Smith Johnson', 'Robert William', 'Pasaporte', 'AB1234567', '998877665', NULL, 'Calle Extranjeros 555, San Borja', 'Condominio Las Torres, Dpto 301'),
+('González Pérez', 'Carmen Rosa', 'DNI', '77889900', '987123789', '945678123', 'Av. Primavera 888, Surco', 'Cerca al centro comercial');
+
+-- Empresas (RUC 11 dígitos, teléfonos 9 dígitos)
+INSERT INTO empresas (ruc, razonsocial, direccion, telefono) VALUES 
+('20123456789', 'Eventos Premium SAC', 'Av. Empresarial 1001, San Isidro', '014567890'),
+('20987654321', 'Corporativo Los Andes EIRL', 'Jr. Negocios 202, Miraflores', '014445556'),
+('20111222333', 'Celebraciones Especiales SRL', 'Calle Eventos 303, Surco', '013334445'),
+('20555666777', 'Hoteles & Convenciones SA', 'Av. Javier Prado 2500, San Borja', '012223334');
+
+-- 3. CLIENTES (Algunos personas, algunos empresas)
+INSERT INTO clientes (idpersona, idempresa) VALUES 
+(1, NULL),  -- Carlos García (persona)
+(2, NULL),  -- María Rodríguez (persona)
+(NULL, 1),  -- Eventos Premium SAC
+(3, NULL),  -- José Mendoza (persona)
+(NULL, 2),  -- Corporativo Los Andes
+(4, NULL),  -- Ana Fernández (persona)
+(NULL, 3),  -- Celebraciones Especiales
+(8, NULL);  -- Robert Smith (extranjero)
+
+-- 4. USUARIOS (Personal de la empresa)
+INSERT INTO usuarios (idpersona, idcargo, nombreusuario, claveacceso, estado) VALUES 
+(5, 1, 'lvasquez', '1Vasque3', 1),    -- Luis Vásquez - Gerente
+(6, 2, 'pmorales', 'pM0rales', 1),    -- Patricia Morales - Coordinadora
+(7, 3, 'rjimenez', '4J1menez', 1),    -- Ricardo Jiménez - Técnico
+(9, 4, 'cgonzalez', '3Gon3ale3z', 1);   -- Carmen González - Fotógrafa
+
+-- 5. SERVICIOS
+INSERT INTO servicios (servicio, descripcion, precioregular, idcategoria) VALUES 
+('Sonido para Bodas', 'Equipo completo de sonido para ceremonias y recepciones', 800.00, 1),
+('Fotografía de Eventos', 'Cobertura fotográfica completa del evento', 1200.00, 2),
+('Iluminación LED', 'Sistema de iluminación decorativa con luces LED', 600.00, 3),
+('Video en Vivo', 'Transmisión en vivo del evento', 1500.00, 2),
+('DJ Profesional', 'Servicio de DJ con música y animación', 400.00, 1),
+('Catering Premium', 'Servicio de alimentación para eventos', 25.00, 5),
+('Decoración Floral', 'Arreglos florales y decoración temática', 350.00, 4);
+
+-- 6. COTIZACIONES
+INSERT INTO cotizaciones (idcliente, idtipocontrato, idusuariocrea, fechacotizacion, fechaevento, idtipoevento) VALUES 
+(1, 1, 1, '2025-08-30', '2025-09-14', 1),  -- Boda Carlos García
+(2, 1, 2, '2025-08-29', '2025-09-10', 2),  -- Quinceañero María Rodríguez
+(3, 4, 1, '2025-08-25', '2025-09-28', 3),  -- Evento Corporativo Empresa
+(4, 1, 2, '2025-09-01', '2025-10-15', 1),  -- Boda José Mendoza
+(5, 3, 1, '2025-10-05', '2025-11-20', 4),  -- Conferencia Empresa
+(6, 1, 3, '2025-09-10', '2025-10-18', 1),  -- Boda Ana Fernández
+(8, 1, 4, '2025-10-12', '2025-11-22', 3);  -- Evento Robert Smith
+
+-- 7. CONTRATOS
+INSERT INTO contratos (idcotizacion, idcliente, autorizapublicacion) VALUES 
+(1, 1, 1),  -- Contrato boda Carlos
+(2, 2, 0),  -- Contrato quinceañero María
+(3, 3, 1),  -- Contrato evento corporativo
+(4, 4, 1),  -- Contrato boda José
+(5, 5, 0),  -- Contrato conferencia
+(6, 6, 1),  -- Contrato boda Ana
+(7, 8, 0);  -- Contrato evento Robert
+
+-- 8. SERVICIOS CONTRATADOS (Datos que usarás: cantidad, fechahoraservicio, direccion)
+INSERT INTO servicioscontratados (idcotizacion, idservicio, cantidad, precio, fechahoraservicio, direccion) VALUES 
+-- Boda Carlos García (Contrato 1)
+(1, 1, 2, 1600.00, '2025-02-14 15:00:00', 'Hacienda Los Olivos - Km 25 Panamericana Sur'),
+(1, 2, 1, 1200.00, '2025-02-14 14:00:00', 'Hacienda Los Olivos - Km 25 Panamericana Sur'),
+-- Quinceañero María (Contrato 2)
+(2, 1, 1, 800.00, '2025-03-10 19:00:00', 'Salón de Eventos El Dorado - Av. Principal 890, Chorrillos'),
+(2, 3, 1, 600.00, '2025-03-10 18:30:00', 'Salón de Eventos El Dorado - Av. Principal 890, Chorrillos'),
+-- Evento Corporativo (Contrato 3)
+(3, 4, 1, 1500.00, '2025-02-28 09:00:00', 'Hotel Business Center - Jr. Ejecutivo 445, San Isidro'),
+(3, 2, 1, 1000.00, '2025-02-28 08:30:00', 'Hotel Business Center - Jr. Ejecutivo 445, San Isidro'),
+-- Boda José (Contrato 4)
+(4, 1, 1, 800.00, '2025-04-15 16:00:00', 'Club Campestre Las Flores - Cieneguilla'),
+(4, 5, 1, 400.00, '2025-04-15 20:00:00', 'Club Campestre Las Flores - Cieneguilla'),
+-- Conferencia (Contrato 5)
+(5, 2, 2, 2000.00, '2025-03-20 08:00:00', 'Centro de Convenciones Lima - Av. Javier Prado 2500, San Borja'),
+-- Boda Ana (Contrato 6)
+(6, 1, 1, 800.00, '2025-05-18 17:00:00', 'Casa Hacienda San José - Pachacamac'),
+(6, 7, 1, 350.00, '2025-05-18 16:00:00', 'Casa Hacienda San José - Pachacamac'),
+-- Evento Robert (Contrato 7)
+(7, 4, 1, 1500.00, '2025-06-22 10:00:00', 'Country Club Lima - La Planicie, La Molina');
+
+
+
+-- 9. CONTROL DE PAGOS
+INSERT INTO controlpagos (idcontrato, saldo, amortizacion, deuda, idtipopago, numtransaccion, fechahora, idusuario) VALUES 
+-- Contrato 1 (Boda Carlos - Total: 2800)
+(1, 2800.00, 1400.00, 1400.00, 2, 'TXN20240120001', '2025-01-20 10:30:00', 1),
+(1, 1400.00, 700.00, 700.00, 2, 'TXN20240210001', '2025-02-10 14:15:00', 1),
+-- Contrato 2 (Quinceañero María - Total: 1400)
+(2, 1400.00, 700.00, 700.00, 1, 'EFE20240125001', '2025-01-25 16:45:00', 2),
+-- Contrato 3 (Evento Corporativo - Total: 2500)
+(3, 2500.00, 1250.00, 1250.00, 2, 'TXN20240201001', '2025-02-01 09:20:00', 1),
+(3, 1250.00, 1250.00, 0.00, 2, 'TXN20240225001', '2025-02-25 11:10:00', 1),
+-- Contrato 4 (Boda José - Total: 1200)
+(4, 1200.00, 600.00, 600.00, 5, 'YAPE20240205001', '2025-02-05 13:25:00', 2),
+-- Contrato 5 (Conferencia - Total: 2000)
+(5, 2000.00, 1000.00, 1000.00, 3, 'TC20240208001', '2025-02-08 15:40:00', 1),
+-- Contrato 6 (Boda Ana - Total: 1150)
+(6, 1150.00, 575.00, 575.00, 2, 'TXN20240212001', '2025-02-12 11:20:00', 3),
+-- Contrato 7 (Evento Robert - Total: 1500)
+(7, 1500.00, 750.00, 750.00, 3, 'TC20240214001', '2025-02-14 16:30:00', 4);
+
+-- 10. EQUIPOS (Personal asignado a servicios)
+INSERT INTO equipos (idserviciocontratado, idusuario, descripcion, estadoservicio) VALUES 
+-- Boda Carlos García (Completado)
+(1, 3, 'Equipo de sonido: mezcladora Allen & Heath, micrófonos inalámbricos, parlantes JBL', 'Completado'),
+(2, 4, 'Cobertura fotográfica: Canon EOS R5, lentes 24-70mm, flash Godox', 'Completado'),
+-- Quinceañero María (En Proceso)
+(3, 3, 'Sistema de audio: consola digital, micrófonos de corbata, parlantes activos', 'En Proceso'),
+(4, 1, 'Luces LED decorativas: panel RGB, controlador DMX, efectos laser', 'Pendiente'),
+-- Evento Corporativo (Completado)
+(5, 2, 'Transmisión en vivo: cámaras 4K, encoder, plataforma streaming', 'Completado'),
+(6, 4, 'Fotografía corporativa: retratos ejecutivos, cobertura de presentaciones', 'Completado'),
+-- Boda José (Pendiente)
+(7, 3, 'Audio para ceremonia: sistema inalámbrico, altavoces discretos', 'Pendiente'),
+(8, 1, 'DJ profesional: controlador Pioneer, biblioteca musical, micrófonos', 'Pendiente'),
+-- Conferencia (En Proceso)
+(9, 4, 'Fotografía de conferencia: cobertura de ponentes y networking', 'En Proceso'),
+-- Boda Ana (Programado)
+(10, 3, 'Sistema de sonido integral: ceremonia y recepción', 'Programado'),
+(11, 2, 'Decoración floral: arreglos de mesa, altar, entrada', 'Programado'),
+-- Evento Robert (Programado)
+(12, 2, 'Video streaming: transmisión internacional, múltiples cámaras', 'Programado');
+
+-- 11. ENTREGABLES
+INSERT INTO entregables (idserviciocontratado, idpersona, fechahoraentrega) VALUES 
+-- Entregas completadas
+(1, 1, '2025-02-15 10:30:00'),  -- Sonido boda Carlos entregado
+(2, 1, '2025-02-15 11:45:00'),  -- Fotos boda Carlos entregadas (300 fotos editadas)
+(5, 3, '2025-02-28 18:20:00'),  -- Video streaming corporativo entregado
+(6, 3, '2025-03-01 09:15:00'),  -- Fotos evento corporativo entregadas (150 fotos profesionales)
+-- Entrega parcial
+(9, 5, '2025-03-21 14:30:00');  -- Avance fotos conferencia entregado (100 fotos preliminares)
+
+
+
+-- Lista de condiciones por tipo de contrato
+INSERT INTO listacondiciones (idcondicion, idtipocontrato) VALUES 
+(1, 1), (2, 1), (3, 1),  -- Evento único
+(1, 4), (4, 4),          -- Servicio corporativo
+(1, 3), (5, 3),          -- Contrato anual
+(2, 2), (3, 2);          -- Paquete mensual
+
+
+-- RESUMEN DE DATOS PARA TU MÓDULO:
+
+-- =============================================
+-- CONTRATOS: 7 contratos con diferentes estados
+-- PAGOS: 8 registros de pagos (algunos saldados, otros pendientes)
+-- EQUIPOS: 12 equipos con estados: Completado, En Proceso, Pendiente, Programado  
+-- ENTREGABLES: 5 entregables registrados
+-- SERVICIOS CONTRATADOS: 12 servicios con fechas y direcciones variadas
+-- 
+-- Estados de contratos por pagos:
+-- - Contrato 3: PAGADO COMPLETO (deuda = 0)
+-- - Contratos 1,2,4,5,6,7: SALDO PENDIENTE
+-- 
+-- Estados de servicios:
+-- - Completados: Boda Carlos, Evento Corporativo
+-- - En proceso: Quinceañero María, Conferencia  
+-- - Pendientes: Boda José
+-- - Programados: Boda Ana, Evento Robert
+-- ===============================================
