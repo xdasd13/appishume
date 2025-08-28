@@ -12,23 +12,23 @@ CREATE TABLE categorias (
 );
 
 CREATE TABLE personas (
-    idpersona INT AUTO_INCREMENT PRIMARY KEY,
-    apellidos VARCHAR(100) NOT NULL,
-    nombres VARCHAR(100) NOT NULL,
-    tipodoc VARCHAR(20) NOT NULL,
-    numerodoc VARCHAR(20) NOT NULL,
-    telprincipal VARCHAR(20),
-    telalternativo VARCHAR(20),
-    direccion VARCHAR(150),
-    referencia VARCHAR(150)
+    idpersona       INT AUTO_INCREMENT PRIMARY KEY,
+    apellidos       VARCHAR(100) NOT NULL,
+    nombres         VARCHAR(100) NOT NULL,
+    tipodoc         ENUM ('DNI', 'Carne de Extranjería', 'Pasaporte') DEFAULT 'DNI' NOT NULL,
+    numerodoc       VARCHAR(12) NOT NULL UNIQUE,
+    telprincipal    CHAR (9) NOT NULL,
+    telalternativo  CHAR (9),
+    direccion       VARCHAR(150) NOT NULL,
+    referencia      VARCHAR(150) NOT NULL
 );
 
 CREATE TABLE empresas (
-    idempresa INT AUTO_INCREMENT PRIMARY KEY,
-    ruc VARCHAR(20) NOT NULL,
-    razonsocial VARCHAR(150) NOT NULL,
-    direccion VARCHAR(150),
-    telefono VARCHAR(20)
+    idempresa       INT AUTO_INCREMENT PRIMARY KEY,
+    ruc             CHAR(11) NOT NULL,
+    razonsocial     VARCHAR(150) NOT NULL,
+    direccion       VARCHAR(150) NOT NULL,
+    telefono        CHAR(9) NOT NULL
 );
 
 CREATE TABLE clientes (
@@ -65,7 +65,7 @@ CREATE TABLE usuarios (
     idpersona INT,
     idcargo INT,
     nombreusuario VARCHAR(50) UNIQUE NOT NULL,
-    claveacceso VARCHAR(255) NOT NULL,
+    claveacceso VARCHAR(255) NOT NULL ,
     estado TINYINT DEFAULT 1,
     CONSTRAINT fk_usuario_persona FOREIGN KEY (idpersona) REFERENCES personas(idpersona),
     CONSTRAINT fk_usuario_cargo FOREIGN KEY (idcargo) REFERENCES cargos(idcargo)
