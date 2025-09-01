@@ -1,4 +1,36 @@
+</div>
+          </div>
+        </div>
 
+        <footer class="footer">
+          <div class="container-fluid d-flex justify-content-between">
+            <nav class="pull-left">
+              <ul class="nav">
+                <li class="nav-item">
+                  <a class="nav-link" href="<?= base_url () . 'http://www.themekita.com'?>">
+                    ThemeKita
+                  </a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="#"> Help </a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="#"> Licenses </a>
+                </li>
+              </ul>
+            </nav>
+            <div class="copyright">
+              2024, made with <i class="fa fa-heart heart text-danger"></i> by
+              <a href="<?= base_url() . 'http://www.themekita.com'?>">ThemeKita</a>
+            </div>
+            <div>
+              Distributed by
+              <a target="_blank" href="<?= base_url() . 'https://themewagon.com/'?>">ThemeWagon</a>.
+            </div>
+          </div>
+        </footer>
+      </div>
+    </div>
     <!--   Core JS Files   -->
     <script src="<?=base_url() . 'assets/js/core/jquery-3.7.1.min.js'?>"></script>
     <script src="<?= base_url() . 'assets/js/core/popper.min.js'?>"></script>

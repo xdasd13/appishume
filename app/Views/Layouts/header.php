@@ -223,11 +223,6 @@
                 <div class="collapse" id="entregas">
                   <ul class="nav nav-collapse">
                     <li>
-                      <a href="<?= base_url('/entregas') ?>">
-                        <span class="sub-item">Lista de entregas</span>
-                      </a>
-                    </li>
-                    <li>
                       <a href="<?= base_url('/entregables/pendientes') ?>">
                         <span class="sub-item">Pendientes</span>
                       </a>
@@ -269,7 +264,7 @@
                       </a>
                     </li>
                     <li>
-                      <a href="<?= base_url('/controlpagos') ?>">
+                      <a href="<?= base_url('controlpagos') ?>">
                         <span class="sub-item">Control de Pagos</span>
                       </a>
                     </li>
@@ -619,8 +614,6 @@
           </nav>
         </div>
 
-        </div>
-
         <div class="container">
           <div class="page-inner">
             <div class="page-header">
@@ -645,4 +638,5 @@
                 </li>
               </ul>
             </div>
-            <div class="page-category"> 
+            <div class="page-category">
+            <!-- Aquí iría el contenido específico de cada página -->
