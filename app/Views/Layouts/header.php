@@ -617,12 +617,11 @@
               </ul>
             </div>
           </nav>
-<<<<<<< HEAD
-        </div>
-=======
         </div>
 
-        <!-- <div class="container">
+        </div>
+
+        <div class="container">
           <div class="page-inner">
             <div class="page-header">
               <h4 class="page-title">Dashboard</h4>
@@ -646,6 +645,4 @@
                 </li>
               </ul>
             </div>
-            <div class="page-category"> -->
-            <!-- Aquí iría el contenido específico de cada página -->
->>>>>>> 05bdfaf5a94b95d8439a50bfb9388a9a7943077f
+            <div class="page-category"> 
