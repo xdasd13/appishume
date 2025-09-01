@@ -1,3 +1,10 @@
+<?php
+
+use App\Controllers\ControlPagoController;
+use App\Controllers\Equipos;
+use App\Controllers\EntregasController;
+use App\Controllers\Servicios;
+
 // Rutas para la gestión de entregas
 $routes->get('/entregas', 'EntregasController::index');
 $routes->get('/entregas/ver/(:num)', 'EntregasController::ver/$1');
@@ -7,12 +14,11 @@ $routes->get('/entregas/editar/(:num)', 'EntregasController::editar/$1');
 $routes->post('/entregas/actualizar/(:num)', 'EntregasController::actualizar/$1');
 $routes->get('/entregas/eliminar/(:num)', 'EntregasController::eliminar/$1');
 
-<<<<<<< HEAD
 // Rutas de Control de Pagos:
 $routes->get('/controlpagos', 'ControlPagoController::index');
 $routes->get('/controlpagos/crear', 'ControlPagoController::crear');
 $routes->post('/controlpagos/guardar', 'ControlPagoController::guardar');
-=======
+
 // ==================== RUTAS PARA GESTIÓN DE EQUIPOS ====================
 // Rutas para equipos
 $routes->get('equipos', 'Equipos::index');
@@ -25,7 +31,3 @@ $routes->get('equipos/por-usuario/(:num)', 'Equipos::por_usuario/$1');
 
 // Rutas para servicios
 $routes->get('servicios/(:num)', 'Servicios::detalle/$1');
-<<<<<<< HEAD
-=======
->>>>>>> 0e94c8b13293bb5e8ddd1916005e8f1e7443cf19
->>>>>>> 05bdfaf5a94b95d8439a50bfb9388a9a7943077f
