@@ -5,6 +5,8 @@ use App\Controllers\Equipos;
 use App\Controllers\EntregasController;
 use App\Controllers\Servicios;
 
+$routes->get('/', 'Home::index');
+
 // Rutas para la gestión de entregas
 $routes->get('/entregas', 'EntregasController::index');
 $routes->get('/entregas/ver/(:num)', 'EntregasController::ver/$1');
