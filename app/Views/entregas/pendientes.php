@@ -3,10 +3,10 @@
 <div class="container">
     <div class="page-inner">
         <div class="page-header">
-            <h4 class="page-title"><i class="fas fa-truck mr-2"></i>Gestión de Entregas</h4>
+            <h4 class="page-title"><i class="fas fa-edit mr-2"></i>Pendientes</h4>
             <ul class="breadcrumbs">
                 <li class="nav-home">
-                    <a href="<?= base_url('/') ?>">
+                    <a href="<?= base_url('/dashboard') ?>">
                         <i class="icon-home"></i>
                     </a>
                 </li>
@@ -20,7 +20,7 @@
                     <i class="icon-arrow-right"></i>
                 </li>
                 <li class="nav-item">
-                    <span>Lista de Entregas</span>
+                    <a href="<?= base_url('/entregas/pendientes') ?>">Pendientes</a>
                 </li>
             </ul>
         </div>
@@ -49,31 +49,28 @@
                 <div class="card">
                     <div class="card-header">
                         <div class="d-flex align-items-center justify-content-between">
-                            <h4 class="card-title"><i class="fas fa-list-ol mr-2"></i>Entregas Registradas</h4>
-                            <div class="d-flex align-items-center">
-                                <a href="<?= base_url('/entregas/crear') ?>" class="btn btn-primary btn-round">
-                                    <i class="fas fa-plus-circle mr-2"></i>
-                                    Nueva Entrega
+                            <h4 class="card-title"><i class="fas fa-clock mr-2 text-warning"></i>Entregas Pendientes</h4>
+                            <div>
+                                <a href="<?= base_url('/entregas') ?>" class="btn btn-secondary btn-round mr-2">
+                                    <i class="fas fa-list mr-2"></i>Ver Todas las Entregas
                                 </a>
-                                <a href="<?= base_url('/entregas/pendientes') ?>" class="btn btn-danger btn-round mr-2 pulse-animation">
-                                    <i class="fas fa-exclamation-triangle mr-2"></i>
-                                    Ver Pendientes
-                                    <span class="badge badge-light badge-pill ml-2">
-                                        <?= $cantidad_pendientes ?? '' ?>
-                                    </span>
+                                <a href="<?= base_url('/entregas/crear') ?>" class="btn btn-primary btn-round">
+                                    <i class="fa fa-plus mr-2"></i>
+                                    Nueva Entrega
                                 </a>
                             </div>
                         </div>
                     </div>
                     <div class="card-body">
                         <div class="table-responsive">
-                            <table id="entregas-table" class="display table table-hover">
+                            <table id="pendientes-table" class="display table table-hover">
                                 <thead>
                                     <tr>
                                         <th>ID</th>
                                         <th>Cliente</th>
                                         <th>Servicio</th>
                                         <th>Fecha Entrega</th>
+                                        <th>Días Restantes</th>
                                         <th>Ubicación</th>
                                         <th>Responsable</th>
                                         <th>Estado</th>
@@ -83,6 +80,19 @@
                                 <tbody>
                                     <?php if (!empty($entregas)): ?>
                                         <?php foreach ($entregas as $entrega): ?>
+                                            <?php
+                                            $fechaEntrega = strtotime($entrega['fechahoraentrega']);
+                                            $hoy = strtotime('now');
+                                            // Solo mostrar entregas pendientes (fecha de entrega en el futuro)
+                                            if ($fechaEntrega > $hoy):
+                                                $diasRestantes = ceil(($fechaEntrega - $hoy) / (60 * 60 * 24));
+                                                $claseDias = 'success';
+                                                if ($diasRestantes <= 3) {
+                                                    $claseDias = 'danger';
+                                                } elseif ($diasRestantes <= 7) {
+                                                    $claseDias = 'warning';
+                                                }
+                                            ?>
                                             <tr>
                                                 <td><span class="badge badge-secondary">#<?= $entrega['identregable'] ?></span></td>
                                                 <td>
@@ -108,6 +118,11 @@
                                                     </small>
                                                 </td>
                                                 <td>
+                                                    <span class="badge badge-<?= $claseDias ?>">
+                                                        <?= $diasRestantes ?> día<?= $diasRestantes != 1 ? 's' : '' ?>
+                                                    </span>
+                                                </td>
+                                                <td>
                                                     <div class="text-truncate" style="max-width: 150px;" title="<?= $entrega['direccion'] ?>">
                                                         <i class="fas fa-map-marker-alt mr-1 text-danger"></i>
                                                         <?= $entrega['direccion'] ?>
@@ -124,15 +139,7 @@
                                                     <?php endif; ?>
                                                 </td>
                                                 <td>
-                                                    <?php
-                                                    $fechaEntrega = strtotime($entrega['fechahoraentrega']);
-                                                    $hoy = strtotime('now');
-                                                    if ($fechaEntrega > $hoy) {
-                                                        echo '<span class="badge badge-warning"><i class="fas fa-clock mr-1"></i>Pendiente</span>';
-                                                    } else {
-                                                        echo '<span class="badge badge-success"><i class="fas fa-check-circle mr-1"></i>Completado</span>';
-                                                    }
-                                                    ?>
+                                                    <span class="badge badge-warning"><i class="fas fa-clock mr-1"></i>Pendiente</span>
                                                 </td>
                                                 <td class="text-center">
                                                     <div class="btn-group" role="group">
@@ -148,16 +155,17 @@
                                                     </div>
                                                 </td>
                                             </tr>
+                                            <?php endif; ?>
                                         <?php endforeach; ?>
                                     <?php else: ?>
                                         <tr>
-                                            <td colspan="8" class="text-center py-4">
+                                            <td colspan="9" class="text-center py-4">
                                                 <div class="empty-state">
-                                                    <i class="fas fa-truck fa-3x text-muted mb-3"></i>
-                                                    <h4 class="text-muted">No hay entregas registradas</h4>
-                                                    <p class="text-muted">Comienza registrando tu primera entrega</p>
+                                                    <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+                                                    <h4 class="text-muted">¡No hay entregas pendientes!</h4>
+                                                    <p class="text-muted">Todas las entregas han sido completadas</p>
                                                     <a href="<?= base_url('/entregas/crear') ?>" class="btn btn-primary mt-2">
-                                                        <i class="fa fa-plus mr-2"></i>Crear primera entrega
+                                                        <i class="fa fa-plus mr-2"></i>Crear nueva entrega
                                                     </a>
                                                 </div>
                                             </td>
@@ -175,13 +183,13 @@
 
 <script>
     $(document).ready(function() {
-        $('#entregas-table').DataTable({
+        $('#pendientes-table').DataTable({
             "language": {
                 "url": "//cdn.datatables.net/plug-ins/1.10.21/i18n/Spanish.json"
             },
             "pageLength": 10,
             "order": [
-                [3, "desc"]
+                [3, "asc"] // Ordenar por fecha de entrega (más próximas primero)
             ],
             "responsive": true,
             "dom": '<"top"<"dataTables__top"lf>><"dataTables__container"t><"bottom"<"dataTables__bottom"ip>>',
@@ -251,3 +259,4 @@
 </style>
 
 <?= $footer; ?>
+[file content end]

@@ -15,6 +15,7 @@ $routes->post('/entregas/guardar', 'EntregasController::guardar');
 $routes->get('/entregas/editar/(:num)', 'EntregasController::editar/$1');
 $routes->post('/entregas/actualizar/(:num)', 'EntregasController::actualizar/$1');
 $routes->get('/entregas/eliminar/(:num)', 'EntregasController::eliminar/$1');
+$routes->get('/entregas/pendientes', 'EntregasController::pendientes');
 
 // Rutas de Control de Pagos:
 $routes->get('/controlpagos', 'ControlPagoController::index');

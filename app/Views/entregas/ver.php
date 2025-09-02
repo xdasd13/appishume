@@ -2,12 +2,11 @@
 
 <div class="container">
     <div class="page-inner">
-        <!-- Encabezado mejorado -->
         <div class="page-header">
             <h4 class="page-title"><i class="fas fa-file-alt mr-2 text-primary"></i>Detalles de Entrega #<?= $entrega['identregable'] ?></h4>
             <ul class="breadcrumbs">
                 <li class="nav-home">
-                    <a href="<?= base_url('/dashboard') ?>" class="text-muted">
+                    <a href="<?= base_url('/') ?>" class="text-muted">
                         <i class="icon-home"></i>
                     </a>
                 </li>
@@ -25,7 +24,6 @@
                 </li>
             </ul>
         </div>
-        
         <div class="row">
             <div class="col-md-12">
                 <!-- Tarjeta principal con mejor diseño -->

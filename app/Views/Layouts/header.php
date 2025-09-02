@@ -69,7 +69,7 @@
               
               <!-- Dashboard -->
               <li class="nav-item">
-                <a href="<?= base_url('welcome') ?>">
+                <a href="<?= base_url('/') ?>">
                   <i class="fas fa-home"></i>
                   <p>Dashboard</p>
                 </a>
@@ -223,13 +223,13 @@
                 <div class="collapse" id="entregas">
                   <ul class="nav nav-collapse">
                     <li>
-                      <a href="<?= base_url('/entregables/pendientes') ?>">
-                        <span class="sub-item">Pendientes</span>
+                      <a href="<?= base_url('/entregas') ?>">
+                        <span class="sub-item">Lista de Entregas</span>
                       </a>
                     </li>
                     <li>
-                      <a href="<?= base_url('/entregables/entregados') ?>">
-                        <span class="sub-item">Entregados</span>
+                      <a href="<?= base_url('/entregas/pendientes') ?>">
+                        <span class="sub-item">Pendientes</span>
                       </a>
                     </li>
                     <li>
@@ -612,31 +612,6 @@
               </ul>
             </div>
           </nav>
-        </div>
 
-        <div class="container">
-          <div class="page-inner">
-            <div class="page-header">
-              <h4 class="page-title">Dashboard</h4>
-              <ul class="breadcrumbs">
-                <li class="nav-home">
-                  <a href="#">
-                    <i class="icon-home"></i>
-                  </a>
-                </li>
-                <li class="separator">
-                  <i class="icon-arrow-right"></i>
-                </li>
-                <li class="nav-item">
-                  <a href="#">Pages</a>
-                </li>
-                <li class="separator">
-                  <i class="icon-arrow-right"></i>
-                </li>
-                <li class="nav-item">
-                  <a href="#">Starter Page</a>
-                </li>
-              </ul>
-            </div>
-            <div class="page-category">
-            <!-- Aquí iría el contenido específico de cada página -->
+
+        

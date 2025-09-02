@@ -6,7 +6,7 @@
             <h4 class="page-title"><i class="fas fa-plus-circle mr-2"></i>Nueva Entrega</h4>
             <ul class="breadcrumbs">
                 <li class="nav-home">
-                    <a href="<?= base_url('/dashboard') ?>">
+                    <a href="<?= base_url('/') ?>">
                         <i class="icon-home"></i>
                     </a>
                 </li>
@@ -24,14 +24,13 @@
                 </li>
             </ul>
         </div>
-        
         <div class="row">
             <div class="col-md-12">
                 <div class="card">
                     <div class="card-header">
-                        <div class="d-flex align-items-center">
+                        <div class="d-flex align-items-center justify-content-between">
                             <h4 class="card-title"><i class="fas fa-truck-loading mr-2"></i>Registrar Nueva Entrega</h4>
-                            <a href="<?= base_url('/entregas') ?>" class="btn btn-secondary btn-round ml-auto">
+                            <a href="<?= base_url('/entregas') ?>" class="btn btn-secondary btn-round ml-3">
                                 <i class="fas fa-arrow-left mr-2"></i>Volver
                             </a>
                         </div>
@@ -250,6 +249,20 @@ $('#fechahoraentrega').on('change', function() {
     }
     .custom-checkbox {
         margin-top: 1rem;
+    } 
+
+    @media (max-width: 768px) {
+        /* Estilos responsivos para el header */
+        .card-header .d-flex {
+            flex-direction: column;
+            align-items: flex-start !important;
+        }
+        
+        .card-header .btn {
+            margin-top: 10px;
+            margin-left: 0 !important;
+            align-self: flex-end;
+        }
     }
 </style>
 

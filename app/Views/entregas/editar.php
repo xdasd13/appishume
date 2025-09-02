@@ -6,7 +6,7 @@
             <h4 class="page-title"><i class="fas fa-edit mr-2"></i>Editar Entrega</h4>
             <ul class="breadcrumbs">
                 <li class="nav-home">
-                    <a href="<?= base_url('/dashboard') ?>">
+                    <a href="<?= base_url('/') ?>">
                         <i class="icon-home"></i>
                     </a>
                 </li>
@@ -24,7 +24,6 @@
                 </li>
             </ul>
         </div>
-        
         <div class="row">
             <div class="col-md-12">
                 <div class="card">

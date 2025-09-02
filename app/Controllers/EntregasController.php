@@ -150,6 +150,14 @@ class EntregasController extends BaseController
         }
     }
 
+    public function pendientes()
+    {
+        $datos['entregas'] = $this->entregasModel->obtenerEntregasCompletas();
+        $datos['header'] = view('Layouts/header');
+        $datos['footer'] = view('Layouts/footer');
+        return view('/entregas/pendientes', $datos);
+    }
+
     public function editar($id)
     {
         if (!is_numeric($id) || $id <= 0) {
