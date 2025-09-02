@@ -21,6 +21,7 @@ $routes->get('/entregas/pendientes', 'EntregasController::pendientes');
 $routes->get('/controlpagos', 'ControlPagoController::index');
 $routes->get('/controlpagos/crear', 'ControlPagoController::crear');
 $routes->post('/controlpagos/guardar', 'ControlPagoController::guardar');
+$routes->get('/controlpagos/ver/(:num)', 'ControlPagoController::ver/$1');
 
 // ==================== RUTAS PARA GESTIÓN DE EQUIPOS ====================
 // Rutas para equipos
