@@ -232,11 +232,6 @@
                         <span class="sub-item">Pendientes</span>
                       </a>
                     </li>
-                    <li>
-                      <a href="<?= base_url('/entregables/programar') ?>">
-                        <span class="sub-item">Programar Entrega</span>
-                      </a>
-                    </li>
                   </ul>
                 </div>
               </li>

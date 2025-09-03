@@ -28,9 +28,9 @@
             <div class="col-md-12">
                 <div class="card">
                     <div class="card-header">
-                        <div class="d-flex align-items-center">
+                        <div class="d-flex align-items-center justify-content-between">
                             <h4 class="card-title"><i class="fas fa-truck-loading mr-2"></i>Editar Entrega #<?= $entrega['identregable'] ?></h4>
-                            <a href="<?= base_url('/entregas') ?>" class="btn btn-secondary btn-round ml-auto">
+                            <a href="<?= base_url('/entregas') ?>" class="btn btn-secondary btn-round ml-3">
                                 <i class="fas fa-arrow-left mr-2"></i>Volver
                             </a>
                         </div>
