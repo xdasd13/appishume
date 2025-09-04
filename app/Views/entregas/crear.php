@@ -144,21 +144,6 @@
                                         <small class="form-text text-muted">Describa el formato de entrega (físico/digital) y especificaciones</small>
                                     </div>
                                 </div>
-                                
-                                <div class="col-md-6">
-                                    <div class="form-group">
-                                        <label for="fecha_real_entrega" class="form-label">
-                                            <i class="fas fa-calendar-check mr-2 text-secondary"></i>Fecha Real de Entrega
-                                        </label>
-                                        <div class="input-group">
-                                            <input type="datetime-local" class="form-control" id="fecha_real_entrega" name="fecha_real_entrega" value="<?= old('fecha_real_entrega') ?>">
-                                            <div class="input-group-append">
-                                                <span class="input-group-text"><i class="fas fa-clock"></i></span>
-                                            </div>
-                                        </div>
-                                        <small class="form-text text-muted">Complete solo si la entrega ya se realizó (opcional)</small>
-                                    </div>
-                                </div>
                             </div>
                             
                             <div class="form-group">

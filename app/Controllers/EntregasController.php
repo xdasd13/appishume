@@ -137,13 +137,14 @@ class EntregasController extends BaseController
         $fechaReal = $this->request->getPost('fecha_real_entrega');
 
         if ($estado == 'completada') {
+            // Si no se proporciona fecha real, usar fecha actual
             if (empty($fechaReal)) {
-                return redirect()->back()->withInput()->with('error', 'La fecha real de entrega es obligatoria para entregas completadas');
-            }
-
-            $fechaRealTimestamp = strtotime($fechaReal);
-            if ($fechaRealTimestamp > time()) {
-                return redirect()->back()->withInput()->with('error', 'La fecha real de entrega no puede ser futura');
+                $fechaReal = date('Y-m-d H:i:s');
+            } else {
+                $fechaRealTimestamp = strtotime($fechaReal);
+                if ($fechaRealTimestamp > time()) {
+                    return redirect()->back()->withInput()->with('error', 'La fecha real de entrega no puede ser futura');
+                }
             }
         }
 
@@ -171,6 +172,11 @@ class EntregasController extends BaseController
             'fecha_real_entrega' => $estado == 'completada' ? $fechaReal : null
         ];
 
+        // Si es completada y no tiene fecha real, usar fecha actual (doble verificación)
+        if ($estado == 'completada' && empty($data['fecha_real_entrega'])) {
+            $data['fecha_real_entrega'] = date('Y-m-d H:i:s');
+        }
+
         // Usar transacción
         $this->db->transStart();
 
@@ -182,7 +188,13 @@ class EntregasController extends BaseController
                 }
 
                 $this->db->transCommit();
-                return redirect()->to('/entregas')->with('success', 'Entrega registrada correctamente');
+
+                // Mensaje diferente según el estado
+                $mensaje = $estado == 'completada'
+                    ? 'Entrega completada registrada correctamente'
+                    : 'Entrega pendiente registrada correctamente';
+
+                return redirect()->to('/entregas')->with('success', $mensaje);
             } else {
                 $this->db->transRollback();
                 return redirect()->back()->withInput()->with('error', 'Error al registrar la entrega');
@@ -193,7 +205,6 @@ class EntregasController extends BaseController
             return redirect()->back()->withInput()->with('error', 'Error interno del sistema al registrar la entrega');
         }
     }
-
     public function pendientes()
     {
         $datos['entregas'] = $this->entregasModel->obtenerEntregasPendientes();
