@@ -146,6 +146,9 @@ CREATE TABLE entregables (
     idserviciocontratado INT,
     idpersona INT,
     fechahoraentrega DATETIME,
+    fecha_real_entrega DATETIME NULL, -- NUEVO CAMPO
+    observaciones VARCHAR(200),
+    estado ENUM('pendiente', 'completada') DEFAULT 'pendiente', -- NUEVO CAMPO
     CONSTRAINT fk_entregable_servicio FOREIGN KEY (idserviciocontratado) REFERENCES servicioscontratados(idserviciocontratado),
     CONSTRAINT fk_entregable_persona FOREIGN KEY (idpersona) REFERENCES personas(idpersona)
 );
@@ -254,7 +257,7 @@ INSERT INTO usuarios (idpersona, idcargo, nombreusuario, claveacceso, estado) VA
 (5, 1, 'lvasquez', '1Vasque3', 1),    -- Luis Vásquez - Gerente
 (6, 2, 'pmorales', 'pM0rales', 1),    -- Patricia Morales - Coordinadora
 (7, 3, 'rjimenez', '4J1menez', 1),    -- Ricardo Jiménez - Técnico
-(9, 4, 'cgonzalez', '3Gon3ale3z', 1);   -- Carmen González - Fotógrafa  
+(9, 4, 'cgonzalez', '3Gon3ale3z', 1);   -- Carmen González - Fotógrafa
 
 -- 5. SERVICIOS
 INSERT INTO servicios (servicio, descripcion, precioregular, idcategoria) VALUES 
@@ -287,26 +290,27 @@ INSERT INTO contratos (idcotizacion, idcliente, autorizapublicacion) VALUES
 (7, 8, 0);  -- Contrato evento Robert
 
 -- 8. SERVICIOS CONTRATADOS (Datos que usarás: cantidad, fechahoraservicio, direccion)
+-- MODIFICADO: Todas las fechas cambiadas a la fecha actual
 INSERT INTO servicioscontratados (idcotizacion, idservicio, cantidad, precio, fechahoraservicio, direccion) VALUES 
 -- Boda Carlos García (Contrato 1)
-(1, 1, 2, 1600.00, '2025-02-14 15:00:00', 'Hacienda Los Olivos - Km 25 Panamericana Sur'),
-(1, 2, 1, 1200.00, '2025-02-14 14:00:00', 'Hacienda Los Olivos - Km 25 Panamericana Sur'),
+(1, 1, 2, 1600.00, CURDATE(), 'Hacienda Los Olivos - Km 25 Panamericana Sur'),
+(1, 2, 1, 1200.00, CURDATE(), 'Hacienda Los Olivos - Km 25 Panamericana Sur'),
 -- Quinceañero María (Contrato 2)
-(2, 1, 1, 800.00, '2025-03-10 19:00:00', 'Salón de Eventos El Dorado - Av. Principal 890, Chorrillos'),
-(2, 3, 1, 600.00, '2025-03-10 18:30:00', 'Salón de Eventos El Dorado - Av. Principal 890, Chorrillos'),
+(2, 1, 1, 800.00, CURDATE(), 'Salón de Eventos El Dorado - Av. Principal 890, Chorrillos'),
+(2, 3, 1, 600.00, CURDATE(), 'Salón de Eventos El Dorado - Av. Principal 890, Chorrillos'),
 -- Evento Corporativo (Contrato 3)
-(3, 4, 1, 1500.00, '2025-02-28 09:00:00', 'Hotel Business Center - Jr. Ejecutivo 445, San Isidro'),
-(3, 2, 1, 1000.00, '2025-02-28 08:30:00', 'Hotel Business Center - Jr. Ejecutivo 445, San Isidro'),
+(3, 4, 1, 1500.00, CURDATE(), 'Hotel Business Center - Jr. Ejecutivo 445, San Isidro'),
+(3, 2, 1, 1000.00, CURDATE(), 'Hotel Business Center - Jr. Ejecutivo 445, San Isidro'),
 -- Boda José (Contrato 4)
-(4, 1, 1, 800.00, '2025-04-15 16:00:00', 'Club Campestre Las Flores - Cieneguilla'),
-(4, 5, 1, 400.00, '2025-04-15 20:00:00', 'Club Campestre Las Flores - Cieneguilla'),
+(4, 1, 1, 800.00, CURDATE(), 'Club Campestre Las Flores - Cieneguilla'),
+(4, 5, 1, 400.00, CURDATE(), 'Club Campestre Las Flores - Cieneguilla'),
 -- Conferencia (Contrato 5)
-(5, 2, 2, 2000.00, '2025-03-20 08:00:00', 'Centro de Convenciones Lima - Av. Javier Prado 2500, San Borja'),
+(5, 2, 2, 2000.00, CURDATE(), 'Centro de Convenciones Lima - Av. Javier Prado 2500, San Borja'),
 -- Boda Ana (Contrato 6)
-(6, 1, 1, 800.00, '2025-05-18 17:00:00', 'Casa Hacienda San José - Pachacamac'),
-(6, 7, 1, 350.00, '2025-05-18 16:00:00', 'Casa Hacienda San José - Pachacamac'),
+(6, 1, 1, 800.00, CURDATE(), 'Casa Hacienda San José - Pachacamac'),
+(6, 7, 1, 350.00, CURDATE(), 'Casa Hacienda San José - Pachacamac'),
 -- Evento Robert (Contrato 7)
-(7, 4, 1, 1500.00, '2025-06-22 10:00:00', 'Country Club Lima - La Planicie, La Molina');
+(7, 4, 1, 1500.00, CURDATE(), 'Country Club Lima - La Planicie, La Molina');
 
 
 
@@ -351,15 +355,6 @@ INSERT INTO equipos (idserviciocontratado, idusuario, descripcion, estadoservici
 -- Evento Robert (Programado)
 (12, 2, 'Video streaming: transmisión internacional, múltiples cámaras', 'Programado');
 
--- 11. ENTREGABLES
-INSERT INTO entregables (idserviciocontratado, idpersona, fechahoraentrega) VALUES 
--- Entregas completadas
-(1, 1, '2025-02-15 10:30:00'),  -- Sonido boda Carlos entregado
-(2, 1, '2025-02-15 11:45:00'),  -- Fotos boda Carlos entregadas (300 fotos editadas)
-(5, 3, '2025-02-28 18:20:00'),  -- Video streaming corporativo entregado
-(6, 3, '2025-03-01 09:15:00'),  -- Fotos evento corporativo entregadas (150 fotos profesionales)
--- Entrega parcial
-(9, 5, '2025-03-21 14:30:00');  -- Avance fotos conferencia entregado (100 fotos preliminares)
 
 
 
@@ -369,3 +364,27 @@ INSERT INTO listacondiciones (idcondicion, idtipocontrato) VALUES
 (1, 4), (4, 4),          -- Servicio corporativo
 (1, 3), (5, 3),          -- Contrato anual
 (2, 2), (3, 2);          -- Paquete mensual
+
+
+
+-- RESUMEN DE DATOS PARA TU MÓDULO:
+
+-- =============================================
+-- CONTRATOS: 7 contratos con diferentes estados
+-- PAGOS: 8 registros de pagos (algunos saldados, otros pendientes)
+-- EQUIPOS: 12 equipos con estados: Completado, En Proceso, Pendiente, Programado  
+-- ENTREGABLES: 5 entregables registrados
+-- SERVICIOS CONTRATADOS: 12 servicios con fechas y direcciones variadas
+-- 
+-- Estados de contratos por pagos:
+-- - Contrato 3: PAGADO COMPLETO (deuda = 0)
+-- - Contratos 1,2,4,5,6,7: SALDO PENDIENTE
+-- 
+-- Estados de servicios:
+-- - Completados: Boda Carlos, Evento Corporativo
+-- - En proceso: Quinceañero María, Conferencia  
+-- - Pendientes: Boda José
+-- - Programados: Boda Ana, Evento Robert
+-- ===============================================
+
+-- Verificar el estado real de las entregas
