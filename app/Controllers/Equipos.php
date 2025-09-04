@@ -31,19 +31,21 @@ class Equipos extends BaseController
         return view('equipos/listar', $datos);
     }
 
-    // Asignar equipo a un servicio
+    // Asignar equipo a un servicio - MEJORADO
     public function asignar($idserviciocontratado)
     {
         $datos['header'] = view('Layouts/header');
         $datos['footer'] = view('Layouts/footer');
         $datos['servicio'] = $this->servicioModel->getServicioContratado($idserviciocontratado);
-        $datos['usuarios'] = $this->usuarioModel->getUsuarios();
+        
+        // Obtener usuarios con información de disponibilidad
+        $datos['usuarios'] = $this->equipoModel->getUsuariosDisponibles($idserviciocontratado);
         $datos['titulo'] = 'Asignar Equipo al Servicio';
         
         return view('equipos/asignar', $datos);
     }
 
-    // Guardar asignación de equipo
+    // Guardar asignación de equipo - MEJORADO CON VALIDACIONES
     public function guardar()
     {
         $validation = \Config\Services::validation();
@@ -59,9 +61,22 @@ class Equipos extends BaseController
             return redirect()->back();
         }
 
+        $idusuario = $this->request->getPost('idusuario');
+        $idserviciocontratado = $this->request->getPost('idserviciocontratado');
+
+        // VALIDACIONES PERSONALIZADAS
+        $erroresValidacion = $this->equipoModel->validarAsignacion($idusuario, $idserviciocontratado);
+        
+        if (!empty($erroresValidacion)) {
+            foreach ($erroresValidacion as $error) {
+                session()->setFlashdata('error', $error);
+            }
+            return redirect()->back()->withInput();
+        }
+
         $data = [
-            'idserviciocontratado' => $this->request->getPost('idserviciocontratado'),
-            'idusuario' => $this->request->getPost('idusuario'),
+            'idserviciocontratado' => $idserviciocontratado,
+            'idusuario' => $idusuario,
             'descripcion' => $this->request->getPost('descripcion'),
             'estadoservicio' => $this->request->getPost('estadoservicio')
         ];
@@ -75,19 +90,28 @@ class Equipos extends BaseController
         return redirect()->to('equipos/por-servicio/' . $data['idserviciocontratado']);
     }
 
-    // Editar asignación de equipo
+    // Editar asignación de equipo - MEJORADO
     public function editar($idequipo)
     {
+        $equipo = $this->equipoModel->getEquipo($idequipo);
+        
+        if (!$equipo) {
+            session()->setFlashdata('error', 'Equipo no encontrado.');
+            return redirect()->to('equipos');
+        }
+
         $datos['header'] = view('Layouts/header');
         $datos['footer'] = view('Layouts/footer');
-        $datos['equipo'] = $this->equipoModel->getEquipo($idequipo);
-        $datos['usuarios'] = $this->usuarioModel->getUsuarios();
+        $datos['equipo'] = $equipo;
+        
+        // Obtener usuarios con información de disponibilidad
+        $datos['usuarios'] = $this->equipoModel->getUsuariosDisponibles($equipo->idserviciocontratado);
         $datos['titulo'] = 'Editar Asignación de Equipo';
         
         return view('equipos/editar', $datos);
     }
 
-    // Actualizar asignación de equipo
+    // Actualizar asignación de equipo - MEJORADO CON VALIDACIONES
     public function actualizar()
     {
         $validation = \Config\Services::validation();
@@ -104,8 +128,27 @@ class Equipos extends BaseController
         }
 
         $idequipo = $this->request->getPost('idequipo');
+        $idusuario = $this->request->getPost('idusuario');
+        
+        // Obtener equipo actual para validaciones
+        $equipoActual = $this->equipoModel->find($idequipo);
+        if (!$equipoActual) {
+            session()->setFlashdata('error', 'Equipo no encontrado.');
+            return redirect()->to('equipos');
+        }
+
+        // VALIDACIONES PERSONALIZADAS (excluyendo el equipo actual)
+        $erroresValidacion = $this->equipoModel->validarAsignacion($idusuario, $equipoActual['idserviciocontratado'], $idequipo);
+        
+        if (!empty($erroresValidacion)) {
+            foreach ($erroresValidacion as $error) {
+                session()->setFlashdata('error', $error);
+            }
+            return redirect()->back()->withInput();
+        }
+
         $data = [
-            'idusuario' => $this->request->getPost('idusuario'),
+            'idusuario' => $idusuario,
             'descripcion' => $this->request->getPost('descripcion'),
             'estadoservicio' => $this->request->getPost('estadoservicio')
         ];
@@ -141,5 +184,37 @@ class Equipos extends BaseController
         $datos['titulo'] = 'Equipos Asignados al Usuario';
         
         return view('equipos/listar', $datos);
+    }
+
+    // NUEVO: Endpoint AJAX para verificar disponibilidad de usuarios
+    public function verificarDisponibilidad()
+    {
+        $idusuario = $this->request->getPost('idusuario');
+        $idserviciocontratado = $this->request->getPost('idserviciocontratado');
+        
+        if (!$idusuario || !$idserviciocontratado) {
+            return $this->response->setJSON(['error' => 'Parámetros faltantes']);
+        }
+
+        $errores = $this->equipoModel->validarAsignacion($idusuario, $idserviciocontratado);
+        
+        $response = [
+            'disponible' => empty($errores),
+            'errores' => $errores
+        ];
+
+        // Si hay conflictos de horario, obtener detalles
+        if (!$response['disponible']) {
+            $builderServicio = $this->equipoModel->db->table('servicioscontratados');
+            $builderServicio->select('fechahoraservicio');
+            $builderServicio->where('idserviciocontratado', $idserviciocontratado);
+            $servicio = $builderServicio->get()->getRow();
+            
+            if ($servicio) {
+                $response['conflictos'] = $this->equipoModel->getDetalleConflictos($idusuario, $servicio->fechahoraservicio);
+            }
+        }
+
+        return $this->response->setJSON($response);
     }
 }
