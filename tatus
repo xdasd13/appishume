@@ -1,0 +1,31 @@
+* [33m2711a61[m[33m ([m[1;36mHEAD[m[33m)[m prueba equipo
+* [33m32afa24[m cronograma por arregalar
+* [33m61927a0[m validaciones de asignacion aplicado correctamente 3/09
+* [33m30c1833[m[33m ([m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m, [m[1;32mmain[m[33m)[m proyectos activos completado
+*   [33mc3e2f86[m Merge branch 'main' of https://github.com/xdasd13/appishume
+[32m|[m[33m\[m  
+[32m|[m * [33m3fe2ca9[m Agregado de vista del pago
+* [33m|[m [33m8556352[m Cambios en las Entregas
+[33m|[m[33m/[m  
+* [33m6a7e4d5[m Solucion pestaña inicio
+* [33m9133e0e[m Actualización de un punto
+* [33madba5c4[m problema heater
+* [33m41d82d8[m Archivo de rutas corregido
+*   [33m875e562[m Gestion de proyectos
+[34m|[m[35m\[m  
+[34m|[m *   [33m05bdfaf[m Control de Pagos
+[34m|[m [36m|[m[1;31m\[m  
+[34m|[m * [1;31m|[m [33m653127e[m Control de Pago
+* [1;31m|[m [1;31m|[m   [33m85117e9[m arreglo xD
+[1;32m|[m[1;31m\[m [1;31m\[m [1;31m\[m  
+[1;32m|[m [1;31m|[m [1;31m|[m[1;31m/[m  
+[1;32m|[m [1;31m|[m[1;31m/[m[1;31m|[m   
+[1;32m|[m * [1;31m|[m [33m0e94c8b[m Gestion de Equipos agregado
+[1;32m|[m [1;31m|[m[1;31m/[m  
+* [1;31m/[m [33m893d80d[m Gestion de entregas
+[1;31m|[m[1;31m/[m  
+* [33m518ca80[m Header depurado correctamente
+* [33m0128634[m Inserciones de datos
+* [33mc48c701[m Mejora de valides de datos
+* [33m5dc1dad[m database creado
+* [33mdf43297[m Estructura completa
