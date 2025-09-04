@@ -2,28 +2,6 @@
 
 <div class="container">
     <div class="page-inner">
-        <!-- <div class="page-header">
-            <h4 class="page-title"><i class="fas fa-file-alt mr-2 text-primary"></i>Detalles de Entrega #<?= $entrega['identregable'] ?></h4>
-            <ul class="breadcrumbs">
-                <li class="nav-home">
-                    <a href="<?= base_url('/') ?>" class="text-muted">
-                        <i class="icon-home"></i>
-                    </a>
-                </li>
-                <li class="separator">
-                    <i class="icon-arrow-right text-muted"></i>
-                </li>
-                <li class="nav-item">
-                    <a href="<?= base_url('/entregas') ?>" class="text-muted">Gestión de Entregas</a>
-                </li>
-                <li class="separator">
-                    <i class="icon-arrow-right text-muted"></i>
-                </li>
-                <li class="nav-item">
-                    <span class="text-primary font-weight-bold">Detalles #<?= $entrega['identregable'] ?></span>
-                </li>
-            </ul>
-        </div> -->
         <div class="row">
             <div class="col-md-12">
                 <!-- Tarjeta principal con mejor diseño -->
@@ -35,9 +13,15 @@
                                 <a href="<?= base_url('/entregas') ?>" class="btn btn-light btn-sm mr-2">
                                     <i class="fas fa-arrow-left mr-1"></i>Volver al Listado
                                 </a>
-                                <a href="<?= base_url('/entregas/editar/' . $entrega['identregable']) ?>" class="btn btn-primary btn-sm">
-                                    <i class="fas fa-edit mr-1"></i>Editar Entrega
-                                </a>
+                                <?php if (($entrega['estado'] ?? 'pendiente') != 'completada'): ?>
+                                    <a href="<?= base_url('/entregas/editar/' . $entrega['identregable']) ?>" class="btn btn-primary btn-sm">
+                                        <i class="fas fa-edit mr-1"></i>Editar Entrega
+                                    </a>
+                                <?php else: ?>
+                                    <button class="btn btn-secondary btn-sm" disabled title="Entrega completada - No editable">
+                                        <i class="fas fa-lock mr-1"></i>Editar Entrega
+                                    </button>
+                                <?php endif; ?>
                             </div>
                         </div>
                     </div>
@@ -274,32 +258,53 @@
                             </div>
                             <div class="card-body">
                                 <?php
-                                $fechaEntrega = strtotime($entrega['fechahoraentrega']);
-                                $hoy = strtotime('now');
-                                $estado = ($fechaEntrega > $hoy) ? 'PENDIENTE' : 'COMPLETADA';
-                                $badgeClass = ($estado == 'PENDIENTE') ? 'warning' : 'success';
-                                $icon = ($estado == 'PENDIENTE') ? 'clock' : 'check-circle';
+                                // CORRECCIÓN: Usar el campo 'estado' de la base de datos en lugar de calcularlo
+                                $estado = $entrega['estado'] ?? 'pendiente';
+                                $badgeClass = 'warning';
+                                $icon = 'clock';
+                                $mensaje = '';
+                                
+                                if ($estado == 'completada') {
+                                    $badgeClass = 'success';
+                                    $icon = 'check-circle';
+                                    $fechaEntrega = strtotime($entrega['fecha_real_entrega'] ?? $entrega['fechahoraentrega']);
+                                    $hoy = time();
+                                    $diasTranscurridos = round(($hoy - $fechaEntrega) / (60 * 60 * 24));
+                                    $mensaje = "Entregado el: <strong>" . date('d/m/Y H:i', $fechaEntrega) . "</strong>";
+                                    $mensaje .= "<br>Hace: <strong>" . $diasTranscurridos . " día" . ($diasTranscurridos != 1 ? 's' : '') . "</strong>";
+                                } else {
+                                    $fechaEntrega = strtotime($entrega['fechahoraentrega']);
+                                    $hoy = time();
+                                    
+                                    if ($fechaEntrega < $hoy) {
+                                        $badgeClass = 'danger';
+                                        $icon = 'exclamation-triangle';
+                                        $estado = 'VENCIDA';
+                                        $diasVencida = round(($hoy - $fechaEntrega) / (60 * 60 * 24));
+                                        $mensaje = "Fecha programada: <strong>" . date('d/m/Y H:i', $fechaEntrega) . "</strong>";
+                                        $mensaje .= "<br>Vencida hace: <strong>" . $diasVencida . " día" . ($diasVencida != 1 ? 's' : '') . "</strong>";
+                                    } else {
+                                        $diasRestantes = round(($fechaEntrega - $hoy) / (60 * 60 * 24));
+                                        $mensaje = "Programada para: <strong>" . date('d/m/Y H:i', $fechaEntrega) . "</strong>";
+                                        $mensaje .= "<br>Tiempo restante: <strong>" . $diasRestantes . " día" . ($diasRestantes != 1 ? 's' : '') . "</strong>";
+                                    }
+                                }
                                 ?>
                                 
                                 <div class="text-center">
                                     <span class="badge badge-<?= $badgeClass ?> badge-lg p-3">
                                         <i class="fas fa-<?= $icon ?> mr-2"></i>
-                                        <?= $estado ?>
+                                        <?= strtoupper($estado) ?>
                                     </span>
                                     
-                                    <?php if ($estado == 'PENDIENTE'): ?>
-                                        <p class="text-muted mt-2 mb-0">
-                                            Entrega programada para: <strong><?= date('d/m/Y H:i', $fechaEntrega) ?></strong>
-                                        </p>
-                                        <p class="text-muted">
-                                            Tiempo restante: <strong><?= round(($fechaEntrega - $hoy) / (60 * 60 * 24)) ?> días</strong>
-                                        </p>
-                                    <?php else: ?>
-                                        <p class="text-muted mt-2 mb-0">
-                                            Entregado el: <strong><?= date('d/m/Y H:i', $fechaEntrega) ?></strong>
-                                        </p>
-                                        <p class="text-muted">
-                                            Hace: <strong><?= round(($hoy - $fechaEntrega) / (60 * 60 * 24)) ?> días</strong>
+                                    <p class="text-muted mt-2 mb-0">
+                                        <?= $mensaje ?>
+                                    </p>
+                                    
+                                    <?php if ($estado == 'completada' && !empty($entrega['fecha_real_entrega']) && $entrega['fecha_real_entrega'] != $entrega['fechahoraentrega']): ?>
+                                        <p class="text-info small mt-2">
+                                            <i class="fas fa-info-circle"></i> 
+                                            La entrega se realizó el <?= date('d/m/Y H:i', strtotime($entrega['fecha_real_entrega'])) ?>
                                         </p>
                                     <?php endif; ?>
                                 </div>

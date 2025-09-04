@@ -2,28 +2,6 @@
 
 <div class="container">
     <div class="page-inner">
-        <!-- <div class="page-header">
-            <h4 class="page-title"><i class="fas fa-edit mr-2"></i>Entregas Pendientes</h4>
-            <ul class="breadcrumbs">
-                <li class="nav-home">
-                    <a href="<?= base_url('/dashboard') ?>">
-                        <i class="icon-home"></i>
-                    </a>
-                </li>
-                <li class="separator">
-                    <i class="icon-arrow-right"></i>
-                </li>
-                <li class="nav-item">
-                    <a href="<?= base_url('/entregas') ?>">Entregas</a>
-                </li>
-                <li class="separator">
-                    <i class="icon-arrow-right"></i>
-                </li>
-                <li class="nav-item">
-                    <a href="<?= base_url('/entregas/pendientes') ?>">Pendientes</a>
-                </li>
-            </ul>
-        </div> -->
         <?php if (session('success')): ?>
             <div class="alert alert-success alert-dismissible fade show" role="alert">
                 <i class="fas fa-check-circle mr-2"></i>

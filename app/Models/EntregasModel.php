@@ -65,10 +65,10 @@ class EntregasModel extends Model
         $builder->join('personas p', 'p.idpersona = cl.idpersona');
         $builder->join('servicios s', 's.idservicio = sc.idservicio');
         $builder->join('personas per', 'per.idpersona = e.idpersona', 'left');
-        
+
         // SOLO ENTREGAS PENDIENTES (no completadas)
         $builder->where('e.estado', 'pendiente');
-        
+
         $builder->orderBy('e.fechahoraentrega', 'ASC');
 
         return $builder->get()->getResultArray();
@@ -89,11 +89,11 @@ class EntregasModel extends Model
         $builder->join('personas p', 'p.idpersona = cl.idpersona');
         $builder->join('servicios s', 's.idservicio = sc.idservicio');
         $builder->join('personas per', 'per.idpersona = e.idpersona', 'left');
-        
+
         // Entregas pendientes pero con fecha vencida
         $builder->where('e.estado', 'pendiente');
         $builder->where('e.fechahoraentrega <', date('Y-m-d H:i:s'));
-        
+
         $builder->orderBy('e.fechahoraentrega', 'ASC');
 
         return $builder->get()->getResultArray();
@@ -114,10 +114,10 @@ class EntregasModel extends Model
         $builder->join('personas p', 'p.idpersona = cl.idpersona');
         $builder->join('servicios s', 's.idservicio = sc.idservicio');
         $builder->join('personas per', 'per.idpersona = e.idpersona', 'left');
-        
+
         // Solo entregas completadas
         $builder->where('e.estado', 'completada');
-        
+
         $builder->orderBy('e.fecha_real_entrega', 'DESC');
 
         return $builder->get()->getResultArray();
@@ -160,31 +160,76 @@ class EntregasModel extends Model
         $builder = $this->db->table('entregables');
         $builder->select('estado, COUNT(*) as total');
         $builder->groupBy('estado');
-        
+
         $result = $builder->get()->getResultArray();
-        
+
         $contadores = [
             'pendiente' => 0,
             'completada' => 0,
             'total' => 0
         ];
-        
+
         foreach ($result as $row) {
             $contadores[$row['estado']] = $row['total'];
             $contadores['total'] += $row['total'];
         }
-        
+
         return $contadores;
     }
 
+    // Agregar este método al modelo:
+    public function puedeCambiarEstado($idEntrega, $nuevoEstado)
+    {
+        $entrega = $this->find($idEntrega);
+
+        if (!$entrega) {
+            return false;
+        }
+
+        // No permitir cambiar de completada a pendiente
+        if ($entrega['estado'] == 'completada' && $nuevoEstado == 'pendiente') {
+            return false;
+        }
+
+        return true;
+    }
+
+    // Y modificar el método actualizarEstadoEntrega:
     public function actualizarEstadoEntrega($id, $estado, $fechaReal = null)
     {
+        // Validar si se puede cambiar el estado
+        if (!$this->puedeCambiarEstado($id, $estado)) {
+            log_message('error', 'Intento de cambio de estado no permitido: ID ' . $id . ' a ' . $estado);
+            return false;
+        }
+
         $data = ['estado' => $estado];
-        
+
         if ($fechaReal && $estado == 'completada') {
             $data['fecha_real_entrega'] = $fechaReal;
         }
-        
+
+        log_message('debug', 'Actualizando entrega ID: ' . $id . ' con datos: ' . print_r($data, true));
+
         return $this->update($id, $data);
+    }
+
+    /**
+     * Verificar el estado actual de una entrega
+     */
+    public function verificarEstadoEntrega($id)
+    {
+        $builder = $this->db->table('entregables');
+        $builder->select('estado, fechahoraentrega, fecha_real_entrega');
+        $builder->where('identregable', $id);
+        $result = $builder->get()->getRowArray();
+
+        if ($result) {
+            $result['esta_completada'] = ($result['estado'] == 'completada');
+            $result['esta_vencida'] = ($result['estado'] == 'pendiente' &&
+                strtotime($result['fechahoraentrega']) < time());
+        }
+
+        return $result;
     }
 }

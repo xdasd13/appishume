@@ -235,6 +235,22 @@ class EntregasController extends BaseController
 
     public function actualizar($id)
     {
+
+        if (!is_numeric($id) || $id <= 0) {
+            return redirect()->to('/entregas')->with('error', 'ID de entrega inválido');
+        }
+
+        $entregaExistente = $this->entregasModel->find($id);
+        if (!$entregaExistente) {
+            return redirect()->to('/entregas')->with('error', 'Entrega no encontrada');
+        }
+
+        // VALIDACIÓN: No permitir cambiar de completada a pendiente
+        $nuevoEstado = $this->request->getPost('estado');
+        if ($entregaExistente['estado'] == 'completada' && $nuevoEstado == 'pendiente') {
+            return redirect()->back()->withInput()->with('error', 'No se puede revertir una entrega completada a pendiente');
+        }
+
         if (!is_numeric($id) || $id <= 0) {
             return redirect()->to('/entregas')->with('error', 'ID de entrega inválido');
         }
@@ -270,11 +286,24 @@ class EntregasController extends BaseController
 
         // Obtener el nuevo estado
         $nuevoEstado = $this->request->getPost('estado');
-        
-        // Si se marca como completada, usar fecha y hora actual automáticamente
-        $fechaReal = null;
-        if ($nuevoEstado == 'completada') {
-            $fechaReal = date('Y-m-d H:i:s'); // Fecha y hora actual
+
+        // Validar que el estado sea válido según la base de datos
+        $estadosPermitidos = ['pendiente', 'completada'];
+        if (!in_array($nuevoEstado, $estadosPermitidos)) {
+            return redirect()->back()->withInput()->with('error', 'Estado no válido');
+        }
+
+        // Manejar la fecha real de entrega
+        $fechaReal = $this->request->getPost('fecha_real_entrega');
+
+        // Si se marca como completada y no se proporciona fecha real, usar fecha actual
+        if ($nuevoEstado == 'completada' && empty($fechaReal)) {
+            $fechaReal = date('Y-m-d H:i:s');
+        }
+
+        // Si se cambia a pendiente, limpiar la fecha real
+        if ($nuevoEstado == 'pendiente') {
+            $fechaReal = null;
         }
 
         $data = [
@@ -283,8 +312,11 @@ class EntregasController extends BaseController
             'fechahoraentrega' => $this->request->getPost('fechahoraentrega'),
             'observaciones' => $this->request->getPost('observaciones'),
             'estado' => $nuevoEstado,
-            'fecha_real_entrega' => $fechaReal // Se actualiza automáticamente si es completada
+            'fecha_real_entrega' => $fechaReal
         ];
+
+        // Log para depuración
+        log_message('debug', 'Actualizando entrega ID: ' . $id . ' con datos: ' . print_r($data, true));
 
         // Usar transacción
         $this->db->transStart();
@@ -299,6 +331,7 @@ class EntregasController extends BaseController
                 }
 
                 $this->db->transCommit();
+                log_message('debug', 'Entrega actualizada exitosamente');
                 return redirect()->to('/entregas/ver/' . $id)->with('success', 'Entrega actualizada correctamente');
             } else {
                 $this->db->transRollback();
@@ -350,7 +383,7 @@ class EntregasController extends BaseController
     private function registrarEntregaCompletada($idEntrega)
     {
         $entrega = $this->entregasModel->find($idEntrega);
-        
+
         if ($entrega) {
             $dataCompletada = [
                 'identregable' => $idEntrega,
