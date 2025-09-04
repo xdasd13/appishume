@@ -223,17 +223,17 @@
                 <div class="collapse" id="entregas">
                   <ul class="nav nav-collapse">
                     <li>
-                      <a href="<?= base_url('/entregables/pendientes') ?>">
+                      <a href="<?= base_url('/entregas/pendientes') ?>">
                         <span class="sub-item">Pendientes</span>
                       </a>
                     </li>
                     <li>
-                      <a href="<?= base_url('/entregables/entregados') ?>">
+                      <a href="<?= base_url('/entregas') ?>">
                         <span class="sub-item">Entregados</span>
                       </a>
                     </li>
                     <li>
-                      <a href="<?= base_url('/entregables/programar') ?>">
+                      <a href="<?= base_url('/entregas/crear') ?>">
                         <span class="sub-item">Programar Entrega</span>
                       </a>
                     </li>
@@ -259,12 +259,12 @@
                 <div class="collapse" id="finanzas">
                   <ul class="nav nav-collapse">
                     <li>
-                      <a href="<?= base_url('/pagos/registrar') ?>">
+                      <a href="<?= base_url('/controlpagos/crear') ?>">
                         <span class="sub-item">Registrar Pago</span>
                       </a>
                     </li>
                     <li>
-                      <a href="<?= base_url('/pagos/control') ?>">
+                      <a href="<?= base_url('/controlpagos') ?>">
                         <span class="sub-item">Control de Pagos</span>
                       </a>
                     </li>
@@ -528,7 +528,7 @@
                               <span class="text">Servicio</span>
                             </div>
                           </a>
-                          <a class="col-6 col-md-4 p-0" href="<?= base_url('/pagos/registrar') ?>">
+                          <a class="col-6 col-md-4 p-0" href="<?= base_url('/controlpagos') ?>">
                             <div class="quick-actions-item">
                               <div class="avatar-item bg-warning rounded-circle">
                                 <i class="fas fa-dollar-sign"></i>
@@ -536,7 +536,7 @@
                               <span class="text">Pago</span>
                             </div>
                           </a>
-                          <a class="col-6 col-md-4 p-0" href="<?= base_url('/entregables/programar') ?>">
+                          <a class="col-6 col-md-4 p-0" href="<?= base_url('/entregas') ?>">
                             <div class="quick-actions-item">
                               <div class="avatar-item bg-danger rounded-circle">
                                 <i class="fas fa-truck"></i>
