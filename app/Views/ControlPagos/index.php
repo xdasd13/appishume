@@ -1,27 +1,6 @@
 <?= $header ?>
 <div class="page-inner">
-    <div class="page-header">
-        <h4 class="page-title"><?= $titulo ?? 'Control de Pagos' ?></h4>
-        <ul class="breadcrumbs">
-            <li class="nav-home">
-                <a href="<?= base_url('/dashboard') ?>">
-                    <i class="icon-home"></i>
-                </a>
-            </li>
-            <li class="separator">
-                <i class="icon-arrow-right"></i>
-            </li>
-            <li class="nav-item">
-                <a href="#">Finanzas</a>
-            </li>
-            <li class="separator">
-                <i class="icon-arrow-right"></i>
-            </li>
-            <li class="nav-item">
-                <a href="<?= base_url('/controlpagos') ?>">Control de Pagos</a>
-            </li>
-        </ul>
-    </div>
+
 
     <!-- Mostrar mensajes de éxito/error -->
     <?php if (session()->getFlashdata('success')): ?>
