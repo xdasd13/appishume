@@ -27,7 +27,7 @@
         <div class="col-12">
             <div class="card border-primary">
                 <div class="card-header bg-primary text-white">
-                    <h4 class="mb-0"><i class="fas fa-info-circle me-2"></i>Información del Servicio</h4>
+                    <h4 class="mb-0"><i class="fas fa-info-circle me-2"></i>Información del Servicio 2</h4>
                 </div>
                 <div class="card-body">
                     <div class="row">
