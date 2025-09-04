@@ -2,7 +2,7 @@
 
 <div class="container">
     <div class="page-inner">
-        <div class="page-header">
+        <!-- <div class="page-header">
             <h4 class="page-title"><i class="fas fa-truck mr-2"></i>Gestión de Entregas</h4>
             <ul class="breadcrumbs">
                 <li class="nav-home">
@@ -23,7 +23,7 @@
                     <span>Lista de Entregas</span>
                 </li>
             </ul>
-        </div>
+        </div> -->
         <?php if (session('success')): ?>
             <div class="alert alert-success alert-dismissible fade show" role="alert">
                 <i class="fas fa-check-circle mr-2"></i>

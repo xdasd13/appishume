@@ -60,8 +60,18 @@
                                 </button>
                             </div>
                         <?php endif; ?>
+
+                        <?php if (session('success')): ?>
+                            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                                <i class="fas fa-check-circle mr-2"></i>
+                                <?= session('success') ?>
+                                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                        <?php endif; ?>
                         
-                        <form action="<?= base_url('/entregas/actualizar/' . $entrega['identregable']) ?>" method="post" class="form-validate">
+                        <form action="<?= base_url('/entregas/actualizar/' . $entrega['identregable']) ?>" method="post" class="form-validate" id="formEditarEntrega">
                             <div class="row">
                                 <div class="col-md-6">
                                     <div class="form-group">
@@ -71,13 +81,16 @@
                                         <select class="form-control select2" id="idserviciocontratado" name="idserviciocontratado" required>
                                             <option value="">Seleccione un servicio</option>
                                             <?php foreach ($servicios as $servicio): ?>
-                                                <option value="<?= $servicio['idserviciocontratado'] ?>" <?= old('idserviciocontratado', $entrega['idserviciocontratado']) == $servicio['idserviciocontratado'] ? 'selected' : '' ?>>
+                                                <option value="<?= $servicio['idserviciocontratado'] ?>" 
+                                                        data-fecha-servicio="<?= $servicio['fechahoraservicio'] ?>"
+                                                        <?= old('idserviciocontratado', $entrega['idserviciocontratado']) == $servicio['idserviciocontratado'] ? 'selected' : '' ?>>
                                                     Servicio #<?= $servicio['idserviciocontratado'] ?> - 
                                                     <?= $servicio['servicio_nombre'] ?? 'Servicio' ?>
+                                                    (<?= date('d/m/Y', strtotime($servicio['fechahoraservicio'])) ?>)
                                                 </option>
                                             <?php endforeach; ?>
                                         </select>
-                                        <small class="form-text text-muted">Seleccione el servicio que se entregará</small>
+                                        <small class="form-text text-muted">Servicio ya realizado para programar la entrega</small>
                                     </div>
                                 </div>
                                 
@@ -95,7 +108,7 @@
                                                 </option>
                                             <?php endforeach; ?>
                                         </select>
-                                        <small class="form-text text-muted">Seleccione quien realizará la entrega</small>
+                                        <small class="form-text text-muted">Persona que realizará la entrega</small>
                                     </div>
                                 </div>
                             </div>
@@ -104,7 +117,7 @@
                                 <div class="col-md-6">
                                     <div class="form-group">
                                         <label for="fechahoraentrega" class="form-label">
-                                            <i class="fas fa-calendar-alt mr-2 text-success"></i>Fecha y Hora de Entrega *
+                                            <i class="fas fa-calendar-alt mr-2 text-success"></i>Fecha Programada de Entrega *
                                         </label>
                                         <div class="input-group">
                                             <input type="datetime-local" class="form-control" id="fechahoraentrega" name="fechahoraentrega" 
@@ -113,19 +126,62 @@
                                                 <span class="input-group-text"><i class="fas fa-calendar-check"></i></span>
                                             </div>
                                         </div>
-                                        <small class="form-text text-muted">Seleccione la fecha y hora programada para la entrega</small>
+                                        <small class="form-text text-muted">Fecha programada para la entrega</small>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="estado" class="form-label">
+                                            <i class="fas fa-tasks mr-2 text-warning"></i>Estado de la Entrega *
+                                        </label>
+                                        <select class="form-control select2" id="estado" name="estado" required>
+                                            <option value="pendiente" <?= old('estado', $entrega['estado'] ?? 'pendiente') == 'pendiente' ? 'selected' : '' ?>>⏳ Pendiente</option>
+                                            <option value="completada" <?= old('estado', $entrega['estado'] ?? '') == 'completada' ? 'selected' : '' ?>>✅ Completada</option>
+                                        </select>
+                                        <small class="form-text text-muted">Estado actual de la entrega</small>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group" id="grupoFechaReal" style="display: <?= ($entrega['estado'] ?? 'pendiente') == 'completada' ? 'block' : 'none' ?>;">
+                                        <label for="fecha_real_entrega" class="form-label">
+                                            <i class="fas fa-calendar-check mr-2 text-primary"></i>Fecha Real de Entrega *
+                                        </label>
+                                        <div class="input-group">
+                                            <input type="datetime-local" class="form-control" id="fecha_real_entrega" name="fecha_real_entrega" 
+                                                   value="<?= old('fecha_real_entrega', isset($entrega['fecha_real_entrega']) ? date('Y-m-d\TH:i', strtotime($entrega['fecha_real_entrega'])) : date('Y-m-d\TH:i')) ?>">
+                                            <div class="input-group-append">
+                                                <span class="input-group-text"><i class="fas fa-clock"></i></span>
+                                            </div>
+                                        </div>
+                                        <small class="form-text text-muted">Fecha en que se realizó realmente la entrega</small>
                                     </div>
                                 </div>
                                 
                                 <div class="col-md-6">
                                     <div class="form-group">
                                         <label for="observaciones" class="form-label">
-                                            <i class="fas fa-sticky-note mr-2 text-warning"></i>Observaciones
+                                            <i class="fas fa-sticky-note mr-2 text-info"></i>Formato de Entrega *
                                         </label>
-                                        <textarea class="form-control" id="observaciones" name="observaciones" rows="2" placeholder="Observaciones adicionales sobre la entrega"><?= old('observaciones') ?></textarea>
-                                        <small class="form-text text-muted">Información adicional sobre la entrega (opcional)</small>
+                                        <textarea class="form-control" id="observaciones" name="observaciones" rows="2" placeholder="Formato de entrega (físico/digital)" required><?= old('observaciones', $entrega['observaciones']) ?></textarea>
+                                        <small class="form-text text-muted">Describa el formato de entrega y especificaciones</small>
                                     </div>
                                 </div>
+                            </div>
+                            
+                            <!-- Información de estado actual -->
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle mr-2"></i>
+                                <strong>Información actual:</strong><br>
+                                • Estado: <span class="badge badge-<?= ($entrega['estado'] ?? 'pendiente') == 'completada' ? 'success' : 'warning' ?>">
+                                    <?= ($entrega['estado'] ?? 'pendiente') == 'completada' ? 'COMPLETADA' : 'PENDIENTE' ?>
+                                </span><br>
+                                <?php if (isset($entrega['fecha_real_entrega']) && $entrega['fecha_real_entrega']): ?>
+                                • Fecha real de entrega: <?= date('d/m/Y H:i', strtotime($entrega['fecha_real_entrega'])) ?>
+                                <?php endif; ?>
                             </div>
                             
                             <div class="form-group">
@@ -144,6 +200,12 @@
                                 <a href="<?= base_url('/entregas/ver/' . $entrega['identregable']) ?>" class="btn btn-outline-secondary btn-lg ml-2">
                                     <i class="fas fa-times mr-2"></i>Cancelar
                                 </a>
+                                
+                                <?php if (($entrega['estado'] ?? 'pendiente') == 'pendiente'): ?>
+                                <button type="button" class="btn btn-success btn-lg ml-2" id="btnCompletarAhora">
+                                    <i class="fas fa-check-circle mr-2"></i>Marcar como Completada Ahora
+                                </button>
+                                <?php endif; ?>
                             </div>
                         </form>
                     </div>
@@ -154,69 +216,201 @@
 </div>
 
 <script>
-    // Validación adicional de fechas
-function validarFechaRealista(fecha) {
-    const fechaEntrega = new Date(fecha);
-    const fechaActual = new Date();
-    const fechaMaxima = new Date();
-    fechaMaxima.setFullYear(fechaMaxima.getFullYear() + 2); // 2 años en el futuro
+// Mostrar/ocultar campo de fecha real según estado
+function toggleFechaReal() {
+    const estadoSelect = document.getElementById('estado');
+    const fechaRealGroup = document.getElementById('grupoFechaReal');
+    const fechaRealInput = document.getElementById('fecha_real_entrega');
     
-    return fechaEntrega > fechaActual && fechaEntrega <= fechaMaxima;
+    if (estadoSelect.value === 'completada') {
+        fechaRealGroup.style.display = 'block';
+        fechaRealInput.setAttribute('required', 'required');
+        
+        // Si está vacío, poner fecha y hora actual
+        if (!fechaRealInput.value) {
+            const now = new Date();
+            const localDateTime = now.toISOString().slice(0, 16);
+            fechaRealInput.value = localDateTime;
+        }
+    } else {
+        fechaRealGroup.style.display = 'none';
+        fechaRealInput.removeAttribute('required');
+        fechaRealInput.value = '';
+    }
 }
 
-$('#fechahoraentrega').on('change', function() {
-    if (!validarFechaRealista(this.value)) {
-        alert('La fecha de entrega debe ser posterior a la fecha actual y no mayor a 2 años');
-        this.value = '';
+// Completar entrega automáticamente
+function completarEntregaAhora() {
+    if (confirm('¿Está seguro de marcar esta entrega como COMPLETADA? Se usará la fecha y hora actual.')) {
+        const now = new Date();
+        const localDateTime = now.toISOString().slice(0, 16);
+        
+        document.getElementById('estado').value = 'completada';
+        document.getElementById('fecha_real_entrega').value = localDateTime;
+        
+        // Mostrar campo de fecha real
+        toggleFechaReal();
+        
+        // Enviar formulario automáticamente
+        document.getElementById('formEditarEntrega').submit();
     }
-});
-    $(document).ready(function() {
-        // Inicializar Select2
-        $('.select2').select2({
-            theme: 'bootstrap',
-            placeholder: 'Seleccione una opción',
-            allowClear: true
-        });
+}
 
-        // Validación del formulario
-        $('.form-validate').validate({
-            rules: {
-                idserviciocontratado: {
-                    required: true
-                },
-                idpersona: {
-                    required: true
-                },
-                fechahoraentrega: {
-                    required: true,
-                    date: true
-                }
-            },
-            messages: {
-                idserviciocontratado: {
-                    required: "Por favor seleccione un servicio"
-                },
-                idpersona: {
-                    required: "Por favor seleccione una persona"
-                },
-                fechahoraentrega: {
-                    required: "Por favor ingrese la fecha y hora",
-                    date: "Por favor ingrese una fecha válida"
-                }
-            },
-            errorElement: 'span',
-            errorPlacement: function (error, element) {
-                error.addClass('invalid-feedback');
-                element.closest('.form-group').append(error);
-            },
-            highlight: function (element, errorClass, validClass) {
-                $(element).addClass('is-invalid');
-            },
-            unhighlight: function (element, errorClass, validClass) {
-                $(element).removeClass('is-invalid');
-            }
-        });
+// Validación adicional de fechas para edición
+function validarFechaEntregaEdicion() {
+    const fechaEntregaInput = document.getElementById('fechahoraentrega');
+    const servicioSelect = document.getElementById('idserviciocontratado');
+    const estadoSelect = document.getElementById('estado');
+    const fechaRealInput = document.getElementById('fecha_real_entrega');
+    
+    if (!servicioSelect.value) {
+        alert('Primero debe seleccionar un servicio contratado');
+        fechaEntregaInput.value = '';
+        return false;
+    }
+    
+    // Obtener la fecha del servicio
+    const optionSeleccionada = servicioSelect.options[servicioSelect.selectedIndex];
+    const fechaServicioStr = optionSeleccionada.getAttribute('data-fecha-servicio');
+    
+    if (!fechaServicioStr) {
+        alert('Error: No se pudo obtener la fecha del servicio. Contacte al administrador.');
+        return false;
+    }
+    
+    const fechaServicio = new Date(fechaServicioStr);
+    const fechaEntrega = new Date(fechaEntregaInput.value);
+    const fechaMaxima = new Date(fechaServicio);
+    fechaMaxima.setDate(fechaMaxima.getDate() + 21);
+    
+    if (fechaEntrega <= fechaServicio) {
+        alert('ERROR: La fecha de entrega debe ser POSTERIOR a la fecha del servicio (' + fechaServicio.toLocaleDateString() + ')');
+        return false;
+    }
+    
+    if (fechaEntrega > fechaMaxima) {
+        alert('ERROR: La entrega no puede ser más de 3 semanas después del servicio. Máximo permitido: ' + fechaMaxima.toLocaleDateString());
+        return false;
+    }
+    
+    // Validaciones para estado "completada"
+    if (estadoSelect.value === 'completada' && fechaRealInput.value) {
+        const fechaReal = new Date(fechaRealInput.value);
+        const hoy = new Date();
+        
+        if (fechaReal > hoy) {
+            alert('ERROR: La fecha real de entrega no puede ser futura');
+            fechaRealInput.value = '';
+            return false;
+        }
+    }
+    
+    return true;
+}
+
+$(document).ready(function() {
+    // Inicializar Select2
+    $('.select2').select2({
+        theme: 'bootstrap',
+        placeholder: 'Seleccione una opción',
+        allowClear: true
     });
+
+    // Mostrar/ocultar fecha real al cambiar estado
+    $('#estado').on('change', function() {
+        toggleFechaReal();
+    });
+
+    // Botón para completar ahora
+    $('#btnCompletarAhora').on('click', function() {
+        completarEntregaAhora();
+    });
+
+    // Inicializar visibilidad del campo fecha real
+    toggleFechaReal();
+
+    // Validar fecha cuando cambia
+    $('#fechahoraentrega').on('change', function() {
+        validarFechaEntregaEdicion();
+    });
+
+    // Validar todo el formulario antes de enviar
+    $('#formEditarEntrega').on('submit', function(e) {
+        if (!validarFechaEntregaEdicion()) {
+            e.preventDefault();
+            return false;
+        }
+        
+        if (!$('#confirmacion').is(':checked')) {
+            alert('Debe confirmar que la información es correcta');
+            e.preventDefault();
+            return false;
+        }
+        
+        return true;
+    });
+
+    // Validación del formulario con jQuery Validate
+    $('.form-validate').validate({
+        rules: {
+            idserviciocontratado: {
+                required: true
+            },
+            idpersona: {
+                required: true
+            },
+            fechahoraentrega: {
+                required: true,
+                date: true
+            },
+            estado: {
+                required: true
+            },
+            fecha_real_entrega: {
+                required: function() {
+                    return $('#estado').val() === 'completada';
+                }
+            },
+            observaciones: {
+                required: true,
+                minlength: 10
+            }
+        },
+        messages: {
+            idserviciocontratado: {
+                required: "Por favor seleccione un servicio"
+            },
+            idpersona: {
+                required: "Por favor seleccione una persona"
+            },
+            fechahoraentrega: {
+                required: "Por favor ingrese la fecha programada",
+                date: "Por favor ingrese una fecha válida"
+            },
+            estado: {
+                required: "Por favor seleccione el estado de la entrega"
+            },
+            fecha_real_entrega: {
+                required: "La fecha real de entrega es obligatoria para entregas completadas"
+            },
+            observaciones: {
+                required: "Por favor describa el formato de entrega",
+                minlength: "Debe describir mínimo 10 caracteres"
+            }
+        },
+        errorElement: 'span',
+        errorPlacement: function (error, element) {
+            error.addClass('invalid-feedback');
+            element.closest('.form-group').append(error);
+        },
+        highlight: function (element, errorClass, validClass) {
+            $(element).addClass('is-invalid');
+        },
+        unhighlight: function (element, errorClass, validClass) {
+            $(element).removeClass('is-invalid');
+        }
+    });
+});
 </script>
 
 <style>
@@ -250,6 +444,15 @@ $('#fechahoraentrega').on('change', function() {
     }
     .custom-checkbox {
         margin-top: 1rem;
+    }
+    #btnCompletarAhora {
+        background: linear-gradient(45deg, #28a745, #20c997);
+        border: none;
+    }
+    #btnCompletarAhora:hover {
+        background: linear-gradient(45deg, #218838, #1e9e8a);
+        transform: translateY(-2px);
+        transition: all 0.3s ease;
     }
 </style>
 

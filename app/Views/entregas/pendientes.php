@@ -2,8 +2,8 @@
 
 <div class="container">
     <div class="page-inner">
-        <div class="page-header">
-            <h4 class="page-title"><i class="fas fa-edit mr-2"></i>Pendientes</h4>
+        <!-- <div class="page-header">
+            <h4 class="page-title"><i class="fas fa-edit mr-2"></i>Entregas Pendientes</h4>
             <ul class="breadcrumbs">
                 <li class="nav-home">
                     <a href="<?= base_url('/dashboard') ?>">
@@ -23,7 +23,7 @@
                     <a href="<?= base_url('/entregas/pendientes') ?>">Pendientes</a>
                 </li>
             </ul>
-        </div>
+        </div> -->
         <?php if (session('success')): ?>
             <div class="alert alert-success alert-dismissible fade show" role="alert">
                 <i class="fas fa-check-circle mr-2"></i>
@@ -49,7 +49,7 @@
                 <div class="card">
                     <div class="card-header">
                         <div class="d-flex align-items-center justify-content-between">
-                            <h4 class="card-title"><i class="fas fa-clock mr-2 text-warning"></i>Entregas Pendientes</h4>
+                            <h4 class="card-title"><i class="fas fa-clock mr-2 text-warning"></i>Entregas Pendientes de Postproducción</h4>
                             <div>
                                 <a href="<?= base_url('/entregas') ?>" class="btn btn-secondary btn-round mr-2">
                                     <i class="fas fa-list mr-2"></i>Ver Todas las Entregas
@@ -62,36 +62,38 @@
                         </div>
                     </div>
                     <div class="card-body">
-                        <div class="table-responsive">
-                            <table id="pendientes-table" class="display table table-hover">
-                                <thead>
-                                    <tr>
-                                        <th>ID</th>
-                                        <th>Cliente</th>
-                                        <th>Servicio</th>
-                                        <th>Fecha Entrega</th>
-                                        <th>Días Restantes</th>
-                                        <th>Ubicación</th>
-                                        <th>Responsable</th>
-                                        <th>Estado</th>
-                                        <th class="text-center">Acciones</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <?php if (!empty($entregas)): ?>
+                        <?php if (!empty($entregas)): ?>
+                            <div class="table-responsive">
+                                <table id="pendientes-table" class="display table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>Cliente</th>
+                                            <th>Servicio</th>
+                                            <th>Fecha Programada</th>
+                                            <th>Días Restantes</th>
+                                            <th>Ubicación</th>
+                                            <th>Responsable</th>
+                                            <th>Estado</th>
+                                            <th class="text-center">Acciones</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
                                         <?php foreach ($entregas as $entrega): ?>
                                             <?php
                                             $fechaEntrega = strtotime($entrega['fechahoraentrega']);
                                             $hoy = strtotime('now');
-                                            // Solo mostrar entregas pendientes (fecha de entrega en el futuro)
-                                            if ($fechaEntrega > $hoy):
-                                                $diasRestantes = ceil(($fechaEntrega - $hoy) / (60 * 60 * 24));
-                                                $claseDias = 'success';
-                                                if ($diasRestantes <= 3) {
-                                                    $claseDias = 'danger';
-                                                } elseif ($diasRestantes <= 7) {
-                                                    $claseDias = 'warning';
-                                                }
+                                            $diasRestantes = ceil(($fechaEntrega - $hoy) / (60 * 60 * 24));
+                                            
+                                            $claseDias = 'success';
+                                            if ($diasRestantes <= 2) {
+                                                $claseDias = 'danger';
+                                            } elseif ($diasRestantes <= 5) {
+                                                $claseDias = 'warning';
+                                            } elseif ($diasRestantes <= 0) {
+                                                $claseDias = 'secondary';
+                                                $diasRestantes = 'Vencida';
+                                            }
                                             ?>
                                             <tr>
                                                 <td><span class="badge badge-secondary">#<?= $entrega['identregable'] ?></span></td>
@@ -119,7 +121,7 @@
                                                 </td>
                                                 <td>
                                                     <span class="badge badge-<?= $claseDias ?>">
-                                                        <?= $diasRestantes ?> día<?= $diasRestantes != 1 ? 's' : '' ?>
+                                                        <?= is_numeric($diasRestantes) ? $diasRestantes . ' día' . ($diasRestantes != 1 ? 's' : '') : $diasRestantes ?>
                                                     </span>
                                                 </td>
                                                 <td>
@@ -139,7 +141,11 @@
                                                     <?php endif; ?>
                                                 </td>
                                                 <td>
-                                                    <span class="badge badge-warning"><i class="fas fa-clock mr-1"></i>Pendiente</span>
+                                                    <?php if ($diasRestantes === 'Vencida'): ?>
+                                                        <span class="badge badge-danger"><i class="fas fa-exclamation-triangle mr-1"></i>Vencida</span>
+                                                    <?php else: ?>
+                                                        <span class="badge badge-warning"><i class="fas fa-clock mr-1"></i>En Postproducción</span>
+                                                    <?php endif; ?>
                                                 </td>
                                                 <td class="text-center">
                                                     <div class="btn-group" role="group">
@@ -155,25 +161,22 @@
                                                     </div>
                                                 </td>
                                             </tr>
-                                            <?php endif; ?>
                                         <?php endforeach; ?>
-                                    <?php else: ?>
-                                        <tr>
-                                            <td colspan="9" class="text-center py-4">
-                                                <div class="empty-state">
-                                                    <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
-                                                    <h4 class="text-muted">¡No hay entregas pendientes!</h4>
-                                                    <p class="text-muted">Todas las entregas han sido completadas</p>
-                                                    <a href="<?= base_url('/entregas/crear') ?>" class="btn btn-primary mt-2">
-                                                        <i class="fa fa-plus mr-2"></i>Crear nueva entrega
-                                                    </a>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    <?php endif; ?>
-                                </tbody>
-                            </table>
-                        </div>
+                                    </tbody>
+                                </table>
+                            </div>
+                        <?php else: ?>
+                            <div class="text-center py-4">
+                                <div class="empty-state">
+                                    <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+                                    <h4 class="text-muted">¡No hay entregas pendientes!</h4>
+                                    <p class="text-muted">Todas las entregas han sido completadas o no hay entregas programadas</p>
+                                    <a href="<?= base_url('/entregas/crear') ?>" class="btn btn-primary mt-2">
+                                        <i class="fa fa-plus mr-2"></i>Crear nueva entrega
+                                    </a>
+                                </div>
+                            </div>
+                        <?php endif; ?>
                     </div>
                 </div>
             </div>
@@ -244,7 +247,6 @@
             align-items: center;
         }
         
-        /* Estilos responsivos para el header */
         .card-header .d-flex {
             flex-direction: column;
             align-items: flex-start !important;
@@ -259,4 +261,3 @@
 </style>
 
 <?= $footer; ?>
-[file content end]
