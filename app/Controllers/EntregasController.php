@@ -268,71 +268,13 @@ class EntregasController extends BaseController
             return redirect()->back()->withInput()->with('errors', $validation->getErrors());
         }
 
-        // VALIDACIÓN MANUAL de las 3 semanas
-        $servicioId = $this->request->getPost('idserviciocontratado');
-        $servicioContratado = $this->serviciosContratadosModel->find($servicioId);
-
-        if (!$servicioContratado || !$servicioContratado['fechahoraservicio']) {
-            return redirect()->back()->withInput()->with('error', 'El servicio seleccionado no es válido');
-        }
-
-        $fechaEntrega = strtotime($this->request->getPost('fechahoraentrega'));
-        $fechaServicio = strtotime($servicioContratado['fechahoraservicio']);
-        $fechaMaxima = strtotime('+3 weeks', $fechaServicio);
-
-        // Validar que sea día hábil (lunes a viernes)
-        $diaEntrega = date('N', $fechaEntrega);
-        $esDiaHabil = ($diaEntrega >= 1 && $diaEntrega <= 5);
-
-        // Validar horario laboral (8am - 6pm)
-        $horaEntrega = date('H', $fechaEntrega);
-        $enHorarioLaboral = ($horaEntrega >= 8 && $horaEntrega <= 18);
-
-        if ($fechaEntrega <= $fechaServicio) {
-            return redirect()->back()->withInput()->with('error', 'La fecha de entrega debe ser posterior al servicio');
-        }
-
-        if ($fechaEntrega > $fechaMaxima) {
-            return redirect()->back()->withInput()->with('error', 'La entrega no puede ser más de 3 semanas después del servicio');
-        }
-
-        if (!$esDiaHabil) {
-            return redirect()->back()->withInput()->with('error', 'Solo se permiten entregas en días hábiles (Lunes a Viernes)');
-        }
-
-        if (!$enHorarioLaboral) {
-            return redirect()->back()->withInput()->with('error', 'Solo se permiten entregas en horario laboral (8:00 AM - 6:00 PM)');
-        }
-
-        // Validación adicional para estado "completada"
-        $estado = $this->request->getPost('estado');
-        $fechaReal = $this->request->getPost('fecha_real_entrega');
-
-        if ($estado == 'completada') {
-            if (empty($fechaReal)) {
-                return redirect()->back()->withInput()->with('error', 'La fecha real de entrega es obligatoria para entregas completadas');
-            }
-
-            $fechaRealTimestamp = strtotime($fechaReal);
-            if ($fechaRealTimestamp > time()) {
-                return redirect()->back()->withInput()->with('error', 'La fecha real de entrega no puede ser futura');
-            }
-        }
-
-        // Verificar que la persona existe
-        $persona = $this->personasModel->find($this->request->getPost('idpersona'));
-        if (!$persona) {
-            return redirect()->back()->withInput()->with('error', 'La persona seleccionada no existe');
-        }
-
-        // Verificar que no exista ya otra entrega para este servicio (excepto la actual)
-        $entregaDuplicada = $this->entregasModel
-            ->where('idserviciocontratado', $this->request->getPost('idserviciocontratado'))
-            ->where('identregable !=', $id)
-            ->first();
-
-        if ($entregaDuplicada) {
-            return redirect()->back()->withInput()->with('error', 'Ya existe otra entrega registrada para este servicio contratado');
+        // Obtener el nuevo estado
+        $nuevoEstado = $this->request->getPost('estado');
+        
+        // Si se marca como completada, usar fecha y hora actual automáticamente
+        $fechaReal = null;
+        if ($nuevoEstado == 'completada') {
+            $fechaReal = date('Y-m-d H:i:s'); // Fecha y hora actual
         }
 
         $data = [
@@ -340,8 +282,8 @@ class EntregasController extends BaseController
             'idpersona' => $this->request->getPost('idpersona'),
             'fechahoraentrega' => $this->request->getPost('fechahoraentrega'),
             'observaciones' => $this->request->getPost('observaciones'),
-            'estado' => $estado,
-            'fecha_real_entrega' => $estado == 'completada' ? $fechaReal : null
+            'estado' => $nuevoEstado,
+            'fecha_real_entrega' => $fechaReal // Se actualiza automáticamente si es completada
         ];
 
         // Usar transacción
@@ -349,7 +291,6 @@ class EntregasController extends BaseController
 
         try {
             $estadoAnterior = $entregaExistente['estado'];
-            $nuevoEstado = $estado;
 
             if ($this->entregasModel->update($id, $data)) {
                 // Si se cambió de pendiente a completada, registrar en tabla de completados
