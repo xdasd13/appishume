@@ -254,7 +254,7 @@ INSERT INTO usuarios (idpersona, idcargo, nombreusuario, claveacceso, estado) VA
 (5, 1, 'lvasquez', '1Vasque3', 1),    -- Luis Vásquez - Gerente
 (6, 2, 'pmorales', 'pM0rales', 1),    -- Patricia Morales - Coordinadora
 (7, 3, 'rjimenez', '4J1menez', 1),    -- Ricardo Jiménez - Técnico
-(9, 4, 'cgonzalez', '3Gon3ale3z', 1);   -- Carmen González - Fotógrafa
+(9, 4, 'cgonzalez', '3Gon3ale3z', 1);   -- Carmen González - Fotógrafa  
 
 -- 5. SERVICIOS
 INSERT INTO servicios (servicio, descripcion, precioregular, idcategoria) VALUES 
@@ -369,24 +369,3 @@ INSERT INTO listacondiciones (idcondicion, idtipocontrato) VALUES
 (1, 4), (4, 4),          -- Servicio corporativo
 (1, 3), (5, 3),          -- Contrato anual
 (2, 2), (3, 2);          -- Paquete mensual
-
-
--- RESUMEN DE DATOS PARA TU MÓDULO:
-
--- =============================================
--- CONTRATOS: 7 contratos con diferentes estados
--- PAGOS: 8 registros de pagos (algunos saldados, otros pendientes)
--- EQUIPOS: 12 equipos con estados: Completado, En Proceso, Pendiente, Programado  
--- ENTREGABLES: 5 entregables registrados
--- SERVICIOS CONTRATADOS: 12 servicios con fechas y direcciones variadas
--- 
--- Estados de contratos por pagos:
--- - Contrato 3: PAGADO COMPLETO (deuda = 0)
--- - Contratos 1,2,4,5,6,7: SALDO PENDIENTE
--- 
--- Estados de servicios:
--- - Completados: Boda Carlos, Evento Corporativo
--- - En proceso: Quinceañero María, Conferencia  
--- - Pendientes: Boda José
--- - Programados: Boda Ana, Evento Robert
--- ===============================================

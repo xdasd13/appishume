@@ -69,10 +69,14 @@
     border-top-left-radius: 5px;
     border-bottom: 1px solid #ebedf2;
     background: #5867dd; }
+
   .custom-template .custom-content {
+
     padding: 20px 15px;
     max-height: calc(100vh - 90px);
-    overflow: auto; }
+    overflow-y: auto; 
+  
+  }
   .custom-template .switcher {
     padding: 5px 0; }
   .custom-template .switch-block h4 {
@@ -310,3 +314,5 @@ body[data-background-color="dark"] .demo-icon .icon-class {
     right: -85%; } }
 
 /*# sourceMappingURL=demo.css.map */
+
+
