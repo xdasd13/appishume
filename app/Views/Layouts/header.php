@@ -190,7 +190,7 @@
                 <div class="collapse" id="proyectos">
                   <ul class="nav nav-collapse">
                     <li>
-                      <a href="<?= base_url('/proyectos/activos') ?>">
+                      <a href="<?= base_url('/cronograma/proyectos') ?>">
                         <span class="sub-item">Proyectos Activos</span>
                       </a>
                     </li>

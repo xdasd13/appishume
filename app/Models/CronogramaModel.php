@@ -1,0 +1,249 @@
+<?php
+
+namespace App\Models;
+
+use CodeIgniter\Model;
+
+class CronogramaModel extends Model
+{
+    protected $table = 'servicioscontratados';
+    protected $primaryKey = 'idserviciocontratado';
+    protected $allowedFields = ['idcotizacion', 'idservicio', 'fechahoraservicio', 'direccion'];
+
+    /**
+     * Obtiene estadísticas del cronograma
+     */
+    public function getEstadisticas()
+    {
+        try {
+            // Servicios activos - consulta más simple
+            $serviciosActivos = $this->db->query("
+                SELECT COUNT(*) as total 
+                FROM servicioscontratados
+            ")->getRow()->total;
+
+            // Equipos asignados - consulta más simple
+            $equiposAsignados = $this->db->query("
+                SELECT COUNT(*) as total 
+                FROM equipos
+            ")->getRow()->total;
+
+            // Técnicos disponibles (usuarios activos con cargos técnicos)
+            $tecnicosDisponibles = $this->db->query("
+                SELECT COUNT(*) as total 
+                FROM usuarios u
+                INNER JOIN cargos c ON u.idcargo = c.idcargo
+                WHERE (c.cargo LIKE '%Técnico%' 
+                   OR c.cargo LIKE '%Coordinador%' 
+                   OR c.cargo LIKE '%Fotógrafo%' 
+                   OR c.cargo LIKE '%Operador%'
+                   OR c.cargo LIKE '%Gerente%')
+                AND u.estado = 1
+            ")->getRow()->total;
+
+            // Fallback: si no encuentra técnicos específicos, contar todos los usuarios activos
+            if ($tecnicosDisponibles == 0) {
+                $tecnicosDisponibles = $this->db->query("
+                    SELECT COUNT(*) as total 
+                    FROM usuarios
+                    WHERE estado = 1
+                ")->getRow()->total;
+            }
+
+            return [
+                'servicios_count' => $serviciosActivos,
+                'equipos' => $equiposAsignados,
+                'tecnicos' => $tecnicosDisponibles
+            ];
+
+        } catch (\Exception $e) {
+            log_message('error', 'Error en getEstadisticas: ' . $e->getMessage());
+            return [
+                'servicios_count' => 0,
+                'equipos' => 0,
+                'tecnicos' => 0
+            ];
+        }
+    }
+
+    /**
+     * Obtiene eventos para el calendario en formato FullCalendar
+     */
+    public function getEventosCalendario($start = null, $end = null)
+    {
+        try {
+            $whereClause = "";
+            if ($start && $end) {
+                $whereClause = "AND sc.fechahoraservicio BETWEEN '$start' AND '$end'";
+            }
+
+            $query = "
+                SELECT 
+                    sc.idserviciocontratado as id,
+                    CONCAT(s.servicio, ' - ', 
+                        CASE 
+                            WHEN c.idempresa IS NOT NULL THEN e.razonsocial
+                            ELSE CONCAT(p.nombres, ' ', p.apellidos)
+                        END
+                    ) as title,
+                    sc.fechahoraservicio as start,
+                    sc.direccion,
+                    CASE 
+                        WHEN c.idempresa IS NOT NULL THEN e.telefono
+                        ELSE p.telefono
+                    END as telefono,
+                    COALESCE(eq.estadoservicio, 'Pendiente') as estado,
+                    CASE 
+                        WHEN COALESCE(eq.estadoservicio, 'Pendiente') = 'Completado' THEN '#4caf50'
+                        WHEN COALESCE(eq.estadoservicio, 'Pendiente') = 'En Proceso' THEN '#ff9800'
+                        WHEN COALESCE(eq.estadoservicio, 'Pendiente') = 'Programado' THEN '#2196f3'
+                        ELSE '#757575'
+                    END as color
+                FROM servicioscontratados sc
+                INNER JOIN cotizaciones cot ON sc.idcotizacion = cot.idcotizacion
+                INNER JOIN contratos con ON cot.idcotizacion = con.idcotizacion
+                INNER JOIN clientes c ON cot.idcliente = c.idcliente
+                LEFT JOIN personas p ON c.idpersona = p.idpersona
+                LEFT JOIN empresas e ON c.idempresa = e.idempresa
+                INNER JOIN servicios s ON sc.idservicio = s.idservicio
+                LEFT JOIN equipos eq ON sc.idserviciocontratado = eq.idserviciocontratado
+                WHERE 1=1 $whereClause
+                ORDER BY sc.fechahoraservicio ASC
+            ";
+
+            $eventos = $this->db->query($query)->getResult();
+            
+            // Formatear eventos para FullCalendar
+            $eventosFormateados = [];
+            foreach ($eventos as $evento) {
+                $eventosFormateados[] = [
+                    'id' => $evento->id,
+                    'title' => $evento->title,
+                    'start' => $evento->start,
+                    'color' => $evento->color,
+                    'extendedProps' => [
+                        'direccion' => $evento->direccion,
+                        'telefono' => $evento->telefono,
+                        'estado' => $evento->estado
+                    ]
+                ];
+            }
+
+            return $eventosFormateados;
+
+        } catch (\Exception $e) {
+            log_message('error', 'Error en getEventosCalendario: ' . $e->getMessage());
+            return [];
+        }
+    }
+
+    /**
+     * Obtiene los próximos servicios (siguiente semana)
+     */
+    public function getProximosServicios($limite = 10)
+    {
+        try {
+            $query = "
+                SELECT 
+                    sc.idserviciocontratado,
+                    sc.fechahoraservicio,
+                    sc.direccion,
+                    s.servicio,
+                    CASE 
+                        WHEN c.idempresa IS NOT NULL THEN e.razonsocial
+                        ELSE CONCAT(p.nombres, ' ', p.apellidos)
+                    END as cliente,
+                    COALESCE(eq.estadoservicio, 'Pendiente') as estado
+                FROM servicioscontratados sc
+                INNER JOIN cotizaciones cot ON sc.idcotizacion = cot.idcotizacion
+                INNER JOIN contratos con ON cot.idcotizacion = con.idcotizacion
+                INNER JOIN clientes c ON cot.idcliente = c.idcliente
+                LEFT JOIN personas p ON c.idpersona = p.idpersona
+                LEFT JOIN empresas e ON c.idempresa = e.idempresa
+                INNER JOIN servicios s ON sc.idservicio = s.idservicio
+                LEFT JOIN equipos eq ON sc.idserviciocontratado = eq.idserviciocontratado
+                WHERE sc.fechahoraservicio >= NOW()
+                AND sc.fechahoraservicio <= DATE_ADD(NOW(), INTERVAL 14 DAY)
+                ORDER BY sc.fechahoraservicio ASC
+                LIMIT $limite
+            ";
+
+            return $this->db->query($query)->getResult();
+
+        } catch (\Exception $e) {
+            log_message('error', 'Error en getProximosServicios: ' . $e->getMessage());
+            return [];
+        }
+    }
+
+    /**
+     * Obtiene servicios por fecha específica
+     */
+    public function getServiciosPorFecha($fecha)
+    {
+        try {
+            $query = "
+                SELECT 
+                    sc.idserviciocontratado,
+                    sc.fechahoraservicio,
+                    sc.direccion,
+                    s.servicio,
+                    CASE 
+                        WHEN c.idempresa IS NOT NULL THEN e.razonsocial
+                        ELSE CONCAT(p.nombres, ' ', p.apellidos)
+                    END as cliente,
+                    COALESCE(eq.estadoservicio, 'Pendiente') as estado,
+                    CASE 
+                        WHEN c.idempresa IS NOT NULL THEN e.telefono
+                        ELSE p.telefono
+                    END as telefono
+                FROM servicioscontratados sc
+                INNER JOIN cotizaciones cot ON sc.idcotizacion = cot.idcotizacion
+                INNER JOIN contratos con ON cot.idcotizacion = con.idcotizacion
+                INNER JOIN clientes c ON cot.idcliente = c.idcliente
+                LEFT JOIN personas p ON c.idpersona = p.idpersona
+                LEFT JOIN empresas e ON c.idempresa = e.idempresa
+                INNER JOIN servicios s ON sc.idservicio = s.idservicio
+                LEFT JOIN equipos eq ON sc.idserviciocontratado = eq.idserviciocontratado
+                WHERE DATE(sc.fechahoraservicio) = ?
+                ORDER BY sc.fechahoraservicio ASC
+            ";
+
+            return $this->db->query($query, [$fecha])->getResult();
+
+        } catch (\Exception $e) {
+            log_message('error', 'Error en getServiciosPorFecha: ' . $e->getMessage());
+            return [];
+        }
+    }
+
+    /**
+     * Obtiene resumen semanal de servicios
+     */
+    public function getResumenSemanal()
+    {
+        try {
+            $query = "
+                SELECT 
+                    DATE(sc.fechahoraservicio) as fecha,
+                    COUNT(*) as total_servicios,
+                    SUM(CASE WHEN COALESCE(eq.estadoservicio, 'Pendiente') = 'Completado' THEN 1 ELSE 0 END) as completados,
+                    SUM(CASE WHEN COALESCE(eq.estadoservicio, 'Pendiente') = 'En Proceso' THEN 1 ELSE 0 END) as en_proceso,
+                    SUM(CASE WHEN COALESCE(eq.estadoservicio, 'Pendiente') = 'Programado' THEN 1 ELSE 0 END) as programados,
+                    SUM(CASE WHEN COALESCE(eq.estadoservicio, 'Pendiente') = 'Pendiente' THEN 1 ELSE 0 END) as pendientes
+                FROM servicioscontratados sc
+                LEFT JOIN equipos eq ON sc.idserviciocontratado = eq.idserviciocontratado
+                WHERE sc.fechahoraservicio >= DATE_SUB(NOW(), INTERVAL 7 DAY)
+                AND sc.fechahoraservicio <= DATE_ADD(NOW(), INTERVAL 7 DAY)
+                GROUP BY DATE(sc.fechahoraservicio)
+                ORDER BY fecha ASC
+            ";
+
+            return $this->db->query($query)->getResult();
+
+        } catch (\Exception $e) {
+            log_message('error', 'Error en getResumenSemanal: ' . $e->getMessage());
+            return [];
+        }
+    }
+}

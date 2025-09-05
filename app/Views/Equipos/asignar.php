@@ -330,7 +330,7 @@
                                 <?php endif; ?>
                             </option>
                         <?php endforeach; ?>
-                    </select>
+                    </select>+
                     
                     <!-- Área para mostrar información de disponibilidad -->
                     <div id="disponibilidad-info" class="disponibilidad-alert"></div>

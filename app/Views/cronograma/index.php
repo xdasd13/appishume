@@ -6,7 +6,7 @@
         --color-primary: #ff9800;
         --color-primary-dark: #e68900;
         --color-primary-light: #ffb74d;
-        --color-dark: #1a1a1a;
+        --color-dark:rgb(255, 255, 255);
         --color-surface: #2d2d2d;
         --color-surface-light: #3d3d3d;
         --color-white: #ffffff;

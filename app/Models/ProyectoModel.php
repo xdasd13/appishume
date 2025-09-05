@@ -1,0 +1,234 @@
+<?php
+
+namespace App\Models;
+
+use CodeIgniter\Model;
+
+class ProyectoModel extends Model
+{
+    protected $table = 'servicioscontratados';
+    protected $primaryKey = 'idserviciocontratado';
+    protected $allowedFields = [];
+
+    /**
+     * Obtiene todos los proyectos activos de la empresa
+     * Un proyecto se considera activo si tiene servicios contratados con estados diferentes a 'Completado'
+     */
+    public function getProyectosActivos()
+    {
+        // Consulta simplificada para obtener todos los servicios contratados
+        $query = "
+            SELECT 
+                sc.idserviciocontratado,
+                s.servicio,
+                CASE 
+                    WHEN c.idempresa IS NOT NULL THEN e.razonsocial
+                    ELSE CONCAT(p.nombres, ' ', p.apellidos)
+                END as cliente,
+                sc.fechahoraservicio,
+                sc.direccion,
+                COALESCE(eq.estadoservicio, 'Pendiente') as estado,
+                CASE 
+                    WHEN COALESCE(eq.estadoservicio, 'Pendiente') = 'Completado' THEN 100
+                    WHEN COALESCE(eq.estadoservicio, 'Pendiente') = 'En Proceso' THEN 65
+                    WHEN COALESCE(eq.estadoservicio, 'Pendiente') = 'Programado' THEN 35
+                    ELSE 10
+                END as progreso
+            FROM servicioscontratados sc
+            INNER JOIN cotizaciones cot ON sc.idcotizacion = cot.idcotizacion
+            INNER JOIN contratos con ON cot.idcotizacion = con.idcotizacion
+            INNER JOIN clientes c ON cot.idcliente = c.idcliente
+            LEFT JOIN personas p ON c.idpersona = p.idpersona
+            LEFT JOIN empresas e ON c.idempresa = e.idempresa
+            INNER JOIN servicios s ON sc.idservicio = s.idservicio
+            LEFT JOIN equipos eq ON sc.idserviciocontratado = eq.idserviciocontratado
+            ORDER BY sc.fechahoraservicio ASC
+        ";
+        
+        try {
+            $result = $this->db->query($query)->getResult();
+            log_message('info', 'Proyectos encontrados: ' . count($result));
+            return $result;
+        } catch (\Exception $e) {
+            log_message('error', 'Error en consulta de proyectos: ' . $e->getMessage());
+            return [];
+        }
+    }
+
+    /**
+     * Función de prueba para verificar datos básicos
+     */
+    public function testConexion()
+    {
+        try {
+            // Contar servicios contratados
+            $servicios = $this->db->query("SELECT COUNT(*) as total FROM servicioscontratados")->getRow();
+            log_message('info', 'Total servicios contratados: ' . $servicios->total);
+            
+            // Contar contratos
+            $contratos = $this->db->query("SELECT COUNT(*) as total FROM contratos")->getRow();
+            log_message('info', 'Total contratos: ' . $contratos->total);
+            
+            // Contar equipos
+            $equipos = $this->db->query("SELECT COUNT(*) as total FROM equipos")->getRow();
+            log_message('info', 'Total equipos: ' . $equipos->total);
+            
+            return [
+                'servicios' => $servicios->total,
+                'contratos' => $contratos->total,
+                'equipos' => $equipos->total
+            ];
+        } catch (\Exception $e) {
+            log_message('error', 'Error en testConexion: ' . $e->getMessage());
+            return null;
+        }
+    }
+
+    /**
+     * Obtiene todos los proyectos (activos e inactivos)
+     */
+    public function getTodosLosProyectos()
+    {
+        return $this->db->query("
+            SELECT DISTINCT
+                sc.idserviciocontratado,
+                s.servicio,
+                CASE 
+                    WHEN c.idempresa IS NOT NULL THEN e.razonsocial
+                    ELSE CONCAT(p.nombres, ' ', p.apellidos)
+                END as cliente,
+                sc.fechahoraservicio,
+                sc.direccion,
+                COALESCE(eq.estadoservicio, 'Pendiente') as estado,
+                CASE 
+                    WHEN COALESCE(eq.estadoservicio, 'Pendiente') = 'Completado' THEN 100
+                    WHEN COALESCE(eq.estadoservicio, 'Pendiente') = 'En Proceso' THEN 65
+                    WHEN COALESCE(eq.estadoservicio, 'Pendiente') = 'Programado' THEN 35
+                    ELSE 10
+                END as progreso,
+                cot.fechaevento,
+                te.evento as tipoevento,
+                CASE 
+                    WHEN COALESCE(eq.estadoservicio, 'Pendiente') != 'Completado' 
+                         AND sc.fechahoraservicio >= CURDATE() THEN 'Activo'
+                    ELSE 'Inactivo'
+                END as estadoproyecto
+            FROM servicioscontratados sc
+            INNER JOIN cotizaciones cot ON sc.idcotizacion = cot.idcotizacion
+            INNER JOIN contratos con ON cot.idcotizacion = con.idcotizacion
+            INNER JOIN clientes c ON cot.idcliente = c.idcliente
+            LEFT JOIN personas p ON c.idpersona = p.idpersona
+            LEFT JOIN empresas e ON c.idempresa = e.idempresa
+            INNER JOIN servicios s ON sc.idservicio = s.idservicio
+            LEFT JOIN equipos eq ON sc.idserviciocontratado = eq.idserviciocontratado
+            LEFT JOIN tipoeventos te ON cot.idtipoevento = te.idtipoevento
+            ORDER BY sc.fechahoraservicio DESC
+        ")->getResult();
+    }
+
+    /**
+     * Obtiene un proyecto específico por ID
+     */
+    public function getProyectoPorId($idserviciocontratado)
+    {
+        return $this->db->query("
+            SELECT 
+                sc.idserviciocontratado,
+                s.servicio,
+                s.descripcion as descripcion_servicio,
+                CASE 
+                    WHEN c.idempresa IS NOT NULL THEN e.razonsocial
+                    ELSE CONCAT(p.nombres, ' ', p.apellidos)
+                END as cliente,
+                sc.fechahoraservicio,
+                sc.direccion,
+                sc.cantidad,
+                sc.precio,
+                COALESCE(eq.estadoservicio, 'Pendiente') as estado,
+                eq.descripcion as descripcion_equipo,
+                CASE 
+                    WHEN COALESCE(eq.estadoservicio, 'Pendiente') = 'Completado' THEN 100
+                    WHEN COALESCE(eq.estadoservicio, 'Pendiente') = 'En Proceso' THEN 65
+                    WHEN COALESCE(eq.estadoservicio, 'Pendiente') = 'Programado' THEN 35
+                    ELSE 10
+                END as progreso,
+                cot.fechaevento,
+                cot.fechacotizacion,
+                te.evento as tipoevento,
+                CONCAT(u.nombres, ' ', u.apellidos) as responsable,
+                ca.cargo as cargo_responsable
+            FROM servicioscontratados sc
+            INNER JOIN cotizaciones cot ON sc.idcotizacion = cot.idcotizacion
+            INNER JOIN contratos con ON cot.idcotizacion = con.idcotizacion
+            INNER JOIN clientes c ON cot.idcliente = c.idcliente
+            LEFT JOIN personas p ON c.idpersona = p.idpersona
+            LEFT JOIN empresas e ON c.idempresa = e.idempresa
+            INNER JOIN servicios s ON sc.idservicio = s.idservicio
+            LEFT JOIN equipos eq ON sc.idserviciocontratado = eq.idserviciocontratado
+            LEFT JOIN usuarios u ON eq.idusuario = u.idusuario
+            LEFT JOIN personas pu ON u.idpersona = pu.idpersona
+            LEFT JOIN cargos ca ON u.idcargo = ca.idcargo
+            LEFT JOIN tipoeventos te ON cot.idtipoevento = te.idtipoevento
+            WHERE sc.idserviciocontratado = ?
+        ", [$idserviciocontratado])->getRow();
+    }
+
+    /**
+     * Obtiene estadísticas de proyectos
+     */
+    public function getEstadisticasProyectos()
+    {
+        return $this->db->query("
+            SELECT 
+                COUNT(*) as total_proyectos,
+                SUM(CASE WHEN COALESCE(eq.estadoservicio, 'Pendiente') != 'Completado' 
+                         AND sc.fechahoraservicio >= CURDATE() THEN 1 ELSE 0 END) as proyectos_activos,
+                SUM(CASE WHEN COALESCE(eq.estadoservicio, 'Pendiente') = 'Completado' THEN 1 ELSE 0 END) as proyectos_completados,
+                SUM(CASE WHEN COALESCE(eq.estadoservicio, 'Pendiente') = 'En Proceso' THEN 1 ELSE 0 END) as proyectos_en_proceso,
+                SUM(CASE WHEN COALESCE(eq.estadoservicio, 'Pendiente') = 'Programado' THEN 1 ELSE 0 END) as proyectos_programados,
+                SUM(CASE WHEN COALESCE(eq.estadoservicio, 'Pendiente') = 'Pendiente' THEN 1 ELSE 0 END) as proyectos_pendientes
+            FROM servicioscontratados sc
+            INNER JOIN cotizaciones cot ON sc.idcotizacion = cot.idcotizacion
+            INNER JOIN contratos con ON cot.idcotizacion = con.idcotizacion
+            LEFT JOIN equipos eq ON sc.idserviciocontratado = eq.idserviciocontratado
+        ")->getRow();
+    }
+
+    /**
+     * Obtiene proyectos por estado específico
+     */
+    public function getProyectosPorEstado($estado)
+    {
+        return $this->db->query("
+            SELECT DISTINCT
+                sc.idserviciocontratado,
+                s.servicio,
+                CASE 
+                    WHEN c.idempresa IS NOT NULL THEN e.razonsocial
+                    ELSE CONCAT(p.nombres, ' ', p.apellidos)
+                END as cliente,
+                sc.fechahoraservicio,
+                sc.direccion,
+                COALESCE(eq.estadoservicio, 'Pendiente') as estado,
+                CASE 
+                    WHEN COALESCE(eq.estadoservicio, 'Pendiente') = 'Completado' THEN 100
+                    WHEN COALESCE(eq.estadoservicio, 'Pendiente') = 'En Proceso' THEN 65
+                    WHEN COALESCE(eq.estadoservicio, 'Pendiente') = 'Programado' THEN 35
+                    ELSE 10
+                END as progreso,
+                cot.fechaevento,
+                te.evento as tipoevento
+            FROM servicioscontratados sc
+            INNER JOIN cotizaciones cot ON sc.idcotizacion = cot.idcotizacion
+            INNER JOIN contratos con ON cot.idcotizacion = con.idcotizacion
+            INNER JOIN clientes c ON cot.idcliente = c.idcliente
+            LEFT JOIN personas p ON c.idpersona = p.idpersona
+            LEFT JOIN empresas e ON c.idempresa = e.idempresa
+            INNER JOIN servicios s ON sc.idservicio = s.idservicio
+            LEFT JOIN equipos eq ON sc.idserviciocontratado = eq.idserviciocontratado
+            LEFT JOIN tipoeventos te ON cot.idtipoevento = te.idtipoevento
+            WHERE COALESCE(eq.estadoservicio, 'Pendiente') = ?
+            ORDER BY sc.fechahoraservicio ASC
+        ", [$estado])->getResult();
+    }
+}
