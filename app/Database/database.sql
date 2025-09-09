@@ -253,11 +253,6 @@ INSERT INTO clientes (idpersona, idempresa) VALUES
 (8, NULL);  -- Robert Smith (extranjero)
 
 -- 4. USUARIOS (Personal de la empresa)
-INSERT INTO usuarios (idpersona, idcargo, nombreusuario, claveacceso, estado) VALUES 
-(5, 1, 'lvasquez', '1Vasque3', 1),    -- Luis Vásquez - Gerente
-(6, 2, 'pmorales', 'pM0rales', 1),    -- Patricia Morales - Coordinadora
-(7, 3, 'rjimenez', '4J1menez', 1),    -- Ricardo Jiménez - Técnico
-(9, 4, 'cgonzalez', '3Gon3ale3z', 1);   -- Carmen González - Fotógrafa
 
 -- 5. SERVICIOS
 INSERT INTO servicios (servicio, descripcion, precioregular, idcategoria) VALUES 
