@@ -112,6 +112,13 @@ CREATE TABLE controlpagos (
     CONSTRAINT fk_pago_usuario FOREIGN KEY (idusuario) REFERENCES usuarios(idusuario)
 );
 
+ALTER TABLE controlpagos 
+ADD COLUMN comprobante VARCHAR(255) NULL AFTER idusuario;
+
+
+-- Control de pagos Fin --
+
+
 CREATE TABLE listacondiciones (
     idlista INT AUTO_INCREMENT PRIMARY KEY,
     idcondicion INT,
