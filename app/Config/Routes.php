@@ -5,7 +5,31 @@ use App\Controllers\Equipos;
 use App\Controllers\EntregasController;
 use App\Controllers\Servicios;
 
-$routes->get('/', 'Home::index');
+// Rutas de autenticación
+$routes->get('/', 'AuthController::login');
+$routes->get('login', 'AuthController::login');
+$routes->post('auth/authenticate', 'AuthController::authenticate');
+$routes->get('auth/logout', 'AuthController::logout');
+$routes->get('auth/check-session', 'AuthController::checkSession');
+
+// Ruta principal después del login
+$routes->get('welcome', 'Home::index', ['filter' => 'auth']);
+
+// Rutas protegidas para administrador
+$routes->group('', ['filter' => 'auth:admin'], function($routes) {
+    $routes->get('dashboard', 'AuthController::dashboard');
+    $routes->get('auth/crear-trabajador', 'AuthController::crearTrabajador');
+    $routes->post('auth/crear-trabajador', 'AuthController::crearTrabajador');
+});
+
+// Rutas protegidas para trabajador
+$routes->group('', ['filter' => 'auth:trabajador'], function($routes) {
+    $routes->get('trabajador/dashboard', 'AuthController::trabajadorDashboard');
+    $routes->post('auth/actualizar-estado', 'AuthController::actualizarEstado');
+});
+
+// Ruta original del sistema
+$routes->get('home', 'Home::index');
 
 // Rutas para la gestión de entregas
 $routes->get('/entregas', 'EntregasController::index');

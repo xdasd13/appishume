@@ -85,6 +85,16 @@ CREATE TABLE cotizaciones (
     CONSTRAINT fk_cotizacion_evento FOREIGN KEY (idtipoevento) REFERENCES tipoeventos(idtipoevento)
 );
 
+-- Agregar campos a la tabla usuarios
+ALTER TABLE usuarios 
+ADD COLUMN tipo_usuario ENUM('admin', 'trabajador') DEFAULT 'trabajador' AFTER estado,
+ADD COLUMN email VARCHAR(100) NULL UNIQUE AFTER tipo_usuario,
+ADD COLUMN password_hash VARCHAR(255) NULL AFTER email;
+
+-- Crear usuario admin
+INSERT INTO usuarios (idpersona, idcargo, nombreusuario, claveacceso, tipo_usuario, email, password_hash, estado) 
+VALUES (1, 1, 'admin', 'admin123', 'admin', 'admin@ishume.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 1);
+
 CREATE TABLE contratos (
     idcontrato INT AUTO_INCREMENT PRIMARY KEY,
     idcotizacion INT,
@@ -366,25 +376,13 @@ INSERT INTO listacondiciones (idcondicion, idtipocontrato) VALUES
 (2, 2), (3, 2);          -- Paquete mensual
 
 
-
--- RESUMEN DE DATOS PARA TU MÓDULO:
-
--- =============================================
--- CONTRATOS: 7 contratos con diferentes estados
--- PAGOS: 8 registros de pagos (algunos saldados, otros pendientes)
--- EQUIPOS: 12 equipos con estados: Completado, En Proceso, Pendiente, Programado  
--- ENTREGABLES: 5 entregables registrados
--- SERVICIOS CONTRATADOS: 12 servicios con fechas y direcciones variadas
--- 
--- Estados de contratos por pagos:
--- - Contrato 3: PAGADO COMPLETO (deuda = 0)
--- - Contratos 1,2,4,5,6,7: SALDO PENDIENTE
--- 
--- Estados de servicios:
--- - Completados: Boda Carlos, Evento Corporativo
--- - En proceso: Quinceañero María, Conferencia  
--- - Pendientes: Boda José
--- - Programados: Boda Ana, Evento Robert
--- ===============================================
-
--- Verificar el estado real de las entregas
+SELECT 
+    u.nombreusuario,
+    u.email,
+    u.tipo_usuario,
+    CONCAT(p.nombres, ' ', p.apellidos) as nombre_completo,
+    c.cargo
+FROM usuarios u
+JOIN personas p ON u.idpersona = p.idpersona
+JOIN cargos c ON u.idcargo = c.idcargo
+WHERE u.estado = 1;
