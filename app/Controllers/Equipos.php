@@ -111,7 +111,7 @@ class Equipos extends BaseController
         return view('equipos/editar', $datos);
     }
 
-    // Actualizar asignación de equipo - MEJORADO CON VALIDACIONES
+    // Actualizar asignación de equipo
     public function actualizar()
     {
         $validation = \Config\Services::validation();
@@ -137,7 +137,7 @@ class Equipos extends BaseController
             return redirect()->to('equipos');
         }
 
-        // VALIDACIONES PERSONALIZADAS (excluyendo el equipo actual)
+        // VALIDACIONES
         $erroresValidacion = $this->equipoModel->validarAsignacion($idusuario, $equipoActual['idserviciocontratado'], $idequipo);
         
         if (!empty($erroresValidacion)) {

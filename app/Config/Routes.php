@@ -47,7 +47,6 @@ $routes->get('/controlpagos/crear', 'ControlPagoController::crear');
 $routes->post('/controlpagos/guardar', 'ControlPagoController::guardar');
 $routes->get('/controlpagos/ver/(:num)', 'ControlPagoController::ver/$1');
 
-
 // ==================== RUTAS PARA GESTIÓN DE EQUIPOS ====================
 // Rutas para equipos
 $routes->get('equipos', 'Equipos::index');
@@ -55,6 +54,9 @@ $routes->get('equipos/asignar/(:num)', 'Equipos::asignar/$1');
 $routes->post('equipos/guardar', 'Equipos::guardar');
 $routes->get('equipos/editar/(:num)', 'Equipos::editar/$1');
 $routes->post('equipos/actualizar', 'Equipos::actualizar');
+$routes->get('equipos/por-servicio/(:num)', 'Equipos::por_servicio/$1');
+$routes->get('equipos/por-usuario/(:num)', 'Equipos::por_usuario/$1');
+$routes->post('equipos/verificar-disponibilidad', 'Equipos::verificarDisponibilidad');
 
 // ==================== RUTAS PARA CRONOGRAMA Y PROYECTOS ====================
 // Rutas principales de cronograma
