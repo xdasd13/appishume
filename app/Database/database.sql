@@ -112,6 +112,13 @@ CREATE TABLE controlpagos (
     CONSTRAINT fk_pago_usuario FOREIGN KEY (idusuario) REFERENCES usuarios(idusuario)
 );
 
+ALTER TABLE controlpagos 
+ADD COLUMN comprobante VARCHAR(255) NULL AFTER idusuario;
+
+
+-- Control de pagos Fin --
+
+
 CREATE TABLE listacondiciones (
     idlista INT AUTO_INCREMENT PRIMARY KEY,
     idcondicion INT,
@@ -163,8 +170,6 @@ CREATE TABLE equipos (
     CONSTRAINT fk_equipo_usuario FOREIGN KEY (idusuario) REFERENCES usuarios(idusuario)
 );
 
- INSERT INTO usuarios (idpersona, idcargo, nombreusuario, claveacceso, tipo_usuario, email, password_hash, estado) VALUES 
- (1, 1, 'admin', 'admin123', 'admin', 'admin@ishume.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 1);
 -- DATOS DE PRUEBA
 
 -- 1. DATOS BÁSICOS (Catálogos)
@@ -253,6 +258,14 @@ INSERT INTO clientes (idpersona, idempresa) VALUES
 (8, NULL);  -- Robert Smith (extranjero)
 
 -- 4. USUARIOS (Personal de la empresa)
+INSERT INTO usuarios (idpersona, idcargo, nombreusuario, claveacceso, estado) VALUES 
+(5, 1, 'lvasquez', '1Vasque3', 1),    -- Luis Vásquez - Gerente
+(6, 2, 'pmorales', 'pM0rales', 1),    -- Patricia Morales - Coordinadora
+(7, 3, 'rjimenez', '4J1menez', 1),    -- Ricardo Jiménez - Técnico
+(9, 4, 'cgonzalez', '3Gon3ale3z', 1);   -- Carmen González - Fotógrafa
+
+ INSERT INTO usuarios (idpersona, idcargo, nombreusuario, claveacceso, tipo_usuario, email, password_hash, estado) VALUES 
+ (1, 1, 'admin', 'admin123', 'admin', 'admin@ishume.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 1);
 
 -- 5. SERVICIOS
 INSERT INTO servicios (servicio, descripcion, precioregular, idcategoria) VALUES 

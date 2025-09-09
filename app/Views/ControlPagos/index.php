@@ -1,7 +1,5 @@
 <?= $header ?>
 <div class="page-inner">
-    
-
     <!-- Mostrar mensajes de éxito/error -->
     <?php if (session()->getFlashdata('success')): ?>
         <div class="alert alert-success alert-dismissible fade show" role="alert">
@@ -131,24 +129,25 @@
                 <div class="card-body">
                     <!-- Filtros -->
                     <div class="row mb-4">
-                        <div class="col-md-3">
+                        <div class="col-md-4">
                             <div class="form-group">
                                 <label for="filtro_contrato">Filtrar por Contrato</label>
                                 <select class="form-control select2" id="filtro_contrato">
                                     <option value="">Todos los contratos</option>
-                                    <?php 
-                                    $contratosUnicos = [];
-                                    foreach ($pagos as $pago) {
-                                        if (!in_array($pago['idcontrato'], $contratosUnicos)) {
-                                            $contratosUnicos[] = $pago['idcontrato'];
-                                            echo '<option value="'.$pago['idcontrato'].'">Contrato #'.$pago['idcontrato'].'</option>';
-                                        }
-                                    }
-                                    ?>
+                                    <?php if (!empty($contratos)): ?>
+                                        <?php foreach ($contratos as $contrato): ?>
+                                            <option value="<?= $contrato['idcontrato'] ?>">
+                                                Contrato #<?= $contrato['idcontrato'] ?> - 
+                                                <?= !empty($contrato['nombres']) ? 
+                                                    $contrato['nombres'] . ' ' . $contrato['apellidos'] : 
+                                                    $contrato['razonsocial'] ?>
+                                            </option>
+                                        <?php endforeach; ?>
+                                    <?php endif; ?>
                                 </select>
                             </div>
                         </div>
-                        <div class="col-md-3">
+                        <div class="col-md-4">
                             <div class="form-group">
                                 <label for="filtro_estado">Filtrar por Estado</label>
                                 <select class="form-control select2" id="filtro_estado">
@@ -158,16 +157,10 @@
                                 </select>
                             </div>
                         </div>
-                        <div class="col-md-3">
+                        <div class="col-md-4">
                             <div class="form-group">
-                                <label for="filtro_fecha_desde">Fecha Desde</label>
-                                <input type="date" class="form-control" id="filtro_fecha_desde">
-                            </div>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="form-group">
-                                <label for="filtro_fecha_hasta">Fecha Hasta</label>
-                                <input type="date" class="form-control" id="filtro_fecha_hasta">
+                                <label for="filtro_fecha">Filtrar por Fecha</label>
+                                <input type="month" class="form-control" id="filtro_fecha">
                             </div>
                         </div>
                     </div>
@@ -179,12 +172,13 @@
                                     <th>ID</th>
                                     <th>Contrato</th>
                                     <th>Cliente</th>
+                                    <th>Fecha/Hora</th>
                                     <th>Saldo (S/)</th>
                                     <th>Amortización (S/)</th>
                                     <th>Deuda (S/)</th>
                                     <th>Tipo Pago</th>
-                                    <th>Transacción</th>
-                                    <th>Fecha/Hora</th>
+                                    <th>Usuario</th>
+                                    <th>Comprobante</th>
                                     <th>Acciones</th>
                                 </tr>
                             </thead>
@@ -193,12 +187,18 @@
                                     <?php foreach ($pagos as $pago): ?>
                                         <tr>
                                             <td><?= $pago['idpagos'] ?></td>
-                                            <td>Contrato #<?= $pago['idcontrato'] ?></td>
+                                            <td>
+                                                <a href="<?= base_url('/controlpagos/por-contrato/' . $pago['idcontrato']) ?>" 
+                                                   class="btn btn-sm btn-outline-primary">
+                                                    Contrato #<?= $pago['idcontrato'] ?>
+                                                </a>
+                                            </td>
                                             <td>
                                                 <?= !empty($pago['nombres']) ? 
                                                     $pago['nombres'] . ' ' . $pago['apellidos'] : 
                                                     $pago['razonsocial'] ?>
                                             </td>
+                                            <td><?= date('d/m/Y H:i', strtotime($pago['fechahora'])) ?></td>
                                             <td class="<?= $pago['saldo'] > 0 ? 'text-danger' : 'text-success' ?>">
                                                 <span class="badge badge-<?= $pago['saldo'] > 0 ? 'danger' : 'success' ?>">
                                                     <?= number_format($pago['saldo'], 2) ?>
@@ -217,24 +217,33 @@
                                             <td>
                                                 <span class="badge badge-info"><?= $pago['tipopago'] ?></span>
                                             </td>
-                                            <td><?= $pago['numtransaccion'] ?? 'N/A' ?></td>
-                                            <td><?= date('d/m/Y H:i', strtotime($pago['fechahora'])) ?></td>
+                                            <td><?= $pago['nombreusuario'] ?? 'N/A' ?></td>
+                                            <td>
+                                                <?php if (!empty($pago['comprobante'])): ?>
+                                                    <span class="badge badge-success">Sí</span>
+                                                <?php else: ?>
+                                                    <span class="badge badge-warning">No</span>
+                                                <?php endif; ?>
+                                            </td>
                                             <td>
                                                 <div class="btn-group">
                                                     <a href="<?= base_url('/controlpagos/ver/' . $pago['idpagos']) ?>" 
                                                        class="btn btn-sm btn-info btn-detalle" title="Ver detalles">
                                                         <i class="fa fa-eye"></i>
                                                     </a>
-                                                    <a href="#" class="btn btn-sm btn-secondary btn-print" title="Imprimir recibo" data-id="<?= $pago['idpagos'] ?>">
-                                                        <i class="fa fa-print"></i>
-                                                    </a>
+                                                    <?php if (!empty($pago['comprobante'])): ?>
+                                                        <a href="<?= base_url('/controlpagos/descargarComprobante/' . $pago['idpagos']) ?>" 
+                                                           class="btn btn-sm btn-secondary" title="Descargar comprobante">
+                                                            <i class="fa fa-download"></i>
+                                                        </a>
+                                                    <?php endif; ?>
                                                 </div>
                                             </td>
                                         </tr>
                                     <?php endforeach; ?>
                                 <?php else: ?>
                                     <tr>
-                                        <td colspan="10" class="text-center py-4">
+                                        <td colspan="11" class="text-center py-4">
                                             <i class="fas fa-receipt fa-3x text-muted mb-2"></i>
                                             <p class="text-muted">No hay registros de pagos</p>
                                             <a href="<?= base_url('/controlpagos/crear') ?>" class="btn btn-primary mt-2">
@@ -273,7 +282,7 @@
         });
         
         // Aplicar filtros personalizados
-        $('#filtro_contrato, #filtro_estado, #filtro_fecha_desde, #filtro_fecha_hasta').on('change', function() {
+        $('#filtro_contrato, #filtro_estado, #filtro_fecha').on('change', function() {
             table.draw();
         });
         
@@ -282,33 +291,37 @@
             function(settings, data, dataIndex) {
                 var contrato = $('#filtro_contrato').val();
                 var estado = $('#filtro_estado').val();
-                var fechaDesde = $('#filtro_fecha_desde').val();
-                var fechaHasta = $('#filtro_fecha_hasta').val();
+                var fecha = $('#filtro_fecha').val();
                 
                 // Filtrar por contrato
-                if (contrato !== '' && data[1] !== 'Contrato #'+contrato) {
-                    return false;
+                if (contrato !== '') {
+                    var contratoData = data[1].match(/Contrato #(\d+)/);
+                    if (!contratoData || contratoData[1] !== contrato) {
+                        return false;
+                    }
                 }
                 
                 // Filtrar por estado
                 if (estado !== '') {
-                    if (estado === 'completo' && parseFloat(data[5]) !== 0) {
+                    var deuda = parseFloat(data[6].replace(/[^\d.,]/g, '').replace(',', ''));
+                    if (estado === 'completo' && deuda !== 0) {
                         return false;
                     }
-                    if (estado === 'pendiente' && parseFloat(data[5]) === 0) {
+                    if (estado === 'pendiente' && deuda === 0) {
                         return false;
                     }
                 }
                 
                 // Filtrar por fecha
-                if (fechaDesde || fechaHasta) {
-                    var fechaPago = data[8].split(' ')[0].split('/').reverse().join('-');
+                if (fecha) {
+                    var fechaPago = data[3].split(' ')[0].split('/').reverse().join('-');
+                    var fechaFiltro = fecha + '-01';
                     
-                    if (fechaDesde && fechaPago < fechaDesde) {
-                        return false;
-                    }
+                    var fechaPagoObj = new Date(fechaPago);
+                    var fechaFiltroObj = new Date(fechaFiltro);
                     
-                    if (fechaHasta && fechaPago > fechaHasta) {
+                    if (fechaPagoObj.getMonth() !== fechaFiltroObj.getMonth() || 
+                        fechaPagoObj.getFullYear() !== fechaFiltroObj.getFullYear()) {
                         return false;
                     }
                 }
@@ -322,13 +335,6 @@
             $(this).transition({ scale: 1.1 });
         }).on('mouseleave', function() {
             $(this).transition({ scale: 1 });
-        });
-        
-        // Función para imprimir recibo
-        $('.btn-print').on('click', function(e) {
-            e.preventDefault();
-            var idPago = $(this).data('id');
-            window.open('<?= base_url('/controlpagos/recibo/') ?>' + idPago, '_blank');
         });
     });
 </script>

@@ -41,11 +41,14 @@ $routes->post('/entregas/actualizar/(:num)', 'EntregasController::actualizar/$1'
 $routes->get('/entregas/eliminar/(:num)', 'EntregasController::eliminar/$1');
 $routes->get('/entregas/pendientes', 'EntregasController::pendientes');
 
-// Rutas de Control de Pagos:
+// Rutas de Control de Pagos: //
 $routes->get('/controlpagos', 'ControlPagoController::index');
 $routes->get('/controlpagos/crear', 'ControlPagoController::crear');
 $routes->post('/controlpagos/guardar', 'ControlPagoController::guardar');
 $routes->get('/controlpagos/ver/(:num)', 'ControlPagoController::ver/$1');
+$routes->get('/controlpagos/por-contrato/(:num)', 'ControlPagoController::porContrato/$1');
+$routes->get('/controlpagos/infoContrato/(:num)', 'ControlPagoController::infoContrato/$1');
+$routes->get('/controlpagos/descargarComprobante/(:num)', 'ControlPagoController::descargarComprobante/$1');
 
 // ==================== RUTAS PARA GESTIÓN DE EQUIPOS ====================
 // Rutas para equipos

@@ -1,14 +1,12 @@
 <?= $header ?>
 <div class="page-inner">
-
-
     <div class="row">
         <div class="col-md-12">
             <div class="card">
                 <div class="card-header">
                     <div class="card-title">Registrar Nuevo Pago</div>
                 </div>
-                <form method="POST" action="<?= base_url('/controlpagos/guardar') ?>" id="formPago">
+                <form method="POST" action="<?= base_url('/controlpagos/guardar') ?>" id="formPago" enctype="multipart/form-data">
                     <div class="card-body">
                         <div class="row">
                             <div class="col-md-6">
@@ -118,6 +116,22 @@
                                     <input type="datetime-local" class="form-control" 
                                            id="fechahora" name="fechahora" required 
                                            value="<?= date('Y-m-d\TH:i') ?>">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <label for="comprobante">Comprobante de Pago *</label>
+                                    <div class="custom-file">
+                                        <input type="file" class="custom-file-input" id="comprobante" name="comprobante" accept=".jpg,.jpeg,.png,.pdf" required>
+                                        <label class="custom-file-label" for="comprobante" id="comprobante-label">Seleccionar archivo (JPG, PNG, PDF - Máx. 2MB)</label>
+                                    </div>
+                                    <small class="form-text text-muted">Formatos aceptados: JPG, PNG, PDF. Tamaño máximo: 2MB</small>
+                                    <div id="preview-comprobante" class="mt-2" style="display: none;">
+                                        <img id="preview-image" src="#" alt="Vista previa" class="img-thumbnail" style="max-height: 200px;">
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -237,6 +251,36 @@
                 $('#amortizacion').focus();
             }
         });
+        
+        // Preview de imagen para comprobante
+        $('#comprobante').on('change', function() {
+            const file = this.files[0];
+            const preview = $('#preview-image');
+            const previewContainer = $('#preview-comprobante');
+            const label = $('#comprobante-label');
+            
+            // Actualizar label con el nombre del archivo
+            if (file) {
+                label.text(file.name);
+                
+                // Mostrar preview solo para imágenes
+                if (file.type.match('image.*')) {
+                    const reader = new FileReader();
+                    
+                    reader.onload = function(e) {
+                        preview.attr('src', e.target.result);
+                        previewContainer.show();
+                    }
+                    
+                    reader.readAsDataURL(file);
+                } else {
+                    previewContainer.hide();
+                }
+            } else {
+                label.text('Seleccionar archivo (JPG, PNG, PDF - Máx. 2MB)');
+                previewContainer.hide();
+            }
+        });
     });
 </script>
 
@@ -276,6 +320,10 @@
     
     .text-warning {
         color: #ffc107 !important;
+    }
+    
+    .custom-file-label::after {
+        content: "Examinar";
     }
 </style>
 
