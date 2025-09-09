@@ -17,10 +17,10 @@ CREATE TABLE personas (
     nombres         VARCHAR(100) NOT NULL,
     tipodoc         ENUM ('DNI', 'Carne de Extranjería', 'Pasaporte') DEFAULT 'DNI' NOT NULL,
     numerodoc       VARCHAR(12) NOT NULL UNIQUE,
-    telprincipal    CHAR (9) NOT NULL,
-    telalternativo  CHAR (9),
+    telprincipal    CHAR(9) NOT NULL,
+    telalternativo  CHAR(9) NULL,
     direccion       VARCHAR(150) NOT NULL,
-    referencia      VARCHAR(150) NOT NULL
+    referencia      VARCHAR(150) NULL
 );
 
 CREATE TABLE empresas (
@@ -65,8 +65,11 @@ CREATE TABLE usuarios (
     idpersona INT,
     idcargo INT,
     nombreusuario VARCHAR(50) UNIQUE NOT NULL,
-    claveacceso VARCHAR(255) NOT NULL ,
+    claveacceso VARCHAR(255) NOT NULL,
     estado TINYINT DEFAULT 1,
+    tipo_usuario ENUM('admin', 'trabajador') DEFAULT 'trabajador',
+    email VARCHAR(100) UNIQUE,
+    password_hash VARCHAR(255),
     CONSTRAINT fk_usuario_persona FOREIGN KEY (idpersona) REFERENCES personas(idpersona),
     CONSTRAINT fk_usuario_cargo FOREIGN KEY (idcargo) REFERENCES cargos(idcargo)
 );
@@ -84,16 +87,6 @@ CREATE TABLE cotizaciones (
     CONSTRAINT fk_cotizacion_usuario FOREIGN KEY (idusuariocrea) REFERENCES usuarios(idusuario),
     CONSTRAINT fk_cotizacion_evento FOREIGN KEY (idtipoevento) REFERENCES tipoeventos(idtipoevento)
 );
-
--- Agregar campos a la tabla usuarios
-ALTER TABLE usuarios 
-ADD COLUMN tipo_usuario ENUM('admin', 'trabajador') DEFAULT 'trabajador' AFTER estado,
-ADD COLUMN email VARCHAR(100) NULL UNIQUE AFTER tipo_usuario,
-ADD COLUMN password_hash VARCHAR(255) NULL AFTER email;
-
--- Crear usuario admin
-INSERT INTO usuarios (idpersona, idcargo, nombreusuario, claveacceso, tipo_usuario, email, password_hash, estado) 
-VALUES (1, 1, 'admin', 'admin123', 'admin', 'admin@ishume.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 1);
 
 CREATE TABLE contratos (
     idcontrato INT AUTO_INCREMENT PRIMARY KEY,
@@ -127,7 +120,6 @@ CREATE TABLE listacondiciones (
     CONSTRAINT fk_listacondicion_tipocontrato FOREIGN KEY (idtipocontrato) REFERENCES tipocontrato(idtipocontrato)
 );
 
-
 CREATE TABLE servicios (
     idservicio INT AUTO_INCREMENT PRIMARY KEY,
     servicio VARCHAR(100) NOT NULL,
@@ -136,7 +128,6 @@ CREATE TABLE servicios (
     idcategoria INT,
     CONSTRAINT fk_servicio_categoria FOREIGN KEY (idcategoria) REFERENCES categorias(idcategoria)
 );
-
 
 CREATE TABLE servicioscontratados (
     idserviciocontratado INT AUTO_INCREMENT PRIMARY KEY,
@@ -150,26 +141,24 @@ CREATE TABLE servicioscontratados (
     CONSTRAINT fk_servcontratado_servicio FOREIGN KEY (idservicio) REFERENCES servicios(idservicio)
 );
 
-
 CREATE TABLE entregables (
     identregable INT AUTO_INCREMENT PRIMARY KEY,
     idserviciocontratado INT,
     idpersona INT,
     fechahoraentrega DATETIME,
-    fecha_real_entrega DATETIME NULL, -- NUEVO CAMPO
+    fecha_real_entrega DATETIME NULL,
     observaciones VARCHAR(200),
-    estado ENUM('pendiente', 'completada') DEFAULT 'pendiente', -- NUEVO CAMPO
+    estado ENUM('pendiente', 'completada') DEFAULT 'pendiente',
     CONSTRAINT fk_entregable_servicio FOREIGN KEY (idserviciocontratado) REFERENCES servicioscontratados(idserviciocontratado),
     CONSTRAINT fk_entregable_persona FOREIGN KEY (idpersona) REFERENCES personas(idpersona)
 );
-
 
 CREATE TABLE equipos (
     idequipo INT AUTO_INCREMENT PRIMARY KEY,
     idserviciocontratado INT,
     idusuario INT,
     descripcion VARCHAR(200),
-    estadoservicio VARCHAR(50),
+    estadoservicio ENUM('Pendiente','En Proceso','Completado','Programado') DEFAULT 'Pendiente',
     CONSTRAINT fk_equipo_servicio FOREIGN KEY (idserviciocontratado) REFERENCES servicioscontratados(idserviciocontratado),
     CONSTRAINT fk_equipo_usuario FOREIGN KEY (idusuario) REFERENCES usuarios(idusuario)
 );
@@ -300,27 +289,26 @@ INSERT INTO contratos (idcotizacion, idcliente, autorizapublicacion) VALUES
 (7, 8, 0);  -- Contrato evento Robert
 
 -- 8. SERVICIOS CONTRATADOS (Datos que usarás: cantidad, fechahoraservicio, direccion)
--- MODIFICADO: Todas las fechas cambiadas a la fecha actual
 INSERT INTO servicioscontratados (idcotizacion, idservicio, cantidad, precio, fechahoraservicio, direccion) VALUES 
 -- Boda Carlos García (Contrato 1)
-(1, 1, 2, 1600.00, CURDATE(), 'Hacienda Los Olivos - Km 25 Panamericana Sur'),
-(1, 2, 1, 1200.00, CURDATE(), 'Hacienda Los Olivos - Km 25 Panamericana Sur'),
+(1, 1, 2, 1600.00, '2025-02-14 15:00:00', 'Hacienda Los Olivos - Km 25 Panamericana Sur'),
+(1, 2, 1, 1200.00, '2025-02-14 14:00:00', 'Hacienda Los Olivos - Km 25 Panamericana Sur'),
 -- Quinceañero María (Contrato 2)
-(2, 1, 1, 800.00, CURDATE(), 'Salón de Eventos El Dorado - Av. Principal 890, Chorrillos'),
-(2, 3, 1, 600.00, CURDATE(), 'Salón de Eventos El Dorado - Av. Principal 890, Chorrillos'),
+(2, 1, 1, 800.00, '2025-03-10 19:00:00', 'Salón de Eventos El Dorado - Av. Principal 890, Chorrillos'),
+(2, 3, 1, 600.00, '2025-03-10 18:30:00', 'Salón de Eventos El Dorado - Av. Principal 890, Chorrillos'),
 -- Evento Corporativo (Contrato 3)
-(3, 4, 1, 1500.00, CURDATE(), 'Hotel Business Center - Jr. Ejecutivo 445, San Isidro'),
-(3, 2, 1, 1000.00, CURDATE(), 'Hotel Business Center - Jr. Ejecutivo 445, San Isidro'),
+(3, 4, 1, 1500.00, '2025-02-28 09:00:00', 'Hotel Business Center - Jr. Ejecutivo 445, San Isidro'),
+(3, 2, 1, 1000.00, '2025-02-28 08:30:00', 'Hotel Business Center - Jr. Ejecutivo 445, San Isidro'),
 -- Boda José (Contrato 4)
-(4, 1, 1, 800.00, CURDATE(), 'Club Campestre Las Flores - Cieneguilla'),
-(4, 5, 1, 400.00, CURDATE(), 'Club Campestre Las Flores - Cieneguilla'),
+(4, 1, 1, 800.00, '2025-04-15 16:00:00', 'Club Campestre Las Flores - Cieneguilla'),
+(4, 5, 1, 400.00, '2025-04-15 20:00:00', 'Club Campestre Las Flores - Cieneguilla'),
 -- Conferencia (Contrato 5)
-(5, 2, 2, 2000.00, CURDATE(), 'Centro de Convenciones Lima - Av. Javier Prado 2500, San Borja'),
+(5, 2, 2, 2000.00, '2025-03-20 08:00:00', 'Centro de Convenciones Lima - Av. Javier Prado 2500, San Borja'),
 -- Boda Ana (Contrato 6)
-(6, 1, 1, 800.00, CURDATE(), 'Casa Hacienda San José - Pachacamac'),
-(6, 7, 1, 350.00, CURDATE(), 'Casa Hacienda San José - Pachacamac'),
+(6, 1, 1, 800.00, '2025-05-18 17:00:00', 'Casa Hacienda San José - Pachacamac'),
+(6, 7, 1, 350.00, '2025-05-18 16:00:00', 'Casa Hacienda San José - Pachacamac'),
 -- Evento Robert (Contrato 7)
-(7, 4, 1, 1500.00, CURDATE(), 'Country Club Lima - La Planicie, La Molina');
+(7, 4, 1, 1500.00, '2025-06-22 10:00:00', 'Country Club Lima - La Planicie, La Molina');
 
 
 
@@ -365,6 +353,15 @@ INSERT INTO equipos (idserviciocontratado, idusuario, descripcion, estadoservici
 -- Evento Robert (Programado)
 (12, 2, 'Video streaming: transmisión internacional, múltiples cámaras', 'Programado');
 
+-- 11. ENTREGABLES
+INSERT INTO entregables (idserviciocontratado, idpersona, fechahoraentrega) VALUES 
+-- Entregas completadas
+(1, 1, '2025-02-15 10:30:00'),  -- Sonido boda Carlos entregado
+(2, 1, '2025-02-15 11:45:00'),  -- Fotos boda Carlos entregadas (300 fotos editadas)
+(5, 3, '2025-02-28 18:20:00'),  -- Video streaming corporativo entregado
+(6, 3, '2025-03-01 09:15:00'),  -- Fotos evento corporativo entregadas (150 fotos profesionales)
+-- Entrega parcial
+(9, 5, '2025-03-21 14:30:00');  -- Avance fotos conferencia entregado (100 fotos preliminares)
 
 
 
@@ -375,6 +372,38 @@ INSERT INTO listacondiciones (idcondicion, idtipocontrato) VALUES
 (1, 3), (5, 3),          -- Contrato anual
 (2, 2), (3, 2);          -- Paquete mensual
 
+-- Pruebas
+-- Ver los miembros del equipo y su cargo
+SELECT p.nombres, p.apellidos, p.numerodoc, c.cargo
+FROM usuarios u
+INNER JOIN personas p ON u.idpersona = p.idpersona
+INNER JOIN cargos c ON u.idcargo = c.idcargo
+WHERE u.estado = 1;
+
+-- Ver a quien esta asignado 
+SELECT p.nombres, p.apellidos, c.cargo, s.servicio, eq.descripcion, eq.estadoservicio
+FROM equipos eq
+INNER JOIN usuarios us ON eq.idusuario = us.idusuario
+INNER JOIN personas p ON us.idpersona = p.idpersona
+INNER JOIN cargos c ON us.idcargo = c.idcargo
+INNER JOIN servicioscontratados sc ON eq.idserviciocontratado = sc.idserviciocontratado
+INNER JOIN servicios s ON sc.idservicio = s.idservicio
+WHERE sc.idcotizacion = 2;
+
+
+--
+SELECT p.nombres, p.apellidos, s.servicio, sc.fechahoraservicio, co.fechaevento
+FROM equipos eq
+INNER JOIN servicioscontratados sc ON eq.idserviciocontratado = sc.idserviciocontratado
+INNER JOIN servicios s ON sc.idservicio = s.idservicio
+INNER JOIN cotizaciones co ON sc.idcotizacion = co.idcotizacion
+INNER JOIN usuarios us ON eq.idusuario = us.idusuario
+INNER JOIN personas p ON us.idpersona = p.idpersona
+WHERE us.idusuario = 4
+AND sc.fechahoraservicio BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL 7 DAY);
+
+
+ALTER TABLE equipos ADD COLUMN fecha_asignacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
 
 SELECT 
     u.nombreusuario,
@@ -386,3 +415,5 @@ FROM usuarios u
 JOIN personas p ON u.idpersona = p.idpersona
 JOIN cargos c ON u.idcargo = c.idcargo
 WHERE u.estado = 1;
+
+SELECT * FROM usuarios;
