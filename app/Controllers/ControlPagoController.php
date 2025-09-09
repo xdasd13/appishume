@@ -21,6 +21,9 @@ class ControlPagoController extends BaseController
     {
         // Obtener todos los registros de pagos con información completa
         $datos['pagos'] = $this->controlPagoModel->obtenerPagosCompletos();
+        
+        // Obtener contratos para el filtro
+        $datos['contratos'] = $this->contratoModel->obtenerContratosConClientes();
 
         // Calcular estadísticas para los gráficos
         $datos['estadisticas'] = $this->calcularEstadisticas($datos['pagos']);
@@ -57,7 +60,8 @@ class ControlPagoController extends BaseController
             'amortizacion' => 'required|decimal',
             'idtipopago' => 'required|numeric',
             'numtransaccion' => 'permit_empty|string',
-            'fechahora' => 'required|valid_date'
+            'fechahora' => 'required|valid_date',
+            'comprobante' => 'uploaded[comprobante]|max_size[comprobante,2048]|ext_in[comprobante,png,jpg,jpeg,pdf]'
         ];
 
         if (!$this->validate($reglas)) {
@@ -86,6 +90,16 @@ class ControlPagoController extends BaseController
             return redirect()->back()->withInput()->with('error', 'La amortización no puede ser mayor al saldo actual del contrato.');
         }
 
+        // Procesar comprobante
+        $comprobante = $this->request->getFile('comprobante');
+        $nombreComprobante = null;
+
+        if ($comprobante && $comprobante->isValid() && !$comprobante->hasMoved()) {
+            $nuevoNombre = $comprobante->getRandomName();
+            $comprobante->move(ROOTPATH . 'public/uploads/comprobantes', $nuevoNombre);
+            $nombreComprobante = $nuevoNombre;
+        }
+
         // Preparar datos para guardar
         $data = [
             'idcontrato' => $idcontrato,
@@ -95,13 +109,25 @@ class ControlPagoController extends BaseController
             'idtipopago' => $this->request->getPost('idtipopago'),
             'numtransaccion' => $this->request->getPost('numtransaccion'),
             'fechahora' => $this->request->getPost('fechahora'),
-            'idusuario' => session()->get('idusuario') // ID del usuario logueado
+            'idusuario' => session()->get('idusuario'), // ID del usuario logueado
+            'comprobante' => $nombreComprobante
         ];
 
         // Guardar en la base de datos
         if ($this->controlPagoModel->save($data)) {
-            return redirect()->to('/controlpagos')->with('success', 'Pago registrado correctamente');
+            $mensaje = 'Pago registrado correctamente';
+            
+            // Verificar si el contrato quedó completamente pagado
+            if ($deuda == 0) {
+                $mensaje .= '. ¡Felicidades! El contrato ha sido completamente pagado.';
+            }
+            
+            return redirect()->to('/controlpagos')->with('success', $mensaje);
         } else {
+            // Eliminar comprobante si falló el guardado
+            if ($nombreComprobante && file_exists(ROOTPATH . 'public/uploads/comprobantes/' . $nombreComprobante)) {
+                unlink(ROOTPATH . 'public/uploads/comprobantes/' . $nombreComprobante);
+            }
             return redirect()->back()->withInput()->with('error', 'Error al registrar el pago. Por favor, intente nuevamente.');
         }
     }
@@ -145,21 +171,8 @@ class ControlPagoController extends BaseController
             ->where('idtipopago', $datos['pago']['idtipopago'])
             ->get()->getRowArray();
 
-        // VERIFICAR Y CORREGIR: Obtener información del usuario
-        $usuarioQuery = $db->table('usuarios')
-            ->join('personas', 'personas.idpersona = usuarios.idpersona')
-            ->where('idusuario', $datos['pago']['idusuario'])
-            ->get();
-
-        if ($usuarioQuery->getNumRows() > 0) {
-            $datos['usuario'] = $usuarioQuery->getRowArray();
-        } else {
-            // Si no encuentra el usuario, crear un array vacío para evitar errores
-            $datos['usuario'] = [
-                'nombres' => 'Usuario',
-                'apellidos' => 'No encontrado'
-            ];
-        }
+        // Obtener historial de pagos del contrato
+        $datos['historial_pagos'] = $this->controlPagoModel->obtenerPagosPorContrato($datos['pago']['idcontrato']);
 
         $datos['header'] = view('Layouts/header');
         $datos['footer'] = view('Layouts/footer');
@@ -199,6 +212,66 @@ class ControlPagoController extends BaseController
             'saldo_actual' => $saldo,
             'monto_total' => $montoTotal
         ]);
+    }
+
+    // Método para ver pagos por contrato
+    public function porContrato($idcontrato)
+    {
+        // Obtener información del contrato
+        $db = db_connect();
+        $datos['contrato'] = $db->table('contratos')
+            ->join('clientes', 'clientes.idcliente = contratos.idcliente')
+            ->join('personas', 'personas.idpersona = clientes.idpersona', 'left')
+            ->join('empresas', 'empresas.idempresa = clientes.idempresa', 'left')
+            ->where('contratos.idcontrato', $idcontrato)
+            ->get()->getRowArray();
+
+        // Obtener monto total del contrato
+        $montoQuery = $db->query("
+            SELECT SUM(sc.cantidad * sc.precio) as monto_total 
+            FROM servicioscontratados sc 
+            JOIN cotizaciones co ON co.idcotizacion = sc.idcotizacion 
+            WHERE co.idcotizacion IN (
+                SELECT idcotizacion FROM contratos WHERE idcontrato = ?
+            )
+        ", [$idcontrato]);
+
+        if ($montoQuery->getNumRows() > 0) {
+            $datos['contrato']['monto_total'] = $montoQuery->getRow()->monto_total ?? 0;
+        } else {
+            $datos['contrato']['monto_total'] = 0;
+        }
+
+        // Obtener pagos del contrato
+        $datos['pagos'] = $this->controlPagoModel->obtenerPagosPorContrato($idcontrato);
+        
+        // Calcular total pagado
+        $datos['total_pagado'] = $this->controlPagoModel->calcularTotalPagado($idcontrato);
+        $datos['deuda_actual'] = $datos['contrato']['monto_total'] - $datos['total_pagado'];
+
+        $datos['header'] = view('Layouts/header');
+        $datos['footer'] = view('Layouts/footer');
+        $datos['titulo'] = 'Pagos del Contrato #' . $idcontrato;
+
+        return view('ControlPagos/por_contrato', $datos);
+    }
+
+    // Método para descargar comprobante
+    public function descargarComprobante($id)
+    {
+        $pago = $this->controlPagoModel->find($id);
+        
+        if (!$pago || empty($pago['comprobante'])) {
+            return redirect()->back()->with('error', 'Comprobante no encontrado');
+        }
+        
+        $filePath = ROOTPATH . 'public/uploads/comprobantes/' . $pago['comprobante'];
+        
+        if (!file_exists($filePath)) {
+            return redirect()->back()->with('error', 'El archivo del comprobante no existe');
+        }
+        
+        return $this->response->download($filePath, null);
     }
 
     // Método para calcular estadísticas

@@ -27,7 +27,7 @@
             margin: 0;
             padding: 0;
             min-height: 100vh;
-            background: linear-gradient(135deg, #FF6B00 0%, #FF7F1A 25%, #FFA65C 60%, #FFF4EB 100%);
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
             font-family: 'Poppins', sans-serif;
             display: flex;
             align-items: center;
@@ -91,9 +91,9 @@
 
         .form-control:focus {
             outline: none;
-            border-color: #FF6B00;
+            border-color: #1a2a6c;
             background: white;
-            box-shadow: 0 0 0 3px rgba(255, 107, 0, 0.1);
+            box-shadow: 0 0 0 3px rgba(26, 42, 108, 0.1);
         }
 
         .input-icon {
@@ -106,13 +106,13 @@
         }
 
         .form-control:focus + .input-icon {
-            color: #FF6B00;
+            color: #1a2a6c;
         }
 
         .btn-login {
             width: 100%;
             padding: 1rem;
-            background: linear-gradient(135deg, #FF6B00, #FF7F32);
+            background: linear-gradient(135deg, #1a2a6c, #2c3e50);
             color: white;
             border: none;
             border-radius: 12px;
@@ -125,7 +125,7 @@
 
         .btn-login:hover {
             transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(255, 107, 0, 0.3);
+            box-shadow: 0 8px 25px rgba(26, 42, 108, 0.3);
         }
 
         .btn-login:active {

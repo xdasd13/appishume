@@ -1,7 +1,5 @@
 <?= $header ?>
 <div class="page-inner">
-
-
     <div class="row">
         <div class="col-md-12">
             <div class="card">
@@ -65,6 +63,14 @@
                                             <tr>
                                                 <th>Número de Transacción:</th>
                                                 <td><?= !empty($pago['numtransaccion']) ? $pago['numtransaccion'] : 'N/A' ?>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <th>Registrado por:</th>
+                                                <td>
+                                                    <?= !empty($pago['nombres']) ? 
+                                                        $pago['nombres'] . ' ' . $pago['apellidos'] . ' (' . $pago['nombreusuario'] . ')' : 
+                                                        'Usuario #' . $pago['idusuario'] ?>
                                                 </td>
                                             </tr>
                                         </table>
@@ -136,34 +142,39 @@
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                    </div>
 
-                    <div class="row mt-4">
-                        <div class="col-md-12">
-                            <div class="card">
+                            <div class="card card-primary mt-4">
                                 <div class="card-header">
-                                    <h4 class="card-title">Información del Registro</h4>
+                                    <h4 class="card-title">Comprobante de Pago</h4>
                                 </div>
-                                <div class="card-body">
-                                    <div class="table-responsive">
-                                        <table class="table table-bordered">
-                                            <tr>
-                                                <th width="20%">Registrado por:</th>
-                                                <td>
-                                                    <?php if (!empty($usuario['nombres'])): ?>
-                                                        <?= $usuario['nombres'] . ' ' . $usuario['apellidos'] ?>
-                                                    <?php else: ?>
-                                                        Usuario #<?= $pago['idusuario'] ?> (No encontrado)
-                                                    <?php endif; ?>
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <th>Fecha del Pago:</th>
-                                                <td><?= date('d/m/Y H:i', strtotime($pago['fechahora'])) ?></td>
-                                            </tr>
-                                        </table>
-                                    </div>
+                                <div class="card-body text-center">
+                                    <?php if (!empty($pago['comprobante'])): ?>
+                                        <?php
+                                        $extension = pathinfo($pago['comprobante'], PATHINFO_EXTENSION);
+                                        $isImage = in_array(strtolower($extension), ['jpg', 'jpeg', 'png', 'gif']);
+                                        ?>
+                                        
+                                        <?php if ($isImage): ?>
+                                            <img src="<?= base_url('uploads/comprobantes/' . $pago['comprobante']) ?>"
+                                                alt="Comprobante de pago" class="img-fluid img-thumbnail mb-3"
+                                                style="max-height: 300px;">
+                                        <?php else: ?>
+                                            <div class="alert alert-info">
+                                                <i class="fas fa-file-pdf fa-3x mb-2"></i>
+                                                <p>Archivo PDF - Comprobante de pago</p>
+                                            </div>
+                                        <?php endif; ?>
+                                        
+                                        <a href="<?= base_url('/controlpagos/descargarComprobante/' . $pago['idpagos']) ?>"
+                                            class="btn btn-primary btn-sm">
+                                            <i class="fas fa-download"></i> Descargar Comprobante
+                                        </a>
+                                    <?php else: ?>
+                                        <div class="alert alert-warning">
+                                            <i class="fas fa-exclamation-triangle"></i>
+                                            No se ha subido comprobante para este pago.
+                                        </div>
+                                    <?php endif; ?>
                                 </div>
                             </div>
                         </div>
@@ -176,32 +187,35 @@
 
 <style>
     @media print {
-
-        .page-header,
-        .card-header .btn,
-        .breadcrumbs {
+        .card-header .btn, .card-header .ml-auto {
             display: none !important;
         }
-
+        
         .card {
-            border: 1px solid #ddd;
-            box-shadow: none;
+            border: none !important;
+            box-shadow: none !important;
         }
-
-        body {
-            padding: 20px;
-            background: white;
+        
+        .badge {
+            border: 1px solid #000;
+            color: #000;
+            background: transparent !important;
         }
-    }
-
-    .badge {
-        font-size: 0.9em;
-        padding: 0.5em 0.8em;
-    }
-
-    .progress {
-        border-radius: 10px;
-        overflow: hidden;
+        
+        .text-success {
+            color: #000 !important;
+            font-weight: bold;
+        }
+        
+        .text-warning {
+            color: #000 !important;
+            font-weight: bold;
+        }
+        
+        .progress-bar {
+            -webkit-print-color-adjust: exact;
+            color-adjust: exact;
+        }
     }
 </style>
 
