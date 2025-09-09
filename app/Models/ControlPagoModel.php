@@ -6,6 +6,7 @@ use CodeIgniter\Model;
 
 class ControlPagoModel extends Model
 {
+    // CORREGIR: Cambiar el nombre de la tabla a 'controlpagos'
     protected $table = 'controlpagos';
     protected $primaryKey = 'idpagos';
     protected $allowedFields = [
@@ -16,10 +17,11 @@ class ControlPagoModel extends Model
     // Obtener información completa de pagos con joins
     public function obtenerPagosCompletos()
     {
-        return $this->select('controlpagos.*, contratos.idcontrato, personas.nombres, personas.apellidos, tipospago.tipopago')
+        return $this->select('controlpagos.*, contratos.idcontrato, personas.nombres, personas.apellidos, empresas.razonsocial, tipospago.tipopago')
                     ->join('contratos', 'contratos.idcontrato = controlpagos.idcontrato')
                     ->join('clientes', 'clientes.idcliente = contratos.idcliente')
-                    ->join('personas', 'personas.idpersona = clientes.idpersona')
+                    ->join('personas', 'personas.idpersona = clientes.idpersona', 'left')
+                    ->join('empresas', 'empresas.idempresa = clientes.idempresa', 'left')
                     ->join('tipospago', 'tipospago.idtipopago = controlpagos.idtipopago')
                     ->orderBy('controlpagos.fechahora', 'DESC')
                     ->findAll();
@@ -50,8 +52,9 @@ class ControlPagoModel extends Model
     // Calcular total pagado por contrato
     public function calcularTotalPagado($idcontrato)
     {
-        return $this->where('idcontrato', $idcontrato)
+        $result = $this->where('idcontrato', $idcontrato)
                     ->selectSum('amortizacion')
-                    ->first()['amortizacion'] ?? 0;
+                    ->first();
+        return $result['amortizacion'] ?? 0;
     }
 }
