@@ -129,31 +129,19 @@
                                                             title="Ver detalles">
                                                             <i class="fas fa-eye"></i>
                                                         </a>
-                                                        <?php if ($entrega['estado'] != 'completada'): ?>
-                                                            <a href="<?= base_url('/entregas/editar/' . $entrega['identregable']) ?>"
-                                                                class="btn btn-sm btn-icon btn-primary" data-toggle="tooltip"
-                                                                title="Editar">
-                                                                <i class="fas fa-edit"></i>
-                                                            </a>
-                                                        <?php else: ?>
-                                                            <button class="btn btn-sm btn-icon btn-secondary" disabled
-                                                                data-toggle="tooltip" title="Entrega completada - No editable">
-                                                                <i class="fas fa-lock"></i>
-                                                            </button>
-                                                        <?php endif; ?>
-                                                        <?php if ($entrega['estado'] != 'completada'): ?>
-                                                            <a href="<?= base_url('/entregas/eliminar/' . $entrega['identregable']) ?>"
-                                                                class="btn btn-sm btn-icon btn-danger" data-toggle="tooltip"
-                                                                title="Eliminar"
-                                                                onclick="return confirm('¿Está seguro de eliminar esta entrega?')">
-                                                                <i class="fas fa-trash"></i>
-                                                            </a>
-                                                        <?php else: ?>
-                                                            <button class="btn btn-sm btn-icon btn-secondary" disabled
-                                                                data-toggle="tooltip" title="Entrega completada - No eliminable">
-                                                                <i class="fas fa-lock"></i>
-                                                            </button>
-                                                        <?php endif; ?>
+
+                                                        <a href="<?= base_url('/entregas/editar/' . $entrega['identregable']) ?>"
+                                                            class="btn btn-sm btn-icon btn-primary" data-toggle="tooltip"
+                                                            title="Editar">
+                                                            <i class="fas fa-edit"></i>
+                                                        </a>
+
+                                                        <a href="<?= base_url('/entregas/eliminar/' . $entrega['identregable']) ?>"
+                                                            class="btn btn-sm btn-icon btn-danger" data-toggle="tooltip"
+                                                            title="Eliminar"
+                                                            onclick="return confirm('¿Está seguro de eliminar esta entrega?')">
+                                                            <i class="fas fa-trash"></i>
+                                                        </a>
                                                     </div>
                                                 </td>
                                             </tr>
