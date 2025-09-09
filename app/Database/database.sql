@@ -17,10 +17,10 @@ CREATE TABLE personas (
     nombres         VARCHAR(100) NOT NULL,
     tipodoc         ENUM ('DNI', 'Carne de Extranjería', 'Pasaporte') DEFAULT 'DNI' NOT NULL,
     numerodoc       VARCHAR(12) NOT NULL UNIQUE,
-    telprincipal    CHAR (9) NOT NULL,
-    telalternativo  CHAR (9),
+    telprincipal    CHAR(9) NOT NULL,
+    telalternativo  CHAR(9) NULL,
     direccion       VARCHAR(150) NOT NULL,
-    referencia      VARCHAR(150) NOT NULL
+    referencia      VARCHAR(150) NULL
 );
 
 CREATE TABLE empresas (
@@ -65,8 +65,11 @@ CREATE TABLE usuarios (
     idpersona INT,
     idcargo INT,
     nombreusuario VARCHAR(50) UNIQUE NOT NULL,
-    claveacceso VARCHAR(255) NOT NULL ,
+    claveacceso VARCHAR(255) NOT NULL,
     estado TINYINT DEFAULT 1,
+    tipo_usuario ENUM('admin', 'trabajador') DEFAULT 'trabajador',
+    email VARCHAR(100) UNIQUE,
+    password_hash VARCHAR(255),
     CONSTRAINT fk_usuario_persona FOREIGN KEY (idpersona) REFERENCES personas(idpersona),
     CONSTRAINT fk_usuario_cargo FOREIGN KEY (idcargo) REFERENCES cargos(idcargo)
 );
@@ -117,7 +120,6 @@ CREATE TABLE listacondiciones (
     CONSTRAINT fk_listacondicion_tipocontrato FOREIGN KEY (idtipocontrato) REFERENCES tipocontrato(idtipocontrato)
 );
 
-
 CREATE TABLE servicios (
     idservicio INT AUTO_INCREMENT PRIMARY KEY,
     servicio VARCHAR(100) NOT NULL,
@@ -126,7 +128,6 @@ CREATE TABLE servicios (
     idcategoria INT,
     CONSTRAINT fk_servicio_categoria FOREIGN KEY (idcategoria) REFERENCES categorias(idcategoria)
 );
-
 
 CREATE TABLE servicioscontratados (
     idserviciocontratado INT AUTO_INCREMENT PRIMARY KEY,
@@ -140,28 +141,30 @@ CREATE TABLE servicioscontratados (
     CONSTRAINT fk_servcontratado_servicio FOREIGN KEY (idservicio) REFERENCES servicios(idservicio)
 );
 
-
 CREATE TABLE entregables (
     identregable INT AUTO_INCREMENT PRIMARY KEY,
     idserviciocontratado INT,
     idpersona INT,
     fechahoraentrega DATETIME,
+    fecha_real_entrega DATETIME NULL,
+    observaciones VARCHAR(200),
+    estado ENUM('pendiente', 'completada') DEFAULT 'pendiente',
     CONSTRAINT fk_entregable_servicio FOREIGN KEY (idserviciocontratado) REFERENCES servicioscontratados(idserviciocontratado),
     CONSTRAINT fk_entregable_persona FOREIGN KEY (idpersona) REFERENCES personas(idpersona)
 );
-
 
 CREATE TABLE equipos (
     idequipo INT AUTO_INCREMENT PRIMARY KEY,
     idserviciocontratado INT,
     idusuario INT,
     descripcion VARCHAR(200),
-    estadoservicio VARCHAR(50),
+    estadoservicio ENUM('Pendiente','En Proceso','Completado','Programado') DEFAULT 'Pendiente',
     CONSTRAINT fk_equipo_servicio FOREIGN KEY (idserviciocontratado) REFERENCES servicioscontratados(idserviciocontratado),
     CONSTRAINT fk_equipo_usuario FOREIGN KEY (idusuario) REFERENCES usuarios(idusuario)
 );
 
-
+ INSERT INTO usuarios (idpersona, idcargo, nombreusuario, claveacceso, tipo_usuario, email, password_hash, estado) VALUES 
+ (1, 1, 'admin', 'admin123', 'admin', 'admin@ishume.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 1);
 -- DATOS DE PRUEBA
 
 -- 1. DATOS BÁSICOS (Catálogos)
@@ -250,11 +253,6 @@ INSERT INTO clientes (idpersona, idempresa) VALUES
 (8, NULL);  -- Robert Smith (extranjero)
 
 -- 4. USUARIOS (Personal de la empresa)
-INSERT INTO usuarios (idpersona, idcargo, nombreusuario, claveacceso, estado) VALUES 
-(5, 1, 'lvasquez', '1Vasque3', 1),    -- Luis Vásquez - Gerente
-(6, 2, 'pmorales', 'pM0rales', 1),    -- Patricia Morales - Coordinadora
-(7, 3, 'rjimenez', '4J1menez', 1),    -- Ricardo Jiménez - Técnico
-(9, 4, 'cgonzalez', '3Gon3ale3z', 1);   -- Carmen González - Fotógrafa
 
 -- 5. SERVICIOS
 INSERT INTO servicios (servicio, descripcion, precioregular, idcategoria) VALUES 
@@ -370,23 +368,48 @@ INSERT INTO listacondiciones (idcondicion, idtipocontrato) VALUES
 (1, 3), (5, 3),          -- Contrato anual
 (2, 2), (3, 2);          -- Paquete mensual
 
+-- Pruebas
+-- Ver los miembros del equipo y su cargo
+SELECT p.nombres, p.apellidos, p.numerodoc, c.cargo
+FROM usuarios u
+INNER JOIN personas p ON u.idpersona = p.idpersona
+INNER JOIN cargos c ON u.idcargo = c.idcargo
+WHERE u.estado = 1;
 
--- RESUMEN DE DATOS PARA TU MÓDULO:
+-- Ver a quien esta asignado 
+SELECT p.nombres, p.apellidos, c.cargo, s.servicio, eq.descripcion, eq.estadoservicio
+FROM equipos eq
+INNER JOIN usuarios us ON eq.idusuario = us.idusuario
+INNER JOIN personas p ON us.idpersona = p.idpersona
+INNER JOIN cargos c ON us.idcargo = c.idcargo
+INNER JOIN servicioscontratados sc ON eq.idserviciocontratado = sc.idserviciocontratado
+INNER JOIN servicios s ON sc.idservicio = s.idservicio
+WHERE sc.idcotizacion = 2;
 
--- =============================================
--- CONTRATOS: 7 contratos con diferentes estados
--- PAGOS: 8 registros de pagos (algunos saldados, otros pendientes)
--- EQUIPOS: 12 equipos con estados: Completado, En Proceso, Pendiente, Programado  
--- ENTREGABLES: 5 entregables registrados
--- SERVICIOS CONTRATADOS: 12 servicios con fechas y direcciones variadas
--- 
--- Estados de contratos por pagos:
--- - Contrato 3: PAGADO COMPLETO (deuda = 0)
--- - Contratos 1,2,4,5,6,7: SALDO PENDIENTE
--- 
--- Estados de servicios:
--- - Completados: Boda Carlos, Evento Corporativo
--- - En proceso: Quinceañero María, Conferencia  
--- - Pendientes: Boda José
--- - Programados: Boda Ana, Evento Robert
--- ===============================================
+
+--
+SELECT p.nombres, p.apellidos, s.servicio, sc.fechahoraservicio, co.fechaevento
+FROM equipos eq
+INNER JOIN servicioscontratados sc ON eq.idserviciocontratado = sc.idserviciocontratado
+INNER JOIN servicios s ON sc.idservicio = s.idservicio
+INNER JOIN cotizaciones co ON sc.idcotizacion = co.idcotizacion
+INNER JOIN usuarios us ON eq.idusuario = us.idusuario
+INNER JOIN personas p ON us.idpersona = p.idpersona
+WHERE us.idusuario = 4
+AND sc.fechahoraservicio BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL 7 DAY);
+
+
+ALTER TABLE equipos ADD COLUMN fecha_asignacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
+
+SELECT 
+    u.nombreusuario,
+    u.email,
+    u.tipo_usuario,
+    CONCAT(p.nombres, ' ', p.apellidos) as nombre_completo,
+    c.cargo
+FROM usuarios u
+JOIN personas p ON u.idpersona = p.idpersona
+JOIN cargos c ON u.idcargo = c.idcargo
+WHERE u.estado = 1;
+
+SELECT * FROM usuarios;

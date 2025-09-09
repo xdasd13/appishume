@@ -2,28 +2,6 @@
 
 <div class="container">
     <div class="page-inner">
-        <div class="page-header">
-            <h4 class="page-title"><i class="fas fa-truck mr-2"></i>Gestión de Entregas</h4>
-            <ul class="breadcrumbs">
-                <li class="nav-home">
-                    <a href="<?= base_url('/') ?>">
-                        <i class="icon-home"></i>
-                    </a>
-                </li>
-                <li class="separator">
-                    <i class="icon-arrow-right"></i>
-                </li>
-                <li class="nav-item">
-                    <a href="<?= base_url('/entregas') ?>">Entregas</a>
-                </li>
-                <li class="separator">
-                    <i class="icon-arrow-right"></i>
-                </li>
-                <li class="nav-item">
-                    <span>Lista de Entregas</span>
-                </li>
-            </ul>
-        </div>
         <?php if (session('success')): ?>
             <div class="alert alert-success alert-dismissible fade show" role="alert">
                 <i class="fas fa-check-circle mr-2"></i>
@@ -55,7 +33,8 @@
                                     <i class="fas fa-plus-circle mr-2"></i>
                                     Nueva Entrega
                                 </a>
-                                <a href="<?= base_url('/entregas/pendientes') ?>" class="btn btn-danger btn-round mr-2 pulse-animation">
+                                <a href="<?= base_url('/entregas/pendientes') ?>"
+                                    class="btn btn-danger btn-round mr-2 pulse-animation">
                                     <i class="fas fa-exclamation-triangle mr-2"></i>
                                     Ver Pendientes
                                     <span class="badge badge-light badge-pill ml-2">
@@ -84,16 +63,20 @@
                                     <?php if (!empty($entregas)): ?>
                                         <?php foreach ($entregas as $entrega): ?>
                                             <tr>
-                                                <td><span class="badge badge-secondary">#<?= $entrega['identregable'] ?></span></td>
+                                                <td><span class="badge badge-secondary">#<?= $entrega['identregable'] ?></span>
+                                                </td>
                                                 <td>
                                                     <div class="d-flex align-items-center">
                                                         <div>
-                                                            <div class="font-weight-bold"><?= $entrega['nombre_cliente'] . ' ' . $entrega['apellido_cliente'] ?></div>
+                                                            <div class="font-weight-bold">
+                                                                <?= $entrega['nombre_cliente'] . ' ' . $entrega['apellido_cliente'] ?>
+                                                            </div>
                                                         </div>
                                                     </div>
                                                 </td>
                                                 <td>
-                                                    <div class="text-truncate" style="max-width: 200px;" title="<?= $entrega['servicio'] ?>">
+                                                    <div class="text-truncate" style="max-width: 200px;"
+                                                        title="<?= $entrega['servicio'] ?>">
                                                         <?= $entrega['servicio'] ?>
                                                     </div>
                                                 </td>
@@ -108,7 +91,8 @@
                                                     </small>
                                                 </td>
                                                 <td>
-                                                    <div class="text-truncate" style="max-width: 150px;" title="<?= $entrega['direccion'] ?>">
+                                                    <div class="text-truncate" style="max-width: 150px;"
+                                                        title="<?= $entrega['direccion'] ?>">
                                                         <i class="fas fa-map-marker-alt mr-1 text-danger"></i>
                                                         <?= $entrega['direccion'] ?>
                                                     </div>
@@ -125,24 +109,37 @@
                                                 </td>
                                                 <td>
                                                     <?php
-                                                    $fechaEntrega = strtotime($entrega['fechahoraentrega']);
-                                                    $hoy = strtotime('now');
-                                                    if ($fechaEntrega > $hoy) {
-                                                        echo '<span class="badge badge-warning"><i class="fas fa-clock mr-1"></i>Pendiente</span>';
+                                                    if ($entrega['estado'] == 'completada') {
+                                                        echo '<span class="badge badge-success"><i class="fas fa-check-circle mr-1"></i>Completada</span>';
                                                     } else {
-                                                        echo '<span class="badge badge-success"><i class="fas fa-check-circle mr-1"></i>Completado</span>';
+                                                        $fechaEntrega = strtotime($entrega['fechahoraentrega']);
+                                                        $hoy = strtotime('now');
+                                                        if ($fechaEntrega > $hoy) {
+                                                            echo '<span class="badge badge-warning"><i class="fas fa-clock mr-1"></i>Pendiente</span>';
+                                                        } else {
+                                                            echo '<span class="badge badge-danger"><i class="fas fa-exclamation-triangle mr-1"></i>Vencida</span>';
+                                                        }
                                                     }
                                                     ?>
                                                 </td>
                                                 <td class="text-center">
                                                     <div class="btn-group" role="group">
-                                                        <a href="<?= base_url('/entregas/ver/' . $entrega['identregable']) ?>" class="btn btn-sm btn-icon btn-info" data-toggle="tooltip" title="Ver detalles">
+                                                        <a href="<?= base_url('/entregas/ver/' . $entrega['identregable']) ?>"
+                                                            class="btn btn-sm btn-icon btn-info" data-toggle="tooltip"
+                                                            title="Ver detalles">
                                                             <i class="fas fa-eye"></i>
                                                         </a>
-                                                        <a href="<?= base_url('/entregas/editar/' . $entrega['identregable']) ?>" class="btn btn-sm btn-icon btn-primary" data-toggle="tooltip" title="Editar">
+
+                                                        <a href="<?= base_url('/entregas/editar/' . $entrega['identregable']) ?>"
+                                                            class="btn btn-sm btn-icon btn-primary" data-toggle="tooltip"
+                                                            title="Editar">
                                                             <i class="fas fa-edit"></i>
                                                         </a>
-                                                        <a href="<?= base_url('/entregas/eliminar/' . $entrega['identregable']) ?>" class="btn btn-sm btn-icon btn-danger" data-toggle="tooltip" title="Eliminar" onclick="return confirm('¿Está seguro de eliminar esta entrega?')">
+
+                                                        <a href="<?= base_url('/entregas/eliminar/' . $entrega['identregable']) ?>"
+                                                            class="btn btn-sm btn-icon btn-danger" data-toggle="tooltip"
+                                                            title="Eliminar"
+                                                            onclick="return confirm('¿Está seguro de eliminar esta entrega?')">
                                                             <i class="fas fa-trash"></i>
                                                         </a>
                                                     </div>
@@ -156,7 +153,8 @@
                                                     <i class="fas fa-truck fa-3x text-muted mb-3"></i>
                                                     <h4 class="text-muted">No hay entregas registradas</h4>
                                                     <p class="text-muted">Comienza registrando tu primera entrega</p>
-                                                    <a href="<?= base_url('/entregas/crear') ?>" class="btn btn-primary mt-2">
+                                                    <a href="<?= base_url('/entregas/crear') ?>"
+                                                        class="btn btn-primary mt-2">
                                                         <i class="fa fa-plus mr-2"></i>Crear primera entrega
                                                     </a>
                                                 </div>
@@ -174,7 +172,7 @@
 </div>
 
 <script>
-    $(document).ready(function() {
+    $(document).ready(function () {
         $('#entregas-table').DataTable({
             "language": {
                 "url": "//cdn.datatables.net/plug-ins/1.10.21/i18n/Spanish.json"
@@ -186,13 +184,13 @@
             "responsive": true,
             "dom": '<"top"<"dataTables__top"lf>><"dataTables__container"t><"bottom"<"dataTables__bottom"ip>>',
             "columnDefs": [{
-                    "responsivePriority": 1,
-                    "targets": 0
-                },
-                {
-                    "responsivePriority": 2,
-                    "targets": -1
-                }
+                "responsivePriority": 1,
+                "targets": 0
+            },
+            {
+                "responsivePriority": 2,
+                "targets": -1
+            }
             ]
         });
     });
@@ -235,13 +233,13 @@
             flex-direction: column;
             align-items: center;
         }
-        
+
         /* Estilos responsivos para el header */
         .card-header .d-flex {
             flex-direction: column;
             align-items: flex-start !important;
         }
-        
+
         .card-header .btn {
             margin-top: 10px;
             margin-left: 0 !important;

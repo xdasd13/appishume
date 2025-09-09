@@ -1,0 +1,153 @@
+/* Solución para problemas de scroll en el template KaiAdmin */
+
+/* Asegurar que el scroll nativo siempre funcione */
+html, body {
+    overflow-x: auto !important;
+    overflow-y: auto !important;
+    height: auto !important;
+    min-height: 100vh !important;
+    scroll-behavior: smooth;
+}
+
+/* Wrapper principal */
+.wrapper {
+    min-height: 100vh !important;
+    overflow: visible !important;
+    position: relative;
+}
+
+/* Panel principal */
+.main-panel {
+    overflow: visible !important;
+    min-height: calc(100vh - 60px) !important;
+    position: relative;
+}
+
+/* Contenedores */
+.container, 
+.container-fluid {
+    overflow: visible !important;
+    min-height: inherit;
+}
+
+/* Área de contenido principal */
+.page-inner {
+    min-height: calc(100vh - 200px) !important;
+    padding-bottom: 60px;
+    overflow: visible !important;
+}
+
+/* Sidebar - mantener su scroll personalizado */
+.sidebar {
+    position: fixed;
+    overflow: hidden;
+}
+
+.sidebar-wrapper {
+    height: calc(100vh - 80px);
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+/* Solo aplicar scrollbar personalizado a elementos específicos */
+.sidebar-wrapper.scrollbar-outer,
+.notif-scroll.scrollbar-outer,
+.quick-actions-scroll.scrollbar-outer,
+.dropdown-user-scroll.scrollbar-outer {
+    overflow-y: auto !important;
+}
+
+/* Evitar que otros elementos tengan scrollbar personalizado */
+body:not(.sidebar-wrapper):not(.notif-scroll):not(.quick-actions-scroll):not(.dropdown-user-scroll) {
+    overflow: auto !important;
+}
+
+/* Header fijo */
+.main-header {
+    position: relative;
+    z-index: 1000;
+}
+
+/* Footer */
+.footer {
+    position: relative;
+    z-index: 100;
+    margin-top: auto;
+}
+
+/* Solución específica para zoom */
+@media all {
+    html {
+        zoom: normal !important;
+        -webkit-text-size-adjust: none !important;
+        -ms-text-size-adjust: none !important;
+    }
+    
+    body {
+        zoom: normal !important;
+        -webkit-transform: scale(1) !important;
+        transform: scale(1) !important;
+    }
+}
+
+/* Responsive para diferentes tamaños de pantalla */
+@media (max-width: 991.98px) {
+    .main-panel {
+        margin-left: 0 !important;
+        width: 100% !important;
+    }
+}
+
+@media (min-width: 992px) {
+    .main-panel {
+        margin-left: 250px !important;
+        width: calc(100% - 250px) !important;
+    }
+}
+
+/* Prevenir scroll horizontal no deseado */
+* {
+    box-sizing: border-box;
+}
+
+/* Solución para tablas que pueden causar scroll horizontal */
+.table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* Asegurar que los dropdowns no interfieran */
+.dropdown-menu {
+    position: absolute !important;
+}
+
+/* Solución para modales */
+.modal {
+    overflow-y: auto !important;
+}
+
+.modal-body {
+    overflow-y: visible !important;
+}
+
+/* Solución para elementos con posición fija problemáticos */
+.fixed-plugin {
+    position: fixed !important;
+    z-index: 1040;
+}
+
+/* Debugging - remover en producción */
+/*
+.wrapper {
+    border: 2px solid red;
+}
+.main-panel {
+    border: 2px solid blue;
+}
+.container {
+    border: 2px solid green;
+}
+.page-inner {
+    border: 2px solid orange;
+}
+*/

@@ -1,33 +1,6 @@
 <?= $header ?>
 <div class="page-inner">
-    <div class="page-header">
-        <h4 class="page-title"><?= $titulo ?? 'Nuevo Pago' ?></h4>
-        <ul class="breadcrumbs">
-            <li class="nav-home">
-                <a href="<?= base_url('/dashboard') ?>">
-                    <i class="icon-home"></i>
-                </a>
-            </li>
-            <li class="separator">
-                <i class="icon-arrow-right"></i>
-            </li>
-            <li class="nav-item">
-                <a href="#">Finanzas</a>
-            </li>
-            <li class="separator">
-                <i class="icon-arrow-right"></i>
-            </li>
-            <li class="nav-item">
-                <a href="<?= base_url('/controlpagos') ?>">Control de Pagos</a>
-            </li>
-            <li class="separator">
-                <i class="icon-arrow-right"></i>
-            </li>
-            <li class="nav-item">
-                <a href="#">Nuevo Pago</a>
-            </li>
-        </ul>
-    </div>
+
 
     <div class="row">
         <div class="col-md-12">
@@ -59,19 +32,54 @@
                             <div class="col-md-6">
                                 <div class="form-group">
                                     <label for="idtipopago">Tipo de Pago *</label>
-                                    <select class="form-control" id="idtipopago" name="idtipopago" required>
+                                    <select class="form-control select2" id="idtipopago" name="idtipopago" required>
                                         <option value="">Seleccionar Tipo</option>
-                                        <option value="1">Efectivo</option>
-                                        <option value="2">Transferencia Bancaria</option>
-                                        <option value="3">Tarjeta de Crédito</option>
-                                        <option value="4">Cheque</option>
-                                        <option value="5">Yape/Plin</option>
+                                        <?php if (!empty($tipospago)): ?>
+                                            <?php foreach ($tipospago as $tipo): ?>
+                                                <option value="<?= $tipo['idtipopago'] ?>"><?= $tipo['tipopago'] ?></option>
+                                            <?php endforeach; ?>
+                                        <?php endif; ?>
                                     </select>
                                 </div>
                             </div>
                         </div>
                         
-                        <div class="row">
+                        <!-- Información del contrato seleccionado -->
+                        <div class="row" id="info-contrato" style="display: none;">
+                            <div class="col-md-12">
+                                <div class="card card-secondary">
+                                    <div class="card-header">
+                                        <h4 class="card-title">Información del Contrato</h4>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row">
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label>Monto Total del Contrato:</label>
+                                                    <p class="form-control-static font-weight-bold" id="info-monto-total">S/ 0.00</p>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label>Pagado hasta ahora:</label>
+                                                    <p class="form-control-static" id="info-pagado">S/ 0.00</p>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label>Porcentaje Completado:</label>
+                                                    <div class="progress" style="height: 20px;">
+                                                        <div id="info-progress-bar" class="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">0%</div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row mt-3">
                             <div class="col-md-4">
                                 <div class="form-group">
                                     <label for="saldo_actual">Saldo Actual (S/)</label>
@@ -115,8 +123,11 @@
                         </div>
                     </div>
                     <div class="card-action">
-                        <button type="submit" class="btn btn-success">
-                            <i class="fas fa-check-circle"></i> Guardar Pago
+                        <button type="submit" class="btn btn-success btn-animate">
+                            <span class="btn-label">
+                                <i class="fas fa-check-circle"></i>
+                            </span>
+                            Guardar Pago
                         </button>
                         <a href="<?= base_url('/controlpagos') ?>" class="btn btn-danger">
                             <i class="fas fa-times"></i> Cancelar
@@ -135,74 +146,136 @@
             theme: 'bootstrap'
         });
         
-        // Calcular saldos cuando cambia el contrato o la amortización
-        $('#idcontrato, #amortizacion').on('change keyup', function() {
-            calcularSaldos();
-        });
-        
-        function calcularSaldos() {
-            const contratoId = $('#idcontrato').val();
-            const amortizacion = parseFloat($('#amortizacion').val()) || 0;
+        // Cargar información del contrato cuando se selecciona uno
+        $('#idcontrato').on('change', function() {
+            const contratoId = $(this).val();
             
             if (contratoId) {
-                // Aquí harías una llamada AJAX para obtener el saldo actual del contrato
-                // Por ahora usamos un valor estático para demostración
-                const saldoActual = 2800.00; // Este valor vendría del servidor
-                const nuevaDeuda = saldoActual - amortizacion;
+                // Mostrar loading
+                $('#info-contrato').hide();
+                $('#saldo_actual').val('Cargando...');
                 
-                $('#saldo_actual').val(saldoActual.toFixed(2));
-                $('#nueva_deuda').val(nuevaDeuda.toFixed(2));
-                
-                // Cambiar color según el estado de la deuda
-                if (nuevaDeuda < 0) {
-                    $('#nueva_deuda').addClass('text-danger').removeClass('text-success');
-                } else if (nuevaDeuda === 0) {
-                    $('#nueva_deuda').addClass('text-success').removeClass('text-danger');
-                } else {
-                    $('#nueva_deuda').removeClass('text-danger text-success');
-                }
+                // Hacer petición AJAX para obtener información del contrato
+                $.get('<?= base_url('/controlpagos/infoContrato/') ?>' + contratoId, function(data) {
+                    const saldoActual = parseFloat(data.saldo_actual);
+                    const montoTotal = parseFloat(data.monto_total);
+                    const pagado = montoTotal - saldoActual;
+                    const porcentaje = montoTotal > 0 ? (pagado / montoTotal * 100) : 0;
+                    
+                    // Actualizar campos
+                    $('#saldo_actual').val(saldoActual.toFixed(2));
+                    $('#amortizacion').val('');
+                    $('#nueva_deuda').val(saldoActual.toFixed(2));
+                    
+                    // Actualizar información del contrato
+                    $('#info-monto-total').text('S/ ' + montoTotal.toFixed(2));
+                    $('#info-pagado').text('S/ ' + pagado.toFixed(2));
+                    $('#info-progress-bar')
+                        .css('width', porcentaje + '%')
+                        .attr('aria-valuenow', porcentaje)
+                        .text(porcentaje.toFixed(0) + '%');
+                    
+                    // Cambiar color de la barra de progreso según el porcentaje
+                    if (porcentaje < 50) {
+                        $('#info-progress-bar').removeClass('bg-success bg-warning').addClass('bg-danger');
+                    } else if (porcentaje < 100) {
+                        $('#info-progress-bar').removeClass('bg-success bg-danger').addClass('bg-warning');
+                    } else {
+                        $('#info-progress-bar').removeClass('bg-warning bg-danger').addClass('bg-success');
+                    }
+                    
+                    // Mostrar información del contrato
+                    $('#info-contrato').slideDown();
+                    
+                    // Cambiar color según el saldo
+                    if (saldoActual > 0) {
+                        $('#saldo_actual').addClass('text-danger').removeClass('text-success');
+                    } else {
+                        $('#saldo_actual').addClass('text-success').removeClass('text-danger');
+                    }
+                }).fail(function() {
+                    alert('Error al cargar la información del contrato');
+                });
             } else {
+                $('#info-contrato').slideUp();
                 $('#saldo_actual').val('');
                 $('#nueva_deuda').val('');
             }
-        }
+        });
+        
+        // Calcular nueva deuda cuando cambia la amortización
+        $('#amortizacion').on('input', function() {
+            const saldoActual = parseFloat($('#saldo_actual').val()) || 0;
+            const amortizacion = parseFloat($(this).val()) || 0;
+            
+            if (amortizacion > saldoActual) {
+                $(this).addClass('is-invalid');
+                $('#nueva_deuda').val('ERROR: La amortización no puede ser mayor al saldo');
+                $('#nueva_deuda').addClass('text-danger');
+            } else {
+                $(this).removeClass('is-invalid');
+                const nuevaDeuda = saldoActual - amortizacion;
+                $('#nueva_deuda').val(nuevaDeuda.toFixed(2));
+                
+                // Cambiar color según la deuda
+                if (nuevaDeuda > 0) {
+                    $('#nueva_deuda').addClass('text-warning').removeClass('text-success');
+                } else {
+                    $('#nueva_deuda').addClass('text-success').removeClass('text-warning');
+                }
+            }
+        });
         
         // Validación del formulario
         $('#formPago').on('submit', function(e) {
+            const saldoActual = parseFloat($('#saldo_actual').val()) || 0;
             const amortizacion = parseFloat($('#amortizacion').val()) || 0;
-            const nuevaDeuda = parseFloat($('#nueva_deuda').val()) || 0;
             
-            if (amortizacion <= 0) {
+            if (amortizacion > saldoActual) {
                 e.preventDefault();
-                alert('La amortización debe ser mayor a cero.');
-                return false;
-            }
-            
-            if (nuevaDeuda < 0) {
-                e.preventDefault();
-                alert('La amortización no puede ser mayor al saldo actual.');
-                return false;
+                alert('Error: La amortización no puede ser mayor al saldo actual del contrato.');
+                $('#amortizacion').focus();
             }
         });
     });
 </script>
 
 <style>
-    .select2-container--bootstrap .select2-selection--single {
+    .select2-container--bootstrap .select2-selection {
         height: calc(2.25rem + 2px);
         padding: 0.375rem 0.75rem;
+        font-size: 1rem;
+        line-height: 1.5;
     }
+    
+    .card-secondary {
+        border-left: 4px solid #6c757d;
+    }
+    
+    .progress {
+        border-radius: 10px;
+        overflow: hidden;
+    }
+    
+    .progress-bar {
+        transition: width 0.5s ease;
+    }
+    
+    .form-control:read-only {
+        background-color: #f8f9fa;
+        font-weight: bold;
+    }
+    
     .text-success {
         color: #28a745 !important;
-        font-weight: bold;
     }
+    
     .text-danger {
         color: #dc3545 !important;
-        font-weight: bold;
     }
+    
     .text-warning {
         color: #ffc107 !important;
-        font-weight: bold;
     }
 </style>
 

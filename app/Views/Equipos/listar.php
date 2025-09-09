@@ -27,7 +27,7 @@
         <div class="col-12">
             <div class="card border-primary">
                 <div class="card-header bg-primary text-white">
-                    <h4 class="mb-0"><i class="fas fa-info-circle me-2"></i>Información del Servicio</h4>
+                    <h4 class="mb-0"><i class="fas fa-info-circle me-2"></i>Información del Servicio 2</h4>
                 </div>
                 <div class="card-body">
                     <div class="row">
@@ -212,10 +212,13 @@ document.addEventListener('DOMContentLoaded', function() {
 .card {
     border-radius: 10px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
 }
 .table th {
     border-top: none;
     font-weight: 600;
+    padding: 10px 15px;
+    text-align: left;
 }
 .btn-group .btn {
     border-radius: 5px;
@@ -225,5 +228,12 @@ document.addEventListener('DOMContentLoaded', function() {
     font-size: 0.85em;
     padding: 0.5em 0.8em;
 }
+
+.custom-template .custom-content {
+    padding: 20px 15px;
+    max-height: calc(100vh - 90px); /* Esto mantiene el contenido dentro de la ventana */
+    overflow-y: auto; /* Habilitar scroll vertical */
+}
+
 </style>
 <?= $footer ?>

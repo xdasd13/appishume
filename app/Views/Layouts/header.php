@@ -69,7 +69,7 @@
               
               <!-- Dashboard -->
               <li class="nav-item">
-                <a href="<?= base_url('/') ?>">
+                <a href="<?= base_url('welcome') ?>">
                   <i class="fas fa-home"></i>
                   <p>Dashboard</p>
                 </a>
@@ -190,7 +190,7 @@
                 <div class="collapse" id="proyectos">
                   <ul class="nav nav-collapse">
                     <li>
-                      <a href="<?= base_url('/proyectos/activos') ?>">
+                      <a href="<?= base_url('/cronograma/proyectos') ?>">
                         <span class="sub-item">Proyectos Activos</span>
                       </a>
                     </li>
@@ -223,13 +223,18 @@
                 <div class="collapse" id="entregas">
                   <ul class="nav nav-collapse">
                     <li>
-                      <a href="<?= base_url('/entregas') ?>">
-                        <span class="sub-item">Lista de Entregas</span>
+                      <a href="<?= base_url('/entregas/pendientes') ?>">
+                        <span class="sub-item">Pendientes</span>
                       </a>
                     </li>
                     <li>
-                      <a href="<?= base_url('/entregas/pendientes') ?>">
-                        <span class="sub-item">Pendientes</span>
+                      <a href="<?= base_url('/entregas') ?>">
+                        <span class="sub-item">Entregados</span>
+                      </a>
+                    </li>
+                    <li>
+                      <a href="<?= base_url('/entregas/crear') ?>">
+                        <span class="sub-item">Programar Entrega</span>
                       </a>
                     </li>
                   </ul>
@@ -254,12 +259,12 @@
                 <div class="collapse" id="finanzas">
                   <ul class="nav nav-collapse">
                     <li>
-                      <a href="<?= base_url('/pagos/registrar') ?>">
+                      <a href="<?= base_url('/controlpagos/crear') ?>">
                         <span class="sub-item">Registrar Pago</span>
                       </a>
                     </li>
                     <li>
-                      <a href="<?= base_url('controlpagos') ?>">
+                      <a href="<?= base_url('/controlpagos') ?>">
                         <span class="sub-item">Control de Pagos</span>
                       </a>
                     </li>
@@ -523,7 +528,7 @@
                               <span class="text">Servicio</span>
                             </div>
                           </a>
-                          <a class="col-6 col-md-4 p-0" href="<?= base_url('/pagos/registrar') ?>">
+                          <a class="col-6 col-md-4 p-0" href="<?= base_url('/controlpagos') ?>">
                             <div class="quick-actions-item">
                               <div class="avatar-item bg-warning rounded-circle">
                                 <i class="fas fa-dollar-sign"></i>
@@ -531,7 +536,7 @@
                               <span class="text">Pago</span>
                             </div>
                           </a>
-                          <a class="col-6 col-md-4 p-0" href="<?= base_url('/entregables/programar') ?>">
+                          <a class="col-6 col-md-4 p-0" href="<?= base_url('/entregas') ?>">
                             <div class="quick-actions-item">
                               <div class="avatar-item bg-danger rounded-circle">
                                 <i class="fas fa-truck"></i>
@@ -570,36 +575,17 @@
                     </div>
                     <span class="profile-username">
                       <span class="op-7">Hola,</span>
-                      <span class="fw-bold"><?= session('nombre_usuario') ?? 'Usuario' ?></span>
+                      <span class="fw-bold"><?= session('usuario_nombre_corto') ?? 'Usuario' ?></span>
                     </span>
                   </a>
                   <ul class="dropdown-menu dropdown-user animated fadeIn">
                     <div class="dropdown-user-scroll scrollbar-outer">
                       <li>
-                        <div class="user-box">
-                          <div class="avatar-lg">
-                            <img
-                              src="<?= base_url() . 'assets/img/profile.jpg'?>"
-                              alt="image profile"
-                              class="avatar-img rounded"
-                            />
-                          </div>
-                          <div class="u-text">
-                            <h4><?= session('nombre_usuario') ?? 'Usuario' ?></h4>
-                            <p class="text-muted"><?= session('cargo') ?? 'Administrador' ?></p>
-                            <a
-                              href="<?= base_url('/perfil') ?>"
-                              class="btn btn-xs btn-secondary btn-sm"
-                              >Ver Perfil</a>
-                          </div>
-                        </div>
-                      </li>
-                      <li>
                         <div class="dropdown-divider"></div>
                         <a class="dropdown-item" href="<?= base_url('/perfil') ?>">Mi Perfil</a>
                         <a class="dropdown-item" href="<?= base_url('/configuracion') ?>">Configuración</a>
                         <div class="dropdown-divider"></div>
-                        <a class="dropdown-item" href="<?= base_url('/logout') ?>">Cerrar Sesión</a>
+                        <a class="dropdown-item" href="#" onclick="confirmLogout(event)">Cerrar Sesión</a>
                       </li>
                     </div>
                   </ul>
@@ -607,6 +593,136 @@
               </ul>
             </div>
           </nav>
+        </div>
 
+        <div class="container">
+          <div class="page-inner">
+            <div class="page-header">
+              <h4 class="page-title">Dashboard</h4>
+              <ul class="breadcrumbs">
+                <li class="nav-home">
+                  <a href="#">
+                    <i class="icon-home"></i>
+                  </a>
+                </li>
+                <li class="separator">
+                  <i class="icon-arrow-right"></i>
+                </li>
+                <li class="nav-item">
+                  <a href="#">Pages</a>
+                </li>
+                <li class="separator">
+                  <i class="icon-arrow-right"></i>
+                </li>
+                <li class="nav-item">
+                  <a href="#">Starter Page</a>
+                </li>
+              </ul>
+            </div>
+            <div class="page-category">
+            <!-- Aquí iría el contenido específico de cada página -->
 
-        
+    <!-- SweetAlert2 para confirmación de logout -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        function confirmLogout(event) {
+            event.preventDefault();
+            
+            Swal.fire({
+                title: '¿Cerrar Sesión?',
+                text: '¿Estás seguro de que deseas cerrar tu sesión?',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#FF6B00',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Sí, cerrar sesión',
+                cancelButtonText: 'Cancelar',
+                reverseButtons: true,
+                background: '#ffffff',
+                customClass: {
+                    popup: 'logout-confirm-popup',
+                    title: 'logout-confirm-title',
+                    content: 'logout-confirm-text',
+                    confirmButton: 'logout-confirm-btn',
+                    cancelButton: 'logout-cancel-btn'
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Mostrar notificación de cierre exitoso
+                    Swal.fire({
+                        title: 'Sesión Cerrada',
+                        text: 'Has cerrado sesión correctamente',
+                        icon: 'success',
+                        timer: 2000,
+                        showConfirmButton: false,
+                        background: '#ffffff',
+                        customClass: {
+                            popup: 'logout-success-popup',
+                            title: 'logout-success-title',
+                            content: 'logout-success-text'
+                        }
+                    }).then(() => {
+                        window.location.href = '<?= base_url('auth/logout') ?>';
+                    });
+                }
+            });
+        }
+    </script>
+
+    <style>
+        /* Estilos para SweetAlert de logout */
+        .logout-confirm-popup {
+            font-family: 'Poppins', sans-serif !important;
+            border-radius: 15px !important;
+            padding: 2rem !important;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15) !important;
+        }
+
+        .logout-confirm-title {
+            font-family: 'Poppins', sans-serif !important;
+            font-weight: 600 !important;
+            font-size: 1.4rem !important;
+            color: #333333 !important;
+        }
+
+        .logout-confirm-text {
+            font-family: 'Poppins', sans-serif !important;
+            font-weight: 400 !important;
+            font-size: 1rem !important;
+            color: #666666 !important;
+        }
+
+        .logout-confirm-btn {
+            font-family: 'Poppins', sans-serif !important;
+            font-weight: 500 !important;
+            border-radius: 8px !important;
+            padding: 0.5rem 1.5rem !important;
+        }
+
+        .logout-cancel-btn {
+            font-family: 'Poppins', sans-serif !important;
+            font-weight: 500 !important;
+            border-radius: 8px !important;
+            padding: 0.5rem 1.5rem !important;
+        }
+
+        .logout-success-popup {
+            font-family: 'Poppins', sans-serif !important;
+            border-radius: 12px !important;
+            box-shadow: 0 8px 25px rgba(76, 175, 80, 0.15) !important;
+        }
+
+        .logout-success-title {
+            font-family: 'Poppins', sans-serif !important;
+            font-weight: 600 !important;
+            font-size: 1.2rem !important;
+            color: #2E7D32 !important;
+        }
+
+        .logout-success-text {
+            font-family: 'Poppins', sans-serif !important;
+            font-weight: 400 !important;
+            font-size: 0.95rem !important;
+            color: #4CAF50 !important;
+        }
+    </style>

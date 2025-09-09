@@ -37,7 +37,7 @@ class EntregasController extends BaseController
         }
 
         $entrega = $this->entregasModel->obtenerEntregaCompleta($id);
-        
+
         if (!$entrega) {
             return redirect()->to('/entregas')->with('error', 'Entrega no encontrada');
         }
@@ -45,72 +45,110 @@ class EntregasController extends BaseController
         $datos['entrega'] = $entrega;
         $datos['header'] = view('Layouts/header');
         $datos['footer'] = view('Layouts/footer');
-        
+
         return view('/entregas/ver', $datos);
     }
 
     public function crear()
     {
-        // Solo obtener servicios contratados activos y válidos
-        $datos['servicios'] = $this->serviciosContratadosModel
-            ->where('fechahoraservicio >=', date('Y-m-d H:i:s'))
-            ->orWhere('fechahoraservicio IS NULL')
-            ->findAll();
-            
-        // Solo obtener personas que pueden realizar entregas (ej: empleados)
+        // Obtener servicios contratados con sus fechas
+        $builder = $this->db->table('servicioscontratados sc');
+        $builder->select('sc.idserviciocontratado, sc.fechahoraservicio, s.servicio as servicio_nombre');
+        $builder->join('servicios s', 's.idservicio = sc.idservicio');
+        $builder->where('sc.fechahoraservicio <=', date('Y-m-d H:i:s')); // Solo servicios ya realizados
+        $datos['servicios'] = $builder->get()->getResultArray();
+
+        // Solo obtener personas que pueden realizar entregas (empleados)
         $datos['personas'] = $this->personasModel
             ->join('usuarios u', 'u.idpersona = personas.idpersona', 'left')
-            ->where('u.idusuario IS NOT NULL') // Solo personas que son usuarios del sistema
+            ->where('u.idusuario IS NOT NULL')
             ->findAll();
-            
+
         $datos['header'] = view('Layouts/header');
         $datos['footer'] = view('Layouts/footer');
-        
+
         return view('/entregas/crear', $datos);
     }
 
     public function guardar()
     {
         $validation = \Config\Services::validation();
-        
+
+        // Reglas básicas
         $validation->setRules([
             'idserviciocontratado' => 'required|numeric|is_not_unique[servicioscontratados.idserviciocontratado]',
             'idpersona' => 'required|numeric|is_not_unique[personas.idpersona]',
-            'fechahoraentrega' => 'required|valid_date|fecha_realista'
+            'fechahoraentrega' => 'required|valid_date',
+            'estado_entrega' => 'required|in_list[pendiente,completada]',
+            'observaciones' => 'required|min_length[10]'
         ], [
-            'fechahoraentrega' => [
-                'fecha_realista' => 'La fecha de entrega debe ser realista y posterior a la fecha actual'
+            'observaciones' => [
+                'required' => 'El formato de entrega es obligatorio',
+                'min_length' => 'El formato de entrega debe tener al menos 10 caracteres'
+            ],
+            'estado_entrega' => [
+                'required' => 'El estado de la entrega es obligatorio',
+                'in_list' => 'El estado debe ser Pendiente o Completada'
             ]
         ]);
-
-        // Validación personalizada para fecha realista
-        $validation->setRule('fechahoraentrega', 'Fecha de entrega', function($value) {
-            $fechaEntrega = strtotime($value);
-            $fechaActual = strtotime('now');
-            $fechaMaxima = strtotime('+2 years'); // No permitir fechas más allá de 2 años
-            
-            return $fechaEntrega > $fechaActual && $fechaEntrega <= $fechaMaxima;
-        });
 
         if (!$validation->withRequest($this->request)->run()) {
             return redirect()->back()->withInput()->with('errors', $validation->getErrors());
         }
 
-        // Verificar que el servicio contratado existe y es válido
-        $servicioContratado = $this->serviciosContratadosModel->find($this->request->getPost('idserviciocontratado'));
-        if (!$servicioContratado) {
-            return redirect()->back()->withInput()->with('error', 'El servicio contratado seleccionado no existe');
+        // VALIDACIÓN MANUAL de las 3 semanas
+        $servicioId = $this->request->getPost('idserviciocontratado');
+        $servicioContratado = $this->serviciosContratadosModel->find($servicioId);
+
+        if (!$servicioContratado || !$servicioContratado['fechahoraservicio']) {
+            return redirect()->back()->withInput()->with('error', 'El servicio seleccionado no es válido');
         }
 
-        // Verificar que la fecha de entrega es posterior a la fecha del servicio
         $fechaEntrega = strtotime($this->request->getPost('fechahoraentrega'));
         $fechaServicio = strtotime($servicioContratado['fechahoraservicio']);
-        
-        if ($fechaEntrega < $fechaServicio) {
-            return redirect()->back()->withInput()->with('error', 'La fecha de entrega no puede ser anterior a la fecha del servicio');
+        $fechaMaxima = strtotime('+3 weeks', $fechaServicio);
+
+        // Validar que sea día hábil (lunes a viernes)
+        $diaEntrega = date('N', $fechaEntrega);
+        $esDiaHabil = ($diaEntrega >= 1 && $diaEntrega <= 5);
+
+        // Validar horario laboral (8am - 6pm)
+        $horaEntrega = date('H', $fechaEntrega);
+        $enHorarioLaboral = ($horaEntrega >= 8 && $horaEntrega <= 18);
+
+        if ($fechaEntrega <= $fechaServicio) {
+            return redirect()->back()->withInput()->with('error', 'La fecha de entrega debe ser posterior al servicio');
         }
 
-        // Verificar que la persona existe y puede realizar entregas
+        if ($fechaEntrega > $fechaMaxima) {
+            return redirect()->back()->withInput()->with('error', 'La entrega no puede ser más de 3 semanas después del servicio');
+        }
+
+        if (!$esDiaHabil) {
+            return redirect()->back()->withInput()->with('error', 'Solo se permiten entregas en días hábiles (Lunes a Viernes)');
+        }
+
+        if (!$enHorarioLaboral) {
+            return redirect()->back()->withInput()->with('error', 'Solo se permiten entregas en horario laboral (8:00 AM - 6:00 PM)');
+        }
+
+        // Validación adicional para estado "completada"
+        $estado = $this->request->getPost('estado_entrega');
+        $fechaReal = $this->request->getPost('fecha_real_entrega');
+
+        if ($estado == 'completada') {
+            // Si no se proporciona fecha real, usar fecha actual
+            if (empty($fechaReal)) {
+                $fechaReal = date('Y-m-d H:i:s');
+            } else {
+                $fechaRealTimestamp = strtotime($fechaReal);
+                if ($fechaRealTimestamp > time()) {
+                    return redirect()->back()->withInput()->with('error', 'La fecha real de entrega no puede ser futura');
+                }
+            }
+        }
+
+        // Verificar que la persona existe
         $persona = $this->personasModel->find($this->request->getPost('idpersona'));
         if (!$persona) {
             return redirect()->back()->withInput()->with('error', 'La persona seleccionada no existe');
@@ -120,7 +158,7 @@ class EntregasController extends BaseController
         $entregaExistente = $this->entregasModel
             ->where('idserviciocontratado', $this->request->getPost('idserviciocontratado'))
             ->first();
-            
+
         if ($entregaExistente) {
             return redirect()->back()->withInput()->with('error', 'Ya existe una entrega registrada para este servicio contratado');
         }
@@ -129,16 +167,34 @@ class EntregasController extends BaseController
             'idserviciocontratado' => $this->request->getPost('idserviciocontratado'),
             'idpersona' => $this->request->getPost('idpersona'),
             'fechahoraentrega' => $this->request->getPost('fechahoraentrega'),
-            'observaciones' => $this->request->getPost('observaciones')
+            'observaciones' => $this->request->getPost('observaciones'),
+            'estado' => $estado,
+            'fecha_real_entrega' => $estado == 'completada' ? $fechaReal : null
         ];
 
-        // Usar transacción para garantizar la integridad de los datos
+        // Si es completada y no tiene fecha real, usar fecha actual (doble verificación)
+        if ($estado == 'completada' && empty($data['fecha_real_entrega'])) {
+            $data['fecha_real_entrega'] = date('Y-m-d H:i:s');
+        }
+
+        // Usar transacción
         $this->db->transStart();
-        
+
         try {
             if ($this->entregasModel->save($data)) {
+                // Si se marca como completada, registrar en tabla de completados
+                if ($estado == 'completada') {
+                    $this->registrarEntregaCompletada($this->entregasModel->getInsertID());
+                }
+
                 $this->db->transCommit();
-                return redirect()->to('/entregas')->with('success', 'Entrega registrada correctamente');
+
+                // Mensaje diferente según el estado
+                $mensaje = $estado == 'completada'
+                    ? 'Entrega completada registrada correctamente'
+                    : 'Entrega pendiente registrada correctamente';
+
+                return redirect()->to('/entregas')->with('success', $mensaje);
             } else {
                 $this->db->transRollback();
                 return redirect()->back()->withInput()->with('error', 'Error al registrar la entrega');
@@ -149,10 +205,9 @@ class EntregasController extends BaseController
             return redirect()->back()->withInput()->with('error', 'Error interno del sistema al registrar la entrega');
         }
     }
-
     public function pendientes()
     {
-        $datos['entregas'] = $this->entregasModel->obtenerEntregasCompletas();
+        $datos['entregas'] = $this->entregasModel->obtenerEntregasPendientes();
         $datos['header'] = view('Layouts/header');
         $datos['footer'] = view('Layouts/footer');
         return view('/entregas/pendientes', $datos);
@@ -165,32 +220,48 @@ class EntregasController extends BaseController
         }
 
         $entrega = $this->entregasModel->find($id);
-        
+
         if (!$entrega) {
             return redirect()->to('/entregas')->with('error', 'Entrega no encontrada');
         }
 
-        // Solo obtener servicios contratados activos y válidos
-        $datos['servicios'] = $this->serviciosContratadosModel
-            ->where('fechahoraservicio >=', date('Y-m-d H:i:s'))
-            ->orWhere('fechahoraservicio IS NULL')
-            ->findAll();
-            
-        // Solo obtener personas que pueden realizar entregas (ej: empleados)
+        // Obtener servicios contratados con sus fechas
+        $builder = $this->db->table('servicioscontratados sc');
+        $builder->select('sc.idserviciocontratado, sc.fechahoraservicio, s.servicio as servicio_nombre');
+        $builder->join('servicios s', 's.idservicio = sc.idservicio');
+        $datos['servicios'] = $builder->get()->getResultArray();
+
+        // Solo obtener personas que pueden realizar entregas
         $datos['personas'] = $this->personasModel
             ->join('usuarios u', 'u.idpersona = personas.idpersona', 'left')
             ->where('u.idusuario IS NOT NULL')
             ->findAll();
-            
+
         $datos['entrega'] = $entrega;
         $datos['header'] = view('Layouts/header');
         $datos['footer'] = view('Layouts/footer');
-        
+
         return view('/entregas/editar', $datos);
     }
 
     public function actualizar($id)
     {
+
+        if (!is_numeric($id) || $id <= 0) {
+            return redirect()->to('/entregas')->with('error', 'ID de entrega inválido');
+        }
+
+        $entregaExistente = $this->entregasModel->find($id);
+        if (!$entregaExistente) {
+            return redirect()->to('/entregas')->with('error', 'Entrega no encontrada');
+        }
+
+        // VALIDACIÓN: No permitir cambiar de completada a pendiente
+        $nuevoEstado = $this->request->getPost('estado');
+        if ($entregaExistente['estado'] == 'completada' && $nuevoEstado == 'pendiente') {
+            return redirect()->back()->withInput()->with('error', 'No se puede revertir una entrega completada a pendiente');
+        }
+
         if (!is_numeric($id) || $id <= 0) {
             return redirect()->to('/entregas')->with('error', 'ID de entrega inválido');
         }
@@ -201,73 +272,77 @@ class EntregasController extends BaseController
         }
 
         $validation = \Config\Services::validation();
-        
+
+        // Reglas básicas
         $validation->setRules([
             'idserviciocontratado' => 'required|numeric|is_not_unique[servicioscontratados.idserviciocontratado]',
             'idpersona' => 'required|numeric|is_not_unique[personas.idpersona]',
-            'fechahoraentrega' => 'required|valid_date|fecha_realista'
+            'fechahoraentrega' => 'required|valid_date',
+            'estado' => 'required|in_list[pendiente,completada]',
+            'observaciones' => 'required|min_length[10]'
         ], [
-            'fechahoraentrega' => [
-                'fecha_realista' => 'La fecha de entrega debe ser realista y posterior a la fecha actual'
+            'observaciones' => [
+                'required' => 'El formato de entrega es obligatorio',
+                'min_length' => 'El formato de entrega debe tener al menos 10 caracteres'
+            ],
+            'estado' => [
+                'required' => 'El estado de la entrega es obligatorio',
+                'in_list' => 'El estado debe ser Pendiente o Completada'
             ]
         ]);
-
-        // Validación personalizada para fecha realista
-        $validation->setRule('fechahoraentrega', 'Fecha de entrega', function($value) {
-            $fechaEntrega = strtotime($value);
-            $fechaActual = strtotime('now');
-            $fechaMaxima = strtotime('+2 years');
-            
-            return $fechaEntrega > $fechaActual && $fechaEntrega <= $fechaMaxima;
-        });
 
         if (!$validation->withRequest($this->request)->run()) {
             return redirect()->back()->withInput()->with('errors', $validation->getErrors());
         }
 
-        // Verificar que el servicio contratado existe
-        $servicioContratado = $this->serviciosContratadosModel->find($this->request->getPost('idserviciocontratado'));
-        if (!$servicioContratado) {
-            return redirect()->back()->withInput()->with('error', 'El servicio contratado seleccionado no existe');
+        // Obtener el nuevo estado
+        $nuevoEstado = $this->request->getPost('estado');
+
+        // Validar que el estado sea válido según la base de datos
+        $estadosPermitidos = ['pendiente', 'completada'];
+        if (!in_array($nuevoEstado, $estadosPermitidos)) {
+            return redirect()->back()->withInput()->with('error', 'Estado no válido');
         }
 
-        // Verificar que la fecha de entrega es posterior a la fecha del servicio
-        $fechaEntrega = strtotime($this->request->getPost('fechahoraentrega'));
-        $fechaServicio = strtotime($servicioContratado['fechahoraservicio']);
-        
-        if ($fechaEntrega < $fechaServicio) {
-            return redirect()->back()->withInput()->with('error', 'La fecha de entrega no puede ser anterior a la fecha del servicio');
+        // Manejar la fecha real de entrega
+        $fechaReal = $this->request->getPost('fecha_real_entrega');
+
+        // Si se marca como completada y no se proporciona fecha real, usar fecha actual
+        if ($nuevoEstado == 'completada' && empty($fechaReal)) {
+            $fechaReal = date('Y-m-d H:i:s');
         }
 
-        // Verificar que la persona existe
-        $persona = $this->personasModel->find($this->request->getPost('idpersona'));
-        if (!$persona) {
-            return redirect()->back()->withInput()->with('error', 'La persona seleccionada no existe');
-        }
-
-        // Verificar que no exista ya otra entrega para este servicio (excepto la actual)
-        $entregaDuplicada = $this->entregasModel
-            ->where('idserviciocontratado', $this->request->getPost('idserviciocontratado'))
-            ->where('identregable !=', $id)
-            ->first();
-            
-        if ($entregaDuplicada) {
-            return redirect()->back()->withInput()->with('error', 'Ya existe otra entrega registrada para este servicio contratado');
+        // Si se cambia a pendiente, limpiar la fecha real
+        if ($nuevoEstado == 'pendiente') {
+            $fechaReal = null;
         }
 
         $data = [
             'idserviciocontratado' => $this->request->getPost('idserviciocontratado'),
             'idpersona' => $this->request->getPost('idpersona'),
             'fechahoraentrega' => $this->request->getPost('fechahoraentrega'),
-            'observaciones' => $this->request->getPost('observaciones')
+            'observaciones' => $this->request->getPost('observaciones'),
+            'estado' => $nuevoEstado,
+            'fecha_real_entrega' => $fechaReal
         ];
+
+        // Log para depuración
+        log_message('debug', 'Actualizando entrega ID: ' . $id . ' con datos: ' . print_r($data, true));
 
         // Usar transacción
         $this->db->transStart();
-        
+
         try {
+            $estadoAnterior = $entregaExistente['estado'];
+
             if ($this->entregasModel->update($id, $data)) {
+                // Si se cambió de pendiente a completada, registrar en tabla de completados
+                if ($estadoAnterior == 'pendiente' && $nuevoEstado == 'completada') {
+                    $this->registrarEntregaCompletada($id);
+                }
+
                 $this->db->transCommit();
+                log_message('debug', 'Entrega actualizada exitosamente');
                 return redirect()->to('/entregas/ver/' . $id)->with('success', 'Entrega actualizada correctamente');
             } else {
                 $this->db->transRollback();
@@ -287,16 +362,19 @@ class EntregasController extends BaseController
         }
 
         $entrega = $this->entregasModel->find($id);
-        
+
         if (!$entrega) {
             return redirect()->to('/entregas')->with('error', 'Entrega no encontrada');
         }
 
         // Usar transacción
         $this->db->transStart();
-        
+
         try {
             if ($this->entregasModel->delete($id)) {
+                // También eliminar de la tabla de completados si existe
+                $this->db->table('entregas_completadas')->where('identregable', $id)->delete();
+
                 $this->db->transCommit();
                 return redirect()->to('/entregas')->with('success', 'Entrega eliminada correctamente');
             } else {
@@ -308,5 +386,46 @@ class EntregasController extends BaseController
             log_message('error', 'Error al eliminar entrega: ' . $e->getMessage());
             return redirect()->to('/entregas')->with('error', 'Error interno del sistema al eliminar la entrega');
         }
+    }
+
+    /**
+     * Registrar entrega en tabla de completados
+     */
+    private function registrarEntregaCompletada($idEntrega)
+    {
+        $entrega = $this->entregasModel->find($idEntrega);
+
+        if ($entrega) {
+            $dataCompletada = [
+                'identregable' => $idEntrega,
+                'fecha_completada' => date('Y-m-d H:i:s'),
+                'observaciones' => 'Entrega completada: ' . ($entrega['observaciones'] ?? 'Sin observaciones')
+            ];
+
+            // Insertar en tabla de completados
+            $this->db->table('entregas_completadas')->insert($dataCompletada);
+        }
+    }
+
+    /**
+     * Método para ver entregas completadas
+     */
+    public function completadas()
+    {
+        $datos['entregas'] = $this->entregasModel->obtenerEntregasCompletadas();
+        $datos['header'] = view('Layouts/header');
+        $datos['footer'] = view('Layouts/footer');
+        return view('/entregas/completadas', $datos);
+    }
+
+    /**
+     * Método para ver entregas vencidas
+     */
+    public function vencidas()
+    {
+        $datos['entregas'] = $this->entregasModel->obtenerEntregasVencidas();
+        $datos['header'] = view('Layouts/header');
+        $datos['footer'] = view('Layouts/footer');
+        return view('/entregas/vencidas', $datos);
     }
 }
