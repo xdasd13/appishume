@@ -1,0 +1,223 @@
+/* Estilos personalizados para el sistema de control de pagos */
+
+/* Mejoras en cards */
+.card {
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+    border: none;
+}
+
+.card-header {
+    border-bottom: 1px solid #eee;
+    background-color: #fff;
+    padding: 15px 20px;
+}
+
+/* Botones mejorados */
+.btn-animate {
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-animate:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.btn-animate:active {
+    transform: translateY(0);
+}
+
+.btn-label {
+    position: relative;
+    display: inline-block;
+    padding: 6px 12px;
+    background: rgba(0, 0, 0, 0.05);
+    border-radius: 3px 0 0 3px;
+    margin-right: 12px;
+}
+
+/* Badges mejorados */
+.badge {
+    font-size: 85%;
+    padding: 5px 10px;
+    border-radius: 15px;
+}
+
+/* Tablas mejoradas */
+.table th {
+    border-top: none;
+    font-weight: 600;
+    color: #495057;
+    background-color: #f8f9fa;
+}
+
+.table-hover tbody tr:hover {
+    background-color: rgba(0, 123, 255, 0.05);
+}
+
+/* Iconos grandes para estadísticas */
+.icon-big {
+    font-size: 2.5rem;
+    color: #fff;
+}
+
+.bubble-shadow-small {
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    border-radius: 50%;
+    width: 70px;
+    height: 70px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Gradientes para cards */
+.bg-primary-gradient {
+    background: linear-gradient(45deg, #007bff, #0056b3);
+    color: white;
+}
+
+.bg-secondary-gradient {
+    background: linear-gradient(45deg, #6c757d, #495057);
+    color: white;
+}
+
+.bg-success-gradient {
+    background: linear-gradient(45deg, #28a745, #1e7e34);
+    color: white;
+}
+
+.bg-info-gradient {
+    background: linear-gradient(45deg, #17a2b8, #117a8b);
+    color: white;
+}
+
+/* Mejoras en formularios */
+.form-control:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.custom-file-label::after {
+    content: "Examinar";
+}
+
+/* Animaciones */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.fade-in {
+    animation: fadeIn 0.5s ease-in;
+}
+
+/* Responsividad mejorada */
+@media (max-width: 768px) {
+    .card-header .d-flex {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .card-header .btn {
+        margin-top: 10px;
+        align-self: flex-end;
+    }
+    
+    .table-responsive {
+        font-size: 0.875rem;
+    }
+}
+
+/* Estilos para el modal */
+.modal-content {
+    border-radius: 10px;
+    border: none;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+}
+
+.modal-header {
+    border-bottom: 1px solid #eee;
+    background-color: #f8f9fa;
+    border-radius: 10px 10px 0 0;
+}
+
+/* Mejoras en los alerts */
+.alert {
+    border: none;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.alert-success {
+    background: linear-gradient(45deg, #d4edda, #c3e6cb);
+    color: #155724;
+}
+
+.alert-danger {
+    background: linear-gradient(45deg, #f8d7da, #f5c6cb);
+    color: #721c24;
+}
+
+.alert-info {
+    background: linear-gradient(45deg, #d1ecf1, #bee5eb);
+    color: #0c5460;
+}
+
+.alert-warning {
+    background: linear-gradient(45deg, #fff3cd, #ffeaa7);
+    color: #856404;
+}
+
+/* Estilos para el select2 */
+.select2-container--bootstrap .select2-selection--single {
+    height: calc(2.25rem + 2px);
+    padding: 0.375rem 0.75rem;
+    border: 1px solid #ced4da;
+    border-radius: 0.25rem;
+}
+
+.select2-container--bootstrap .select2-selection--single .select2-selection__arrow {
+    height: calc(2.25rem + 2px);
+}
+
+/* Mejoras en la barra de progreso */
+.progress {
+    border-radius: 20px;
+    height: 20px;
+    background-color: #e9ecef;
+}
+
+.progress-bar {
+    border-radius: 20px;
+    transition: width 0.6s ease;
+}
+
+/* Efectos hover para cards */
+.card:hover {
+    transform: translateY(-5px);
+    transition: transform 0.3s ease;
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+}
+
+/* Estilos para tooltips */
+.tooltip {
+    font-size: 0.875rem;
+}
+
+/* Mejoras en la paginación */
+.page-item.active .page-link {
+    background-color: #007bff;
+    border-color: #007bff;
+}
+
+.page-link {
+    color: #007bff;
+}
+
+.page-link:hover {
+    color: #0056b3;
+}

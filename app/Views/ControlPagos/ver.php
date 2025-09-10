@@ -6,177 +6,168 @@
                 <div class="card-header">
                     <div class="d-flex align-items-center">
                         <h4 class="card-title">Detalles del Pago #<?= $pago['idpagos'] ?></h4>
-                        <div class="ml-auto">
-                            <a href="<?= base_url('/controlpagos') ?>" class="btn btn-sm btn-secondary">
-                                <i class="fas fa-arrow-left"></i> Volver
-                            </a>
-                            <button class="btn btn-sm btn-primary" onclick="window.print()">
-                                <i class="fas fa-print"></i> Imprimir
-                            </button>
-                        </div>
+                        <a href="<?= base_url('/controlpagos') ?>" class="btn btn-secondary btn-round ml-auto">
+                            <i class="fas fa-arrow-left mr-2"></i> Volver al Listado
+                        </a>
                     </div>
                 </div>
                 <div class="card-body">
                     <div class="row">
                         <div class="col-md-6">
-                            <div class="card card-info">
+                            <div class="card card-primary bg-primary-gradient">
+                                <div class="card-body">
+                                    <h4 class="mb-3">Información del Pago</h4>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <p><strong>ID Pago:</strong> <?= $pago['idpagos'] ?></p>
+                                            <p><strong>Fecha y Hora:</strong> <?= date('d/m/Y H:i', strtotime($pago['fechahora'])) ?></p>
+                                            <p><strong>Saldo Anterior:</strong> S/ <?= number_format($pago['saldo'], 2) ?></p>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <p><strong>Amortización:</strong> S/ <?= number_format($pago['amortizacion'], 2) ?></p>
+                                            <p><strong>Nueva Deuda:</strong> S/ <?= number_format($pago['deuda'], 2) ?></p>
+                                            <p><strong>Tipo de Pago:</strong> <?= $tipo_pago['tipopago'] ?></p>
+                                        </div>
+                                    </div>
+                                    <?php if (!empty($pago['numtransaccion'])): ?>
+                                        <p><strong>Número de Transacción:</strong> <?= $pago['numtransaccion'] ?></p>
+                                    <?php endif; ?>
+                                    <p><strong>Registrado por:</strong> <?= $pago['nombreusuario'] ?? 'N/A' ?></p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card card-secondary bg-secondary-gradient">
+                                <div class="card-body">
+                                    <h4 class="mb-3">Información del Contrato</h4>
+                                    <p><strong>Contrato #:</strong> <?= $info_contrato['idcontrato'] ?></p>
+                                    <p><strong>Cliente:</strong> 
+                                        <?= !empty($info_contrato['nombres']) ? 
+                                            $info_contrato['nombres'] . ' ' . $info_contrato['apellidos'] : 
+                                            $info_contrato['razonsocial'] ?>
+                                    </p>
+                                    <p><strong>Monto Total del Contrato:</strong> S/ <?= number_format($info_contrato['monto_total'], 2) ?></p>
+                                    <p><strong>Total Pagado:</strong> 
+                                        <?php 
+                                            $total_pagado = $info_contrato['monto_total'] - $pago['deuda'];
+                                            echo 'S/ ' . number_format($total_pagado, 2);
+                                        ?>
+                                    </p>
+                                    <p><strong>Estado:</strong> 
+                                        <span class="badge badge-<?= $pago['deuda'] == 0 ? 'success' : 'warning' ?>">
+                                            <?= $pago['deuda'] == 0 ? 'PAGADO COMPLETO' : 'PENDIENTE' ?>
+                                        </span>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Comprobante -->
+                    <div class="row mt-4">
+                        <div class="col-md-12">
+                            <div class="card">
                                 <div class="card-header">
-                                    <h4 class="card-title">Información del Pago</h4>
+                                    <h4 class="card-title">Comprobante de Pago</h4>
+                                </div>
+                                <div class="card-body">
+                                    <?php if (!empty($pago['comprobante'])): ?>
+                                        <div class="text-center">
+                                            <?php 
+                                                $extension = pathinfo($pago['comprobante'], PATHINFO_EXTENSION);
+                                                if (in_array(strtolower($extension), ['jpg', 'jpeg', 'png', 'gif'])): 
+                                            ?>
+                                                <img src="<?= base_url('uploads/comprobantes/' . $pago['comprobante']) ?>" 
+                                                     class="img-fluid rounded" 
+                                                     style="max-height: 400px;" 
+                                                     alt="Comprobante de pago">
+                                            <?php else: ?>
+                                                <div class="alert alert-info">
+                                                    <i class="fas fa-file-pdf fa-3x mb-3"></i>
+                                                    <p>Comprobante en formato PDF</p>
+                                                </div>
+                                            <?php endif; ?>
+                                            <div class="mt-3">
+                                                <a href="<?= base_url('/controlpagos/descargarComprobante/' . $pago['idpagos']) ?>" 
+                                                   class="btn btn-primary">
+                                                    <i class="fas fa-download mr-2"></i> Descargar Comprobante
+                                                </a>
+                                            </div>
+                                        </div>
+                                    <?php else: ?>
+                                        <div class="alert alert-warning text-center">
+                                            <i class="fas fa-exclamation-triangle fa-2x mb-3"></i>
+                                            <p>No se ha subido comprobante para este pago</p>
+                                        </div>
+                                    <?php endif; ?>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Historial de pagos del contrato -->
+                    <div class="row mt-4">
+                        <div class="col-md-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h4 class="card-title">Historial de Pagos del Contrato</h4>
                                 </div>
                                 <div class="card-body">
                                     <div class="table-responsive">
-                                        <table class="table table-bordered">
-                                            <tr>
-                                                <th width="40%">ID del Pago:</th>
-                                                <td>#<?= $pago['idpagos'] ?></td>
-                                            </tr>
-                                            <tr>
-                                                <th>Contrato:</th>
-                                                <td>Contrato #<?= $pago['idcontrato'] ?></td>
-                                            </tr>
-                                            <tr>
-                                                <th>Fecha y Hora:</th>
-                                                <td><?= date('d/m/Y H:i', strtotime($pago['fechahora'])) ?></td>
-                                            </tr>
-                                            <tr>
-                                                <th>Saldo Anterior:</th>
-                                                <td class="font-weight-bold">S/ <?= number_format($pago['saldo'], 2) ?>
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <th>Amortización:</th>
-                                                <td class="text-success font-weight-bold">S/
-                                                    <?= number_format($pago['amortizacion'], 2) ?></td>
-                                            </tr>
-                                            <tr>
-                                                <th>Nueva Deuda:</th>
-                                                <td
-                                                    class="<?= $pago['deuda'] > 0 ? 'text-warning' : 'text-success' ?> font-weight-bold">
-                                                    S/ <?= number_format($pago['deuda'], 2) ?>
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <th>Tipo de Pago:</th>
-                                                <td><span class="badge badge-info"><?= $tipo_pago['tipopago'] ?></span>
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <th>Número de Transacción:</th>
-                                                <td><?= !empty($pago['numtransaccion']) ? $pago['numtransaccion'] : 'N/A' ?>
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <th>Registrado por:</th>
-                                                <td>
-                                                    <?= !empty($pago['nombres']) ? 
-                                                        $pago['nombres'] . ' ' . $pago['apellidos'] . ' (' . $pago['nombreusuario'] . ')' : 
-                                                        'Usuario #' . $pago['idusuario'] ?>
-                                                </td>
-                                            </tr>
+                                        <table class="table table-striped">
+                                            <thead>
+                                                <tr>
+                                                    <th>ID Pago</th>
+                                                    <th>Fecha/Hora</th>
+                                                    <th>Saldo (S/)</th>
+                                                    <th>Amortización (S/)</th>
+                                                    <th>Deuda (S/)</th>
+                                                    <th>Tipo Pago</th>
+                                                    <th>Usuario</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <?php if (!empty($historial_pagos)): ?>
+                                                    <?php foreach ($historial_pagos as $historial): ?>
+                                                        <tr class="<?= $historial['idpagos'] == $pago['idpagos'] ? 'table-active' : '' ?>">
+                                                            <td><?= $historial['idpagos'] ?></td>
+                                                            <td><?= date('d/m/Y H:i', strtotime($historial['fechahora'])) ?></td>
+                                                            <td><?= number_format($historial['saldo'], 2) ?></td>
+                                                            <td class="text-success"><?= number_format($historial['amortizacion'], 2) ?></td>
+                                                            <td class="<?= $historial['deuda'] > 0 ? 'text-warning' : 'text-success' ?>">
+                                                                <?= number_format($historial['deuda'], 2) ?>
+                                                            </td>
+                                                            <td><?= $historial['tipopago'] ?></td>
+                                                            <td><?= $historial['nombreusuario'] ?? 'N/A' ?></td>
+                                                        </tr>
+                                                    <?php endforeach; ?>
+                                                <?php else: ?>
+                                                    <tr>
+                                                        <td colspan="7" class="text-center">No hay historial de pagos</td>
+                                                    </tr>
+                                                <?php endif; ?>
+                                            </tbody>
                                         </table>
                                     </div>
                                 </div>
                             </div>
                         </div>
+                    </div>
 
-                        <div class="col-md-6">
-                            <div class="card card-secondary">
-                                <div class="card-header">
-                                    <h4 class="card-title">Información del Contrato</h4>
-                                </div>
-                                <div class="card-body">
-                                    <div class="table-responsive">
-                                        <table class="table table-bordered">
-                                            <tr>
-                                                <th width="40%">Contrato:</th>
-                                                <td>#<?= $info_contrato['idcontrato'] ?></td>
-                                            </tr>
-                                            <tr>
-                                                <th>Cliente:</th>
-                                                <td>
-                                                    <?= !empty($info_contrato['nombres']) ?
-                                                        $info_contrato['nombres'] . ' ' . $info_contrato['apellidos'] :
-                                                        $info_contrato['razonsocial'] ?>
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <th>Monto Total:</th>
-                                                <td class="font-weight-bold">S/
-                                                    <?= number_format($info_contrato['monto_total'], 2) ?></td>
-                                            </tr>
-                                            <tr>
-                                                <th>Estado Actual:</th>
-                                                <td>
-                                                    <?php if ($pago['deuda'] == 0): ?>
-                                                        <span class="badge badge-success">PAGADO COMPLETAMENTE</span>
-                                                    <?php else: ?>
-                                                        <span class="badge badge-warning">PENDIENTE DE PAGO</span>
-                                                    <?php endif; ?>
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <th>Pagado hasta ahora:</th>
-                                                <td class="text-success font-weight-bold">
-                                                    S/
-                                                    <?= number_format($info_contrato['monto_total'] - $pago['deuda'], 2) ?>
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <th>Porcentaje Completado:</th>
-                                                <td>
-                                                    <?php
-                                                    $porcentaje = $info_contrato['monto_total'] > 0 ?
-                                                        (($info_contrato['monto_total'] - $pago['deuda']) / $info_contrato['monto_total'] * 100) : 0;
-                                                    ?>
-                                                    <div class="progress" style="height: 20px;">
-                                                        <div class="progress-bar <?= $porcentaje == 100 ? 'bg-success' : ($porcentaje >= 50 ? 'bg-warning' : 'bg-danger') ?>"
-                                                            role="progressbar" style="width: <?= $porcentaje ?>%;"
-                                                            aria-valuenow="<?= $porcentaje ?>" aria-valuemin="0"
-                                                            aria-valuemax="100">
-                                                            <?= number_format($porcentaje, 1) ?>%
-                                                        </div>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        </table>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="card card-primary mt-4">
-                                <div class="card-header">
-                                    <h4 class="card-title">Comprobante de Pago</h4>
-                                </div>
-                                <div class="card-body text-center">
-                                    <?php if (!empty($pago['comprobante'])): ?>
-                                        <?php
-                                        $extension = pathinfo($pago['comprobante'], PATHINFO_EXTENSION);
-                                        $isImage = in_array(strtolower($extension), ['jpg', 'jpeg', 'png', 'gif']);
-                                        ?>
-                                        
-                                        <?php if ($isImage): ?>
-                                            <img src="<?= base_url('uploads/comprobantes/' . $pago['comprobante']) ?>"
-                                                alt="Comprobante de pago" class="img-fluid img-thumbnail mb-3"
-                                                style="max-height: 300px;">
-                                        <?php else: ?>
-                                            <div class="alert alert-info">
-                                                <i class="fas fa-file-pdf fa-3x mb-2"></i>
-                                                <p>Archivo PDF - Comprobante de pago</p>
-                                            </div>
-                                        <?php endif; ?>
-                                        
-                                        <a href="<?= base_url('/controlpagos/descargarComprobante/' . $pago['idpagos']) ?>"
-                                            class="btn btn-primary btn-sm">
-                                            <i class="fas fa-download"></i> Descargar Comprobante
-                                        </a>
-                                    <?php else: ?>
-                                        <div class="alert alert-warning">
-                                            <i class="fas fa-exclamation-triangle"></i>
-                                            No se ha subido comprobante para este pago.
-                                        </div>
-                                    <?php endif; ?>
-                                </div>
-                            </div>
+                    <!-- Acciones -->
+                    <div class="row mt-4">
+                        <div class="col-md-12 text-center">
+                            <a href="<?= base_url('/controlpagos/generarVoucher/' . $pago['idpagos']) ?>" 
+                               class="btn btn-info btn-animate" target="_blank">
+                                <span class="btn-label">
+                                    <i class="fas fa-receipt"></i>
+                                </span>
+                                Generar Voucher
+                            </a>
+                            <a href="<?= base_url('/controlpagos/por-contrato/' . $pago['idcontrato']) ?>" 
+                               class="btn btn-primary">
+                                <i class="fas fa-list mr-2"></i> Ver Todos los Pagos del Contrato
+                            </a>
                         </div>
                     </div>
                 </div>
@@ -184,39 +175,4 @@
         </div>
     </div>
 </div>
-
-<style>
-    @media print {
-        .card-header .btn, .card-header .ml-auto {
-            display: none !important;
-        }
-        
-        .card {
-            border: none !important;
-            box-shadow: none !important;
-        }
-        
-        .badge {
-            border: 1px solid #000;
-            color: #000;
-            background: transparent !important;
-        }
-        
-        .text-success {
-            color: #000 !important;
-            font-weight: bold;
-        }
-        
-        .text-warning {
-            color: #000 !important;
-            font-weight: bold;
-        }
-        
-        .progress-bar {
-            -webkit-print-color-adjust: exact;
-            color-adjust: exact;
-        }
-    }
-</style>
-
 <?= $footer ?>

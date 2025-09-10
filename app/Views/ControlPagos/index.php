@@ -220,36 +220,36 @@
                                             <td><?= $pago['nombreusuario'] ?? 'N/A' ?></td>
                                             <td>
                                                 <?php if (!empty($pago['comprobante'])): ?>
-                                                    <span class="badge badge-success">Sí</span>
+                                                    <a href="<?= base_url('/controlpagos/descargarComprobante/' . $pago['idpagos']) ?>" 
+                                                       class="btn btn-sm btn-outline-info" title="Descargar comprobante">
+                                                        <i class="fas fa-download"></i>
+                                                    </a>
                                                 <?php else: ?>
-                                                    <span class="badge badge-warning">No</span>
+                                                    <span class="badge badge-secondary">Sin comprobante</span>
                                                 <?php endif; ?>
                                             </td>
                                             <td>
-                                                <div class="btn-group">
+                                                <div class="form-button-action">
                                                     <a href="<?= base_url('/controlpagos/ver/' . $pago['idpagos']) ?>" 
-                                                       class="btn btn-sm btn-info btn-detalle" title="Ver detalles">
+                                                       class="btn btn-link btn-primary btn-lg" 
+                                                       data-toggle="tooltip" 
+                                                       title="Ver detalles">
                                                         <i class="fa fa-eye"></i>
                                                     </a>
-                                                    <?php if (!empty($pago['comprobante'])): ?>
-                                                        <a href="<?= base_url('/controlpagos/descargarComprobante/' . $pago['idpagos']) ?>" 
-                                                           class="btn btn-sm btn-secondary" title="Descargar comprobante">
-                                                            <i class="fa fa-download"></i>
-                                                        </a>
-                                                    <?php endif; ?>
+                                                    <a href="<?= base_url('/controlpagos/generarVoucher/' . $pago['idpagos']) ?>" 
+                                                       class="btn btn-link btn-info btn-lg" 
+                                                       data-toggle="tooltip" 
+                                                       title="Generar voucher"
+                                                       target="_blank">
+                                                        <i class="fas fa-receipt"></i>
+                                                    </a>
                                                 </div>
                                             </td>
                                         </tr>
                                     <?php endforeach; ?>
                                 <?php else: ?>
                                     <tr>
-                                        <td colspan="11" class="text-center py-4">
-                                            <i class="fas fa-receipt fa-3x text-muted mb-2"></i>
-                                            <p class="text-muted">No hay registros de pagos</p>
-                                            <a href="<?= base_url('/controlpagos/crear') ?>" class="btn btn-primary mt-2">
-                                                <i class="fa fa-plus"></i> Registrar primer pago
-                                            </a>
-                                        </td>
+                                        <td colspan="11" class="text-center">No se encontraron registros de pagos</td>
                                     </tr>
                                 <?php endif; ?>
                             </tbody>
@@ -261,117 +261,76 @@
     </div>
 </div>
 
-<script>
-    $(document).ready(function() {
-        // Inicializar DataTable con más opciones
-        var table = $('#pagos-table').DataTable({
-            "language": {
-                "url": "//cdn.datatables.net/plug-ins/1.10.21/i18n/Spanish.json"
-            },
-            "pageLength": 10,
-            "order": [[0, "desc"]],
-            "responsive": true,
-            "dom": '<"top"<"row"<"col-md-6"l><"col-md-6"f>>>rt<"bottom"<"row"<"col-md-6"i><"col-md-6"p>>><"clear">',
-            "initComplete": function() {
-                // Aplicar filtros personalizados
-                this.api().columns().every(function() {
-                    var column = this;
-                    // Solo aplicar a columnas específicas si es necesario
-                });
-            }
-        });
-        
-        // Aplicar filtros personalizados
-        $('#filtro_contrato, #filtro_estado, #filtro_fecha').on('change', function() {
-            table.draw();
-        });
-        
-        // Configurar filtros para DataTable
-        $.fn.dataTable.ext.search.push(
-            function(settings, data, dataIndex) {
-                var contrato = $('#filtro_contrato').val();
-                var estado = $('#filtro_estado').val();
-                var fecha = $('#filtro_fecha').val();
-                
-                // Filtrar por contrato
-                if (contrato !== '') {
-                    var contratoData = data[1].match(/Contrato #(\d+)/);
-                    if (!contratoData || contratoData[1] !== contrato) {
-                        return false;
-                    }
-                }
-                
-                // Filtrar por estado
-                if (estado !== '') {
-                    var deuda = parseFloat(data[6].replace(/[^\d.,]/g, '').replace(',', ''));
-                    if (estado === 'completo' && deuda !== 0) {
-                        return false;
-                    }
-                    if (estado === 'pendiente' && deuda === 0) {
-                        return false;
-                    }
-                }
-                
-                // Filtrar por fecha
-                if (fecha) {
-                    var fechaPago = data[3].split(' ')[0].split('/').reverse().join('-');
-                    var fechaFiltro = fecha + '-01';
-                    
-                    var fechaPagoObj = new Date(fechaPago);
-                    var fechaFiltroObj = new Date(fechaFiltro);
-                    
-                    if (fechaPagoObj.getMonth() !== fechaFiltroObj.getMonth() || 
-                        fechaPagoObj.getFullYear() !== fechaFiltroObj.getFullYear()) {
-                        return false;
-                    }
-                }
-                
-                return true;
-            }
-        );
-        
-        // Animación para botones de detalles
-        $('.btn-detalle').on('mouseenter', function() {
-            $(this).transition({ scale: 1.1 });
-        }).on('mouseleave', function() {
-            $(this).transition({ scale: 1 });
-        });
-    });
-</script>
-
-<style>
-    .card-stats .icon-big {
-        font-size: 2.5rem;
-        padding: 15px;
-        border-radius: 50%;
-    }
-    
-    .bubble-shadow-small {
-        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-    }
-    
-    .btn-animate {
-        transition: all 0.3s ease;
-    }
-    
-    .btn-animate:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 7px 14px rgba(0,0,0,0.1);
-    }
-    
-    .badge {
-        font-size: 0.85em;
-        padding: 0.5em 0.8em;
-    }
-    
-    #pagos-table tbody tr {
-        transition: all 0.3s ease;
-    }
-    
-    #pagos-table tbody tr:hover {
-        background-color: #f8f9fa;
-        transform: translateX(5px);
-    }
-</style>
+<!-- Modal para ver detalles del pago -->
+<div class="modal fade" id="verPagoModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Detalles del Pago</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <!-- Los detalles se cargarán aquí via AJAX -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
 
 <?= $footer ?>
+
+<!-- Scripts para la funcionalidad de la página -->
+<script>
+$(document).ready(function() {
+    // Inicializar DataTable
+    var table = $('#pagos-table').DataTable({
+        "language": {
+            "url": "//cdn.datatables.net/plug-ins/1.10.21/i18n/Spanish.json"
+        },
+        "order": [[0, "desc"]],
+        "responsive": true,
+        "pageLength": 10,
+        "lengthMenu": [[10, 25, 50, -1], [10, 25, 50, "Todos"]]
+    });
+
+    // Aplicar filtros
+    $('#filtro_contrato, #filtro_estado, #filtro_fecha').on('change', function() {
+        var contrato = $('#filtro_contrato').val();
+        var estado = $('#filtro_estado').val();
+        var fecha = $('#filtro_fecha').val();
+        
+        // Filtrar por contrato
+        table.column(1).search(contrato).draw();
+        
+        // Filtrar por estado (completo o pendiente)
+        if (estado === 'completo') {
+            table.column(6).search('^0.00$', true, false).draw();
+        } else if (estado === 'pendiente') {
+            table.column(6).search('^(?!0.00$).*$', true, false).draw();
+        } else {
+            table.column(6).search('').draw();
+        }
+        
+        // Filtrar por fecha (si se seleccionó)
+        if (fecha) {
+            var yearMonth = fecha.split('-');
+            var year = yearMonth[0];
+            var month = yearMonth[1];
+            
+            table.column(3).search(year + '-' + month).draw();
+        }
+    });
+
+    // Inicializar tooltips
+    $('[data-toggle="tooltip"]').tooltip();
+
+    // Inicializar select2
+    $('.select2').select2({
+        theme: "bootstrap"
+    });
+});
+</script>

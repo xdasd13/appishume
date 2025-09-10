@@ -49,6 +49,7 @@ $routes->get('/controlpagos/ver/(:num)', 'ControlPagoController::ver/$1');
 $routes->get('/controlpagos/por-contrato/(:num)', 'ControlPagoController::porContrato/$1');
 $routes->get('/controlpagos/infoContrato/(:num)', 'ControlPagoController::infoContrato/$1');
 $routes->get('/controlpagos/descargarComprobante/(:num)', 'ControlPagoController::descargarComprobante/$1');
+$routes->get('/controlpagos/generarVoucher/(:num)', 'ControlPagoController::generarVoucher/$1');
 
 // ==================== RUTAS PARA GESTIÓN DE EQUIPOS ====================
 // Rutas para equipos

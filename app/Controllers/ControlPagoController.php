@@ -274,6 +274,52 @@ class ControlPagoController extends BaseController
         return $this->response->download($filePath, null);
     }
 
+    // Método para generar voucher
+    public function generarVoucher($id)
+    {
+        $datos['pago'] = $this->controlPagoModel->obtenerPago($id);
+
+        if (!$datos['pago']) {
+            return redirect()->to('/controlpagos')->with('error', 'Pago no encontrado');
+        }
+
+        // Obtener información adicional del pago
+        $db = db_connect();
+
+        // Obtener información del contrato
+        $datos['info_contrato'] = $db->table('contratos')
+            ->join('clientes', 'clientes.idcliente = contratos.idcliente')
+            ->join('personas', 'personas.idpersona = clientes.idpersona', 'left')
+            ->join('empresas', 'empresas.idempresa = clientes.idempresa', 'left')
+            ->where('contratos.idcontrato', $datos['pago']['idcontrato'])
+            ->get()->getRowArray();
+
+        // Obtener monto total del contrato
+        $montoQuery = $db->query("
+            SELECT SUM(sc.cantidad * sc.precio) as monto_total 
+            FROM servicioscontratados sc 
+            JOIN cotizaciones co ON co.idcotizacion = sc.idcotizacion 
+            WHERE co.idcotizacion IN (
+                SELECT idcotizacion FROM contratos WHERE idcontrato = ?
+            )
+        ", [$datos['pago']['idcontrato']]);
+
+        if ($montoQuery->getNumRows() > 0) {
+            $datos['info_contrato']['monto_total'] = $montoQuery->getRow()->monto_total ?? 0;
+        } else {
+            $datos['info_contrato']['monto_total'] = 0;
+        }
+
+        $datos['tipo_pago'] = $db->table('tipospago')
+            ->where('idtipopago', $datos['pago']['idtipopago'])
+            ->get()->getRowArray();
+
+        // Obtener información de la empresa
+        $datos['empresa'] = $db->table('empresas')->where('idempresa', 1)->get()->getRowArray();
+
+        return view('ControlPagos/voucher', $datos);
+    }
+
     // Método para calcular estadísticas
     private function calcularEstadisticas($pagos)
     {
