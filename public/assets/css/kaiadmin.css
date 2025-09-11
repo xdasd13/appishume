@@ -721,7 +721,7 @@ body {
     .sidebar .nav.nav-secondary > .nav-item a:hover i, .sidebar .nav.nav-secondary > .nav-item a:focus i, .sidebar .nav.nav-secondary > .nav-item a[data-toggle=collapse][aria-expanded=true] i, .sidebar[data-background-color="white"] .nav.nav-secondary > .nav-item a:hover i, .sidebar[data-background-color="white"] .nav.nav-secondary > .nav-item a:focus i, .sidebar[data-background-color="white"] .nav.nav-secondary > .nav-item a[data-toggle=collapse][aria-expanded=true] i {
       color: #6861CE !important; }
     .sidebar .nav.nav-secondary > .nav-item a[data-toggle=collapse][aria-expanded=true]:before, .sidebar[data-background-color="white"] .nav.nav-secondary > .nav-item a[data-toggle=collapse][aria-expanded=true]:before {
-      background: #6861CE !important; }
+      background: #2e2e2e !important; }
     .sidebar .nav.nav-secondary > .nav-item.active a:before, .sidebar[data-background-color="white"] .nav.nav-secondary > .nav-item.active a:before {
       background: #6861CE !important; }
     .sidebar .nav.nav-secondary > .nav-item.active a i, .sidebar[data-background-color="white"] .nav.nav-secondary > .nav-item.active a i {
@@ -863,7 +863,7 @@ body {
       width: 35px;
       height: 35px; }
   .logo-header .logo {
-    color: #2A2F5B;
+    color: #f88400;
     opacity: 1;
     position: relative;
     height: 100%;
@@ -1172,7 +1172,7 @@ body[data-background-color="dark"] .border-top {
   border-color: rgba(181, 181, 181, 0.1) !important; }
 
 .main-header .navbar-header[data-background-color][data-background-color="dark"] .dropdown-menu, .main-header .navbar-header[data-background-color][data-background-color="dark2"] .dropdown-menu {
-  background: #202940 !important; }
+  background: #83a6ff !important; }
   .main-header .navbar-header[data-background-color][data-background-color="dark"] .dropdown-menu:after, .main-header .navbar-header[data-background-color][data-background-color="dark2"] .dropdown-menu:after {
     border-bottom-color: #202940; }
   .main-header .navbar-header[data-background-color][data-background-color="dark"] .dropdown-menu .dropdown-title, .main-header .navbar-header[data-background-color][data-background-color="dark2"] .dropdown-menu .dropdown-title {

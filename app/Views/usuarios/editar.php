@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><?= $title ?></title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .user-header {
+            background: linear-gradient(135deg, #FF8008 0%, #FFC837 100%);
+            color: #fff;
+            padding: 2rem;
+            border-radius: 15px;
+            margin-bottom: 2rem;
+            box-shadow: 0 6px 15px rgba(255, 128, 8, 0.3);
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .form-section {
+            background: #fff;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-left: 4px solid #FF8008;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .form-section:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 16px rgba(255, 128, 8, 0.2);
+        }
+
+        .password-toggle {
+            cursor: pointer;
+            color: #FF8008;
+            transition: color 0.3s ease;
+        }
+
+        .password-toggle:hover {
+            color: #e76f00;
+        }
+
+    </style>
+</head>
+<body>
+    <?= $header ?>
+    
+    <div class="container-fluid py-4">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <!-- Encabezado del Usuario -->
+                <div class="user-header text-center">
+                    <div class="user-avatar mx-auto mb-3" style="width: 80px; height: 80px; background: rgba(255, 81, 0, 0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 32px; font-weight: bold;">
+                        <?= strtoupper(substr($usuario->nombres, 0, 1) . substr($usuario->apellidos, 0, 1)) ?>
+                    </div>
+                    <h3><?= $usuario->nombres . ' ' . $usuario->apellidos ?></h3>
+                    <p class="mb-0">
+                        <span class="badge bg-light text-dark me-2"><?= $usuario->nombreusuario ?></span>
+                        <span class="badge bg-info"><?= $usuario->email ?></span>
+                    </p>
+                </div>
+
+                <div class="card shadow">
+                    <div class="card-header bg-white py-3">
+                        <h5 class="mb-0 text-primary">
+                            <i class="fas fa-edit me-2"></i>Editar Credenciales
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <form id="editarUsuarioForm" novalidate>
+                            <input type="hidden" name="idusuario" value="<?= $usuario->idusuario ?>">
+
+                            <!-- Información de la Persona (solo lectura) -->
+                            <div class="form-section">
+                                <h6 class="text-primary mb-3">
+                                    <i class="fas fa-user me-2"></i>Información Personal
+                                </h6>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <label class="form-label">Nombres</label>
+                                        <input type="text" class="form-control" value="<?= $usuario->nombres ?>" readonly>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label">Apellidos</label>
+                                        <input type="text" class="form-control" value="<?= $usuario->apellidos ?>" readonly>
+                                    </div>
+                                </div>
+                                <div class="row mt-3">
+                                    <div class="col-md-4">
+                                        <label class="form-label">Documento</label>
+                                        <input type="text" class="form-control" 
+                                               value="<?= $usuario->tipodoc . ': ' . $usuario->numerodoc ?>" readonly>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label">Teléfono</label>
+                                        <input type="text" class="form-control" value="<?= $usuario->telprincipal ?>" readonly>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label">Dirección</label>
+                                        <input type="text" class="form-control" value="<?= $usuario->direccion ?>" readonly>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Credenciales de Acceso -->
+                            <div class="form-section">
+                                <h6 class="text-primary mb-3">
+                                    <i class="fas fa-key me-2"></i>Credenciales de Acceso
+                                </h6>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <label class="form-label">Cargo *</label>
+                                        <select class="form-select" name="idcargo" required>
+                                            <option value="">Seleccionar cargo...</option>
+                                            <?php foreach ($cargos as $cargo): ?>
+                                                <option value="<?= $cargo->idcargo ?>" 
+                                                    <?= $cargo->idcargo == $usuario->idcargo ? 'selected' : '' ?>>
+                                                    <?= $cargo->cargo ?>
+                                                </option>
+                                            <?php endforeach; ?>
+                                        </select>
+                                        <div class="invalid-feedback">Debe seleccionar un cargo</div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label">Tipo de Usuario *</label>
+                                        <select class="form-select" name="tipo_usuario" required>
+                                            <option value="trabajador" <?= $usuario->tipo_usuario == 'trabajador' ? 'selected' : '' ?>>Trabajador</option>
+                                            <option value="admin" <?= $usuario->tipo_usuario == 'admin' ? 'selected' : '' ?>>Administrador</option>
+                                        </select>
+                                        <div class="invalid-feedback">Debe seleccionar un tipo de usuario</div>
+                                    </div>
+                                </div>
+
+                                <div class="row mt-3">
+                                    <div class="col-md-6">
+                                        <label class="form-label">Nombre de Usuario</label>
+                                        <input type="text" class="form-control" value="<?= $usuario->nombreusuario ?>" readonly>
+                                        <small class="form-text text-muted">El nombre de usuario no puede ser modificado</small>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label">Email</label>
+                                        <input type="email" class="form-control" value="<?= $usuario->email ?>" readonly>
+                                        <small class="form-text text-muted">El email no puede ser modificado</small>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Cambio de Contraseña -->
+                            <div class="form-section">
+                                <h6 class="text-primary mb-3">
+                                    <i class="fas fa-lock me-2"></i>Cambiar Contraseña
+                                </h6>
+                                <div class="alert alert-info">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    Complete solo si desea cambiar la contraseña. Deje en blanco para mantener la actual.
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <label class="form-label">Nueva Contraseña</label>
+                                        <div class="input-group">
+                                            <input type="password" class="form-control" name="password" 
+                                                   id="password" placeholder="Dejar en blanco para no cambiar">
+                                            <span class="input-group-text password-toggle" onclick="togglePassword('password')">
+                                                <i class="fas fa-eye"></i>
+                                            </span>
+                                        </div>
+                                        <div class="invalid-feedback">La contraseña debe tener al menos 8 caracteres</div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label">Confirmar Contraseña</label>
+                                        <div class="input-group">
+                                            <input type="password" class="form-control" name="confirm_password" 
+                                                   id="confirm_password" placeholder="Confirmar nueva contraseña">
+                                            <span class="input-group-text password-toggle" onclick="togglePassword('confirm_password')">
+                                                <i class="fas fa-eye"></i>
+                                            </span>
+                                        </div>
+                                        <div class="invalid-feedback">Las contraseñas no coinciden</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="d-flex justify-content-between mt-4">
+                                <a href="<?= base_url('usuarios') ?>" class="btn btn-secondary">
+                                    <i class="fas fa-arrow-left me-1"></i> Volver
+                                </a>
+                                <div>
+                                    <button type="submit" class="btn btn-primary" id="submitBtn">
+                                        <i class="fas fa-save me-1"></i> Guardar Cambios
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <?= $footer ?>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function togglePassword(inputId) {
+            const input = document.getElementById(inputId);
+            const icon = input.nextElementSibling.querySelector('i');
+            
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                input.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('editarUsuarioForm');
+
+            form.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                if (!form.checkValidity()) {
+                    e.stopPropagation();
+                    form.classList.add('was-validated');
+                    return;
+                }
+
+                const submitBtn = document.getElementById('submitBtn');
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Guardando...';
+
+                try {
+                    const formData = new FormData(form);
+                    const response = await fetch('<?= base_url('usuarios/actualizar/' . $usuario->idusuario) ?>', {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    const data = await response.json();
+
+                    if (data.success) {
+                        alert('Credenciales actualizadas exitosamente');
+                        window.location.href = '<?= base_url('usuarios') ?>';
+                    } else {
+                        alert('Error: ' + data.message);
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    alert('Error al actualizar las credenciales');
+                } finally {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = '<i class="fas fa-save me-1"></i> Guardar Cambios';
+                }
+            });
+
+            // Validación de confirmación de contraseña
+            const password = document.getElementById('password');
+            const confirmPassword = document.getElementById('confirm_password');
+
+            confirmPassword.addEventListener('input', function() {
+                if (password.value !== confirmPassword.value) {
+                    confirmPassword.setCustomValidity('Las contraseñas no coinciden');
+                } else {
+                    confirmPassword.setCustomValidity('');
+                }
+            });
+
+            // Validación en tiempo real
+            form.querySelectorAll('select').forEach(select => {
+                select.addEventListener('change', () => {
+                    if (!select.checkValidity()) {
+                        select.classList.add('is-invalid');
+                    } else {
+                        select.classList.remove('is-invalid');
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>

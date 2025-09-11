@@ -18,10 +18,10 @@ class AuthFilter implements FilterInterface
         // Si se especifica un tipo de usuario requerido
         if (!empty($arguments)) {
             $tipoRequerido = $arguments[0];
-            $tipoUsuario = session()->get('usuario_tipo');
+            $tipoUsuario = session()->get('tipo_usuario');
 
             if ($tipoUsuario !== $tipoRequerido) {
-                return redirect()->to('/login')->with('error', 'No tienes permisos para acceder a esta sección.');
+                return redirect()->to('/dashboard')->with('error', 'No tienes permisos para acceder a esta sección.');
             }
         }
 

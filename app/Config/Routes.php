@@ -14,12 +14,33 @@ $routes->get('auth/check-session', 'AuthController::checkSession');
 
 // Ruta principal después del login
 $routes->get('welcome', 'Home::index', ['filter' => 'auth']);
+$routes->get('test-usuarios', 'AuthController::testUsuarios');
+$routes->get('test_debug', 'AuthController::testDebug');
+$routes->get('test_simple', 'AuthController::testSimple');
+
+
+
+
+// Rutas SIMPLES para usuarios (sin autenticación por ahora)
+$routes->get('usuarios-simple', 'UsuariosControllerSimple::index');
+$routes->get('usuarios-simple/crear', 'UsuariosControllerSimple::crear');
+$routes->post('usuarios-simple/guardar', 'UsuariosControllerSimple::guardar');
+$routes->delete('usuarios-simple/eliminar/(:num)', 'UsuariosControllerSimple::eliminar/$1');
 
 // Rutas protegidas para administrador
 $routes->group('', ['filter' => 'auth:admin'], function($routes) {
-    $routes->get('dashboard', 'AuthController::dashboard');
     $routes->get('auth/crear-trabajador', 'AuthController::crearTrabajador');
     $routes->post('auth/crear-trabajador', 'AuthController::crearTrabajador');
+    
+    // Rutas para gestión de usuarios
+    $routes->get('usuarios', 'UsuariosController::index');
+    $routes->get('usuarios/crear', 'UsuariosController::crear');
+    $routes->post('usuarios/guardar', 'UsuariosController::guardar');
+    $routes->get('usuarios/editar/(:num)', 'UsuariosController::editar/$1');
+    $routes->post('usuarios/actualizar/(:num)', 'UsuariosController::actualizar/$1');
+    $routes->get('usuarios/obtener-persona/(:num)', 'UsuariosController::obtenerPersona/$1');
+    $routes->delete('usuarios/eliminar/(:num)', 'UsuariosController::eliminar/$1');
+    $routes->get('usuarios/personas-sin-usuario', 'UsuariosController::getPersonasSinUsuario');
 });
 
 // Rutas protegidas para trabajador

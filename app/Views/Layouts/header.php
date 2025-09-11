@@ -136,7 +136,6 @@
                 </ul>
               </div>
             </li>
-
             <!-- Separador -->
             <li class="nav-section">
               <span class="sidebar-mini-icon">

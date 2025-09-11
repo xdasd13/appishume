@@ -866,7 +866,7 @@ setTimeout(animateCards, 100);
 }
 
 .badge-en-proceso {
-    background: #17a2b8;
+    background:rgb(16, 196, 241);
     color: white;
 }
 

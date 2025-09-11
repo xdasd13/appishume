@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><?= $title ?></title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .card-credential {
+            transition: transform 0.2s;
+            border: 1px solid #dee2e6;
+            border-radius: 10px;
+        }
+        .card-credential:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        .badge-admin {
+            background-color: #dc3545;
+        }
+        .badge-trabajador {
+            background-color: #0d6efd;
+        }
+        .user-avatar {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(45deg,rgb(255, 136, 0),rgb(224, 126, 60));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: white;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <?= $header ?>
+    
+    <div class="container-fluid py-4">
+        <div class="row">
+            <div class="col-12">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h1 class="h3 mb-0 text-gray-800">
+                        <i class="fas fa-id-card me-2"></i>Gestión de Credenciales
+                    </h1>
+                    <a href="<?= base_url('usuarios/crear') ?>" class="btn btn-primary">
+                        <i class="fas fa-plus me-1"></i> Nueva Credencial
+                    </a>
+                </div>
+
+                <?php if (session()->getFlashdata('success')): ?>
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                        <?= session()->getFlashdata('success') ?>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                <?php endif; ?>
+
+                <?php if (session()->getFlashdata('error')): ?>
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        <?= session()->getFlashdata('error') ?>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                <?php endif; ?>
+
+                <div class="card shadow">
+                    <div class="card-header bg-white py-3">
+                        <h6 class="m-0 font-weight-bold text-primary">
+                            <i class="fas fa-users me-1"></i> Lista de Credenciales Activas
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <?php if (!empty($usuarios)): ?>
+                            <div class="row">
+                                <?php foreach ($usuarios as $usuario): ?>
+                                    <div class="col-md-6 col-lg-4 mb-4">
+                                        <div class="card card-credential h-100">
+                                            <div class="card-header bg-light py-3">
+                                                <div class="d-flex justify-content-between align-items-center">
+                                                    <span class="badge <?= $usuario->tipo_usuario === 'admin' ? 'badge-admin' : 'badge-trabajador' ?>">
+                                                        <?= ucfirst($usuario->tipo_usuario) ?>
+                                                    </span>
+                                                    <span class="badge bg-success">Activo</span>
+                                                </div>
+                                            </div>
+                                            <div class="card-body">
+                                                <div class="d-flex align-items-center mb-3">
+                                                    <div class="user-avatar me-3">
+                                                        <?= strtoupper(substr($usuario->nombres, 0, 1) . substr($usuario->apellidos, 0, 1)) ?>
+                                                    </div>
+                                                    <div>
+                                                        <h6 class="mb-0"><?= $usuario->nombres . ' ' . $usuario->apellidos ?></h6>
+                                                        <small class="text-muted"><?= $usuario->cargo ?></small>
+                                                    </div>
+                                                </div>
+                                                
+                                                <div class="mb-2">
+                                                    <small class="text-muted d-block">
+                                                        <i class="fas fa-user me-1"></i> Usuario: <?= $usuario->nombreusuario ?>
+                                                    </small>
+                                                    <small class="text-muted d-block">
+                                                        <i class="fas fa-envelope me-1"></i> Email: <?= $usuario->email ?>
+                                                    </small>
+                                                    <small class="text-muted d-block">
+                                                        <i class="fas fa-id-card me-1"></i> <?= $usuario->tipodoc ?>: <?= $usuario->numerodoc ?>
+                                                    </small>
+                                                    <small class="text-muted d-block">
+                                                        <i class="fas fa-phone me-1"></i> Tel: <?= $usuario->telprincipal ?>
+                                                    </small>
+                                                </div>
+                                            </div>
+                                            <div class="card-footer bg-white">
+                                                <div class="d-flex justify-content-between">
+                                                    <a href="<?= base_url('usuarios/editar/' . $usuario->idusuario) ?>" 
+                                                       class="btn btn-sm btn-outline-primary">
+                                                        <i class="fas fa-edit"></i> Editar
+                                                    </a>
+                                                    <button onclick="confirmarEliminacion(<?= $usuario->idusuario ?>, '<?= $usuario->nombres ?>')" 
+                                                            class="btn btn-sm btn-outline-danger">
+                                                        <i class="fas fa-trash"></i> Eliminar
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                <?php endforeach; ?>
+                            </div>
+                        <?php else: ?>
+                            <div class="text-center py-5">
+                                <i class="fas fa-users fa-3x text-muted mb-3"></i>
+                                <h5 class="text-muted">No hay credenciales registradas</h5>
+                                <p class="text-muted">Comienza creando la primera credencial</p>
+                                <a href="<?= base_url('usuarios/crear') ?>" class="btn btn-primary">
+                                    <i class="fas fa-plus me-1"></i> Crear Credencial
+                                </a>
+                            </div>
+                        <?php endif; ?>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de confirmación -->
+    <div class="modal fade" id="confirmModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Confirmar Eliminación</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>¿Está seguro de que desea eliminar las credenciales de <strong id="userName"></strong>?</p>
+                    <p class="text-danger"><small>Esta acción no se puede deshacer.</small></p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-danger" id="confirmDelete">Eliminar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <?= $footer ?>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function confirmarEliminacion(id, nombre) {
+            document.getElementById('userName').textContent = nombre;
+            const modal = new bootstrap.Modal(document.getElementById('confirmModal'));
+            modal.show();
+            
+            document.getElementById('confirmDelete').onclick = function() {
+                eliminarUsuario(id);
+            };
+        }
+
+        function eliminarUsuario(id) {
+            fetch('<?= base_url('usuarios/eliminar/') ?>' + id, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error al eliminar el usuario');
+            });
+        }
+    </script>
+</body>
+</html>
