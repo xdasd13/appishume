@@ -34,12 +34,14 @@ $routes->group('', ['filter' => 'auth:admin'], function($routes) {
     
     // Rutas para gestión de usuarios
     $routes->get('usuarios', 'UsuariosController::index');
-    $routes->get('usuarios/crear', 'UsuariosController::crear');
+    // En app/Config/Routes.php
+    $routes->get('usuarios/crear/(:any)', 'UsuariosController::crear/$1');
+    $routes->get('usuarios/crear', 'UsuariosController::crear'); // Ruta por defecto
     $routes->post('usuarios/guardar', 'UsuariosController::guardar');
     $routes->get('usuarios/editar/(:num)', 'UsuariosController::editar/$1');
     $routes->post('usuarios/actualizar/(:num)', 'UsuariosController::actualizar/$1');
     $routes->get('usuarios/obtener-persona/(:num)', 'UsuariosController::obtenerPersona/$1');
-    $routes->delete('usuarios/eliminar/(:num)', 'UsuariosController::eliminar/$1');
+    $routes->post('usuarios/eliminar/(:num)', 'UsuariosController::eliminar/$1');
     $routes->get('usuarios/personas-sin-usuario', 'UsuariosController::getPersonasSinUsuario');
 });
 

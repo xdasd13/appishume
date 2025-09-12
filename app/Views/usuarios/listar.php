@@ -6,6 +6,10 @@
     <title><?= $title ?></title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- Scripts de Bootstrap -->
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"></script>
     <style>
         .card-credential {
             transition: transform 0.2s;
@@ -42,14 +46,36 @@
     <div class="container-fluid py-4">
         <div class="row">
             <div class="col-12">
+                <!-- CORRECCIÓN: El dropdown debe estar dentro del div de encabezado -->
                 <div class="d-flex justify-content-between align-items-center mb-4">
                     <h1 class="h3 mb-0 text-gray-800">
                         <i class="fas fa-id-card me-2"></i>Gestión de Credenciales
                     </h1>
-                    <a href="<?= base_url('usuarios/crear') ?>" class="btn btn-primary">
-                        <i class="fas fa-plus me-1"></i> Nueva Credencial
-                    </a>
+                    
+                    <div class="dropdown">
+                        <button class="btn btn-primary dropdown-toggle" type="button" 
+                                id="dropdownMenuButton" data-bs-toggle="dropdown" 
+                                aria-expanded="false" aria-haspopup="true">
+                            <i class="fas fa-plus me-1"></i> Nuevo
+                        </button>
+                        <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                            <li>
+                                <a class="dropdown-item" href="<?= base_url('usuarios/crear/existente') ?>">
+                                    <i class="fas fa-user me-2"></i> Crear Credenciales
+                                    <small class="d-block text-muted">Para personal existente</small>
+                                </a>
+                            </li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <a class="dropdown-item" href="<?= base_url('usuarios/crear/nuevo') ?>">
+                                    <i class="fas fa-user-plus me-2"></i> Crear Nuevo Personal
+                                    <small class="d-block text-muted">Registrar nueva persona</small>
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
                 </div>
+                <!-- Fin de la corrección -->
 
                 <?php if (session()->getFlashdata('success')): ?>
                     <div class="alert alert-success alert-dismissible fade show" role="alert">
@@ -132,7 +158,8 @@
                                 <i class="fas fa-users fa-3x text-muted mb-3"></i>
                                 <h5 class="text-muted">No hay credenciales registradas</h5>
                                 <p class="text-muted">Comienza creando la primera credencial</p>
-                                <a href="<?= base_url('usuarios/crear') ?>" class="btn btn-primary">
+                                <!-- Actualizar este enlace para que vaya a alguna de las opciones -->
+                                <a href="<?= base_url('usuarios/crear/existente') ?>" class="btn btn-primary">
                                     <i class="fas fa-plus me-1"></i> Crear Credencial
                                 </a>
                             </div>
