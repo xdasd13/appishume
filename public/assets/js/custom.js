@@ -27,7 +27,10 @@ $(document).ready(function() {
             confirmButtonColor: '#007bff',
             cancelButtonColor: '#6c757d',
             confirmButtonText: 'Sí, continuar',
-            cancelButtonText: 'Cancelar'
+            cancelButtonText: 'Cancelar',
+            customClass: {
+                popup: 'animate__animated animate__zoomIn'
+            }
         }).then((result) => {
             if (result.isConfirmed) {
                 window.location.href = href;
@@ -68,7 +71,7 @@ $(document).ready(function() {
         const observer = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
                 if (entry.isIntersecting) {
-                    entry.target.classList.add('fade-in');
+                    entry.target.classList.add('animate__animated', 'animate__fadeInUp');
                 }
             });
         });
@@ -99,6 +102,9 @@ function showLoading(message = 'Cargando...') {
         allowOutsideClick: false,
         didOpen: () => {
             Swal.showLoading();
+        },
+        customClass: {
+            popup: 'animate__animated animate__zoomIn'
         }
     });
 }
@@ -122,6 +128,50 @@ function showToast(message, type = 'success') {
     
     Toast.fire({
         icon: type,
-        title: message
+        title: message,
+        customClass: {
+            popup: 'animate__animated animate__zoomIn'
+        }
     });
 }
+
+// Validación de montos en tiempo real
+function validatePaymentAmount(inputElement, maxAmount) {
+    const value = parseFloat(inputElement.val());
+    
+    if (isNaN(value)) {
+        showToast('Por favor ingrese un monto válido', 'error');
+        inputElement.addClass('is-invalid');
+        return false;
+    }
+    
+    if (value <= 0) {
+        showToast('El monto debe ser mayor a cero', 'error');
+        inputElement.addClass('is-invalid');
+        return false;
+    }
+    
+    if (value > maxAmount) {
+        showToast('El monto excede el saldo disponible', 'error');
+        inputElement.addClass('is-invalid');
+        return false;
+    }
+    
+    inputElement.removeClass('is-invalid');
+    return true;
+}
+
+// Efectos de animación para transiciones de página
+function animatePageTransition() {
+    $('body').addClass('animate__animated animate__fadeIn');
+}
+
+// Inicializar animaciones cuando se carga la página
+$(window).on('load', function() {
+    animatePageTransition();
+    
+    // Animación para elementos con delay
+    $('.card-3d').each(function(index) {
+        $(this).css('animation-delay', (index * 0.1) + 's');
+    });
+});

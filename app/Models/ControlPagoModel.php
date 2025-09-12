@@ -13,18 +13,36 @@ class ControlPagoModel extends Model
         'idtipopago', 'numtransaccion', 'fechahora', 'idusuario', 'comprobante'
     ];
     
-    // Obtener información completa de pagos con joins
-    public function obtenerPagosCompletos()
+    // Obtener información completa de pagos con joins y filtros
+    public function obtenerPagosCompletos($filtro_contrato = null, $filtro_estado = null, $filtro_fecha = null)
     {
-        return $this->select('controlpagos.*, contratos.idcontrato, personas.nombres, personas.apellidos, empresas.razonsocial, tipospago.tipopago, usuarios.nombreusuario')
+        $builder = $this->select('controlpagos.*, contratos.idcontrato, personas.nombres, personas.apellidos, empresas.razonsocial, tipospago.tipopago, usuarios.nombreusuario')
                     ->join('contratos', 'contratos.idcontrato = controlpagos.idcontrato')
                     ->join('clientes', 'clientes.idcliente = contratos.idcliente')
                     ->join('personas', 'personas.idpersona = clientes.idpersona', 'left')
                     ->join('empresas', 'empresas.idempresa = clientes.idempresa', 'left')
                     ->join('tipospago', 'tipospago.idtipopago = controlpagos.idtipopago')
                     ->join('usuarios', 'usuarios.idusuario = controlpagos.idusuario', 'left')
-                    ->orderBy('controlpagos.fechahora', 'DESC')
-                    ->findAll();
+                    ->orderBy('controlpagos.fechahora', 'DESC');
+        
+        // Aplicar filtros
+        if (!empty($filtro_contrato)) {
+            $builder->where('controlpagos.idcontrato', $filtro_contrato);
+        }
+        
+        if (!empty($filtro_estado)) {
+            if ($filtro_estado === 'completo') {
+                $builder->where('controlpagos.deuda', 0);
+            } elseif ($filtro_estado === 'pendiente') {
+                $builder->where('controlpagos.deuda >', 0);
+            }
+        }
+        
+        if (!empty($filtro_fecha)) {
+            $builder->like('controlpagos.fechahora', $filtro_fecha, 'after');
+        }
+        
+        return $builder->findAll();
     }
 
     // Obtener información de un pago específico

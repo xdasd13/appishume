@@ -1,8 +1,8 @@
 <?= $header ?>
 <div class="page-inner">
-    <!-- Mostrar mensajes de éxito/error -->
+    <!-- Mostrar mensajes de éxito/error con animaciones -->
     <?php if (session()->getFlashdata('success')): ?>
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <div class="alert alert-success alert-dismissible fade show animate__animated animate__fadeInDown" role="alert">
             <div class="d-flex align-items-center">
                 <i class="fas fa-check-circle fa-2x mr-3"></i>
                 <div>
@@ -17,7 +17,7 @@
     <?php endif; ?>
     
     <?php if (session()->getFlashdata('error')): ?>
-        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <div class="alert alert-danger alert-dismissible fade show animate__animated animate__shakeX" role="alert">
             <div class="d-flex align-items-center">
                 <i class="fas fa-exclamation-circle fa-2x mr-3"></i>
                 <div>
@@ -31,10 +31,10 @@
         </div>
     <?php endif; ?>
 
-    <!-- Tarjetas de resumen -->
+    <!-- Tarjetas de resumen con animaciones 3D -->
     <div class="row">
         <div class="col-md-3">
-            <div class="card card-stats card-round">
+            <div class="card card-stats card-round card-3d">
                 <div class="card-body">
                     <div class="row align-items-center">
                         <div class="col-5">
@@ -53,7 +53,7 @@
             </div>
         </div>
         <div class="col-md-3">
-            <div class="card card-stats card-round">
+            <div class="card card-stats card-round card-3d">
                 <div class="card-body">
                     <div class="row align-items-center">
                         <div class="col-5">
@@ -72,7 +72,7 @@
             </div>
         </div>
         <div class="col-md-3">
-            <div class="card card-stats card-round">
+            <div class="card card-stats card-round card-3d">
                 <div class="card-body">
                     <div class="row align-items-center">
                         <div class="col-5">
@@ -91,7 +91,7 @@
             </div>
         </div>
         <div class="col-md-3">
-            <div class="card card-stats card-round">
+            <div class="card card-stats card-round card-3d">
                 <div class="card-body">
                     <div class="row align-items-center">
                         <div class="col-5">
@@ -114,7 +114,7 @@
     <!-- Panel principal de pagos -->
     <div class="row">
         <div class="col-md-12">
-            <div class="card">
+            <div class="card card-3d">
                 <div class="card-header">
                     <div class="d-flex align-items-center">
                         <h4 class="card-title">Registros de Pagos</h4>
@@ -128,45 +128,56 @@
                 </div>
                 <div class="card-body">
                     <!-- Filtros -->
-                    <div class="row mb-4">
-                        <div class="col-md-4">
-                            <div class="form-group">
-                                <label for="filtro_contrato">Filtrar por Contrato</label>
-                                <select class="form-control select2" id="filtro_contrato">
-                                    <option value="">Todos los contratos</option>
-                                    <?php if (!empty($contratos)): ?>
-                                        <?php foreach ($contratos as $contrato): ?>
-                                            <option value="<?= $contrato['idcontrato'] ?>">
-                                                Contrato #<?= $contrato['idcontrato'] ?> - 
-                                                <?= !empty($contrato['nombres']) ? 
-                                                    $contrato['nombres'] . ' ' . $contrato['apellidos'] : 
-                                                    $contrato['razonsocial'] ?>
-                                            </option>
-                                        <?php endforeach; ?>
-                                    <?php endif; ?>
-                                </select>
+                    <form method="get" action="<?= base_url('/controlpagos') ?>" class="mb-4">
+                        <div class="row">
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <label for="filtro_contrato">Filtrar por Contrato</label>
+                                    <select class="form-control select2" id="filtro_contrato" name="filtro_contrato">
+                                        <option value="">Todos los contratos</option>
+                                        <?php if (!empty($contratos)): ?>
+                                            <?php foreach ($contratos as $contrato): ?>
+                                                <option value="<?= $contrato['idcontrato'] ?>" <?= ($filtro_contrato == $contrato['idcontrato']) ? 'selected' : '' ?>>
+                                                    Contrato #<?= $contrato['idcontrato'] ?> - 
+                                                    <?= !empty($contrato['nombres']) ? 
+                                                        $contrato['nombres'] . ' ' . $contrato['apellidos'] : 
+                                                        $contrato['razonsocial'] ?>
+                                                </option>
+                                            <?php endforeach; ?>
+                                        <?php endif; ?>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <label for="filtro_estado">Filtrar por Estado</label>
+                                    <select class="form-control select2" id="filtro_estado" name="filtro_estado">
+                                        <option value="">Todos los estados</option>
+                                        <option value="completo" <?= ($filtro_estado == 'completo') ? 'selected' : '' ?>>Pago Completo</option>
+                                        <option value="pendiente" <?= ($filtro_estado == 'pendiente') ? 'selected' : '' ?>>Pago Pendiente</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <label for="filtro_fecha">Filtrar por Mes/Año</label>
+                                    <input type="month" class="form-control" id="filtro_fecha" name="filtro_fecha" value="<?= $filtro_fecha ?>">
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <label style="opacity: 0;">Aplicar Filtros</label>
+                                    <div>
+                                        <button type="submit" class="btn btn-primary btn-sm">Aplicar Filtros</button>
+                                        <a href="<?= base_url('/controlpagos') ?>" class="btn btn-secondary btn-sm">Limpiar</a>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                        <div class="col-md-4">
-                            <div class="form-group">
-                                <label for="filtro_estado">Filtrar por Estado</label>
-                                <select class="form-control select2" id="filtro_estado">
-                                    <option value="">Todos los estados</option>
-                                    <option value="completo">Pago Completo</option>
-                                    <option value="pendiente">Pago Pendiente</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="form-group">
-                                <label for="filtro_fecha">Filtrar por Fecha</label>
-                                <input type="month" class="form-control" id="filtro_fecha">
-                            </div>
-                        </div>
-                    </div>
+                    </form>
 
                     <div class="table-responsive">
-                        <table id="pagos-table" class="display table table-striped table-hover">
+                        <table id="pagos-table" class="display table table-striped table-hover table-hover-3d">
                             <thead>
                                 <tr>
                                     <th>ID</th>
@@ -185,7 +196,7 @@
                             <tbody>
                                 <?php if (!empty($pagos) && is_array($pagos)): ?>
                                     <?php foreach ($pagos as $pago): ?>
-                                        <tr>
+                                        <tr class="animate__animated animate__fadeIn">
                                             <td><?= $pago['idpagos'] ?></td>
                                             <td>
                                                 <a href="<?= base_url('/controlpagos/por-contrato/' . $pago['idcontrato']) ?>" 
@@ -200,22 +211,22 @@
                                             </td>
                                             <td><?= date('d/m/Y H:i', strtotime($pago['fechahora'])) ?></td>
                                             <td class="<?= $pago['saldo'] > 0 ? 'text-danger' : 'text-success' ?>">
-                                                <span class="badge badge-<?= $pago['saldo'] > 0 ? 'danger' : 'success' ?>">
+                                                <span class="badge badge-<?= $pago['saldo'] > 0 ? 'danger' : 'success' ?> badge-3d">
                                                     <?= number_format($pago['saldo'], 2) ?>
                                                 </span>
                                             </td>
                                             <td class="text-success">
-                                                <span class="badge badge-success">
+                                                <span class="badge badge-success badge-3d">
                                                     <?= number_format($pago['amortizacion'], 2) ?>
                                                 </span>
                                             </td>
                                             <td class="<?= $pago['deuda'] > 0 ? 'text-warning' : 'text-success' ?>">
-                                                <span class="badge badge-<?= $pago['deuda'] > 0 ? 'warning' : 'success' ?>">
+                                                <span class="badge badge-<?= $pago['deuda'] > 0 ? 'warning' : 'success' ?> badge-3d">
                                                     <?= number_format($pago['deuda'], 2) ?>
                                                 </span>
                                             </td>
                                             <td>
-                                                <span class="badge badge-info"><?= $pago['tipopago'] ?></span>
+                                                <span class="badge badge-info badge-3d"><?= $pago['tipopago'] ?></span>
                                             </td>
                                             <td><?= $pago['nombreusuario'] ?? 'N/A' ?></td>
                                             <td>
@@ -225,19 +236,19 @@
                                                         <i class="fas fa-download"></i>
                                                     </a>
                                                 <?php else: ?>
-                                                    <span class="badge badge-secondary">Sin comprobante</span>
+                                                    <span class="badge badge-secondary badge-3d">Sin comprobante</span>
                                                 <?php endif; ?>
                                             </td>
                                             <td>
                                                 <div class="form-button-action">
                                                     <a href="<?= base_url('/controlpagos/ver/' . $pago['idpagos']) ?>" 
-                                                       class="btn btn-link btn-primary btn-lg" 
+                                                       class="btn btn-link btn-primary btn-lg btn-action" 
                                                        data-toggle="tooltip" 
                                                        title="Ver detalles">
                                                         <i class="fa fa-eye"></i>
                                                     </a>
                                                     <a href="<?= base_url('/controlpagos/generarVoucher/' . $pago['idpagos']) ?>" 
-                                                       class="btn btn-link btn-info btn-lg" 
+                                                       class="btn btn-link btn-info btn-lg btn-action" 
                                                        data-toggle="tooltip" 
                                                        title="Generar voucher"
                                                        target="_blank">
@@ -261,26 +272,6 @@
     </div>
 </div>
 
-<!-- Modal para ver detalles del pago -->
-<div class="modal fade" id="verPagoModal" tabindex="-1" role="dialog" aria-hidden="true">
-    <div class="modal-dialog modal-lg" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Detalles del Pago</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
-                <!-- Los detalles se cargarán aquí via AJAX -->
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
-            </div>
-        </div>
-    </div>
-</div>
-
 <?= $footer ?>
 
 <!-- Scripts para la funcionalidad de la página -->
@@ -295,34 +286,6 @@ $(document).ready(function() {
         "responsive": true,
         "pageLength": 10,
         "lengthMenu": [[10, 25, 50, -1], [10, 25, 50, "Todos"]]
-    });
-
-    // Aplicar filtros
-    $('#filtro_contrato, #filtro_estado, #filtro_fecha').on('change', function() {
-        var contrato = $('#filtro_contrato').val();
-        var estado = $('#filtro_estado').val();
-        var fecha = $('#filtro_fecha').val();
-        
-        // Filtrar por contrato
-        table.column(1).search(contrato).draw();
-        
-        // Filtrar por estado (completo o pendiente)
-        if (estado === 'completo') {
-            table.column(6).search('^0.00$', true, false).draw();
-        } else if (estado === 'pendiente') {
-            table.column(6).search('^(?!0.00$).*$', true, false).draw();
-        } else {
-            table.column(6).search('').draw();
-        }
-        
-        // Filtrar por fecha (si se seleccionó)
-        if (fecha) {
-            var yearMonth = fecha.split('-');
-            var year = yearMonth[0];
-            var month = yearMonth[1];
-            
-            table.column(3).search(year + '-' + month).draw();
-        }
     });
 
     // Inicializar tooltips

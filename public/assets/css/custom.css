@@ -1,17 +1,255 @@
-/* Estilos personalizados para el sistema de control de pagos */
+/* Estilos personalizados para el sistema de control de pagos - MEJORADO */
+
+/* Animaciones 3D y transformaciones */
+.card-3d {
+    transform-style: preserve-3d;
+    perspective: 1000px;
+    transition: all 0.5s ease;
+}
+
+.card-3d:hover {
+    transform: translateY(-10px) rotateX(5deg);
+    box-shadow: 0 20px 30px rgba(0, 0, 0, 0.15);
+}
+
+.btn-3d {
+    position: relative;
+    transform-style: preserve-3d;
+    transition: all 0.3s ease;
+    transform: translateY(0);
+}
+
+.btn-3d:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+.btn-3d:active {
+    transform: translateY(1px);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.btn-animate {
+    position: relative;
+    overflow: hidden;
+    z-index: 1;
+}
+
+.btn-animate:after {
+    content: '';
+    position: absolute;
+    left: -20px;
+    top: -20px;
+    width: 50px;
+    height: 50px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    transform: scale(0);
+    transition: transform 0.5s ease;
+    z-index: -1;
+}
+
+.btn-animate:hover:after {
+    transform: scale(15);
+}
+
+/* Animación de entrada para elementos */
+.fade-in {
+    animation: fadeIn 0.6s ease forwards;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.slide-in-left {
+    animation: slideInLeft 0.5s ease forwards;
+}
+
+@keyframes slideInLeft {
+    from {
+        opacity: 0;
+        transform: translateX(-30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.slide-in-right {
+    animation: slideInRight 0.5s ease forwards;
+}
+
+@keyframes slideInRight {
+    from {
+        opacity: 0;
+        transform: translateX(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* Efectos de hover para tablas */
+.table-hover-3d tbody tr {
+    transition: all 0.3s ease;
+    transform: translateZ(0);
+}
+
+.table-hover-3d tbody tr:hover {
+    background-color: #f8f9fa;
+    transform: translateY(-2px) scale(1.01);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+/* Estilos para badges con efecto 3D */
+.badge-3d {
+    position: relative;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s ease;
+}
+
+.badge-3d:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* Efectos para cards con gradientes */
+.card-gradient {
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    border: none;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+.card-gradient:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+}
+
+/* Progress bar animada */
+.progress-bar-animated {
+    transition: width 1.5s ease-in-out;
+}
+
+/* Estilo para alertas personalizadas */
+.alert-3d {
+    position: relative;
+    border: none;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    transform: translateZ(0);
+    transition: all 0.3s ease;
+}
+
+.alert-3d:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+/* Efectos de hover para botones de acción */
+.btn-action {
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s;
+}
+
+.btn-action:before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: all 0.5s;
+}
+
+.btn-action:hover:before {
+    left: 100%;
+}
+
+/* Animación para el logo o header */
+.logo-animation {
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.05);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+/* Estilos para filtros con efectos */
+.filter-card {
+    transition: all 0.3s ease;
+    transform: translateZ(0);
+}
+
+.filter-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
+/* Efecto de carga para elementos */
+.loading-shimmer {
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: loading 1.5s infinite;
+    border-radius: 4px;
+    height: 20px;
+}
+
+@keyframes loading {
+    0% {
+        background-position: 200% 0;
+    }
+    100% {
+        background-position: -200% 0;
+    }
+}
+
+/* Responsive improvements */
+@media (max-width: 768px) {
+    .card-3d:hover {
+        transform: translateY(-5px);
+    }
+    
+    .btn-3d:hover {
+        transform: translateY(-2px);
+    }
+}
 
 /* Mejoras en cards */
 .card {
-    border-radius: 10px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    margin-bottom: 20px;
+    border-radius: 15px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+    margin-bottom: 25px;
     border: none;
+    transition: all 0.3s ease;
 }
 
 .card-header {
     border-bottom: 1px solid #eee;
     background-color: #fff;
     padding: 15px 20px;
+    border-radius: 15px 15px 0 0 !important;
 }
 
 /* Botones mejorados */
@@ -22,8 +260,8 @@
 }
 
 .btn-animate:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.15);
 }
 
 .btn-animate:active {
@@ -42,8 +280,9 @@
 /* Badges mejorados */
 .badge {
     font-size: 85%;
-    padding: 5px 10px;
-    border-radius: 15px;
+    padding: 7px 12px;
+    border-radius: 20px;
+    font-weight: 500;
 }
 
 /* Tablas mejoradas */
@@ -52,10 +291,12 @@
     font-weight: 600;
     color: #495057;
     background-color: #f8f9fa;
+    border-bottom: 2px solid #dee2e6;
 }
 
 .table-hover tbody tr:hover {
     background-color: rgba(0, 123, 255, 0.05);
+    transition: background-color 0.2s ease;
 }
 
 /* Iconos grandes para estadísticas */
@@ -65,33 +306,39 @@
 }
 
 .bubble-shadow-small {
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
     border-radius: 50%;
     width: 70px;
     height: 70px;
     display: flex;
     align-items: center;
     justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.bubble-shadow-small:hover {
+    transform: scale(1.05);
+    box-shadow: 0 12px 25px rgba(0, 0, 0, 0.15);
 }
 
 /* Gradientes para cards */
 .bg-primary-gradient {
-    background: linear-gradient(45deg, #007bff, #0056b3);
+    background: linear-gradient(135deg, #007bff, #0056b3);
     color: white;
 }
 
 .bg-secondary-gradient {
-    background: linear-gradient(45deg, #6c757d, #495057);
+    background: linear-gradient(135deg, #6c757d, #495057);
     color: white;
 }
 
 .bg-success-gradient {
-    background: linear-gradient(45deg, #28a745, #1e7e34);
+    background: linear-gradient(135deg, #28a745, #1e7e34);
     color: white;
 }
 
 .bg-info-gradient {
-    background: linear-gradient(45deg, #17a2b8, #117a8b);
+    background: linear-gradient(135deg, #17a2b8, #117a8b);
     color: white;
 }
 
@@ -99,6 +346,7 @@
 .form-control:focus {
     border-color: #007bff;
     box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    transform: translateZ(0);
 }
 
 .custom-file-label::after {
@@ -107,12 +355,12 @@
 
 /* Animaciones */
 @keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
 .fade-in {
-    animation: fadeIn 0.5s ease-in;
+    animation: fadeIn 0.6s ease-in;
 }
 
 /* Responsividad mejorada */
@@ -130,45 +378,60 @@
     .table-responsive {
         font-size: 0.875rem;
     }
+    
+    .bubble-shadow-small {
+        width: 60px;
+        height: 60px;
+    }
+    
+    .icon-big {
+        font-size: 2rem;
+    }
 }
 
 /* Estilos para el modal */
 .modal-content {
-    border-radius: 10px;
+    border-radius: 15px;
     border: none;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
 }
 
 .modal-header {
     border-bottom: 1px solid #eee;
     background-color: #f8f9fa;
-    border-radius: 10px 10px 0 0;
+    border-radius: 15px 15px 0 0;
 }
 
 /* Mejoras en los alerts */
 .alert {
     border: none;
-    border-radius: 10px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    border-radius: 12px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+.alert:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
 }
 
 .alert-success {
-    background: linear-gradient(45deg, #d4edda, #c3e6cb);
+    background: linear-gradient(135deg, #d4edda, #c3e6cb);
     color: #155724;
 }
 
 .alert-danger {
-    background: linear-gradient(45deg, #f8d7da, #f5c6cb);
+    background: linear-gradient(135deg, #f8d7da, #f5c6cb);
     color: #721c24;
 }
 
 .alert-info {
-    background: linear-gradient(45deg, #d1ecf1, #bee5eb);
+    background: linear-gradient(135deg, #d1ecf1, #bee5eb);
     color: #0c5460;
 }
 
 .alert-warning {
-    background: linear-gradient(45deg, #fff3cd, #ffeaa7);
+    background: linear-gradient(135deg, #fff3cd, #ffeaa7);
     color: #856404;
 }
 
@@ -177,7 +440,13 @@
     height: calc(2.25rem + 2px);
     padding: 0.375rem 0.75rem;
     border: 1px solid #ced4da;
-    border-radius: 0.25rem;
+    border-radius: 0.375rem;
+    transition: all 0.3s ease;
+}
+
+.select2-container--bootstrap .select2-selection--single:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
 }
 
 .select2-container--bootstrap .select2-selection--single .select2-selection__arrow {
@@ -189,18 +458,19 @@
     border-radius: 20px;
     height: 20px;
     background-color: #e9ecef;
+    overflow: hidden;
 }
 
 .progress-bar {
     border-radius: 20px;
-    transition: width 0.6s ease;
+    transition: width 0.8s ease;
 }
 
 /* Efectos hover para cards */
 .card:hover {
-    transform: translateY(-5px);
+    transform: translateY(-8px);
     transition: transform 0.3s ease;
-    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 12px 25px rgba(0, 0, 0, 0.15);
 }
 
 /* Estilos para tooltips */
@@ -208,16 +478,27 @@
     font-size: 0.875rem;
 }
 
+.tooltip-inner {
+    border-radius: 8px;
+    padding: 8px 12px;
+}
+
 /* Mejoras en la paginación */
 .page-item.active .page-link {
     background-color: #007bff;
     border-color: #007bff;
+    box-shadow: 0 2px 5px rgba(0, 123, 255, 0.3);
 }
 
 .page-link {
     color: #007bff;
+    border-radius: 8px;
+    margin: 0 3px;
+    transition: all 0.3s ease;
 }
 
 .page-link:hover {
     color: #0056b3;
+    transform: translateY(-2px);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }

@@ -19,14 +19,24 @@ class ControlPagoController extends BaseController
 
     public function index()
     {
-        // Obtener todos los registros de pagos con información completa
-        $datos['pagos'] = $this->controlPagoModel->obtenerPagosCompletos();
+        // Obtener parámetros de filtro
+        $filtro_contrato = $this->request->getGet('filtro_contrato');
+        $filtro_estado = $this->request->getGet('filtro_estado');
+        $filtro_fecha = $this->request->getGet('filtro_fecha');
+        
+        // Obtener pagos con filtros
+        $datos['pagos'] = $this->controlPagoModel->obtenerPagosCompletos($filtro_contrato, $filtro_estado, $filtro_fecha);
         
         // Obtener contratos para el filtro
         $datos['contratos'] = $this->contratoModel->obtenerContratosConClientes();
 
         // Calcular estadísticas para los gráficos
         $datos['estadisticas'] = $this->calcularEstadisticas($datos['pagos']);
+
+        // Pasar valores de filtros a la vista
+        $datos['filtro_contrato'] = $filtro_contrato;
+        $datos['filtro_estado'] = $filtro_estado;
+        $datos['filtro_fecha'] = $filtro_fecha;
 
         $datos['header'] = view('Layouts/header');
         $datos['footer'] = view('Layouts/footer');
@@ -88,6 +98,11 @@ class ControlPagoController extends BaseController
         // Validar que la amortización no sea mayor al saldo
         if ($amortizacion > $saldo) {
             return redirect()->back()->withInput()->with('error', 'La amortización no puede ser mayor al saldo actual del contrato.');
+        }
+
+        // Validar que la amortización sea positiva
+        if ($amortizacion <= 0) {
+            return redirect()->back()->withInput()->with('error', 'La amortización debe ser mayor a cero.');
         }
 
         // Procesar comprobante
