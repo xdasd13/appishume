@@ -5,19 +5,7 @@
         <div class="col-12">
             <h2 class="text-primary"><i class="fas fa-users-cog me-2"></i><?= $titulo ?></h2>
             
-            <?php if (session()->getFlashdata('success')): ?>
-                <div class="alert alert-success alert-dismissible fade show">
-                    <i class="fas fa-check-circle me-2"></i><?= session()->getFlashdata('success') ?>
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                </div>
-            <?php endif; ?>
-            
-            <?php if (session()->getFlashdata('error')): ?>
-                <div class="alert alert-danger alert-dismissible fade show">
-                    <i class="fas fa-exclamation-circle me-2"></i><?= session()->getFlashdata('error') ?>
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                </div>
-            <?php endif; ?>
+            <!-- Las alertas ahora se muestran con SweetAlert -->
         </div>
     </div>
 
@@ -359,6 +347,15 @@
 <!-- Scripts del Tablero Kanban -->
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // Mostrar notificaciones de flash messages con SweetAlert
+    <?php if (session()->getFlashdata('success')): ?>
+        showNotification('<?= addslashes(session()->getFlashdata('success')) ?>', 'success');
+    <?php endif; ?>
+    
+    <?php if (session()->getFlashdata('error')): ?>
+        showNotification('<?= addslashes(session()->getFlashdata('error')) ?>', 'error');
+    <?php endif; ?>
+
     // Inicializar tooltips
     var tooltipTriggerList = [].slice.call(document.querySelectorAll('[title]'))
     var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
@@ -433,7 +430,7 @@ function initializeDragAndDrop() {
             }
         });
 
-        column.addEventListener('drop', function(e) {
+        column.addEventListener('drop', async function(e) {
             e.preventDefault();
             this.classList.remove('drag-over');
             
@@ -443,32 +440,59 @@ function initializeDragAndDrop() {
             if (cardElement && this !== cardElement.parentNode) {
                 // Determinar el nuevo estado basado en la columna
                 let newStatus = '';
+                let statusText = '';
+                let statusIcon = '';
+                
                 switch(this.id) {
                     case 'en-proceso':
                         newStatus = 'En Proceso';
+                        statusText = 'en proceso';
+                        statusIcon = 'info';
                         break;
                     case 'pendiente':
                         newStatus = 'Pendiente';
+                        statusText = 'pendiente';
+                        statusIcon = 'warning';
                         break;
                     case 'completo':
                         newStatus = 'Completado';
+                        statusText = 'completado';
+                        statusIcon = 'success';
                         break;
                 }
 
-                // Actualizar la tarjeta visualmente
-                updateCardStatus(cardElement, newStatus);
-                
-                // Mover la tarjeta a la nueva columna
-                this.appendChild(cardElement);
-                
-                // Actualizar estados vacíos
-                updateEmptyStates();
-                
-                // Aquí podrías hacer una llamada AJAX para actualizar el estado en la base de datos
-                updateEquipmentStatus(cardData.id, newStatus);
-                
-                // Mostrar notificación de éxito
-                showNotification('Estado actualizado correctamente', 'success');
+                // Confirmar el cambio de estado con SweetAlert
+                const result = await Swal.fire({
+                    title: 'Cambiar Estado del Equipo',
+                    text: `¿Deseas cambiar el estado del equipo #${cardData.id} a "${statusText}"?`,
+                    icon: statusIcon,
+                    showCancelButton: true,
+                    confirmButtonText: 'Sí, cambiar',
+                    cancelButtonText: 'Cancelar',
+                    confirmButtonColor: '#ff6b35',
+                    cancelButtonColor: '#6c757d'
+                });
+
+                if (result.isConfirmed) {
+                    // Actualizar la tarjeta visualmente
+                    updateCardStatus(cardElement, newStatus);
+                    
+                    // Mover la tarjeta a la nueva columna
+                    this.appendChild(cardElement);
+                    
+                    // Actualizar estados vacíos
+                    updateEmptyStates();
+                    
+                    // Aquí podrías hacer una llamada AJAX para actualizar el estado en la base de datos
+                    updateEquipmentStatus(cardData.id, newStatus);
+                    
+                    // Mostrar notificación de éxito
+                    showNotification(`Estado cambiado a "${statusText}" correctamente`, 'success');
+                } else {
+                    // Si se cancela, devolver la tarjeta a su posición original
+                    cardElement.style.transform = '';
+                    cardElement.style.opacity = '';
+                }
             }
         });
     });
@@ -582,25 +606,23 @@ function updateEquipmentStatus(equipmentId, newStatus) {
 }
 
 function showNotification(message, type = 'info') {
-    // Crear elemento de notificación
-    const notification = document.createElement('div');
-    notification.className = `alert alert-${type === 'success' ? 'success' : 'danger'} alert-dismissible fade show position-fixed`;
-    notification.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
-    notification.innerHTML = `
-        <i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'} me-2"></i>
-        ${message}
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    `;
-    
-    // Agregar al DOM
-    document.body.appendChild(notification);
-    
-    // Auto-remover después de 3 segundos
-    setTimeout(() => {
-        if (notification.parentNode) {
-            notification.remove();
+    // Usar SweetAlert Toast para notificaciones elegantes
+    const Toast = Swal.mixin({
+        toast: true,
+        position: "top-end",
+        showConfirmButton: false,
+        timer: 3000,
+        timerProgressBar: true,
+        didOpen: (toast) => {
+            toast.onmouseenter = Swal.stopTimer;
+            toast.onmouseleave = Swal.resumeTimer;
         }
-    }, 3000);
+    });
+
+    Toast.fire({
+        icon: type === 'success' ? 'success' : type === 'error' ? 'error' : 'info',
+        title: message
+    });
 }
 
 // Función para animar las tarjetas al cargar

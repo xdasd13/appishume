@@ -184,46 +184,83 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="button" class="btn btn-danger" id="confirmDelete">Eliminar</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <?= $footer ?>
     
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
-        function confirmarEliminacion(id, nombre) {
-            document.getElementById('userName').textContent = nombre;
-            const modal = new bootstrap.Modal(document.getElementById('confirmModal'));
-            modal.show();
-            
-            document.getElementById('confirmDelete').onclick = function() {
-                eliminarUsuario(id);
-            };
+        async function confirmarEliminacion(id, nombre) {
+            const result = await Swal.fire({
+                title: '¿Eliminar Credenciales?',
+                html: `
+                    <p>Está a punto de eliminar las credenciales de:</p>
+                    <p><strong>${nombre}</strong></p>
+                    <p class="text-danger"><small><i class="fas fa-exclamation-triangle"></i> Esta acción desactivará el acceso del usuario al sistema.</small></p>
+                `,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#dc3545',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: '<i class="fas fa-trash"></i> Sí, eliminar',
+                cancelButtonText: '<i class="fas fa-times"></i> Cancelar',
+                reverseButtons: true,
+                focusCancel: true
+            });
+
+            if (result.isConfirmed) {
+                await eliminarUsuario(id, nombre);
+            }
         }
 
-        function eliminarUsuario(id) {
-            fetch('<?= base_url('usuarios/eliminar/') ?>' + id, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-Requested-With': 'XMLHttpRequest'
+        async function eliminarUsuario(id, nombre) {
+            // Mostrar loading
+            Swal.fire({
+                title: 'Eliminando...',
+                text: 'Desactivando credenciales del usuario',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
                 }
-            })
-            .then(response => response.json())
-            .then(data => {
+            });
+
+            try {
+                const response = await fetch('<?= base_url('usuarios/eliminar/') ?>' + id, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
+
+                const data = await response.json();
+
                 if (data.success) {
+                    await Swal.fire({
+                        title: '¡Eliminado!',
+                        text: `Las credenciales de ${nombre} han sido desactivadas exitosamente.`,
+                        icon: 'success',
+                        confirmButtonColor: '#4e73df',
+                        timer: 2000,
+                        timerProgressBar: true
+                    });
                     location.reload();
                 } else {
-                    alert('Error: ' + data.message);
+                    await Swal.fire({
+                        title: 'Error',
+                        text: data.message,
+                        icon: 'error',
+                        confirmButtonColor: '#4e73df'
+                    });
                 }
-            })
-            .catch(error => {
+            } catch (error) {
                 console.error('Error:', error);
-                alert('Error al eliminar el usuario');
-            });
+                await Swal.fire({
+                    title: 'Error',
+                    text: 'Error al eliminar las credenciales del usuario',
+                    icon: 'error',
+                    confirmButtonColor: '#4e73df'
+                });
+            }
         }
     </script>
 </body>

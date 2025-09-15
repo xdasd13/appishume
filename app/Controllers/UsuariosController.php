@@ -17,6 +17,35 @@ class UsuariosController extends BaseController
         $this->personaModel = new PersonaModel();
     }
     
+    /**
+     * Generar token CSRF específico para un contexto
+     */
+    private function generateCSRFToken($context, $identifier = null)
+    {
+        $token = bin2hex(random_bytes(32));
+        $key = 'csrf_token_' . $context . ($identifier ? '_' . $identifier : '');
+        session()->set($key, $token);
+        return $token;
+    }
+    
+    /**
+     * Validar token CSRF específico para un contexto
+     */
+    private function validateCSRFToken($context, $identifier = null)
+    {
+        $token_recibido = $this->request->getPost('csrf_token');
+        $key = 'csrf_token_' . $context . ($identifier ? '_' . $identifier : '');
+        $token_almacenado = session()->get($key);
+        
+        if (!$token_recibido || !$token_almacenado || !hash_equals($token_almacenado, $token_recibido)) {
+            return false;
+        }
+        
+        // Eliminar el token usado para evitar reutilización
+        session()->remove($key);
+        return true;
+    }
+    
     // Listar usuarios
     public function index()
     {
@@ -33,9 +62,8 @@ class UsuariosController extends BaseController
     // Mostrar formulario de crear usuario
     public function crear($tipo = 'existente')
     {
-        // Generar token CSRF
-        $csrf_token = bin2hex(random_bytes(32));
-        session()->set('csrf_token', $csrf_token);
+        // Generar token CSRF específico para crear usuarios
+        $csrf_token = $this->generateCSRFToken('crear_usuario');
         
         // Obtener personas sin usuario para el select
         $personaModel = new \App\Models\PersonaModel();
@@ -57,19 +85,13 @@ class UsuariosController extends BaseController
     // Guardar nuevo usuario
     public function guardar()
     {
-        // Verificar token CSRF
-        $token_recibido = $this->request->getPost('csrf_token');
-        $token_almacenado = session()->get('csrf_token');
-        
-        if (!$token_recibido || !$token_almacenado || !hash_equals($token_almacenado, $token_recibido)) {
+        // Verificar token CSRF específico para crear usuarios
+        if (!$this->validateCSRFToken('crear_usuario')) {
             return $this->response->setJSON([
                 'success' => false,
                 'message' => 'Token de seguridad inválido. Por favor, recargue la página e intente nuevamente.'
             ]);
         }
-        
-        // Eliminar el token usado para evitar reutilización
-        session()->remove('csrf_token');
         
         // Validar que las contraseñas coincidan primero
         $password = $this->request->getPost('password');
@@ -308,9 +330,8 @@ class UsuariosController extends BaseController
     // Mostrar formulario para editar usuario
     public function editar($idusuario)
     {
-        // Generar token CSRF para el formulario de edición
-        $csrf_token = bin2hex(random_bytes(32));
-        session()->set('csrf_token', $csrf_token);
+        // Generar token CSRF específico para editar usuarios
+        $csrf_token = $this->generateCSRFToken('editar_usuario', $idusuario);
         
         $usuario = $this->usuarioModel->getUsuarioCompleto($idusuario);
         
@@ -354,19 +375,13 @@ class UsuariosController extends BaseController
     // Actualizar usuario
     public function actualizar($idusuario)
     {
-        // Verificar token CSRF
-        $token_recibido = $this->request->getPost('csrf_token');
-        $token_almacenado = session()->get('csrf_token');
-        
-        if (!$token_recibido || !$token_almacenado || !hash_equals($token_almacenado, $token_recibido)) {
+        // Verificar token CSRF específico para editar usuarios
+        if (!$this->validateCSRFToken('editar_usuario', $idusuario)) {
             return $this->response->setJSON([
                 'success' => false,
                 'message' => 'Token de seguridad inválido. Por favor, recargue la página e intente nuevamente.'
             ]);
         }
-        
-        // Eliminar el token usado
-        session()->remove('csrf_token');
         
         log_message('info', 'UsuariosController::actualizar - ID: ' . $idusuario);
         log_message('info', 'POST data: ' . json_encode($this->request->getPost()));

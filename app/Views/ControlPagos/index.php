@@ -1,36 +1,6 @@
 <?= $header ?>
 <div class="page-inner">
-    <!-- Mostrar mensajes de éxito/error con animaciones -->
-    <?php if (session()->getFlashdata('success')): ?>
-        <div class="alert alert-success alert-dismissible fade show animate__animated animate__fadeInDown" role="alert">
-            <div class="d-flex align-items-center">
-                <i class="fas fa-check-circle fa-2x mr-3"></i>
-                <div>
-                    <h5 class="alert-heading mb-1">¡Éxito!</h5>
-                    <p class="mb-0"><?= session()->getFlashdata('success') ?></p>
-                </div>
-            </div>
-            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                <span aria-hidden="true">&times;</span>
-            </button>
-        </div>
-    <?php endif; ?>
-    
-    <?php if (session()->getFlashdata('error')): ?>
-        <div class="alert alert-danger alert-dismissible fade show animate__animated animate__shakeX" role="alert">
-            <div class="d-flex align-items-center">
-                <i class="fas fa-exclamation-circle fa-2x mr-3"></i>
-                <div>
-                    <h5 class="alert-heading mb-1">¡Error!</h5>
-                    <p class="mb-0"><?= session()->getFlashdata('error') ?></p>
-                </div>
-            </div>
-            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                <span aria-hidden="true">&times;</span>
-            </button>
-        </div>
-    <?php endif; ?>
-
+    <!-- Las notificaciones ahora se muestran con SweetAlert -->
     <!-- Tarjetas de resumen con animaciones 3D -->
     <div class="row">
         <div class="col-md-3">
@@ -277,6 +247,27 @@
 <!-- Scripts para la funcionalidad de la página -->
 <script>
 $(document).ready(function() {
+    // Mostrar notificaciones de flash messages con SweetAlert
+    <?php if (session()->getFlashdata('success')): ?>
+        Swal.fire({
+            icon: 'success',
+            title: '¡Éxito!',
+            text: '<?= addslashes(session()->getFlashdata('success')) ?>',
+            confirmButtonColor: '#28a745',
+            timer: 4000,
+            timerProgressBar: true
+        });
+    <?php endif; ?>
+    
+    <?php if (session()->getFlashdata('error')): ?>
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: '<?= addslashes(session()->getFlashdata('error')) ?>',
+            confirmButtonColor: '#dc3545'
+        });
+    <?php endif; ?>
+
     // Inicializar DataTable
     var table = $('#pagos-table').DataTable({
         "language": {
@@ -294,6 +285,78 @@ $(document).ready(function() {
     // Inicializar select2
     $('.select2').select2({
         theme: "bootstrap"
+    });
+
+    // Agregar confirmación SweetAlert para descargas de comprobantes
+    $('a[href*="descargarComprobante"]').on('click', function(e) {
+        e.preventDefault();
+        const url = $(this).attr('href');
+        
+        Swal.fire({
+            title: 'Descargar Comprobante',
+            text: '¿Deseas descargar el comprobante de pago?',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'Sí, descargar',
+            cancelButtonText: 'Cancelar',
+            confirmButtonColor: '#17a2b8',
+            cancelButtonColor: '#6c757d'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Mostrar notificación de descarga iniciada
+                const Toast = Swal.mixin({
+                    toast: true,
+                    position: "top-end",
+                    showConfirmButton: false,
+                    timer: 3000,
+                    timerProgressBar: true
+                });
+                
+                Toast.fire({
+                    icon: 'info',
+                    title: 'Descarga iniciada'
+                });
+                
+                // Proceder con la descarga
+                window.open(url, '_blank');
+            }
+        });
+    });
+
+    // Agregar confirmación SweetAlert para generar vouchers
+    $('a[href*="generarVoucher"]').on('click', function(e) {
+        e.preventDefault();
+        const url = $(this).attr('href');
+        
+        Swal.fire({
+            title: 'Generar Voucher',
+            text: '¿Deseas generar el voucher de pago?',
+            icon: 'info',
+            showCancelButton: true,
+            confirmButtonText: 'Sí, generar',
+            cancelButtonText: 'Cancelar',
+            confirmButtonColor: '#17a2b8',
+            cancelButtonColor: '#6c757d'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Mostrar notificación de generación
+                const Toast = Swal.mixin({
+                    toast: true,
+                    position: "top-end",
+                    showConfirmButton: false,
+                    timer: 3000,
+                    timerProgressBar: true
+                });
+                
+                Toast.fire({
+                    icon: 'success',
+                    title: 'Generando voucher...'
+                });
+                
+                // Abrir voucher en nueva ventana
+                window.open(url, '_blank');
+            }
+        });
     });
 });
 </script>

@@ -72,6 +72,7 @@
                     <div class="card-body">
                         <form id="editarUsuarioForm" novalidate>
                             <input type="hidden" name="idusuario" value="<?= $usuario->idusuario ?>">
+                            <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf_token, ENT_QUOTES, 'UTF-8') ?>">
 
                             <!-- Información de la Persona (solo lectura) -->
                             <div class="form-section">
@@ -204,6 +205,7 @@
     <?= $footer ?>
     
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         function togglePassword(inputId) {
             const input = document.getElementById(inputId);
@@ -222,6 +224,8 @@
 
         document.addEventListener('DOMContentLoaded', function() {
             const form = document.getElementById('editarUsuarioForm');
+            const tipoUsuarioSelect = form.querySelector('select[name="tipo_usuario"]');
+            const originalTipoUsuario = '<?= $usuario->tipo_usuario ?>';
 
             form.addEventListener('submit', async function(e) {
                 e.preventDefault();
@@ -229,6 +233,43 @@
                 if (!form.checkValidity()) {
                     e.stopPropagation();
                     form.classList.add('was-validated');
+                    return;
+                }
+
+                // Verificar si hay cambio de rol
+                const nuevoTipoUsuario = tipoUsuarioSelect.value;
+                let confirmacionRequerida = false;
+                let mensajeConfirmacion = '';
+                let iconoConfirmacion = 'question';
+
+                if (originalTipoUsuario !== nuevoTipoUsuario) {
+                    confirmacionRequerida = true;
+                    if (originalTipoUsuario === 'trabajador' && nuevoTipoUsuario === 'admin') {
+                        mensajeConfirmacion = '¿Está seguro de promover este trabajador a Administrador? Tendrá acceso completo al sistema.';
+                        iconoConfirmacion = 'warning';
+                    } else if (originalTipoUsuario === 'admin' && nuevoTipoUsuario === 'trabajador') {
+                        mensajeConfirmacion = '¿Está seguro de cambiar este administrador a Trabajador? Perderá privilegios administrativos.';
+                        iconoConfirmacion = 'warning';
+                    }
+                } else {
+                    // Si no hay cambio de rol, solo confirmar actualización
+                    mensajeConfirmacion = '¿Desea guardar los cambios realizados?';
+                }
+
+                // Mostrar confirmación con SweetAlert
+                const result = await Swal.fire({
+                    title: confirmacionRequerida ? 'Cambio de Rol' : 'Confirmar Cambios',
+                    text: mensajeConfirmacion,
+                    icon: iconoConfirmacion,
+                    showCancelButton: true,
+                    confirmButtonColor: '#4e73df',
+                    cancelButtonColor: '#6c757d',
+                    confirmButtonText: 'Sí, guardar cambios',
+                    cancelButtonText: 'Cancelar',
+                    reverseButtons: true
+                });
+
+                if (!result.isConfirmed) {
                     return;
                 }
 
@@ -246,14 +287,31 @@
                     const data = await response.json();
 
                     if (data.success) {
-                        alert('Credenciales actualizadas exitosamente');
+                        await Swal.fire({
+                            title: '¡Éxito!',
+                            text: 'Credenciales actualizadas exitosamente',
+                            icon: 'success',
+                            confirmButtonColor: '#4e73df',
+                            timer: 2000,
+                            timerProgressBar: true
+                        });
                         window.location.href = '<?= base_url('usuarios') ?>';
                     } else {
-                        alert('Error: ' + data.message);
+                        await Swal.fire({
+                            title: 'Error',
+                            text: data.message,
+                            icon: 'error',
+                            confirmButtonColor: '#4e73df'
+                        });
                     }
                 } catch (error) {
                     console.error('Error:', error);
-                    alert('Error al actualizar las credenciales');
+                    await Swal.fire({
+                        title: 'Error',
+                        text: 'Error al actualizar las credenciales',
+                        icon: 'error',
+                        confirmButtonColor: '#4e73df'
+                    });
                 } finally {
                     submitBtn.disabled = false;
                     submitBtn.innerHTML = '<i class="fas fa-save me-1"></i> Guardar Cambios';
