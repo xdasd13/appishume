@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?= $title ?></title>
+    <title><?= htmlspecialchars($title, ENT_QUOTES, 'UTF-8') ?></title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -148,6 +148,20 @@
             margin-bottom: 1.5rem;
             border-left: 4px solid #4e73df;
         }
+        
+        /* Nuevos estilos para feedback de seguridad */
+        .security-feedback {
+            font-size: 0.8rem;
+            margin-top: 0.25rem;
+        }
+        
+        .requirement-met {
+            color: #28a745;
+        }
+        
+        .requirement-unmet {
+            color: #6c757d;
+        }
     </style>
 </head>
 <body>
@@ -160,9 +174,9 @@
                     <div class="card-header bg-white py-3">
                         <div class="d-flex justify-content-between align-items-center">
                             <h5 class="mb-0">
-                                <i class="fas fa-id-card me-2"></i><?= $title ?>
+                                <i class="fas fa-id-card me-2"></i><?= htmlspecialchars($title, ENT_QUOTES, 'UTF-8') ?>
                             </h5>
-                            <a href="<?= base_url('usuarios') ?>" class="btn btn-sm btn-outline-secondary">
+                            <a href="<?= htmlspecialchars(base_url('usuarios'), ENT_QUOTES, 'UTF-8') ?>" class="btn btn-sm btn-outline-secondary">
                                 <i class="fas fa-arrow-left me-1"></i> Volver
                             </a>
                         </div>
@@ -191,6 +205,7 @@
                                  id="existente" role="tabpanel">
                                 <form id="formExistente" class="needs-validation" novalidate>
                                     <input type="hidden" name="tipo_creacion" value="existente">
+                                    <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf_token, ENT_QUOTES, 'UTF-8') ?>">
                                     
                                     <div class="form-section">
                                         <h6 class="section-title">Datos del Personal</h6>
@@ -200,9 +215,9 @@
                                                 <select class="form-select" id="idpersona" name="idpersona" required>
                                                     <option value="">Seleccione una persona</option>
                                                     <?php foreach ($personas as $persona): ?>
-                                                        <option value="<?= $persona->idpersona ?>">
-                                                            <?= $persona->nombres . ' ' . $persona->apellidos ?> 
-                                                            (<?= $persona->tipodoc ?>: <?= $persona->numerodoc ?>)
+                                                        <option value="<?= htmlspecialchars($persona->idpersona, ENT_QUOTES, 'UTF-8') ?>">
+                                                            <?= htmlspecialchars($persona->nombres . ' ' . $persona->apellidos, ENT_QUOTES, 'UTF-8') ?> 
+                                                            (<?= htmlspecialchars($persona->tipodoc, ENT_QUOTES, 'UTF-8') ?>: <?= htmlspecialchars($persona->numerodoc, ENT_QUOTES, 'UTF-8') ?>)
                                                         </option>
                                                     <?php endforeach; ?>
                                                 </select>
@@ -214,7 +229,7 @@
                                                 <select class="form-select" id="idcargo_existente" name="idcargo" required>
                                                     <option value="">Seleccione un cargo</option>
                                                     <?php foreach ($cargos as $cargo): ?>
-                                                        <option value="<?= $cargo->idcargo ?>"><?= $cargo->cargo ?></option>
+                                                        <option value="<?= htmlspecialchars($cargo->idcargo, ENT_QUOTES, 'UTF-8') ?>"><?= htmlspecialchars($cargo->cargo, ENT_QUOTES, 'UTF-8') ?></option>
                                                     <?php endforeach; ?>
                                                 </select>
                                                 <span class="example-text">Ejemplo: Administrador, Supervisor, Técnico</span>
@@ -261,10 +276,18 @@
                                                     </button>
                                                 </div>
                                                 <span class="example-text">Ejemplo: ClaveSegura123! (mín. 8 caracteres, 1 mayúscula, 1 minúscula, 1 número, 1 símbolo)</span>
-                                                <div class="form-text">
+                                                
+                                                <div class="security-feedback">
                                                     <div id="password-strength-existente" class="password-strength"></div>
-                                                    <small>Debe contener al menos 8 caracteres, una mayúscula, una minúscula, un número y un símbolo.</small>
+                                                    <div id="password-requirements-existente">
+                                                        <small class="requirement-unmet" id="length-existente">• Mínimo 8 caracteres</small><br>
+                                                        <small class="requirement-unmet" id="uppercase-existente">• Al menos una mayúscula</small><br>
+                                                        <small class="requirement-unmet" id="lowercase-existente">• Al menos una minúscula</small><br>
+                                                        <small class="requirement-unmet" id="number-existente">• Al menos un número</small><br>
+                                                        <small class="requirement-unmet" id="special-existente">• Al menos un símbolo</small>
+                                                    </div>
                                                 </div>
+                                                
                                                 <div class="invalid-feedback" id="error-password-existente">
                                                     La contraseña no cumple con los requisitos de seguridad.
                                                 </div>
@@ -297,6 +320,7 @@
                                  id="nuevo" role="tabpanel">
                                 <form id="formNuevo" class="needs-validation" novalidate>
                                     <input type="hidden" name="tipo_creacion" value="nuevo">
+                                    <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf_token, ENT_QUOTES, 'UTF-8') ?>">
                                     
                                     <div class="form-section">
                                         <h6 class="section-title">Datos Personales</h6>
@@ -329,12 +353,15 @@
                                         
                                         <div class="row">
                                             <div class="col-md-4 mb-3">
-                                                <label for="tipodoc" class="form-label">Tipo de Documento *</label>
-                                                <select class="form-select" id="tipodoc" name="tipodoc" required>
-                                                    <option value="DNI">DNI</option>
-                                                    <option value="Carne de Extranjería">Carne de Extranjería</option>
-                                                    <option value="Pasaporte">Pasaporte</option>
-                                                </select>
+                                                <div class="form-floating">
+                                                    <select class="form-select" id="tipodoc" name="tipodoc" required>
+                                                        <option value="DNI">DNI</option>
+                                                        <option value="Carne de Extranjería">Carne de Extranjería</option>
+                                                        <option value="Pasaporte">Pasaporte</option>
+                                                    </select>
+                                                    <label for="tipodoc">Tipo de Documento *</label>
+                                                </div>
+                                                <span class="example-text">Seleccione el tipo de documento</span>
                                             </div>
                                             <div class="col-md-4 mb-3">
                                                 <div class="form-floating">
@@ -348,13 +375,15 @@
                                                 </div>
                                             </div>
                                             <div class="col-md-4 mb-3">
-                                                <label for="idcargo_nuevo" class="form-label">Cargo *</label>
-                                                <select class="form-select" id="idcargo_nuevo" name="idcargo" required>
-                                                    <option value="">Seleccione un cargo</option>
-                                                    <?php foreach ($cargos as $cargo): ?>
-                                                        <option value="<?= $cargo->idcargo ?>"><?= $cargo->cargo ?></option>
-                                                    <?php endforeach; ?>
-                                                </select>
+                                                <div class="form-floating">
+                                                    <select class="form-select" id="idcargo_nuevo" name="idcargo" required>
+                                                        <option value="">Seleccione un cargo</option>
+                                                        <?php foreach ($cargos as $cargo): ?>
+                                                            <option value="<?= htmlspecialchars($cargo->idcargo, ENT_QUOTES, 'UTF-8') ?>"><?= htmlspecialchars($cargo->cargo, ENT_QUOTES, 'UTF-8') ?></option>
+                                                        <?php endforeach; ?>
+                                                    </select>
+                                                    <label for="idcargo_nuevo">Cargo *</label>
+                                                </div>
                                                 <span class="example-text">Ejemplo: Administrador, Supervisor, Técnico</span>
                                                 <div class="invalid-feedback">Por favor seleccione un cargo.</div>
                                             </div>
@@ -449,10 +478,18 @@
                                                     </button>
                                                 </div>
                                                 <span class="example-text">Ejemplo: ClaveSegura123! (mín. 8 caracteres, 1 mayúscula, 1 minúscula, 1 número, 1 símbolo)</span>
-                                                <div class="form-text">
+                                                
+                                                <div class="security-feedback">
                                                     <div id="password-strength-nuevo" class="password-strength"></div>
-                                                    <small>Debe contener al menos 8 caracteres, una mayúscula, una minúscula, un número y un símbolo.</small>
+                                                    <div id="password-requirements-nuevo">
+                                                        <small class="requirement-unmet" id="length-nuevo">• Mínimo 8 caracteres</small><br>
+                                                        <small class="requirement-unmet" id="uppercase-nuevo">• Al menos una mayúscula</small><br>
+                                                        <small class="requirement-unmet" id="lowercase-nuevo">• Al menos una minúscula</small><br>
+                                                        <small class="requirement-unmet" id="number-nuevo">• Al menos un número</small><br>
+                                                        <small class="requirement-unmet" id="special-nuevo">• Al menos un símbolo</small>
+                                                    </div>
                                                 </div>
+                                                
                                                 <div class="invalid-feedback" id="error-password-nuevo">
                                                     La contraseña no cumple con los requisitos de seguridad.
                                                 </div>
@@ -580,15 +617,19 @@
                 }
             }
             
-            // Validar fortaleza de contraseña
+            // Validar fortaleza de contraseña y actualizar requisitos visualmente
             $('#password_existente, #password_nuevo').on('input', function() {
                 const password = $(this).val();
+                const formType = $(this).attr('id') === 'password_existente' ? 'existente' : 'nuevo';
                 const strengthBar = $(this).closest('.row').find('.password-strength');
                 const strength = calcularFortalezaPassword(password);
                 
                 // Actualizar barra de fortaleza
                 strengthBar.css('width', strength.percentage + '%');
                 strengthBar.removeClass('bg-danger bg-warning bg-success').addClass(strength.class);
+                
+                // Actualizar visualización de requisitos
+                updatePasswordRequirements(password, formType);
                 
                 // Validar si cumple requisitos
                 if (password.length >= 8 && strength.score >= 3) {
@@ -597,6 +638,43 @@
                     $(this).get(0).setCustomValidity('La contraseña no cumple con los requisitos de seguridad');
                 }
             });
+            
+            function updatePasswordRequirements(password, formType) {
+                // Longitud
+                if (password.length >= 8) {
+                    $(`#length-${formType}`).removeClass('requirement-unmet').addClass('requirement-met');
+                } else {
+                    $(`#length-${formType}`).removeClass('requirement-met').addClass('requirement-unmet');
+                }
+                
+                // Mayúscula
+                if (/[A-Z]/.test(password)) {
+                    $(`#uppercase-${formType}`).removeClass('requirement-unmet').addClass('requirement-met');
+                } else {
+                    $(`#uppercase-${formType}`).removeClass('requirement-met').addClass('requirement-unmet');
+                }
+                
+                // Minúscula
+                if (/[a-z]/.test(password)) {
+                    $(`#lowercase-${formType}`).removeClass('requirement-unmet').addClass('requirement-met');
+                } else {
+                    $(`#lowercase-${formType}`).removeClass('requirement-met').addClass('requirement-unmet');
+                }
+                
+                // Número
+                if (/[0-9]/.test(password)) {
+                    $(`#number-${formType}`).removeClass('requirement-unmet').addClass('requirement-met');
+                } else {
+                    $(`#number-${formType}`).removeClass('requirement-met').addClass('requirement-unmet');
+                }
+                
+                // Símbolo
+                if (/[^A-Za-z0-9]/.test(password)) {
+                    $(`#special-${formType}`).removeClass('requirement-unmet').addClass('requirement-met');
+                } else {
+                    $(`#special-${formType}`).removeClass('requirement-met').addClass('requirement-unmet');
+                }
+            }
             
             function calcularFortalezaPassword(password) {
                 let score = 0;
@@ -738,15 +816,20 @@
                         Swal.close();
                         if (response.success) {
                             showAlert('success', '¡Éxito!', 'Usuario creado correctamente.');
+                            // Limpiar formulario después del éxito
+                            $(form)[0].reset();
+                            $(form).removeClass('was-validated');
+                            $('.is-valid, .is-invalid').removeClass('is-valid is-invalid');
                             setTimeout(function() {
                                 window.location.href = '<?= base_url('usuarios') ?>';
                             }, 2000);
                         } else {
-                            showAlert('error', 'Error', response.message);
+                            // Mostrar error pero mantener los datos del formulario
+                            showAlert('error', 'Error de validación', response.message || 'Por favor revise los campos marcados en rojo.');
                             if (response.errors) {
                                 console.error(response.errors);
                                 // Mostrar errores específicos en el formulario
-                                mostrarErroresFormulario(response.errors);
+                                mostrarErroresFormulario(response.errors, form);
                             }
                         }
                     },
@@ -757,21 +840,36 @@
                 });
             }
             
-            function mostrarErroresFormulario(errors) {
-                // Limpiar errores previos
-                $('.is-invalid').removeClass('is-invalid');
-                $('.invalid-feedback').hide();
+            function mostrarErroresFormulario(errors, form) {
+                // Solo limpiar errores en el formulario específico
+                $(form).find('.is-invalid').removeClass('is-invalid');
+                $(form).find('.invalid-feedback').hide();
                 
                 // Mostrar nuevos errores
                 for (const field in errors) {
                     const errorMessage = errors[field];
-                    const inputElement = $(`[name="${field}"]`);
+                    const inputElement = $(form).find(`[name="${field}"]`);
                     
                     if (inputElement.length) {
                         inputElement.addClass('is-invalid');
-                        inputElement.next('.invalid-feedback').text(errorMessage).show();
+                        let feedbackElement = inputElement.siblings('.invalid-feedback');
+                        if (feedbackElement.length === 0) {
+                            feedbackElement = inputElement.parent().find('.invalid-feedback');
+                        }
+                        if (feedbackElement.length > 0) {
+                            feedbackElement.text(errorMessage).show();
+                        }
+                        
+                        // Scroll al primer campo con error
+                        if ($(form).find('.is-invalid').first().is(inputElement)) {
+                            inputElement[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            inputElement.focus();
+                        }
                     }
                 }
+                
+                // Marcar el formulario como validado para mostrar estilos
+                $(form).addClass('was-validated');
             }
             
             // Cargar datos de persona seleccionada
