@@ -165,38 +165,37 @@
     </style>
 </head>
 <body>
-    <?= $header ?>
-    
-    <div class="container-fluid py-4">
-        <div class="row justify-content-center">
-            <div class="col-xl-10 col-lg-12">
-                <div class="card shadow">
-                    <div class="card-header bg-white py-3">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <h5 class="mb-0">
-                                <i class="fas fa-id-card me-2"></i><?= htmlspecialchars($title, ENT_QUOTES, 'UTF-8') ?>
-                            </h5>
-                            <a href="<?= htmlspecialchars(base_url('usuarios'), ENT_QUOTES, 'UTF-8') ?>" class="btn btn-sm btn-outline-secondary">
-                                <i class="fas fa-arrow-left me-1"></i> Volver
-                            </a>
-                        </div>
+<?= $header ?>    
+<div class="container-fluid py-4">
+    <div class="row justify-content-center">
+        <div class="col-xl-10 col-lg-12">
+            <div class="card shadow">
+                <div class="card-header bg-white py-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            <i class="fas fa-id-card me-2"></i><?= htmlspecialchars($title, ENT_QUOTES, 'UTF-8') ?>
+                        </h5>
+                        <a href="<?= htmlspecialchars(base_url('usuarios'), ENT_QUOTES, 'UTF-8') ?>" class="btn btn-sm btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-1"></i> Volver
+                        </a>
                     </div>
-                    <div class="card-body">
-                        <ul class="nav nav-tabs mb-4" id="myTab" role="tablist">
-                            <li class="nav-item" role="presentation">
-                                <button class="nav-link <?= ($tipo_creacion === 'existente') ? 'active' : '' ?>" 
-                                        id="existente-tab" data-bs-toggle="tab" data-bs-target="#existente" 
-                                        type="button" role="tab">
-                                    <i class="fas fa-user me-1"></i> Personal Existente
-                                </button>
-                            </li>
-                            <li class="nav-item" role="presentation">
-                                <button class="nav-link <?= ($tipo_creacion === 'nuevo') ? 'active' : '' ?>" 
-                                        id="nuevo-tab" data-bs-toggle="tab" data-bs-target="#nuevo" 
-                                        type="button" role="tab">
-                                    <i class="fas fa-user-plus me-1"></i> Nuevo Personal
-                                </button>
-                            </li>
+                </div>
+                <div class="card-body">
+                    <ul class="nav nav-tabs mb-4" id="myTab" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link <?= ($tipo_creacion === 'existente') ? 'active' : '' ?>" 
+                                    id="existente-tab" data-bs-toggle="tab" data-bs-target="#existente" 
+                                    type="button" role="tab">
+                                <i class="fas fa-user me-1"></i> Personal Existente
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link <?= ($tipo_creacion === 'nuevo') ? 'active' : '' ?>" 
+                                    id="nuevo-tab" data-bs-toggle="tab" data-bs-target="#nuevo" 
+                                    type="button" role="tab">
+                                <i class="fas fa-user-plus me-1"></i> Nuevo Personal
+                            </button>
+                        </li>
                         </ul>
                         
                         <div class="tab-content" id="myTabContent">
