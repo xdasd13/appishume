@@ -3,262 +3,351 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Voucher de Pago - <?= $pago['idpagos'] ?></title>
+    <title>Voucher de Pago - #<?= $pago['idpagos'] ?></title>
     <style>
+        /* Estilos para el voucher profesional */
         body {
-            font-family: 'DejaVu Sans', sans-serif;
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f8f9fa;
             color: #333;
-            background-color: #fff;
         }
+        
         .voucher-container {
             max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
-            border: 2px solid #ddd;
+            margin: 20px auto;
+            background: white;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
             border-radius: 10px;
-            background-color: #fff;
+            overflow: hidden;
         }
-        .header {
+        
+        .voucher-header {
+            background: linear-gradient(135deg, #2c3e50, #3498db);
+            color: white;
+            padding: 30px;
             text-align: center;
-            margin-bottom: 30px;
-            border-bottom: 2px solid #007bff;
-            padding-bottom: 20px;
+            position: relative;
         }
+        
+        .voucher-header h1 {
+            margin: 0;
+            font-size: 28px;
+            font-weight: bold;
+        }
+        
+        .voucher-header p {
+            margin: 5px 0 0;
+            font-size: 16px;
+            opacity: 0.9;
+        }
+        
+        .voucher-body {
+            padding: 30px;
+        }
+        
+        .voucher-section {
+            margin-bottom: 25px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .voucher-section:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+        
+        .voucher-section h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-size: 18px;
+            border-left: 4px solid #3498db;
+            padding-left: 10px;
+        }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+        
+        .info-item {
+            margin-bottom: 10px;
+        }
+        
+        .info-label {
+            font-weight: bold;
+            color: #555;
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+        
+        .info-value {
+            color: #333;
+            font-size: 15px;
+        }
+        
+        .amount-highlight {
+            font-size: 18px;
+            font-weight: bold;
+            padding: 8px 12px;
+            border-radius: 5px;
+            display: inline-block;
+            margin-top: 5px;
+        }
+        
+        .amount-positive {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        
+        .amount-negative {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        
+        .amount-warning {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+        
+        .voucher-footer {
+            background: #f8f9fa;
+            padding: 20px 30px;
+            text-align: center;
+            border-top: 1px solid #eee;
+        }
+        
+        .signature-area {
+            margin-top: 40px;
+            border-top: 1px dashed #ccc;
+            padding-top: 20px;
+        }
+        
+        .signature-line {
+            border-top: 1px solid #333;
+            width: 250px;
+            margin: 0 auto;
+            padding-top: 30px;
+        }
+        
+        .print-button {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
+            font-weight: bold;
+            z-index: 1000;
+            transition: all 0.3s ease;
+        }
+        
+        .print-button:hover {
+            background: #2980b9;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(52, 152, 219, 0.4);
+        }
+        
         .logo {
             max-width: 150px;
             margin-bottom: 15px;
         }
-        .company-info {
-            text-align: center;
-        }
-        .voucher-title {
-            color: #007bff;
-            font-size: 24px;
+        
+        .watermark {
+            position: absolute;
+            opacity: 0.03;
+            font-size: 120px;
             font-weight: bold;
-            margin: 20px 0;
+            color: #000;
+            transform: rotate(-45deg);
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-45deg);
+            pointer-events: none;
         }
-        .section {
-            margin-bottom: 25px;
-        }
-        .section-title {
-            background-color: #f8f9fa;
-            padding: 8px 15px;
-            border-left: 4px solid #007bff;
-            margin-bottom: 15px;
-            font-weight: bold;
-        }
-        .payment-details {
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            padding: 15px;
-            background-color: #f9f9f9;
-        }
-        .detail-row {
-            display: flex;
-            margin-bottom: 8px;
-        }
-        .detail-label {
-            font-weight: bold;
-            width: 200px;
-        }
-        .amount-highlight {
-            font-size: 18px;
-            font-weight: bold;
-            color: #28a745;
-        }
-        .footer {
-            margin-top: 40px;
-            text-align: center;
-            font-size: 12px;
-            color: #6c757d;
-            border-top: 1px solid #ddd;
-            padding-top: 20px;
-        }
-        .signature-area {
-            margin-top: 60px;
-            border-top: 1px dashed #ccc;
-            padding-top: 10px;
-            text-align: center;
-        }
-        .print-button {
-            text-align: center;
-            margin: 20px 0;
-        }
+        
         @media print {
+            body {
+                background: white;
+            }
+            
+            .voucher-container {
+                box-shadow: none;
+                margin: 0;
+                max-width: 100%;
+            }
+            
             .print-button {
                 display: none;
             }
-            body {
-                padding: 0;
-                margin: 0;
-            }
-            .voucher-container {
-                border: none;
-                padding: 0;
+            
+            .voucher-header {
+                background: #2c3e50 !important;
+                color: black !important;
+                -webkit-print-color-adjust: exact;
             }
         }
     </style>
 </head>
 <body>
-    <div class="print-button">
-        <button onclick="window.print()" class="btn btn-primary">
-            <i class="fas fa-print"></i> Imprimir Voucher
-        </button>
-        <button onclick="window.close()" class="btn btn-secondary">
-            <i class="fas fa-times"></i> Cerrar
-        </button>
-    </div>
-
     <div class="voucher-container">
-        <!-- Encabezado -->
-        <div class="header">
-            <div class="company-info">
-                <h1><?= $empresa['razonsocial'] ?? 'EMPRESA' ?></h1>
-                <p>RUC: <?= $empresa['ruc'] ?? '00000000000' ?></p>
-                <p><?= $empresa['direccion'] ?? 'Dirección no especificada' ?></p>
-                <p>Teléfono: <?= $empresa['telefono'] ?? 'N/A' ?> | Email: <?= $empresa['email'] ?? 'N/A' ?></p>
-            </div>
+        <div class="voucher-header">
+            <div class="watermark">VOUCHER</div>
+            <?php if (!empty($empresa['logo'])): ?>
+                <img src="<?= base_url('uploads/logo/' . $empresa['logo']) ?>" alt="Logo" class="logo">
+            <?php endif; ?>
+            <h1>COMPROBANTE DE PAGO</h1>
+            <p>N° <?= str_pad($pago['idpagos'], 6, '0', STR_PAD_LEFT) ?></p>
         </div>
-
-        <!-- Título del voucher -->
-        <div class="voucher-title text-center">
-            COMPROBANTE DE PAGO
-        </div>
-
-        <!-- Información del pago -->
-        <div class="section">
-            <div class="section-title">INFORMACIÓN DEL PAGO</div>
-            <div class="payment-details">
-                <div class="detail-row">
-                    <div class="detail-label">Número de Voucher:</div>
-                    <div><?= $pago['idpagos'] ?></div>
-                </div>
-                <div class="detail-row">
-                    <div class="detail-label">Fecha y Hora:</div>
-                    <div><?= date('d/m/Y H:i', strtotime($pago['fechahora'])) ?></div>
-                </div>
-                <div class="detail-row">
-                    <div class="detail-label">Tipo de Pago:</div>
-                    <div><?= $tipo_pago['tipopago'] ?></div>
-                </div>
-                <?php if (!empty($pago['numtransaccion'])): ?>
-                <div class="detail-row">
-                    <div class="detail-label">Número de Transacción:</div>
-                    <div><?= $pago['numtransaccion'] ?></div>
-                </div>
-                <?php endif; ?>
-                <div class="detail-row">
-                    <div class="detail-label">Registrado por:</div>
-                    <div><?= $pago['nombreusuario'] ?? 'N/A' ?></div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Montos -->
-        <div class="section">
-            <div class="section-title">DETALLES DE MONTO</div>
-            <div class="payment-details">
-                <div class="detail-row">
-                    <div class="detail-label">Saldo Anterior:</div>
-                    <div>S/ <?= number_format($pago['saldo'], 2) ?></div>
-                </div>
-                <div class="detail-row">
-                    <div class="detail-label">Amortización:</div>
-                    <div class="amount-highlight">S/ <?= number_format($pago['amortizacion'], 2) ?></div>
-                </div>
-                <div class="detail-row">
-                    <div class="detail-label">Nuevo Saldo:</div>
-                    <div class="<?= $pago['deuda'] > 0 ? 'text-warning' : 'text-success' ?>">
-                        S/ <?= number_format($pago['deuda'], 2) ?>
+        
+        <div class="voucher-body">
+            <div class="voucher-section">
+                <h3>Información del Pago</h3>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <div class="info-label">Número de Pago</div>
+                        <div class="info-value">#<?= $pago['idpagos'] ?></div>
                     </div>
-                </div>
-                <div class="detail-row">
-                    <div class="detail-label">Estado:</div>
-                    <div>
-                        <strong class="<?= $pago['deuda'] > 0 ? 'text-warning' : 'text-success' ?>">
-                            <?= $pago['deuda'] > 0 ? 'PENDIENTE' : 'PAGADO COMPLETO' ?>
-                        </strong>
+                    <div class="info-item">
+                        <div class="info-label">Fecha y Hora</div>
+                        <div class="info-value"><?= date('d/m/Y H:i:s', strtotime($pago['fechahora'])) ?></div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Contrato</div>
+                        <div class="info-value">#<?= $pago['idcontrato'] ?></div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Tipo de Pago</div>
+                        <div class="info-value"><?= $tipo_pago['tipopago'] ?? 'N/A' ?></div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Transacción/Referencia</div>
+                        <div class="info-value"><?= !empty($pago['numtransaccion']) ? $pago['numtransaccion'] : 'N/A' ?></div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Registrado por</div>
+                        <div class="info-value"><?= $pago['nombreusuario'] ?? 'N/A' ?></div>
                     </div>
                 </div>
             </div>
-        </div>
-
-        <!-- Información del contrato -->
-        <div class="section">
-            <div class="section-title">INFORMACIÓN DEL CONTRATO</div>
-            <div class="payment-details">
-                <div class="detail-row">
-                    <div class="detail-label">Número de Contrato:</div>
-                    <div><?= $info_contrato['idcontrato'] ?></div>
-                </div>
-                <div class="detail-row">
-                    <div class="detail-label">Cliente:</div>
-                    <div>
-                        <?= !empty($info_contrato['nombres']) ? 
-                            $info_contrato['nombres'] . ' ' . $info_contrato['apellidos'] : 
-                            $info_contrato['razonsocial'] ?>
+            
+            <div class="voucher-section">
+                <h3>Detalles Financieros</h3>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <div class="info-label">Monto Total del Contrato</div>
+                        <div class="info-value amount-highlight amount-positive">
+                            S/ <?= number_format($info_contrato['monto_total'], 2) ?>
+                        </div>
                     </div>
-                </div>
-                <div class="detail-row">
-                    <div class="detail-label">Monto Total del Contrato:</div>
-                    <div>S/ <?= number_format($info_contrato['monto_total'], 2) ?></div>
-                </div>
-                <div class="detail-row">
-                    <div class="detail-label">Total Pagado:</div>
-                    <div>
-                        <?php 
-                            $total_pagado = $info_contrato['monto_total'] - $pago['deuda'];
-                            echo 'S/ ' . number_format($total_pagado, 2);
-                        ?>
+                    <div class="info-item">
+                        <div class="info-label">Saldo Anterior</div>
+                        <div class="info-value amount-highlight amount-negative">
+                            S/ <?= number_format($pago['saldo'], 2) ?>
+                        </div>
                     </div>
-                </div>
-                <div class="detail-row">
-                    <div class="detail-label">Porcentaje Pagado:</div>
-                    <div>
-                        <?php 
-                            $porcentaje = $info_contrato['monto_total'] > 0 ? 
-                                (($total_pagado / $info_contrato['monto_total']) * 100) : 0;
-                            echo number_format($porcentaje, 2) . '%';
-                        ?>
+                    <div class="info-item">
+                        <div class="info-label">Amortización</div>
+                        <div class="info-value amount-highlight amount-positive">
+                            S/ <?= number_format($pago['amortizacion'], 2) ?>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Nuevo Saldo</div>
+                        <div class="info-value amount-highlight <?= $pago['deuda'] > 0 ? 'amount-warning' : 'amount-positive' ?>">
+                            S/ <?= number_format($pago['deuda'], 2) ?>
+                            <?php if ($pago['deuda'] == 0): ?>
+                                <br><small>¡CONTRATO PAGADO EN SU TOTALIDAD!</small>
+                            <?php endif; ?>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
-
-        <!-- Observaciones -->
-        <div class="section">
-            <div class="section-title">OBSERVACIONES</div>
-            <div class="payment-details">
-                <p>Este comprobante certifica que se ha recibido el pago correspondiente al contrato mencionado.</p>
-                <p>Para cualquier consulta, por favor contactar con nuestra área de administración.</p>
+            
+            <div class="voucher-section">
+                <h3>Información del Cliente</h3>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <div class="info-label">Cliente</div>
+                        <div class="info-value">
+                            <?php if (!empty($info_contrato['nombres'])): ?>
+                                <?= $info_contrato['nombres'] . ' ' . $info_contrato['apellidos'] ?>
+                            <?php else: ?>
+                                <?= $info_contrato['razonsocial'] ?>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Documento</div>
+                        <div class="info-value">
+                            <?php if (!empty($info_contrato['nrodocumento'])): ?>
+                                <?= $info_contrato['nrodocumento'] ?>
+                            <?php else: ?>
+                                <?= $info_contrato['ruc'] ?>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Email</div>
+                        <div class="info-value"><?= $info_contrato['email'] ?? 'N/A' ?></div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Teléfono</div>
+                        <div class="info-value"><?= $info_contrato['telefono'] ?? 'N/A' ?></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="voucher-section">
+                <h3>Información de la Empresa</h3>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <div class="info-label">Empresa</div>
+                        <div class="info-value"><?= $empresa['razonsocial'] ?? 'N/A' ?></div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">RUC</div>
+                        <div class="info-value"><?= $empresa['ruc'] ?? 'N/A' ?></div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Dirección</div>
+                        <div class="info-value"><?= $empresa['direccion'] ?? 'N/A' ?></div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Teléfono</div>
+                        <div class="info-value"><?= $empresa['telefono'] ?? 'N/A' ?></div>
+                    </div>
+                </div>
             </div>
         </div>
-
-        <!-- Firmas -->
-        <div class="signature-area">
-            <div style="float: left; width: 45%; text-align: center;">
-                <p>_________________________</p>
-                <p>Firma del Cliente</p>
+        
+        <div class="voucher-footer">
+            <p>Este documento es un comprobante de pago generado automáticamente el <?= date('d/m/Y H:i:s') ?></p>
+            
+            <div class="signature-area">
+                <div class="signature-line"></div>
+                <p>Firma y Sello Autorizado</p>
             </div>
-            <div style="float: right; width: 45%; text-align: center;">
-                <p>_________________________</p>
-                <p>Firma del Representante</p>
-            </div>
-            <div style="clear: both;"></div>
-        </div>
-
-        <!-- Pie de página -->
-        <div class="footer">
-            <p>Documento generado el: <?= date('d/m/Y H:i:s') ?></p>
-            <p>Este es un documento oficial de <?= $empresa['razonsocial'] ?? 'la Empresa' ?></p>
         </div>
     </div>
-
+    
+    <button class="print-button" onclick="window.print()">
+        <i class="fas fa-print"></i> Imprimir Voucher
+    </button>
+    
     <script>
-        // Auto-imprimir al cargar la página (opcional)
-        // window.onload = function() {
-        //     window.print();
-        // }
+        // Auto-print cuando se carga la página (opcional)
+        window.onload = function() {
+            // Descomenta la siguiente línea si quieres que se imprima automáticamente
+            // window.print();
+        };
     </script>
 </body>
 </html>

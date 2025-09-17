@@ -2,104 +2,147 @@
 <div class="page-inner">
     <div class="row">
         <div class="col-md-12">
-            <div class="card">
+            <div class="card card-3d animate__animated animate__fadeIn">
                 <div class="card-header">
                     <div class="d-flex align-items-center">
                         <h4 class="card-title">Detalles del Pago #<?= $pago['idpagos'] ?></h4>
-                        <a href="<?= base_url('/controlpagos') ?>" class="btn btn-secondary btn-round ml-auto">
-                            <i class="fas fa-arrow-left mr-2"></i> Volver al Listado
-                        </a>
+                        <div class="ml-auto">
+                            <a href="<?= base_url('/controlpagos') ?>" class="btn btn-secondary btn-sm">
+                                <i class="fas fa-arrow-left mr-2"></i> Volver al Listado
+                            </a>
+                            <a href="<?= base_url('/controlpagos/generarVoucher/' . $pago['idpagos']) ?>" 
+                               class="btn btn-info btn-sm" target="_blank">
+                                <i class="fas fa-receipt mr-2"></i> Generar Voucher
+                            </a>
+                        </div>
                     </div>
                 </div>
                 <div class="card-body">
                     <div class="row">
                         <div class="col-md-6">
-                            <div class="card card-primary bg-primary-gradient">
+                            <div class="card card-stats card-round card-3d">
+                                <div class="card-header">
+                                    <h4 class="card-title">Información del Pago</h4>
+                                </div>
                                 <div class="card-body">
-                                    <h4 class="mb-3">Información del Pago</h4>
-                                    <div class="row">
-                                        <div class="col-md-6">
-                                            <p><strong>ID Pago:</strong> <?= $pago['idpagos'] ?></p>
-                                            <p><strong>Fecha y Hora:</strong> <?= date('d/m/Y H:i', strtotime($pago['fechahora'])) ?></p>
-                                            <p><strong>Saldo Anterior:</strong> S/ <?= number_format($pago['saldo'], 2) ?></p>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <p><strong>Amortización:</strong> S/ <?= number_format($pago['amortizacion'], 2) ?></p>
-                                            <p><strong>Nueva Deuda:</strong> S/ <?= number_format($pago['deuda'], 2) ?></p>
-                                            <p><strong>Tipo de Pago:</strong> <?= $tipo_pago['tipopago'] ?></p>
-                                        </div>
-                                    </div>
-                                    <?php if (!empty($pago['numtransaccion'])): ?>
-                                        <p><strong>Número de Transacción:</strong> <?= $pago['numtransaccion'] ?></p>
-                                    <?php endif; ?>
-                                    <p><strong>Registrado por:</strong> <?= $pago['nombreusuario'] ?? 'N/A' ?></p>
+                                    <table class="table table-bordered">
+                                        <tr>
+                                            <th width="40%">ID de Pago:</th>
+                                            <td>#<?= $pago['idpagos'] ?></td>
+                                        </tr>
+                                        <tr>
+                                            <th>Contrato:</th>
+                                            <td>
+                                                <a href="<?= base_url('/controlpagos/por-contrato/' . $pago['idcontrato']) ?>" 
+                                                   class="btn btn-sm btn-outline-primary">
+                                                    Contrato #<?= $pago['idcontrato'] ?>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <th>Fecha y Hora:</th>
+                                            <td><?= date('d/m/Y H:i:s', strtotime($pago['fechahora'])) ?></td>
+                                        </tr>
+                                        <tr>
+                                            <th>Saldo Anterior:</th>
+                                            <td class="text-danger">S/ <?= number_format($pago['saldo'], 2) ?></td>
+                                        </tr>
+                                        <tr>
+                                            <th>Amortización:</th>
+                                            <td class="text-success">S/ <?= number_format($pago['amortizacion'], 2) ?></td>
+                                        </tr>
+                                        <tr>
+                                            <th>Nuevo Saldo:</th>
+                                            <td class="<?= $pago['deuda'] > 0 ? 'text-warning' : 'text-success' ?>">
+                                                S/ <?= number_format($pago['deuda'], 2) ?>
+                                                <?php if ($pago['deuda'] == 0): ?>
+                                                    <span class="badge badge-success ml-2">¡PAGADO COMPLETO!</span>
+                                                <?php endif; ?>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <th>Tipo de Pago:</th>
+                                            <td><?= $tipo_pago['tipopago'] ?? 'N/A' ?></td>
+                                        </tr>
+                                        <tr>
+                                            <th>Número de Transacción:</th>
+                                            <td><?= !empty($pago['numtransaccion']) ? $pago['numtransaccion'] : 'N/A' ?></td>
+                                        </tr>
+                                        <tr>
+                                            <th>Registrado por:</th>
+                                            <td><?= $pago['nombreusuario'] ?? 'N/A' ?></td>
+                                        </tr>
+                                        <tr>
+                                            <th>Comprobante:</th>
+                                            <td>
+                                                <?php if (!empty($pago['comprobante'])): ?>
+                                                    <a href="<?= base_url('/controlpagos/descargarComprobante/' . $pago['idpagos']) ?>" 
+                                                       class="btn btn-sm btn-outline-info">
+                                                        <i class="fas fa-download mr-2"></i> Descargar Comprobante
+                                                    </a>
+                                                <?php else: ?>
+                                                    <span class="badge badge-secondary">Sin comprobante</span>
+                                                <?php endif; ?>
+                                            </td>
+                                        </tr>
+                                    </table>
                                 </div>
                             </div>
                         </div>
                         <div class="col-md-6">
-                            <div class="card card-secondary bg-secondary-gradient">
-                                <div class="card-body">
-                                    <h4 class="mb-3">Información del Contrato</h4>
-                                    <p><strong>Contrato #:</strong> <?= $info_contrato['idcontrato'] ?></p>
-                                    <p><strong>Cliente:</strong> 
-                                        <?= !empty($info_contrato['nombres']) ? 
-                                            $info_contrato['nombres'] . ' ' . $info_contrato['apellidos'] : 
-                                            $info_contrato['razonsocial'] ?>
-                                    </p>
-                                    <p><strong>Monto Total del Contrato:</strong> S/ <?= number_format($info_contrato['monto_total'], 2) ?></p>
-                                    <p><strong>Total Pagado:</strong> 
-                                        <?php 
-                                            $total_pagado = $info_contrato['monto_total'] - $pago['deuda'];
-                                            echo 'S/ ' . number_format($total_pagado, 2);
-                                        ?>
-                                    </p>
-                                    <p><strong>Estado:</strong> 
-                                        <span class="badge badge-<?= $pago['deuda'] == 0 ? 'success' : 'warning' ?>">
-                                            <?= $pago['deuda'] == 0 ? 'PAGADO COMPLETO' : 'PENDIENTE' ?>
-                                        </span>
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Comprobante -->
-                    <div class="row mt-4">
-                        <div class="col-md-12">
-                            <div class="card">
+                            <div class="card card-stats card-round card-3d">
                                 <div class="card-header">
-                                    <h4 class="card-title">Comprobante de Pago</h4>
+                                    <h4 class="card-title">Información del Cliente</h4>
                                 </div>
                                 <div class="card-body">
-                                    <?php if (!empty($pago['comprobante'])): ?>
-                                        <div class="text-center">
-                                            <?php 
-                                                $extension = pathinfo($pago['comprobante'], PATHINFO_EXTENSION);
-                                                if (in_array(strtolower($extension), ['jpg', 'jpeg', 'png', 'gif'])): 
-                                            ?>
-                                                <img src="<?= base_url('uploads/comprobantes/' . $pago['comprobante']) ?>" 
-                                                     class="img-fluid rounded" 
-                                                     style="max-height: 400px;" 
-                                                     alt="Comprobante de pago">
-                                            <?php else: ?>
-                                                <div class="alert alert-info">
-                                                    <i class="fas fa-file-pdf fa-3x mb-3"></i>
-                                                    <p>Comprobante en formato PDF</p>
-                                                </div>
-                                            <?php endif; ?>
-                                            <div class="mt-3">
-                                                <a href="<?= base_url('/controlpagos/descargarComprobante/' . $pago['idpagos']) ?>" 
-                                                   class="btn btn-primary">
-                                                    <i class="fas fa-download mr-2"></i> Descargar Comprobante
-                                                </a>
-                                            </div>
-                                        </div>
-                                    <?php else: ?>
-                                        <div class="alert alert-warning text-center">
-                                            <i class="fas fa-exclamation-triangle fa-2x mb-3"></i>
-                                            <p>No se ha subido comprobante para este pago</p>
-                                        </div>
-                                    <?php endif; ?>
+                                    <table class="table table-bordered">
+                                        <tr>
+                                            <th width="40%">Cliente:</th>
+                                            <td>
+                                                <?php if (!empty($info_contrato['nombres'])): ?>
+                                                    <?= $info_contrato['nombres'] . ' ' . $info_contrato['apellidos'] ?>
+                                                <?php else: ?>
+                                                    <?= $info_contrato['razonsocial'] ?>
+                                                <?php endif; ?>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <th>Documento:</th>
+                                            <td>
+                                                <?php if (!empty($info_contrato['nrodocumento'])): ?>
+                                                    <?= $info_contrato['nrodocumento'] ?>
+                                                <?php else: ?>
+                                                    <?= $info_contrato['ruc'] ?>
+                                                <?php endif; ?>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <th>Email:</th>
+                                            <td><?= $info_contrato['email'] ?? 'N/A' ?></td>
+                                        </tr>
+                                        <tr>
+                                            <th>Teléfono:</th>
+                                            <td><?= $info_contrato['telefono'] ?? 'N/A' ?></td>
+                                        </tr>
+                                        <tr>
+                                            <th>Monto Total Contrato:</th>
+                                            <td class="text-primary">S/ <?= number_format($info_contrato['monto_total'], 2) ?></td>
+                                        </tr>
+                                        <tr>
+                                            <th>Total Pagado:</th>
+                                            <td class="text-success">S/ <?= number_format($info_contrato['monto_total'] - ($pago['deuda'] ?? 0), 2) ?></td>
+                                        </tr>
+                                        <tr>
+                                            <th>Estado Actual:</th>
+                                            <td>
+                                                <?php if (($pago['deuda'] ?? 0) == 0): ?>
+                                                    <span class="badge badge-success badge-3d">PAGADO COMPLETO</span>
+                                                <?php else: ?>
+                                                    <span class="badge badge-warning badge-3d">PENDIENTE: S/ <?= number_format($pago['deuda'], 2) ?></span>
+                                                <?php endif; ?>
+                                            </td>
+                                        </tr>
+                                    </table>
                                 </div>
                             </div>
                         </div>
@@ -108,42 +151,59 @@
                     <!-- Historial de pagos del contrato -->
                     <div class="row mt-4">
                         <div class="col-md-12">
-                            <div class="card">
+                            <div class="card card-3d">
                                 <div class="card-header">
-                                    <h4 class="card-title">Historial de Pagos del Contrato</h4>
+                                    <h4 class="card-title">Historial de Pagos del Contrato #<?= $pago['idcontrato'] ?></h4>
                                 </div>
                                 <div class="card-body">
                                     <div class="table-responsive">
-                                        <table class="table table-striped">
+                                        <table class="table table-striped table-hover table-hover-3d">
                                             <thead>
                                                 <tr>
-                                                    <th>ID Pago</th>
+                                                    <th>ID</th>
                                                     <th>Fecha/Hora</th>
                                                     <th>Saldo (S/)</th>
                                                     <th>Amortización (S/)</th>
                                                     <th>Deuda (S/)</th>
                                                     <th>Tipo Pago</th>
-                                                    <th>Usuario</th>
+                                                    <th>Acciones</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
-                                                <?php if (!empty($historial_pagos)): ?>
+                                                <?php if (!empty($historial_pagos) && is_array($historial_pagos)): ?>
                                                     <?php foreach ($historial_pagos as $historial): ?>
                                                         <tr class="<?= $historial['idpagos'] == $pago['idpagos'] ? 'table-active' : '' ?>">
                                                             <td><?= $historial['idpagos'] ?></td>
                                                             <td><?= date('d/m/Y H:i', strtotime($historial['fechahora'])) ?></td>
-                                                            <td><?= number_format($historial['saldo'], 2) ?></td>
+                                                            <td class="text-danger"><?= number_format($historial['saldo'], 2) ?></td>
                                                             <td class="text-success"><?= number_format($historial['amortizacion'], 2) ?></td>
                                                             <td class="<?= $historial['deuda'] > 0 ? 'text-warning' : 'text-success' ?>">
                                                                 <?= number_format($historial['deuda'], 2) ?>
                                                             </td>
                                                             <td><?= $historial['tipopago'] ?></td>
-                                                            <td><?= $historial['nombreusuario'] ?? 'N/A' ?></td>
+                                                            <td>
+                                                                <div class="form-button-action">
+                                                                    <a href="<?= base_url('/controlpagos/ver/' . $historial['idpagos']) ?>" 
+                                                                       class="btn btn-link btn-primary btn-sm" 
+                                                                       data-toggle="tooltip" 
+                                                                       title="Ver detalles">
+                                                                        <i class="fa fa-eye"></i>
+                                                                    </a>
+                                                                    <?php if (!empty($historial['comprobante'])): ?>
+                                                                        <a href="<?= base_url('/controlpagos/descargarComprobante/' . $historial['idpagos']) ?>" 
+                                                                           class="btn btn-link btn-info btn-sm" 
+                                                                           data-toggle="tooltip" 
+                                                                           title="Descargar comprobante">
+                                                                            <i class="fas fa-download"></i>
+                                                                        </a>
+                                                                    <?php endif; ?>
+                                                                </div>
+                                                            </td>
                                                         </tr>
                                                     <?php endforeach; ?>
                                                 <?php else: ?>
                                                     <tr>
-                                                        <td colspan="7" class="text-center">No hay historial de pagos</td>
+                                                        <td colspan="7" class="text-center">No se encontraron pagos para este contrato</td>
                                                     </tr>
                                                 <?php endif; ?>
                                             </tbody>
@@ -153,26 +213,17 @@
                             </div>
                         </div>
                     </div>
-
-                    <!-- Acciones -->
-                    <div class="row mt-4">
-                        <div class="col-md-12 text-center">
-                            <a href="<?= base_url('/controlpagos/generarVoucher/' . $pago['idpagos']) ?>" 
-                               class="btn btn-info btn-animate" target="_blank">
-                                <span class="btn-label">
-                                    <i class="fas fa-receipt"></i>
-                                </span>
-                                Generar Voucher
-                            </a>
-                            <a href="<?= base_url('/controlpagos/por-contrato/' . $pago['idcontrato']) ?>" 
-                               class="btn btn-primary">
-                                <i class="fas fa-list mr-2"></i> Ver Todos los Pagos del Contrato
-                            </a>
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
 <?= $footer ?>
+
+<script>
+$(document).ready(function() {
+    // Inicializar tooltips
+    $('[data-toggle="tooltip"]').tooltip();
+});
+</script>

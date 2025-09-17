@@ -9,53 +9,72 @@ class ControlPagoModel extends Model
     protected $table = 'controlpagos';
     protected $primaryKey = 'idpagos';
     protected $allowedFields = [
-        'idcontrato', 'saldo', 'amortizacion', 'deuda', 
-        'idtipopago', 'numtransaccion', 'fechahora', 'idusuario', 'comprobante'
+        'idcontrato', 
+        'saldo', 
+        'amortizacion', 
+        'deuda', 
+        'idtipopago', 
+        'numtransaccion', 
+        'fechahora', 
+        'idusuario', 
+        'comprobante'
     ];
-    
-    // Obtener información completa de pagos con joins y filtros
+
     public function obtenerPagosCompletos($filtro_contrato = null, $filtro_estado = null, $filtro_fecha = null)
     {
-        $builder = $this->select('controlpagos.*, contratos.idcontrato, personas.nombres, personas.apellidos, empresas.razonsocial, tipospago.tipopago, usuarios.nombreusuario')
-                    ->join('contratos', 'contratos.idcontrato = controlpagos.idcontrato')
-                    ->join('clientes', 'clientes.idcliente = contratos.idcliente')
-                    ->join('personas', 'personas.idpersona = clientes.idpersona', 'left')
-                    ->join('empresas', 'empresas.idempresa = clientes.idempresa', 'left')
-                    ->join('tipospago', 'tipospago.idtipopago = controlpagos.idtipopago')
-                    ->join('usuarios', 'usuarios.idusuario = controlpagos.idusuario', 'left')
-                    ->orderBy('controlpagos.fechahora', 'DESC');
-        
+        $builder = $this->db->table('controlpagos p');
+        $builder->select('p.*, 
+                         tp.tipopago, 
+                         u.nombreusuario,
+                         per.nombres, per.apellidos, 
+                         emp.razonsocial');
+        $builder->join('tipospago tp', 'tp.idtipopago = p.idtipopago', 'left');
+        $builder->join('usuarios u', 'u.idusuario = p.idusuario', 'left');
+        $builder->join('contratos c', 'c.idcontrato = p.idcontrato', 'left');
+        $builder->join('clientes cl', 'cl.idcliente = c.idcliente', 'left');
+        $builder->join('personas per', 'per.idpersona = cl.idpersona', 'left');
+        $builder->join('empresas emp', 'emp.idempresa = cl.idempresa', 'left');
+        $builder->orderBy('p.fechahora', 'DESC');
+
         // Aplicar filtros
         if (!empty($filtro_contrato)) {
-            $builder->where('controlpagos.idcontrato', $filtro_contrato);
+            $builder->where('p.idcontrato', $filtro_contrato);
         }
-        
+
         if (!empty($filtro_estado)) {
-            if ($filtro_estado === 'completo') {
-                $builder->where('controlpagos.deuda', 0);
-            } elseif ($filtro_estado === 'pendiente') {
-                $builder->where('controlpagos.deuda >', 0);
+            if ($filtro_estado == 'completo') {
+                $builder->where('p.deuda', 0);
+            } elseif ($filtro_estado == 'pendiente') {
+                $builder->where('p.deuda >', 0);
             }
         }
-        
+
         if (!empty($filtro_fecha)) {
-            $builder->like('controlpagos.fechahora', $filtro_fecha, 'after');
+            $builder->like('p.fechahora', $filtro_fecha, 'after');
         }
-        
-        return $builder->findAll();
+
+        return $builder->get()->getResultArray();
     }
 
-    // Obtener información de un pago específico
     public function obtenerPago($id)
     {
-        return $this->select('controlpagos.*, usuarios.nombreusuario, personas.nombres, personas.apellidos')
-                    ->join('usuarios', 'usuarios.idusuario = controlpagos.idusuario', 'left')
-                    ->join('personas', 'personas.idpersona = usuarios.idpersona', 'left')
-                    ->where('idpagos', $id)
-                    ->first();
+        $builder = $this->db->table('controlpagos p');
+        $builder->select('p.*, 
+                         tp.tipopago, 
+                         u.nombreusuario,
+                         per.nombres, per.apellidos, 
+                         emp.razonsocial');
+        $builder->join('tipospago tp', 'tp.idtipopago = p.idtipopago', 'left');
+        $builder->join('usuarios u', 'u.idusuario = p.idusuario', 'left');
+        $builder->join('contratos c', 'c.idcontrato = p.idcontrato', 'left');
+        $builder->join('clientes cl', 'cl.idcliente = c.idcliente', 'left');
+        $builder->join('personas per', 'per.idpersona = cl.idpersona', 'left');
+        $builder->join('empresas emp', 'emp.idempresa = cl.idempresa', 'left');
+        $builder->where('p.idpagos', $id);
+        
+        return $builder->get()->getRowArray();
     }
 
-    // Obtener el último pago de un contrato
     public function obtenerUltimoPagoContrato($idcontrato)
     {
         return $this->where('idcontrato', $idcontrato)
@@ -63,23 +82,69 @@ class ControlPagoModel extends Model
                     ->first();
     }
 
-    // Obtener historial de pagos de un contrato
     public function obtenerPagosPorContrato($idcontrato)
     {
-        return $this->select('controlpagos.*, tipospago.tipopago, usuarios.nombreusuario')
-                    ->join('tipospago', 'tipospago.idtipopago = controlpagos.idtipopago')
-                    ->join('usuarios', 'usuarios.idusuario = controlpagos.idusuario', 'left')
-                    ->where('controlpagos.idcontrato', $idcontrato)
-                    ->orderBy('controlpagos.fechahora', 'ASC')
-                    ->findAll();
+        $builder = $this->db->table('controlpagos p');
+        $builder->select('p.*, tp.tipopago, u.nombreusuario');
+        $builder->join('tipospago tp', 'tp.idtipopago = p.idtipopago', 'left');
+        $builder->join('usuarios u', 'u.idusuario = p.idusuario', 'left');
+        $builder->where('p.idcontrato', $idcontrato);
+        $builder->orderBy('p.fechahora', 'ASC');
+        
+        return $builder->get()->getResultArray();
     }
 
-    // Calcular total pagado por contrato
     public function calcularTotalPagado($idcontrato)
     {
         $result = $this->where('idcontrato', $idcontrato)
                     ->selectSum('amortizacion')
                     ->first();
         return $result['amortizacion'] ?? 0;
+    }
+
+    public function obtenerEstadisticasPagos()
+    {
+        $estadisticas = [
+            'total_pagado' => 0,
+            'deuda_total' => 0,
+            'pagos_count' => 0,
+            'por_tipo_pago' => [],
+            'contratos_con_deuda' => 0,
+            'contratos_pagados' => 0
+        ];
+
+        // Obtener total pagado y conteo de pagos
+        $result = $this->selectSum('amortizacion')->selectCount('idpagos')->first();
+        $estadisticas['total_pagado'] = $result['amortizacion'] ?? 0;
+        $estadisticas['pagos_count'] = $result['idpagos'] ?? 0;
+
+        // Obtener pagos por tipo
+        $builder = $this->db->table('controlpagos p');
+        $builder->select('tp.tipopago, SUM(p.amortizacion) as total');
+        $builder->join('tipospago tp', 'tp.idtipopago = p.idtipopago', 'left');
+        $builder->groupBy('p.idtipopago');
+        $result = $builder->get()->getResultArray();
+        
+        foreach ($result as $row) {
+            $estadisticas['por_tipo_pago'][$row['tipopago']] = $row['total'];
+        }
+
+        // Obtener contratos únicos
+        $contratos = $this->distinct()->select('idcontrato')->findAll();
+
+        // Calcular deuda total y contar contratos con deuda/pagados
+        foreach ($contratos as $contrato) {
+            $ultimoPago = $this->obtenerUltimoPagoContrato($contrato['idcontrato']);
+            if ($ultimoPago) {
+                $estadisticas['deuda_total'] += $ultimoPago['deuda'];
+                if ($ultimoPago['deuda'] == 0) {
+                    $estadisticas['contratos_pagados']++;
+                } else {
+                    $estadisticas['contratos_con_deuda']++;
+                }
+            }
+        }
+
+        return $estadisticas;
     }
 }

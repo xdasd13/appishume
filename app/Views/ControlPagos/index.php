@@ -1,10 +1,38 @@
 <?= $header ?>
 <div class="page-inner">
-    <!-- Las notificaciones ahora se muestran con SweetAlert -->
-    <!-- Tarjetas de resumen con animaciones 3D -->
+    <!-- Notificaciones con SweetAlert2 -->
+    <?php if (session()->getFlashdata('success')): ?>
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                Swal.fire({
+                    icon: 'success',
+                    title: '¡Éxito!',
+                    text: '<?= addslashes(session()->getFlashdata('success')) ?>',
+                    confirmButtonColor: '#28a745',
+                    timer: 4000,
+                    timerProgressBar: true
+                });
+            });
+        </script>
+    <?php endif; ?>
+    
+    <?php if (session()->getFlashdata('error')): ?>
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: '<?= addslashes(session()->getFlashdata('error')) ?>',
+                    confirmButtonColor: '#dc3545'
+                });
+            });
+        </script>
+    <?php endif; ?>
+
+    <!-- Tarjetas de resumen con animaciones -->
     <div class="row">
         <div class="col-md-3">
-            <div class="card card-stats card-round card-3d">
+            <div class="card card-stats card-round card-3d animate__animated animate__fadeInLeft">
                 <div class="card-body">
                     <div class="row align-items-center">
                         <div class="col-5">
@@ -23,7 +51,7 @@
             </div>
         </div>
         <div class="col-md-3">
-            <div class="card card-stats card-round card-3d">
+            <div class="card card-stats card-round card-3d animate__animated animate__fadeInLeft animate__delay-1s">
                 <div class="card-body">
                     <div class="row align-items-center">
                         <div class="col-5">
@@ -42,7 +70,7 @@
             </div>
         </div>
         <div class="col-md-3">
-            <div class="card card-stats card-round card-3d">
+            <div class="card card-stats card-round card-3d animate__animated animate__fadeInRight animate__delay-1s">
                 <div class="card-body">
                     <div class="row align-items-center">
                         <div class="col-5">
@@ -61,7 +89,7 @@
             </div>
         </div>
         <div class="col-md-3">
-            <div class="card card-stats card-round card-3d">
+            <div class="card card-stats card-round card-3d animate__animated animate__fadeInRight">
                 <div class="card-body">
                     <div class="row align-items-center">
                         <div class="col-5">
@@ -82,9 +110,9 @@
     </div>
 
     <!-- Panel principal de pagos -->
-    <div class="row">
+    <div class="row mt-4">
         <div class="col-md-12">
-            <div class="card card-3d">
+            <div class="card card-3d animate__animated animate__fadeInUp">
                 <div class="card-header">
                     <div class="d-flex align-items-center">
                         <h4 class="card-title">Registros de Pagos</h4>
@@ -247,27 +275,6 @@
 <!-- Scripts para la funcionalidad de la página -->
 <script>
 $(document).ready(function() {
-    // Mostrar notificaciones de flash messages con SweetAlert
-    <?php if (session()->getFlashdata('success')): ?>
-        Swal.fire({
-            icon: 'success',
-            title: '¡Éxito!',
-            text: '<?= addslashes(session()->getFlashdata('success')) ?>',
-            confirmButtonColor: '#28a745',
-            timer: 4000,
-            timerProgressBar: true
-        });
-    <?php endif; ?>
-    
-    <?php if (session()->getFlashdata('error')): ?>
-        Swal.fire({
-            icon: 'error',
-            title: 'Error',
-            text: '<?= addslashes(session()->getFlashdata('error')) ?>',
-            confirmButtonColor: '#dc3545'
-        });
-    <?php endif; ?>
-
     // Inicializar DataTable
     var table = $('#pagos-table').DataTable({
         "language": {
@@ -276,7 +283,8 @@ $(document).ready(function() {
         "order": [[0, "desc"]],
         "responsive": true,
         "pageLength": 10,
-        "lengthMenu": [[10, 25, 50, -1], [10, 25, 50, "Todos"]]
+        "lengthMenu": [[10, 25, 50, -1], [10, 25, 50, "Todos"]],
+        "dom": '<"top"lf>rt<"bottom"ip><"clear">'
     });
 
     // Inicializar tooltips

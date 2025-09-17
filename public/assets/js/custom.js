@@ -138,7 +138,7 @@ function showToast(message, type = 'success') {
 // Validación de montos en tiempo real
 function validatePaymentAmount(inputElement, maxAmount) {
     const value = parseFloat(inputElement.val());
-    
+
     if (isNaN(value)) {
         showToast('Por favor ingrese un monto válido', 'error');
         inputElement.addClass('is-invalid');
@@ -175,3 +175,96 @@ $(window).on('load', function() {
         $(this).css('animation-delay', (index * 0.1) + 's');
     });
 });
+
+// Funciones globales para mejorar la UX
+document.addEventListener('DOMContentLoaded', function() {
+    // Inicializar tooltips
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-toggle="tooltip"]'));
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+    
+    // Confirmaciones para acciones importantes
+    const confirmarAccion = (elemento, mensaje) => {
+        elemento.addEventListener('click', function(e) {
+            e.preventDefault();
+            const url = this.href;
+            
+            Swal.fire({
+                title: '¿Estás seguro?',
+                text: mensaje,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Sí, continuar',
+                cancelButtonText: 'Cancelar',
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = url;
+                }
+            });
+        });
+    };
+    
+    // Aplicar a todos los enlaces de eliminación
+    document.querySelectorAll('a[data-confirm]').forEach(enlace => {
+        confirmarAccion(enlace, enlace.getAttribute('data-confirm'));
+    });
+    
+    // Mejoras para formularios
+    const forms = document.querySelectorAll('form');
+    forms.forEach(form => {
+        form.addEventListener('submit', function(e) {
+            const botones = this.querySelectorAll('button[type="submit"]');
+            botones.forEach(boton => {
+                boton.disabled = true;
+                boton.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Procesando...';
+            });
+        });
+    });
+    
+    // Animaciones para elementos al hacer scroll
+    const animarAlScroll = () => {
+        const elementos = document.querySelectorAll('.animate-on-scroll');
+        elementos.forEach(elemento => {
+            const posicion = elemento.getBoundingClientRect().top;
+            const alturaVentana = window.innerHeight;
+            
+            if (posicion < alturaVentana - 100) {
+                elemento.classList.add('animate__animated', 'animate__fadeInUp');
+            }
+        });
+    };
+    
+    window.addEventListener('scroll', animarAlScroll);
+    animarAlScroll(); // Ejecutar una vez al cargar
+});
+
+// Función para formatear montos monetarios
+function formatoMoneda(monto) {
+    return new Intl.NumberFormat('es-PE', {
+        style: 'currency',
+        currency: 'PEN'
+    }).format(monto);
+}
+
+// Función para mostrar notificaciones Toast
+function mostrarToast(mensaje, tipo = 'success') {
+    const Toast = Swal.mixin({
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 3000,
+        timerProgressBar: true,
+        didOpen: (toast) => {
+            toast.addEventListener('mouseenter', Swal.stopTimer);
+            toast.addEventListener('mouseleave', Swal.resumeTimer);
+        }
+    });
+    
+    Toast.fire({
+        icon: tipo,
+        title: mensaje
+    });
+}
