@@ -543,10 +543,12 @@ function updateEmptyStates() {
         const hasCards = column.querySelector('.kanban-card:not(.kanban-empty-state)');
         
         if (hasCards) {
-            if (emptyState) emptyState.style.display = 'none';
+            if (emptyState) {
+                emptyState.style.display = 'none';
+            }
         } else {
-            // Mostrar estado vacío si no existe
             if (!emptyState) {
+                // Crear el estado vacío como un nuevo elemento
                 const status = column.id;
                 let text = '';
                 
@@ -562,14 +564,15 @@ function updateEmptyStates() {
                         break;
                 }
                 
-                const emptyHtml = `
-                    <div class="kanban-empty-state">
-                        <i class="fas fa-inbox fa-2x mb-2"></i>
-                        <p class="mb-0">${text}</p>
-                    </div>
+                const emptyStateDiv = document.createElement('div');
+                emptyStateDiv.className = 'kanban-empty-state';
+                emptyStateDiv.innerHTML = `
+                    <i class="fas fa-inbox fa-2x mb-2"></i>
+                    <p class="mb-0">${text}</p>
                 `;
                 
-                column.innerHTML = emptyHtml;
+                // Añadir el estado vacío al final de la columna
+                column.appendChild(emptyStateDiv);
             } else {
                 emptyState.style.display = 'flex';
             }

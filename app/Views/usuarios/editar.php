@@ -1,12 +1,8 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?= $title ?></title>
+     <?= $header ?>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    
     <style>
         .user-header {
             background: linear-gradient(135deg, #FF8008 0%, #FFC837 100%);
@@ -44,9 +40,6 @@
         }
 
     </style>
-</head>
-<body>
-    <?= $header ?>
     
     <div class="container-fluid py-4">
         <div class="row justify-content-center">
@@ -201,8 +194,6 @@
             </div>
         </div>
     </div>
-
-    <?= $footer ?>
     
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -229,11 +220,78 @@
 
             form.addEventListener('submit', async function(e) {
                 e.preventDefault();
-                
-                if (!form.checkValidity()) {
-                    e.stopPropagation();
-                    form.classList.add('was-validated');
+                const submitBtn = document.getElementById('submitBtn');
+
+                // Prevenir múltiples envíos
+                if (submitBtn.disabled) {
                     return;
+                }
+
+                // Validación de contraseña segura si se intenta cambiar
+                const password = document.getElementById('password');
+                const confirmPassword = document.getElementById('confirm_password');
+                let passwordError = '';
+
+                // Limpiar validaciones previas
+                password.setCustomValidity('');
+                confirmPassword.setCustomValidity('');
+                
+                if (password.value) {
+                    // Requisitos: 8+, mayúscula, minúscula, número, símbolo
+                    const length = password.value.length >= 8;
+                    const upper = /[A-Z]/.test(password.value);
+                    const lower = /[a-z]/.test(password.value);
+                    const number = /[0-9]/.test(password.value);
+                    const symbol = /[^A-Za-z0-9]/.test(password.value);
+                    if (!(length && upper && lower && number && symbol)) {
+                        passwordError = 'La contraseña debe tener mínimo 8 caracteres, al menos una mayúscula, una minúscula, un número y un símbolo.';
+                        password.setCustomValidity(passwordError);
+                    }
+                }
+
+                // Validación de confirmación de contraseña solo si se está cambiando
+                if (password.value || confirmPassword.value) {
+                    if (password.value !== confirmPassword.value) {
+                        confirmPassword.setCustomValidity('Las contraseñas no coinciden');
+                    }
+                }
+
+                // Validar el formulario
+                form.classList.add('was-validated');
+                if (!form.checkValidity()) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    // Buscar el primer campo inválido y su mensaje
+                    const firstInvalid = form.querySelector(':invalid');
+                    let errorMsg = 'Por favor corrija los campos marcados en rojo.';
+                    
+                    if (firstInvalid) {
+                        // Si es el campo de contraseña y tiene error específico
+                        if (firstInvalid === password && passwordError) {
+                            errorMsg = passwordError;
+                        } 
+                        // Si es un campo con mensaje de validación personalizado
+                        else if (firstInvalid.validationMessage) {
+                            errorMsg = firstInvalid.validationMessage;
+                        }
+                        // Asegurarse de que el campo tenga foco
+                        setTimeout(() => firstInvalid.focus(), 100);
+                    }
+                    
+                    // Mostrar SweetAlert con el error
+                    Swal.fire({
+                        title: 'Error de validación',
+                        text: errorMsg,
+                        icon: 'error',
+                        confirmButtonColor: '#4e73df',
+                        confirmButtonText: 'Entendido'
+                    }).then(() => {
+                        // Asegurarse de que el botón esté habilitado después del error
+                        submitBtn.disabled = false;
+                        submitBtn.innerHTML = '<i class="fas fa-save me-1"></i> Guardar Cambios';
+                    });
+                    return false;
                 }
 
                 // Verificar si hay cambio de rol
@@ -252,7 +310,6 @@
                         iconoConfirmacion = 'warning';
                     }
                 } else {
-                    // Si no hay cambio de rol, solo confirmar actualización
                     mensajeConfirmacion = '¿Desea guardar los cambios realizados?';
                 }
 
@@ -270,10 +327,11 @@
                 });
 
                 if (!result.isConfirmed) {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = '<i class="fas fa-save me-1"></i> Guardar Cambios';
                     return;
                 }
 
-                const submitBtn = document.getElementById('submitBtn');
                 submitBtn.disabled = true;
                 submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Guardando...';
 
@@ -318,29 +376,121 @@
                 }
             });
 
-            // Validación de confirmación de contraseña
+
+            // Validación de confirmación de contraseña y requisitos en tiempo real
             const password = document.getElementById('password');
             const confirmPassword = document.getElementById('confirm_password');
 
-            confirmPassword.addEventListener('input', function() {
-                if (password.value !== confirmPassword.value) {
-                    confirmPassword.setCustomValidity('Las contraseñas no coinciden');
-                } else {
-                    confirmPassword.setCustomValidity('');
+            function validatePasswordRequirements() {
+                // Si no hay contraseña, no aplicar validación
+                if (!password.value) {
+                    password.setCustomValidity('');
+                    password.classList.remove('is-invalid', 'is-valid');
+                    return;
                 }
+
+                const requirements = {
+                    length: { test: password.value.length >= 8, message: '8 caracteres' },
+                    upper: { test: /[A-Z]/.test(password.value), message: 'mayúscula' },
+                    lower: { test: /[a-z]/.test(password.value), message: 'minúscula' },
+                    number: { test: /[0-9]/.test(password.value), message: 'número' },
+                    symbol: { test: /[^A-Za-z0-9]/.test(password.value), message: 'símbolo' }
+                };
+
+                const failedRequirements = Object.entries(requirements)
+                    .filter(([_, { test }]) => !test)
+                    .map(([_, { message }]) => message);
+
+                if (failedRequirements.length > 0) {
+                    const errorMessage = `La contraseña debe tener: ${failedRequirements.join(', ')}`;
+                    password.setCustomValidity(errorMessage);
+                    password.classList.add('is-invalid');
+                    password.classList.remove('is-valid');
+                } else {
+                    password.setCustomValidity('');
+                    password.classList.remove('is-invalid');
+                    password.classList.add('is-valid');
+                }
+            }
+
+            let passwordTimeout = null;
+            let confirmTimeout = null;
+
+            password.addEventListener('input', function(e) {
+                e.stopPropagation();
+                // Cancelar timeout anterior si existe
+                if (passwordTimeout) clearTimeout(passwordTimeout);
+                
+                // Establecer nuevo timeout para la validación
+                passwordTimeout = setTimeout(() => {
+                    validatePasswordRequirements();
+                    // Validar confirmación también
+                    if (confirmPassword.value) {
+                        if (password.value !== confirmPassword.value) {
+                            confirmPassword.setCustomValidity('Las contraseñas no coinciden');
+                            confirmPassword.classList.add('is-invalid');
+                            confirmPassword.classList.remove('is-valid');
+                        } else {
+                            confirmPassword.setCustomValidity('');
+                            confirmPassword.classList.remove('is-invalid');
+                            confirmPassword.classList.add('is-valid');
+                        }
+                    }
+                }, 300); // Esperar 300ms después de la última entrada
+            });
+
+            confirmPassword.addEventListener('input', function(e) {
+                e.stopPropagation();
+                // Cancelar timeout anterior si existe
+                if (confirmTimeout) clearTimeout(confirmTimeout);
+                
+                // Establecer nuevo timeout para la validación
+                confirmTimeout = setTimeout(() => {
+                    if (!password.value && !confirmPassword.value) {
+                        confirmPassword.setCustomValidity('');
+                        confirmPassword.classList.remove('is-invalid', 'is-valid');
+                        return;
+                    }
+                    
+                    if (password.value !== confirmPassword.value) {
+                        confirmPassword.setCustomValidity('Las contraseñas no coinciden');
+                        confirmPassword.classList.add('is-invalid');
+                        confirmPassword.classList.remove('is-valid');
+                    } else {
+                        confirmPassword.setCustomValidity('');
+                        confirmPassword.classList.remove('is-invalid');
+                        confirmPassword.classList.add('is-valid');
+                    }
+                }, 300); // Esperar 300ms después de la última entrada
             });
 
             // Validación en tiempo real
-            form.querySelectorAll('select').forEach(select => {
-                select.addEventListener('change', () => {
-                    if (!select.checkValidity()) {
-                        select.classList.add('is-invalid');
-                    } else {
-                        select.classList.remove('is-invalid');
-                    }
+            const validateField = (field) => {
+                // No validar campos de contraseña vacíos
+                if (field.type === 'password' && !field.value) {
+                    field.classList.remove('is-invalid', 'is-valid');
+                    return;
+                }
+
+                // Para otros campos
+                if (!field.checkValidity()) {
+                    field.classList.add('is-invalid');
+                    field.classList.remove('is-valid');
+                } else {
+                    field.classList.remove('is-invalid');
+                    field.classList.add('is-valid');
+                }
+            };
+
+            // Aplicar validación a todos los campos requeridos
+            form.querySelectorAll('select, input[required]').forEach(field => {
+                ['change', 'input'].forEach(eventType => {
+                    field.addEventListener(eventType, (e) => {
+                        e.stopPropagation(); // Evitar propagación del evento
+                        validateField(field);
+                    });
                 });
             });
         });
     </script>
-</body>
-</html>
+    <?= $footer ?>
