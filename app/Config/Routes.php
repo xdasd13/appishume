@@ -102,5 +102,19 @@ $routes->get('cronograma/proyectos-estado/(:segment)', 'Cronograma::proyectosPor
 // Ruta de prueba para debugging
 $routes->get('test-db', 'Cronograma::testDatabase');
 
+// ==================== RUTAS PARA INVENTARIO DE EQUIPOS ====================
+// Rutas principales del inventario
+$routes->get('inventario', 'InventarioController::index');
+$routes->get('inventario/crear', 'InventarioController::create');
+$routes->post('inventario/guardar', 'InventarioController::store');
+$routes->get('inventario/editar/(:num)', 'InventarioController::edit/$1');
+$routes->post('inventario/actualizar/(:num)', 'InventarioController::update/$1');
+$routes->delete('inventario/eliminar/(:num)', 'InventarioController::delete/$1');
+
+// APIs AJAX para inventario
+$routes->get('inventario/ver/(:num)', 'InventarioController::ver/$1');
+$routes->get('inventario/buscar', 'InventarioController::buscar');
+$routes->get('inventario/estadisticas', 'InventarioController::estadisticas');
+
 // Rutas para servicios
 $routes->get('servicios/(:num)', 'Servicios::detalle/$1');
