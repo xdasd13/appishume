@@ -365,7 +365,7 @@
                                             <div class="col-md-4 mb-3">
                                                 <div class="form-floating">
                                                     <input type="text" class="form-control" id="numerodoc" 
-                                                           name="numerodoc" required placeholder=" ">
+                                                           name="numerodoc" required placeholder=" " maxlength="12">
                                                     <label for="numerodoc">Número de Documento *</label>
                                                 </div>
                                                 <span class="example-text" id="example-numerodoc">Ejemplo: 12345678 (8 dígitos)</span>
@@ -393,24 +393,24 @@
                                                 <div class="form-floating">
                                                     <input type="text" class="form-control" id="telprincipal" 
                                                            name="telprincipal" required placeholder=" " 
-                                                           pattern="[0-9]{7,15}">
+                                                           pattern="[0-9]{9}" maxlength="9">
                                                     <label for="telprincipal">Teléfono Principal *</label>
                                                 </div>
-                                                <span class="example-text">Ejemplo: 987654321 (7-15 dígitos)</span>
+                                                <span class="example-text">Ejemplo: 987654321 (exactamente 9 dígitos)</span>
                                                 <div class="invalid-feedback">
-                                                    Por favor ingrese un teléfono válido (7-15 dígitos).
+                                                    Por favor ingrese un teléfono válido (exactamente 9 dígitos).
                                                 </div>
                                             </div>
                                             <div class="col-md-6 mb-3">
                                                 <div class="form-floating">
                                                     <input type="text" class="form-control" id="telalternativo" 
                                                            name="telalternativo" placeholder=" " 
-                                                           pattern="[0-9]{7,15}">
+                                                           pattern="[0-9]{9}" maxlength="9">
                                                     <label for="telalternativo">Teléfono Alternativo</label>
                                                 </div>
-                                                <span class="example-text">Ejemplo: 912345678 (7-15 dígitos, opcional)</span>
+                                                <span class="example-text">Ejemplo: 912345678 (exactamente 9 dígitos, opcional)</span>
                                                 <div class="invalid-feedback">
-                                                    Por favor ingrese un teléfono válido (7-15 dígitos).
+                                                    Por favor ingrese un teléfono válido (exactamente 9 dígitos).
                                                 </div>
                                             </div>
                                         </div>
@@ -616,6 +616,42 @@
                 }
             }
             
+            // Validar teléfonos (exactamente 9 dígitos)
+            function validarTelefono() {
+                const telPrincipal = $('#telprincipal').val();
+                const telAlternativo = $('#telalternativo').val();
+                
+                // Validar teléfono principal (obligatorio)
+                if (telPrincipal && !/^\d{9}$/.test(telPrincipal)) {
+                    $('#telprincipal').get(0).setCustomValidity('El teléfono debe tener exactamente 9 dígitos.');
+                } else {
+                    $('#telprincipal').get(0).setCustomValidity('');
+                }
+                
+                // Validar teléfono alternativo (opcional)
+                if (telAlternativo && !/^\d{9}$/.test(telAlternativo)) {
+                    $('#telalternativo').get(0).setCustomValidity('El teléfono debe tener exactamente 9 dígitos.');
+                } else {
+                    $('#telalternativo').get(0).setCustomValidity('');
+                }
+            }
+            
+            // Validar teléfonos en tiempo real
+            $('#telprincipal, #telalternativo').on('input', function() {
+                validarTelefono();
+            });
+            
+            // Funciones para manejar el estado del botón
+            function setButtonLoading($button) {
+                $button.prop('disabled', true);
+                $button.html('<i class="fas fa-spinner fa-spin me-1"></i> En proceso...');
+            }
+            
+            function resetButton($button, originalText) {
+                $button.prop('disabled', false);
+                $button.html(originalText);
+            }
+            
             // Validar fortaleza de contraseña y actualizar requisitos visualmente
             $('#password_existente, #password_nuevo').on('input', function() {
                 const password = $(this).val();
@@ -728,14 +764,21 @@
             $('#formExistente, #formNuevo').on('submit', function(e) {
                 e.preventDefault();
                 
+                const $submitButton = $(this).find('button[type="submit"]');
+                const originalButtonText = $submitButton.html();
+                
                 // Validar número de documento para formulario nuevo
                 if ($(this).attr('id') === 'formNuevo') {
                     validarNumeroDocumento();
+                    validarTelefono();
                 }
                 
                 if (!this.checkValidity()) {
                     e.stopPropagation();
                     this.classList.add('was-validated');
+                    
+                    // Resetear botón si hay errores
+                    resetButton($submitButton, originalButtonText);
                     
                     // Mostrar alerta de error
                     showAlert('error', 'Error de validación', 'Por favor complete todos los campos correctamente.');
@@ -753,6 +796,10 @@
                 if (password !== confirmPassword) {
                     $(confirmField).get(0).setCustomValidity('Las contraseñas no coinciden');
                     $(confirmField).get(0).reportValidity();
+                    
+                    // Resetear botón si hay errores
+                    resetButton($submitButton, originalButtonText);
+                    
                     showAlert('error', 'Contraseñas no coinciden', 'Las contraseñas ingresadas no coinciden.');
                     return;
                 } else {
@@ -764,6 +811,10 @@
                 if (password.length < 8 || strength.score < 3) {
                     $(passwordField).get(0).setCustomValidity('La contraseña no cumple con los requisitos de seguridad');
                     $(passwordField).get(0).reportValidity();
+                    
+                    // Resetear botón si hay errores
+                    resetButton($submitButton, originalButtonText);
+                    
                     showAlert('error', 'Contraseña débil', 'La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula, un número y un símbolo.');
                     return;
                 }
@@ -780,8 +831,13 @@
                     cancelButtonText: 'Cancelar'
                 }).then((result) => {
                     if (result.isConfirmed) {
+                        // Cambiar botón a estado de carga
+                        setButtonLoading($submitButton);
                         // Enviar formulario
-                        guardarUsuario(this);
+                        guardarUsuario(this, $submitButton, originalButtonText);
+                    } else {
+                        // Si cancela, resetear botón
+                        resetButton($submitButton, originalButtonText);
                     }
                 });
             });
@@ -792,7 +848,7 @@
             });
             
             // Función para enviar el formulario
-            function guardarUsuario(form) {
+            function guardarUsuario(form, $submitButton, originalButtonText) {
                 const formData = new FormData(form);
                 
                 // Mostrar loading
@@ -813,6 +869,8 @@
                     contentType: false,
                     success: function(response) {
                         Swal.close();
+                        resetButton($submitButton, originalButtonText);
+                        
                         if (response.success) {
                             showAlert('success', '¡Éxito!', 'Usuario creado correctamente.');
                             // Limpiar formulario después del éxito
@@ -834,6 +892,7 @@
                     },
                     error: function(xhr, status, error) {
                         Swal.close();
+                        resetButton($submitButton, originalButtonText);
                         showAlert('error', 'Error', 'Error en la solicitud: ' + error);
                     }
                 });
