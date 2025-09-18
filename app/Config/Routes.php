@@ -84,6 +84,7 @@ $routes->post('equipos/actualizar', 'Equipos::actualizar');
 $routes->get('equipos/por-servicio/(:num)', 'Equipos::por_servicio/$1');
 $routes->get('equipos/por-usuario/(:num)', 'Equipos::por_usuario/$1');
 $routes->post('equipos/verificar-disponibilidad', 'Equipos::verificarDisponibilidad');
+$routes->post('equipos/actualizar-estado', 'Equipos::actualizarEstado');
 
 // ==================== RUTAS PARA CRONOGRAMA Y PROYECTOS ====================
 // Rutas principales de cronograma

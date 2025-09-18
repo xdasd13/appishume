@@ -217,4 +217,104 @@ class Equipos extends BaseController
 
         return $this->response->setJSON($response);
     }
+
+    // NUEVO: Endpoint AJAX para actualizar estado de equipos con validaciones
+    public function actualizarEstado()
+    {
+        // Verificar que sea una petición AJAX
+        if (!$this->request->isAJAX()) {
+            return $this->response->setStatusCode(400)->setJSON(['error' => 'Petición no válida']);
+        }
+
+        $input = json_decode($this->request->getBody(), true);
+        $idequipo = $input['id'] ?? null;
+        $nuevoEstado = $input['estado'] ?? null;
+
+        if (!$idequipo || !$nuevoEstado) {
+            return $this->response->setJSON([
+                'success' => false,
+                'error' => 'Parámetros faltantes'
+            ]);
+        }
+
+        // Obtener el equipo actual
+        $equipo = $this->equipoModel->find($idequipo);
+        if (!$equipo) {
+            return $this->response->setJSON([
+                'success' => false,
+                'error' => 'Equipo no encontrado'
+            ]);
+        }
+
+        $estadoActual = $equipo['estadoservicio'];
+
+        // VALIDACIONES DE TRANSICIÓN DE ESTADOS
+        $validacion = $this->validarTransicionEstado($estadoActual, $nuevoEstado);
+        
+        if (!$validacion['valido']) {
+            return $this->response->setJSON([
+                'success' => false,
+                'error' => $validacion['mensaje']
+            ]);
+        }
+
+        // Actualizar el estado en la base de datos
+        $data = ['estadoservicio' => $nuevoEstado];
+        
+        if ($this->equipoModel->update($idequipo, $data)) {
+            return $this->response->setJSON([
+                'success' => true,
+                'message' => 'Estado actualizado correctamente'
+            ]);
+        } else {
+            return $this->response->setJSON([
+                'success' => false,
+                'error' => 'Error al actualizar el estado en la base de datos'
+            ]);
+        }
+    }
+
+    // Función para validar transiciones de estado
+    private function validarTransicionEstado($estadoActual, $nuevoEstado)
+    {
+        // Normalizar estados para comparación
+        $estadoActual = trim($estadoActual);
+        $nuevoEstado = trim($nuevoEstado);
+
+        // Validación 1: Si el servicio está completo, no se puede mover a pendiente o en proceso
+        if ($estadoActual === 'Completado') {
+            if ($nuevoEstado === 'Pendiente' || $nuevoEstado === 'En Proceso') {
+                return [
+                    'valido' => false,
+                    'mensaje' => 'Este servicio ya está completo'
+                ];
+            }
+        }
+
+        // Validación 2: Si el servicio está pendiente y se quiere mover directamente a completo
+        if ($estadoActual === 'Pendiente' || $estadoActual === 'Programado') {
+            if ($nuevoEstado === 'Completado') {
+                return [
+                    'valido' => false,
+                    'mensaje' => 'Este servicio aún no tiene proceso'
+                ];
+            }
+        }
+
+        // Validación 3: Si el servicio está en proceso y se quiere mover a pendiente
+        if ($estadoActual === 'En Proceso') {
+            if ($nuevoEstado === 'Pendiente') {
+                return [
+                    'valido' => false,
+                    'mensaje' => 'Este servicio está en proceso'
+                ];
+            }
+        }
+
+        // Si llegamos aquí, la transición es válida
+        return [
+            'valido' => true,
+            'mensaje' => 'Transición válida'
+        ];
+    }
 }

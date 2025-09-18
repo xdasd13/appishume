@@ -461,6 +461,22 @@ function initializeDragAndDrop() {
                         break;
                 }
 
+                // VALIDACIONES DEL LADO CLIENTE
+                const estadoActual = cardData.status;
+                const validacion = validarTransicionEstado(estadoActual, newStatus);
+                
+                if (!validacion.valido) {
+                    // Mostrar error de validación
+                    Swal.fire({
+                        title: 'Movimiento no permitido',
+                        text: validacion.mensaje,
+                        icon: 'error',
+                        confirmButtonText: 'Entendido',
+                        confirmButtonColor: '#ff6b35'
+                    });
+                    return;
+                }
+
                 // Confirmar el cambio de estado con SweetAlert
                 const result = await Swal.fire({
                     title: 'Cambiar Estado del Equipo',
@@ -474,20 +490,44 @@ function initializeDragAndDrop() {
                 });
 
                 if (result.isConfirmed) {
-                    // Actualizar la tarjeta visualmente
-                    updateCardStatus(cardElement, newStatus);
-                    
-                    // Mover la tarjeta a la nueva columna
-                    this.appendChild(cardElement);
-                    
-                    // Actualizar estados vacíos
-                    updateEmptyStates();
-                    
-                    // Aquí podrías hacer una llamada AJAX para actualizar el estado en la base de datos
-                    updateEquipmentStatus(cardData.id, newStatus);
-                    
-                    // Mostrar notificación de éxito
-                    showNotification(`Estado cambiado a "${statusText}" correctamente`, 'success');
+                    // Mostrar loading
+                    Swal.fire({
+                        title: 'Actualizando estado...',
+                        allowOutsideClick: false,
+                        allowEscapeKey: false,
+                        showConfirmButton: false,
+                        didOpen: () => {
+                            Swal.showLoading();
+                        }
+                    });
+
+                    // Llamada AJAX para actualizar el estado en la base de datos
+                    try {
+                        const success = await updateEquipmentStatus(cardData.id, newStatus);
+                        
+                        if (success) {
+                            // Actualizar la tarjeta visualmente
+                            updateCardStatus(cardElement, newStatus);
+                            
+                            // Mover la tarjeta a la nueva columna
+                            this.appendChild(cardElement);
+                            
+                            // Actualizar estados vacíos
+                            updateEmptyStates();
+                            
+                            // Cerrar loading y mostrar éxito
+                            Swal.close();
+                            showNotification(`Estado cambiado a "${statusText}" correctamente`, 'success');
+                        } else {
+                            // Error al actualizar
+                            Swal.close();
+                            showNotification('Error al actualizar el estado', 'error');
+                        }
+                    } catch (error) {
+                        Swal.close();
+                        showNotification('Error de conexión', 'error');
+                        console.error('Error:', error);
+                    }
                 } else {
                     // Si se cancela, devolver la tarjeta a su posición original
                     cardElement.style.transform = '';
@@ -572,37 +612,78 @@ function updateCardStatus(cardElement, newStatus) {
     }
 }
 
-function updateEquipmentStatus(equipmentId, newStatus) {
-    // Esta función haría una llamada AJAX para actualizar el estado en la base de datos
-    // Por ahora solo simularemos la actualización
-    console.log(`Actualizando equipo ${equipmentId} a estado: ${newStatus}`);
-    
-    // Ejemplo de llamada AJAX (descomentarla cuando tengas el endpoint)
-    /*
-    fetch('<?= base_url("equipos/actualizar-estado") ?>', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-Requested-With': 'XMLHttpRequest'
-        },
-        body: JSON.stringify({
-            id: equipmentId,
-            estado: newStatus
-        })
-    })
-    .then(response => response.json())
-    .then(data => {
+async function updateEquipmentStatus(equipmentId, newStatus) {
+    try {
+        const response = await fetch('<?= base_url("equipos/actualizar-estado") ?>', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify({
+                id: equipmentId,
+                estado: newStatus
+            })
+        });
+
+        const data = await response.json();
+        
         if (data.success) {
-            showNotification('Estado actualizado en la base de datos', 'success');
+            return true;
         } else {
-            showNotification('Error al actualizar el estado', 'error');
+            // Si hay un error específico del servidor, mostrarlo
+            if (data.error) {
+                showNotification(data.error, 'error');
+            }
+            return false;
         }
-    })
-    .catch(error => {
+    } catch (error) {
         console.error('Error:', error);
-        showNotification('Error de conexión', 'error');
-    });
-    */
+        throw error;
+    }
+}
+
+// Función para validar transiciones de estado del lado cliente
+function validarTransicionEstado(estadoActual, nuevoEstado) {
+    // Normalizar estados para comparación
+    estadoActual = estadoActual.trim();
+    nuevoEstado = nuevoEstado.trim();
+
+    // Validación 1: Si el servicio está completo, no se puede mover a pendiente o en proceso
+    if (estadoActual === 'Completado') {
+        if (nuevoEstado === 'Pendiente' || nuevoEstado === 'En Proceso') {
+            return {
+                valido: false,
+                mensaje: 'Este servicio ya está completo'
+            };
+        }
+    }
+
+    // Validación 2: Si el servicio está pendiente y se quiere mover directamente a completo
+    if (estadoActual === 'Pendiente' || estadoActual === 'Programado') {
+        if (nuevoEstado === 'Completado') {
+            return {
+                valido: false,
+                mensaje: 'Este servicio aún no tiene proceso'
+            };
+        }
+    }
+
+    // Validación 3: Si el servicio está en proceso y se quiere mover a pendiente
+    if (estadoActual === 'En Proceso') {
+        if (nuevoEstado === 'Pendiente') {
+            return {
+                valido: false,
+                mensaje: 'Este servicio está en proceso'
+            };
+        }
+    }
+
+    // Si llegamos aquí, la transición es válida
+    return {
+        valido: true,
+        mensaje: 'Transición válida'
+    };
 }
 
 function showNotification(message, type = 'info') {
