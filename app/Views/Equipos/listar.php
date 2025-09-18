@@ -101,9 +101,9 @@
             <?php if (!empty($equipos)): ?>
             <!-- Tablero Kanban -->
             <div class="kanban-board">
-                <div class="row g-3 kanban-columns-container">
+                <div class="row g-3 kanban-columns-container d-flex flex-nowrap flex-lg-nowrap flex-md-wrap flex-sm-wrap overflow-auto" style="gap:1rem;">
                     <!-- Columna Pendiente -->
-                    <div class="col-lg-4 col-md-6 col-sm-12 kanban-column-wrapper">
+                    <div class="col-lg-4 col-md-6 col-sm-12 kanban-column-wrapper d-flex flex-column" style="min-width:320px;max-width:100vw;">
                         <div class="kanban-column">
                             <div class="kanban-column-header bg-warning">
                                 <h5 class="text-center text-white mb-0">
@@ -178,7 +178,7 @@
                     </div>
 
                     <!-- Columna En Proceso -->
-                    <div class="col-lg-4 col-md-6 col-sm-12 kanban-column-wrapper">
+                    <div class="col-lg-4 col-md-6 col-sm-12 kanban-column-wrapper d-flex flex-column" style="min-width:320px;max-width:100vw;">
                         <div class="kanban-column">
                             <div class="kanban-column-header bg-info">
                                 <h5 class="text-center text-white mb-0">
@@ -253,7 +253,7 @@
                     </div>
 
                     <!-- Columna Completo -->
-                    <div class="col-lg-4 col-md-6 col-sm-12 kanban-column-wrapper">
+                    <div class="col-lg-4 col-md-6 col-sm-12 kanban-column-wrapper d-flex flex-column" style="min-width:320px;max-width:100vw;">
                         <div class="kanban-column">
                             <div class="kanban-column-header bg-success">
                                 <h5 class="text-center text-white mb-0">
@@ -351,24 +351,21 @@ document.addEventListener('DOMContentLoaded', function() {
     <?php if (session()->getFlashdata('success')): ?>
         showNotification('<?= addslashes(session()->getFlashdata('success')) ?>', 'success');
     <?php endif; ?>
-    
     <?php if (session()->getFlashdata('error')): ?>
         showNotification('<?= addslashes(session()->getFlashdata('error')) ?>', 'error');
     <?php endif; ?>
 
     // Inicializar tooltips
-    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[title]'))
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[title]'));
     var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-        return new bootstrap.Tooltip(tooltipTriggerEl)
+        return new bootstrap.Tooltip(tooltipTriggerEl);
     });
 
-    // Funcionalidad Drag and Drop
+    // Inicializar Drag and Drop
     initializeDragAndDrop();
-    
+
     // Ajustar altura de columnas
     adjustColumnHeights();
-    
-    // Ajustar en redimensionamiento
     window.addEventListener('resize', adjustColumnHeights);
 });
 

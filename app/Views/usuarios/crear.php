@@ -642,13 +642,16 @@
             });
             
             // Funciones para manejar el estado del botón
-            function setButtonLoading($button) {
+            function setButtonLoading($button, originalText) {
+                // Solo poner en "procesando" si el formulario es válido
                 $button.prop('disabled', true);
+                $button.data('original-text', originalText);
                 $button.html('<i class="fas fa-spinner fa-spin me-1"></i> En proceso...');
             }
             
             function resetButton($button, originalText) {
                 $button.prop('disabled', false);
+                // Restaurar el texto original
                 $button.html(originalText);
             }
             
@@ -763,62 +766,58 @@
             // Validación de formularios
             $('#formExistente, #formNuevo').on('submit', function(e) {
                 e.preventDefault();
-                
                 const $submitButton = $(this).find('button[type="submit"]');
-                const originalButtonText = $submitButton.html();
-                
+                // Guardar el texto original del botón según el formulario
+                let originalButtonText = '';
+                if ($(this).attr('id') === 'formExistente') {
+                    originalButtonText = '<i class="fas fa-save me-1"></i> Crear Credenciales';
+                } else {
+                    originalButtonText = '<i class="fas fa-save me-1"></i> Crear Personal y Credenciales';
+                }
+
                 // Validar número de documento para formulario nuevo
                 if ($(this).attr('id') === 'formNuevo') {
                     validarNumeroDocumento();
                     validarTelefono();
                 }
-                
+
                 if (!this.checkValidity()) {
                     e.stopPropagation();
                     this.classList.add('was-validated');
-                    
-                    // Resetear botón si hay errores
+                    // El botón mantiene su texto original
                     resetButton($submitButton, originalButtonText);
-                    
-                    // Mostrar alerta de error
                     showAlert('error', 'Error de validación', 'Por favor complete todos los campos correctamente.');
                     return;
                 }
-                
+
                 // Validar que las contraseñas coincidan
                 const formId = $(this).attr('id');
                 const passwordField = formId === 'formExistente' ? '#password_existente' : '#password_nuevo';
                 const confirmField = formId === 'formExistente' ? '#confirm_password_existente' : '#confirm_password_nuevo';
-                
+
                 const password = $(passwordField).val();
                 const confirmPassword = $(confirmField).val();
-                
+
                 if (password !== confirmPassword) {
                     $(confirmField).get(0).setCustomValidity('Las contraseñas no coinciden');
                     $(confirmField).get(0).reportValidity();
-                    
-                    // Resetear botón si hay errores
                     resetButton($submitButton, originalButtonText);
-                    
                     showAlert('error', 'Contraseñas no coinciden', 'Las contraseñas ingresadas no coinciden.');
                     return;
                 } else {
                     $(confirmField).get(0).setCustomValidity('');
                 }
-                
+
                 // Validar fortaleza de contraseña
                 const strength = calcularFortalezaPassword(password);
                 if (password.length < 8 || strength.score < 3) {
                     $(passwordField).get(0).setCustomValidity('La contraseña no cumple con los requisitos de seguridad');
                     $(passwordField).get(0).reportValidity();
-                    
-                    // Resetear botón si hay errores
                     resetButton($submitButton, originalButtonText);
-                    
                     showAlert('error', 'Contraseña débil', 'La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula, un número y un símbolo.');
                     return;
                 }
-                
+
                 // Mostrar confirmación con SweetAlert
                 Swal.fire({
                     title: '¿Está seguro?',
@@ -831,12 +830,11 @@
                     cancelButtonText: 'Cancelar'
                 }).then((result) => {
                     if (result.isConfirmed) {
-                        // Cambiar botón a estado de carga
-                        setButtonLoading($submitButton);
+                        // Cambiar botón a estado de carga solo si el formulario es válido
+                        setButtonLoading($submitButton, originalButtonText);
                         // Enviar formulario
                         guardarUsuario(this, $submitButton, originalButtonText);
                     } else {
-                        // Si cancela, resetear botón
                         resetButton($submitButton, originalButtonText);
                     }
                 });
