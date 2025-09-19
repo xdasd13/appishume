@@ -1,4 +1,4 @@
-     <?= $header ?>
+<?= $header ?>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -142,42 +142,6 @@
                                 </div>
                             </div>
 
-                            <!-- Cambio de Contraseña -->
-                            <div class="form-section">
-                                <h6 class="text-primary mb-3">
-                                    <i class="fas fa-lock me-2"></i>Cambiar Contraseña
-                                </h6>
-                                <div class="alert alert-info">
-                                    <i class="fas fa-info-circle me-2"></i>
-                                    Complete solo si desea cambiar la contraseña. Deje en blanco para mantener la actual.
-                                </div>
-                                
-                                <div class="row">
-                                    <div class="col-md-6">
-                                        <label class="form-label">Nueva Contraseña</label>
-                                        <div class="input-group">
-                                            <input type="password" class="form-control" name="password" 
-                                                   id="password" placeholder="Dejar en blanco para no cambiar">
-                                            <span class="input-group-text password-toggle" onclick="togglePassword('password')">
-                                                <i class="fas fa-eye"></i>
-                                            </span>
-                                        </div>
-                                        <div class="invalid-feedback">La contraseña debe tener al menos 8 caracteres</div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <label class="form-label">Confirmar Contraseña</label>
-                                        <div class="input-group">
-                                            <input type="password" class="form-control" name="confirm_password" 
-                                                   id="confirm_password" placeholder="Confirmar nueva contraseña">
-                                            <span class="input-group-text password-toggle" onclick="togglePassword('confirm_password')">
-                                                <i class="fas fa-eye"></i>
-                                            </span>
-                                        </div>
-                                        <div class="invalid-feedback">Las contraseñas no coinciden</div>
-                                    </div>
-                                </div>
-                            </div>
-
                             <div class="d-flex justify-content-between mt-4">
                                 <a href="<?= base_url('usuarios') ?>" class="btn btn-secondary">
                                     <i class="fas fa-arrow-left me-1"></i> Volver
@@ -227,35 +191,6 @@
                     return;
                 }
 
-                // Validación de contraseña segura si se intenta cambiar
-                const password = document.getElementById('password');
-                const confirmPassword = document.getElementById('confirm_password');
-                let passwordError = '';
-
-                // Limpiar validaciones previas
-                password.setCustomValidity('');
-                confirmPassword.setCustomValidity('');
-                
-                if (password.value) {
-                    // Requisitos: 8+, mayúscula, minúscula, número, símbolo
-                    const length = password.value.length >= 8;
-                    const upper = /[A-Z]/.test(password.value);
-                    const lower = /[a-z]/.test(password.value);
-                    const number = /[0-9]/.test(password.value);
-                    const symbol = /[^A-Za-z0-9]/.test(password.value);
-                    if (!(length && upper && lower && number && symbol)) {
-                        passwordError = 'La contraseña debe tener mínimo 8 caracteres, al menos una mayúscula, una minúscula, un número y un símbolo.';
-                        password.setCustomValidity(passwordError);
-                    }
-                }
-
-                // Validación de confirmación de contraseña solo si se está cambiando
-                if (password.value || confirmPassword.value) {
-                    if (password.value !== confirmPassword.value) {
-                        confirmPassword.setCustomValidity('Las contraseñas no coinciden');
-                    }
-                }
-
                 // Validar el formulario
                 form.classList.add('was-validated');
                 if (!form.checkValidity()) {
@@ -267,12 +202,8 @@
                     let errorMsg = 'Por favor corrija los campos marcados en rojo.';
                     
                     if (firstInvalid) {
-                        // Si es el campo de contraseña y tiene error específico
-                        if (firstInvalid === password && passwordError) {
-                            errorMsg = passwordError;
-                        } 
                         // Si es un campo con mensaje de validación personalizado
-                        else if (firstInvalid.validationMessage) {
+                        if (firstInvalid.validationMessage) {
                             errorMsg = firstInvalid.validationMessage;
                         }
                         // Asegurarse de que el campo tenga foco
@@ -296,34 +227,72 @@
 
                 // Verificar si hay cambio de rol
                 const nuevoTipoUsuario = tipoUsuarioSelect.value;
-                let confirmacionRequerida = false;
-                let mensajeConfirmacion = '';
-                let iconoConfirmacion = 'question';
+                let confirmacionConfig = {
+                    title: 'Confirmar Cambios',
+                    text: '¿Desea guardar los cambios realizados?',
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonText: 'Sí, guardar cambios',
+                    cancelButtonText: 'Cancelar',
+                    reverseButtons: true,
+                    confirmButtonColor: '#FF6B00',
+                    cancelButtonColor: '#6c757d'
+                };
 
+                // Personalizar la confirmación si hay cambio de rol
                 if (originalTipoUsuario !== nuevoTipoUsuario) {
-                    confirmacionRequerida = true;
+                    confirmacionConfig.title = 'Cambio de Rol';
+                    confirmacionConfig.icon = 'warning';
+                    
                     if (originalTipoUsuario === 'trabajador' && nuevoTipoUsuario === 'admin') {
-                        mensajeConfirmacion = '¿Está seguro de promover este trabajador a Administrador? Tendrá acceso completo al sistema.';
-                        iconoConfirmacion = 'warning';
+                        confirmacionConfig.html = `
+                            <div class="text-center">
+                                <i class="fas fa-user-shield fa-3x text-warning mb-3"></i>
+                                <p>¿Está seguro de promover este trabajador a <strong>Administrador</strong>?</p>
+                                <p class="text-warning"><small>Esta acción otorgará acceso completo al sistema.</small></p>
+                                <div class="mt-3 p-2 bg-light rounded">
+                                    <i class="fas fa-info-circle text-info"></i>
+                                    <small class="d-block">El usuario tendrá acceso a todas las funciones administrativas</small>
+                                </div>
+                            </div>
+                        `;
                     } else if (originalTipoUsuario === 'admin' && nuevoTipoUsuario === 'trabajador') {
-                        mensajeConfirmacion = '¿Está seguro de cambiar este administrador a Trabajador? Perderá privilegios administrativos.';
-                        iconoConfirmacion = 'warning';
+                        confirmacionConfig.html = `
+                            <div class="text-center">
+                                <div class="mb-4">
+                                    <i class="fas fa-user-minus fa-3x text-danger mb-3"></i>
+                                    <h5 class="text-danger">¡Atención!</h5>
+                                </div>
+                                <p>¿Está seguro de cambiar el rol de <strong>Administrador</strong> a <strong>Trabajador</strong>?</p>
+                                <div class="alert alert-warning mt-3">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                    <strong>Consecuencias del cambio:</strong>
+                                    <ul class="text-start mb-0 mt-2">
+                                        <li>Perderá acceso a funciones administrativas</li>
+                                        <li>No podrá gestionar otros usuarios</li>
+                                        <li>Acceso limitado a reportes y configuraciones</li>
+                                    </ul>
+                                </div>
+                                <p class="text-danger"><small>Esta acción requiere confirmación especial</small></p>
+                            </div>
+                        `;
+                        confirmacionConfig.confirmButtonText = 'Sí, remover privilegios';
+                        confirmacionConfig.confirmButtonColor = '#dc3545';
                     }
-                } else {
-                    mensajeConfirmacion = '¿Desea guardar los cambios realizados?';
                 }
 
                 // Mostrar confirmación con SweetAlert
                 const result = await Swal.fire({
-                    title: confirmacionRequerida ? 'Cambio de Rol' : 'Confirmar Cambios',
-                    text: mensajeConfirmacion,
-                    icon: iconoConfirmacion,
-                    showCancelButton: true,
-                    confirmButtonColor: '#4e73df',
-                    cancelButtonColor: '#6c757d',
-                    confirmButtonText: 'Sí, guardar cambios',
-                    cancelButtonText: 'Cancelar',
-                    reverseButtons: true
+                    ...confirmacionConfig,
+                    allowOutsideClick: false,
+                    allowEscapeKey: false,
+                    allowEnterKey: false,
+                    showClass: {
+                        popup: 'animate__animated animate__fadeIn'
+                    },
+                    hideClass: {
+                        popup: 'animate__animated animate__fadeOut'
+                    }
                 });
 
                 if (!result.isConfirmed) {
@@ -336,39 +305,81 @@
                 submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Guardando...';
 
                 try {
+                    // Preparar datos del formulario
                     const formData = new FormData(form);
+                    
+                    // Agregar el token CSRF para CodeIgniter 4
+                    formData.append('<?= csrf_token() ?>', '<?= csrf_hash() ?>');
+                    
+                    // Usar fetch API en lugar de jQuery para mayor consistencia
                     const response = await fetch('<?= base_url('usuarios/actualizar/' . $usuario->idusuario) ?>', {
                         method: 'POST',
-                        body: formData
+                        body: formData,
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest'
+                        }
                     });
-
+                    
                     const data = await response.json();
-
+                    
                     if (data.success) {
-                        await Swal.fire({
-                            title: '¡Éxito!',
-                            text: 'Credenciales actualizadas exitosamente',
+                        const successConfig = {
+                            title: '¡Cambios Guardados!',
+                            html: `
+                                <div class="text-center">
+                                    <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+                                    <p>Los cambios han sido guardados exitosamente</p>
+                                </div>
+                            `,
                             icon: 'success',
-                            confirmButtonColor: '#4e73df',
-                            timer: 2000,
-                            timerProgressBar: true
-                        });
+                            confirmButtonColor: '#28a745',
+                            confirmButtonText: 'OK'
+                        };
+
+                        if (nuevoTipoUsuario !== originalTipoUsuario) {
+                            const roleChangeMessage = nuevoTipoUsuario === 'trabajador' 
+                                ? `
+                                    <div class="text-center">
+                                        <i class="fas fa-user fa-3x text-primary mb-3"></i>
+                                        <h5 class="mb-3">Rol Actualizado</h5>
+                                        <p>El usuario ahora es <strong>TRABAJADOR</strong></p>
+                                        <div class="alert alert-info mt-3">
+                                            <small>
+                                                <i class="fas fa-info-circle"></i>
+                                                Los cambios en los permisos serán efectivos inmediatamente
+                                            </small>
+                                        </div>
+                                    </div>
+                                `
+                                : `
+                                    <div class="text-center">
+                                        <i class="fas fa-user-shield fa-3x text-success mb-3"></i>
+                                        <h5 class="mb-3">¡Promoción Exitosa!</h5>
+                                        <p>El usuario ahora es <strong>ADMINISTRADOR</strong></p>
+                                        <div class="alert alert-success mt-3">
+                                            <small>
+                                                <i class="fas fa-check-circle"></i>
+                                                Se han otorgado todos los privilegios administrativos
+                                            </small>
+                                        </div>
+                                    </div>
+                                `;
+                            successConfig.html = roleChangeMessage;
+                        }
+
+                        await Swal.fire(successConfig);
+                        // Redirigir después de confirmar
                         window.location.href = '<?= base_url('usuarios') ?>';
                     } else {
-                        await Swal.fire({
-                            title: 'Error',
-                            text: data.message,
-                            icon: 'error',
-                            confirmButtonColor: '#4e73df'
-                        });
+                        throw new Error(data.message || 'Ha ocurrido un error al guardar los cambios');
                     }
                 } catch (error) {
                     console.error('Error:', error);
-                    await Swal.fire({
+                    Swal.fire({
                         title: 'Error',
-                        text: 'Error al actualizar las credenciales',
+                        text: error.message || 'Error al procesar la solicitud',
                         icon: 'error',
-                        confirmButtonColor: '#4e73df'
+                        confirmButtonColor: '#dc3545'
                     });
                 } finally {
                     submitBtn.disabled = false;
@@ -376,103 +387,8 @@
                 }
             });
 
-
-            // Validación de confirmación de contraseña y requisitos en tiempo real
-            const password = document.getElementById('password');
-            const confirmPassword = document.getElementById('confirm_password');
-
-            function validatePasswordRequirements() {
-                // Si no hay contraseña, no aplicar validación
-                if (!password.value) {
-                    password.setCustomValidity('');
-                    password.classList.remove('is-invalid', 'is-valid');
-                    return;
-                }
-
-                const requirements = {
-                    length: { test: password.value.length >= 8, message: '8 caracteres' },
-                    upper: { test: /[A-Z]/.test(password.value), message: 'mayúscula' },
-                    lower: { test: /[a-z]/.test(password.value), message: 'minúscula' },
-                    number: { test: /[0-9]/.test(password.value), message: 'número' },
-                    symbol: { test: /[^A-Za-z0-9]/.test(password.value), message: 'símbolo' }
-                };
-
-                const failedRequirements = Object.entries(requirements)
-                    .filter(([_, { test }]) => !test)
-                    .map(([_, { message }]) => message);
-
-                if (failedRequirements.length > 0) {
-                    const errorMessage = `La contraseña debe tener: ${failedRequirements.join(', ')}`;
-                    password.setCustomValidity(errorMessage);
-                    password.classList.add('is-invalid');
-                    password.classList.remove('is-valid');
-                } else {
-                    password.setCustomValidity('');
-                    password.classList.remove('is-invalid');
-                    password.classList.add('is-valid');
-                }
-            }
-
-            let passwordTimeout = null;
-            let confirmTimeout = null;
-
-            password.addEventListener('input', function(e) {
-                e.stopPropagation();
-                // Cancelar timeout anterior si existe
-                if (passwordTimeout) clearTimeout(passwordTimeout);
-                
-                // Establecer nuevo timeout para la validación
-                passwordTimeout = setTimeout(() => {
-                    validatePasswordRequirements();
-                    // Validar confirmación también
-                    if (confirmPassword.value) {
-                        if (password.value !== confirmPassword.value) {
-                            confirmPassword.setCustomValidity('Las contraseñas no coinciden');
-                            confirmPassword.classList.add('is-invalid');
-                            confirmPassword.classList.remove('is-valid');
-                        } else {
-                            confirmPassword.setCustomValidity('');
-                            confirmPassword.classList.remove('is-invalid');
-                            confirmPassword.classList.add('is-valid');
-                        }
-                    }
-                }, 300); // Esperar 300ms después de la última entrada
-            });
-
-            confirmPassword.addEventListener('input', function(e) {
-                e.stopPropagation();
-                // Cancelar timeout anterior si existe
-                if (confirmTimeout) clearTimeout(confirmTimeout);
-                
-                // Establecer nuevo timeout para la validación
-                confirmTimeout = setTimeout(() => {
-                    if (!password.value && !confirmPassword.value) {
-                        confirmPassword.setCustomValidity('');
-                        confirmPassword.classList.remove('is-invalid', 'is-valid');
-                        return;
-                    }
-                    
-                    if (password.value !== confirmPassword.value) {
-                        confirmPassword.setCustomValidity('Las contraseñas no coinciden');
-                        confirmPassword.classList.add('is-invalid');
-                        confirmPassword.classList.remove('is-valid');
-                    } else {
-                        confirmPassword.setCustomValidity('');
-                        confirmPassword.classList.remove('is-invalid');
-                        confirmPassword.classList.add('is-valid');
-                    }
-                }, 300); // Esperar 300ms después de la última entrada
-            });
-
             // Validación en tiempo real
             const validateField = (field) => {
-                // No validar campos de contraseña vacíos
-                if (field.type === 'password' && !field.value) {
-                    field.classList.remove('is-invalid', 'is-valid');
-                    return;
-                }
-
-                // Para otros campos
                 if (!field.checkValidity()) {
                     field.classList.add('is-invalid');
                     field.classList.remove('is-valid');
@@ -486,7 +402,7 @@
             form.querySelectorAll('select, input[required]').forEach(field => {
                 ['change', 'input'].forEach(eventType => {
                     field.addEventListener(eventType, (e) => {
-                        e.stopPropagation(); // Evitar propagación del evento
+                        e.stopPropagation();
                         validateField(field);
                     });
                 });
