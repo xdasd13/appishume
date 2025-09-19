@@ -190,8 +190,15 @@ class EntregasController extends BaseController
             $entrega['servicio'] = 'Información no disponible';
             $entrega['nombre_entrega'] = 'Información no disponible';
             $entrega['apellido_entrega'] = '';
+            $entrega['tipodoc'] = '';
+            $entrega['numerodoc'] = '';
+            $entrega['telprincipal'] = '';
+            $entrega['direccion'] = '';
+            $entrega['descripcion_servicio'] = 'Información no disponible';
+            $entrega['tipodoc_entrega'] = '';
+            $entrega['numerodoc_entrega'] = '';
 
-            // Agregamos el estado_visual que falta
+            // Agregar el estado_visual que falta
             if ($entrega['estado'] == 'completada') {
                 $entrega['estado_visual'] = "✅ ENTREGADO";
             } else if ($entrega['estado'] == 'pendiente') {

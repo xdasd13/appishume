@@ -77,39 +77,105 @@ class EntregasModel extends Model
 
     public function obtenerEntregaCompleta($id)
     {
+        // Primero obtenemos la información básica de la entrega
+        $entregaQuery = $this->db->table('entregables e')
+            ->select('e.*')
+            ->where('e.identregable', $id)
+            ->get();
+            
+        $entrega = $entregaQuery->getRowArray();
+        
+        if (!$entrega) {
+            return null;
+        }
+        
+        // Ahora obtenemos la información detallada incluyendo uniones
         $builder = $this->db->table('entregables e');
-        $builder->select('e.identregable, e.fechahoraentrega, e.fecha_real_entrega, e.estado, e.observaciones, e.comprobante_entrega,
-                     p.nombres as nombre_cliente, p.apellidos as apellido_cliente,
-                     p.tipodoc, p.numerodoc, p.telprincipal, p.direccion,
-                     s.servicio, s.descripcion as descripcion_servicio,
-                     sc.direccion as direccion_servicio, sc.fechahoraservicio,
-                     sc.cantidad, sc.precio,
-                     per.nombres as nombre_entrega, per.apellidos as apellido_entrega,
-                     per.tipodoc as tipodoc_entrega, per.numerodoc as numerodoc_entrega,
-                     c.idcotizacion, contr.idcontrato,
-                     DATEDIFF(e.fechahoraentrega, sc.fechahoraservicio) as dias_postproduccion,
-                     DATEDIFF(e.fechahoraentrega, NOW()) as dias_restantes');
-        $builder->join('servicioscontratados sc', 'sc.idserviciocontratado = e.idserviciocontratado');
-        $builder->join('cotizaciones c', 'c.idcotizacion = sc.idcotizacion');
+        $builder->select('e.identregable, e.idpersona, e.fechahoraentrega, e.fecha_real_entrega, e.estado, e.observaciones, e.comprobante_entrega,
+                      
+                      /* Información del cliente */
+                      COALESCE(p.nombres, emp.razonsocial, "Sin nombre") as nombre_cliente, 
+                      COALESCE(p.apellidos, "") as apellido_cliente,
+                      COALESCE(p.tipodoc, "") as tipodoc, 
+                      COALESCE(p.numerodoc, emp.ruc, "") as numerodoc,
+                      COALESCE(p.telprincipal, emp.telefono, "") as telprincipal, 
+                      COALESCE(p.direccion, emp.direccion, "") as direccion,
+                      
+                      /* Información del servicio */
+                      COALESCE(s.servicio, "No disponible") as servicio, 
+                      COALESCE(s.descripcion, "No disponible") as descripcion_servicio,
+                      COALESCE(sc.direccion, "") as direccion_servicio, 
+                      COALESCE(sc.fechahoraservicio, NOW()) as fechahoraservicio,
+                      COALESCE(sc.cantidad, 0) as cantidad, 
+                      COALESCE(sc.precio, 0) as precio,
+                      
+                      /* Información del responsable */
+                      COALESCE(p_entrega.nombres, u.nombreusuario, "Sin nombre") as nombre_entrega, 
+                      COALESCE(p_entrega.apellidos, "") as apellido_entrega,
+                      COALESCE(p_entrega.tipodoc, "") as tipodoc_entrega, 
+                      COALESCE(p_entrega.numerodoc, "") as numerodoc_entrega,
+                      
+                      COALESCE(c.idcotizacion, 0) as idcotizacion, 
+                      COALESCE(contr.idcontrato, 0) as idcontrato,
+                      COALESCE(DATEDIFF(e.fechahoraentrega, sc.fechahoraservicio), 0) as dias_postproduccion,
+                      COALESCE(DATEDIFF(e.fechahoraentrega, NOW()), 0) as dias_restantes');
+                      
+        $builder->join('servicioscontratados sc', 'sc.idserviciocontratado = e.idserviciocontratado', 'left');
+        $builder->join('servicios s', 's.idservicio = sc.idservicio', 'left');
+        $builder->join('cotizaciones c', 'c.idcotizacion = sc.idcotizacion', 'left');
         $builder->join('contratos contr', 'contr.idcotizacion = c.idcotizacion', 'left');
-        $builder->join('clientes cl', 'cl.idcliente = c.idcliente');
-        $builder->join('personas p', 'p.idpersona = cl.idpersona');
-        $builder->join('servicios s', 's.idservicio = sc.idservicio');
-        $builder->join('personas per', 'per.idpersona = e.idpersona', 'left');
+        $builder->join('clientes cl', 'cl.idcliente = c.idcliente', 'left');
+        $builder->join('personas p', 'p.idpersona = cl.idpersona', 'left');
+        $builder->join('empresas emp', 'emp.idempresa = cl.idempresa', 'left');
+        
+        // Obtenemos la información del responsable (persona que hizo la entrega)
+        $builder->join('personas p_entrega', 'p_entrega.idpersona = e.idpersona', 'left');
+        
+        // También unimos con la tabla de usuarios para obtener información adicional
+        $builder->join('usuarios u', 'u.idpersona = e.idpersona', 'left');
+        
         $builder->where('e.identregable', $id);
 
-        $entrega = $builder->get()->getRowArray();
+        $entregaDetallada = $builder->get()->getRowArray();
+        
+        // Si encontramos detalles, los usamos
+        if ($entregaDetallada) {
+            $entrega = $entregaDetallada;
+        }
 
-        // Agregar el estado_visual si existe la entrega
-        if ($entrega) {
-            if ($entrega['estado'] == 'completada') {
-                $entrega['estado_visual'] = "✅ ENTREGADO";
-            } else if ($entrega['estado'] == 'pendiente' && strtotime($entrega['fechahoraentrega']) < time()) {
-                $entrega['estado_visual'] = "⚠️ VENCIDA";
-            } else if ($entrega['estado'] == 'pendiente') {
-                $entrega['estado_visual'] = "⏳ EN POSTPRODUCCIÓN";
-            } else {
-                $entrega['estado_visual'] = "❓ DESCONOCIDO";
+        // Agregar el estado_visual
+        if ($entrega['estado'] == 'completada') {
+            $entrega['estado_visual'] = "✅ ENTREGADO";
+        } else if ($entrega['estado'] == 'pendiente' && strtotime($entrega['fechahoraentrega']) < time()) {
+            $entrega['estado_visual'] = "⚠️ VENCIDA";
+        } else if ($entrega['estado'] == 'pendiente') {
+            $entrega['estado_visual'] = "⏳ EN POSTPRODUCCIÓN";
+        } else {
+            $entrega['estado_visual'] = "❓ DESCONOCIDO";
+        }
+        
+        // Si no tenemos información del responsable, usamos la sesión actual
+        if (empty($entrega['nombre_entrega']) || $entrega['nombre_entrega'] == 'Sin nombre') {
+            $session = \Config\Services::session();
+            $entrega['nombre_entrega'] = $session->get('usuario_nombre') ?? 'Usuario actual';
+            $entrega['apellido_entrega'] = '';
+            
+            // Intentamos obtener la información del usuario actual desde la base de datos
+            $usuarioId = $session->get('usuario_id');
+            if ($usuarioId) {
+                $personaInfo = $this->db->table('usuarios u')
+                    ->select('p.nombres, p.apellidos, p.tipodoc, p.numerodoc')
+                    ->join('personas p', 'p.idpersona = u.idpersona')
+                    ->where('u.idusuario', $usuarioId)
+                    ->get()
+                    ->getRowArray();
+                    
+                if ($personaInfo) {
+                    $entrega['nombre_entrega'] = $personaInfo['nombres'];
+                    $entrega['apellido_entrega'] = $personaInfo['apellidos'];
+                    $entrega['tipodoc_entrega'] = $personaInfo['tipodoc'];
+                    $entrega['numerodoc_entrega'] = $personaInfo['numerodoc'];
+                }
             }
         }
 
@@ -233,12 +299,12 @@ class EntregasModel extends Model
                          WHEN e.estado = "pendiente" THEN "Pendiente"
                          ELSE "Desconocido"
                      END as estado_visual');
-        $builder->join('servicioscontratados sc', 'sc.idserviciocontratado = e.idserviciocontratado');
-        $builder->join('cotizaciones c', 'c.idcotizacion = sc.idcotizacion');
+        $builder->join('servicioscontratados sc', 'sc.idserviciocontratado = e.idserviciocontratado', 'left');
+        $builder->join('cotizaciones c', 'c.idcotizacion = sc.idcotizacion', 'left');
         $builder->join('contratos contr', 'contr.idcotizacion = c.idcotizacion', 'left');
-        $builder->join('clientes cl', 'cl.idcliente = c.idcliente');
-        $builder->join('personas p', 'p.idpersona = cl.idpersona');
-        $builder->join('servicios s', 's.idservicio = sc.idservicio');
+        $builder->join('clientes cl', 'cl.idcliente = c.idcliente', 'left');
+        $builder->join('personas p', 'p.idpersona = cl.idpersona', 'left');
+        $builder->join('servicios s', 's.idservicio = sc.idservicio', 'left');
         $builder->join('personas per', 'per.idpersona = e.idpersona', 'left');
 
         // IMPORTANTE: Elimina cualquier condición WHERE que pueda estar filtrando 
@@ -252,34 +318,70 @@ class EntregasModel extends Model
 
     public function obtenerTodasLasEntregas()
     {
-        // Consulta extremadamente simplificada que debería mostrar TODAS las entregas
-        // sin importar si tienen relaciones completas
+        // Consulta mejorada para obtener información de cliente (persona o empresa) y responsable
         $sql = "SELECT e.*, 
-        sc.fechahoraservicio,
-        s.servicio,
-        IFNULL(p_cliente.nombres, 'Sin nombre') as nombre_cliente,
-        IFNULL(p_cliente.apellidos, 'Sin apellido') as apellido_cliente,
-        IFNULL(p_entrega.nombres, 'Sin nombre') as nombre_entrega,
-        IFNULL(p_entrega.apellidos, 'Sin apellido') as apellido_entrega,
-        IFNULL(contr.idcontrato, 0) as idcontrato,
-        CASE 
-            WHEN e.estado = 'completada' THEN '✅ ENTREGADO'
-            WHEN e.estado = 'pendiente' AND e.fechahoraentrega < NOW() THEN '⚠️ VENCIDA'
-            WHEN e.estado = 'pendiente' THEN '⏳ EN POSTPRODUCCIÓN'
-            ELSE '❓ DESCONOCIDO'
-        END as estado_visual
-        FROM entregables e
-        LEFT JOIN servicioscontratados sc ON sc.idserviciocontratado = e.idserviciocontratado
-        LEFT JOIN servicios s ON s.idservicio = sc.idservicio
-        LEFT JOIN cotizaciones c ON c.idcotizacion = sc.idcotizacion
-        LEFT JOIN contratos contr ON contr.idcotizacion = c.idcotizacion
-        LEFT JOIN clientes cl ON cl.idcliente = c.idcliente
-        LEFT JOIN personas p_cliente ON p_cliente.idpersona = cl.idpersona
-        LEFT JOIN personas p_entrega ON p_entrega.idpersona = e.idpersona
-        ORDER BY e.identregable DESC";
+            sc.fechahoraservicio,
+            s.servicio, s.descripcion as descripcion_servicio,
+            
+            /* Cliente info - puede ser persona o empresa */
+            CASE 
+                WHEN p_cliente.idpersona IS NOT NULL THEN p_cliente.nombres
+                WHEN emp.idempresa IS NOT NULL THEN emp.razonsocial
+                ELSE 'Sin nombre'
+            END as nombre_cliente,
+            
+            CASE 
+                WHEN p_cliente.idpersona IS NOT NULL THEN p_cliente.apellidos
+                ELSE ''
+            END as apellido_cliente,
+            
+            /* Responsable info - siempre es una persona */
+            CASE 
+                WHEN p_entrega.idpersona IS NOT NULL THEN p_entrega.nombres
+                WHEN u.idusuario IS NOT NULL THEN u.nombreusuario
+                ELSE 'Sin nombre'
+            END as nombre_entrega,
+            
+            CASE 
+                WHEN p_entrega.idpersona IS NOT NULL THEN p_entrega.apellidos
+                ELSE ''
+            END as apellido_entrega,
+            
+            IFNULL(contr.idcontrato, 0) as idcontrato,
+            IFNULL(c.idcotizacion, 0) as idcotizacion,
+            
+            CASE 
+                WHEN e.estado = 'completada' THEN '✅ ENTREGADO'
+                WHEN e.estado = 'pendiente' AND e.fechahoraentrega < NOW() THEN '⚠️ VENCIDA'
+                WHEN e.estado = 'pendiente' THEN '⏳ EN POSTPRODUCCIÓN'
+                ELSE '❓ DESCONOCIDO'
+            END as estado_visual
+            
+            FROM entregables e
+            LEFT JOIN servicioscontratados sc ON sc.idserviciocontratado = e.idserviciocontratado
+            LEFT JOIN servicios s ON s.idservicio = sc.idservicio
+            LEFT JOIN cotizaciones c ON c.idcotizacion = sc.idcotizacion
+            LEFT JOIN contratos contr ON contr.idcotizacion = c.idcotizacion
+            LEFT JOIN clientes cl ON cl.idcliente = c.idcliente
+            LEFT JOIN personas p_cliente ON p_cliente.idpersona = cl.idpersona
+            LEFT JOIN empresas emp ON emp.idempresa = cl.idempresa
+            LEFT JOIN personas p_entrega ON p_entrega.idpersona = e.idpersona
+            LEFT JOIN usuarios u ON u.idpersona = e.idpersona
+            ORDER BY e.identregable DESC";
 
         $query = $this->db->query($sql);
-        return $query->getResultArray();
+        $entregas = $query->getResultArray();
+        
+        // Si hay entregas sin información del responsable, usamos la sesión actual
+        $session = \Config\Services::session();
+        $usuarioActual = $session->get('usuario_nombre');
+        
+        foreach ($entregas as &$entrega) {
+            if (empty($entrega['nombre_entrega']) || $entrega['nombre_entrega'] == 'Sin nombre') {
+                $entrega['nombre_entrega'] = $usuarioActual ?? 'Usuario actual';
+            }
+        }
+        
+        return $entregas;
     }
-
 }

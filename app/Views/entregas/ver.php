@@ -2,6 +2,56 @@
 
 <div class="container">
     <div class="page-inner">
+        <div class="page-header">
+            <h4 class="page-title">
+                <i class="fas fa-truck-loading mr-2"></i>Detalle de Entrega
+            </h4>
+            <ul class="breadcrumbs">
+                <li class="nav-home">
+                    <a href="<?= base_url('dashboard') ?>">
+                        <i class="fas fa-home"></i>
+                    </a>
+                </li>
+                <li class="separator">
+                    <i class="fas fa-angle-right"></i>
+                </li>
+                <li class="nav-item">
+                    <a href="<?= base_url('entregas') ?>">Entregas</a>
+                </li>
+                <li class="separator">
+                    <i class="fas fa-angle-right"></i>
+                </li>
+                <li class="nav-item">
+                    <a href="<?= base_url('entregas/completadas') ?>">Completadas</a>
+                </li>
+                <li class="separator">
+                    <i class="fas fa-angle-right"></i>
+                </li>
+                <li class="nav-item">
+                    <span>Entrega #<?= $entrega['identregable'] ?></span>
+                </li>
+            </ul>
+        </div>
+
+        <?php if (session('success')): ?>
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <i class="fas fa-check-circle mr-2"></i>
+                <?= session('success') ?>
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+        <?php endif; ?>
+        
+        <?php if (session('error')): ?>
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="fas fa-exclamation-circle mr-2"></i>
+                <?= session('error') ?>
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+        <?php endif; ?>
 
         <div class="row">
             <div class="col-md-8">
@@ -27,15 +77,21 @@
                                     </tr>
                                     <tr>
                                         <th class="bg-light">Documento</th>
-                                        <td><?= isset($entrega['tipodoc']) ? $entrega['tipodoc'] : 'No disponible' ?>: <?= isset($entrega['numerodoc']) ? $entrega['numerodoc'] : 'No disponible' ?></td>
+                                        <td>
+                                            <?php if(isset($entrega['tipodoc']) && !empty($entrega['tipodoc']) && isset($entrega['numerodoc']) && !empty($entrega['numerodoc'])): ?>
+                                                <?= $entrega['tipodoc'] ?>: <?= $entrega['numerodoc'] ?>
+                                            <?php else: ?>
+                                                No disponible
+                                            <?php endif; ?>
+                                        </td>
                                     </tr>
                                     <tr>
                                         <th class="bg-light">Teléfono</th>
-                                        <td><?= isset($entrega['telprincipal']) ? $entrega['telprincipal'] : 'No disponible' ?></td>
+                                        <td><?= isset($entrega['telprincipal']) && !empty($entrega['telprincipal']) ? $entrega['telprincipal'] : 'No disponible' ?></td>
                                     </tr>
                                     <tr>
                                         <th class="bg-light">Dirección</th>
-                                        <td><?= isset($entrega['direccion']) ? $entrega['direccion'] : 'No disponible' ?></td>
+                                        <td><?= isset($entrega['direccion']) && !empty($entrega['direccion']) ? $entrega['direccion'] : 'No disponible' ?></td>
                                     </tr>
                                 </table>
                             </div>
@@ -46,15 +102,15 @@
                                 <table class="table table-sm table-bordered">
                                     <tr>
                                         <th class="bg-light">Servicio</th>
-                                        <td><?= isset($entrega['servicio']) ? $entrega['servicio'] : 'No disponible' ?></td>
+                                        <td><?= isset($entrega['servicio']) && !empty($entrega['servicio']) ? $entrega['servicio'] : 'No disponible' ?></td>
                                     </tr>
                                     <tr>
                                         <th class="bg-light">Descripción</th>
-                                        <td><?= isset($entrega['descripcion_servicio']) ? $entrega['descripcion_servicio'] : 'No disponible' ?></td>
+                                        <td><?= isset($entrega['descripcion_servicio']) && !empty($entrega['descripcion_servicio']) ? $entrega['descripcion_servicio'] : 'No disponible' ?></td>
                                     </tr>
                                     <tr>
                                         <th class="bg-light">Fecha Servicio</th>
-                                        <td><?= isset($entrega['fechahoraservicio']) ? date('d/m/Y H:i', strtotime($entrega['fechahoraservicio'])) : 'No disponible' ?></td>
+                                        <td><?= isset($entrega['fechahoraservicio']) && !empty($entrega['fechahoraservicio']) ? date('d/m/Y H:i', strtotime($entrega['fechahoraservicio'])) : 'No disponible' ?></td>
                                     </tr>
                                     <tr>
                                         <th class="bg-light">Cantidad</th>
@@ -79,12 +135,15 @@
                                         <td>
                                             <div class="d-flex align-items-center">
                                                 <div class="avatar avatar-sm bg-primary text-white rounded-circle mr-2">
-                                                    <?= isset($entrega['nombre_entrega']) ? substr($entrega['nombre_entrega'], 0, 1) : '?' ?>
+                                                    <?= isset($entrega['nombre_entrega']) && !empty($entrega['nombre_entrega']) && $entrega['nombre_entrega'] !== 'Sin nombre' ? substr($entrega['nombre_entrega'], 0, 1) : '?' ?>
                                                 </div>
                                                 <div>
-                                                    <?= isset($entrega['nombre_entrega']) ? $entrega['nombre_entrega'] : 'No disponible' ?> <?= isset($entrega['apellido_entrega']) ? $entrega['apellido_entrega'] : '' ?>
+                                                    <?= isset($entrega['nombre_entrega']) && !empty($entrega['nombre_entrega']) && $entrega['nombre_entrega'] !== 'Sin nombre' ? 
+                                                        $entrega['nombre_entrega'] . ' ' . $entrega['apellido_entrega'] : 
+                                                        session()->get('usuario_nombre') ?? 'No disponible' ?>
                                                     <div class="text-muted small">
-                                                        DNI: <?= isset($entrega['numerodoc_entrega']) ? $entrega['numerodoc_entrega'] : 'No disponible' ?>
+                                                        <?= isset($entrega['numerodoc_entrega']) && !empty($entrega['numerodoc_entrega']) && $entrega['numerodoc_entrega'] !== 'No disponible' ? 
+                                                            'DNI: ' . $entrega['numerodoc_entrega'] : '' ?>
                                                     </div>
                                                 </div>
                                             </div>
@@ -94,9 +153,9 @@
                                         <th class="bg-light">Fecha/Hora Entrega</th>
                                         <td>
                                             <span class="font-weight-bold">
-                                                <?= isset($entrega['fechahoraentrega']) ? date('d/m/Y H:i', strtotime($entrega['fechahoraentrega'])) : 'No disponible' ?>
+                                                <?= isset($entrega['fechahoraentrega']) && !empty($entrega['fechahoraentrega']) ? date('d/m/Y H:i', strtotime($entrega['fechahoraentrega'])) : 'No disponible' ?>
                                             </span>
-                                            <?php if(isset($entrega['estado']) && $entrega['estado'] == 'completada' && isset($entrega['fecha_real_entrega'])): ?>
+                                            <?php if(isset($entrega['estado']) && $entrega['estado'] == 'completada' && isset($entrega['fecha_real_entrega']) && !empty($entrega['fecha_real_entrega'])): ?>
                                                 <div class="text-muted small">
                                                     Entregado: <?= date('d/m/Y H:i', strtotime($entrega['fecha_real_entrega'])) ?>
                                                 </div>
@@ -105,7 +164,7 @@
                                     </tr>
                                     <tr>
                                         <th class="bg-light">Formato Entrega</th>
-                                        <td><?= isset($entrega['observaciones']) ? $entrega['observaciones'] : 'No disponible' ?></td>
+                                        <td><?= isset($entrega['observaciones']) && !empty($entrega['observaciones']) ? $entrega['observaciones'] : 'No disponible' ?></td>
                                     </tr>
                                     <tr>
                                         <th class="bg-light">Estado</th>
@@ -147,7 +206,7 @@
                         </h4>
                     </div>
                     <div class="card-body p-0">
-                        <?php if(isset($entrega['comprobante_entrega']) && $entrega['comprobante_entrega']): ?>
+                        <?php if(isset($entrega['comprobante_entrega']) && !empty($entrega['comprobante_entrega'])): ?>
                             <div style="height: 500px;">
                                 <iframe src="<?= base_url('uploads/comprobantes_entrega/' . $entrega['comprobante_entrega']) ?>" 
                                         style="width: 100%; height: 100%; border: none;"></iframe>
@@ -177,11 +236,11 @@
                         <ul class="list-group">
                             <li class="list-group-item d-flex justify-content-between align-items-center">
                                 Contrato
-                                <span class="badge badge-primary">#<?= isset($entrega['idcontrato']) ? $entrega['idcontrato'] : 'N/A' ?></span>
+                                <span class="badge badge-primary">#<?= isset($entrega['idcontrato']) && !empty($entrega['idcontrato']) ? $entrega['idcontrato'] : 'N/A' ?></span>
                             </li>
                             <li class="list-group-item d-flex justify-content-between align-items-center">
                                 Cotización
-                                <span class="badge badge-info">#<?= isset($entrega['idcotizacion']) ? $entrega['idcotizacion'] : 'N/A' ?></span>
+                                <span class="badge badge-info">#<?= isset($entrega['idcotizacion']) && !empty($entrega['idcotizacion']) ? $entrega['idcotizacion'] : 'N/A' ?></span>
                             </li>
                             <?php if(isset($entrega['dias_postproduccion'])): ?>
                             <li class="list-group-item d-flex justify-content-between align-items-center">
