@@ -160,6 +160,8 @@ CREATE TABLE entregables (
     CONSTRAINT fk_entregable_persona FOREIGN KEY (idpersona) REFERENCES personas(idpersona)
 );
 
+ALTER TABLE entregables ADD COLUMN comprobante_entrega VARCHAR(255) NULL AFTER estado;
+
 CREATE TABLE equipos (
     idequipo INT AUTO_INCREMENT PRIMARY KEY,
     idserviciocontratado INT,
@@ -361,18 +363,6 @@ INSERT INTO equipos (idserviciocontratado, idusuario, descripcion, estadoservici
 (11, 2, 'Decoración floral: arreglos de mesa, altar, entrada', 'Programado'),
 -- Evento Robert (Programado)
 (12, 2, 'Video streaming: transmisión internacional, múltiples cámaras', 'Programado');
-
--- 11. ENTREGABLES
-INSERT INTO entregables (idserviciocontratado, idpersona, fechahoraentrega) VALUES 
--- Entregas completadas
-(1, 1, '2025-02-15 10:30:00'),  -- Sonido boda Carlos entregado
-(2, 1, '2025-02-15 11:45:00'),  -- Fotos boda Carlos entregadas (300 fotos editadas)
-(5, 3, '2025-02-28 18:20:00'),  -- Video streaming corporativo entregado
-(6, 3, '2025-03-01 09:15:00'),  -- Fotos evento corporativo entregadas (150 fotos profesionales)
--- Entrega parcial
-(9, 5, '2025-03-21 14:30:00');  -- Avance fotos conferencia entregado (100 fotos preliminares)
-
-
 
 -- Lista de condiciones por tipo de contrato
 INSERT INTO listacondiciones (idcondicion, idtipocontrato) VALUES 

@@ -14,14 +14,15 @@ class EntregasModel extends Model
         'fechahoraentrega',
         'fecha_real_entrega',
         'observaciones',
-        'estado'
+        'estado',
+        'comprobante_entrega'
     ];
     protected $returnType = 'array';
 
     public function obtenerEntregasCompletas()
     {
         $builder = $this->db->table('entregables e');
-        $builder->select('e.identregable, e.fechahoraentrega, e.fecha_real_entrega, e.estado, e.observaciones,
+        $builder->select('e.identregable, e.fechahoraentrega, e.fecha_real_entrega, e.estado, e.observaciones, e.comprobante_entrega,
                          p.nombres as nombre_cliente, p.apellidos as apellido_cliente,
                          s.servicio, sc.direccion, sc.fechahoraservicio,
                          per.nombres as nombre_entrega, per.apellidos as apellido_entrega,
@@ -47,7 +48,7 @@ class EntregasModel extends Model
     public function obtenerEntregasPendientes()
     {
         $builder = $this->db->table('entregables e');
-        $builder->select('e.identregable, e.fechahoraentrega, e.fecha_real_entrega, e.estado, e.observaciones,
+        $builder->select('e.identregable, e.fechahoraentrega, e.fecha_real_entrega, e.estado, e.observaciones, e.comprobante_entrega,
                          p.nombres as nombre_cliente, p.apellidos as apellido_cliente,
                          s.servicio, sc.direccion, sc.fechahoraservicio,
                          per.nombres as nombre_entrega, per.apellidos as apellido_entrega,
@@ -74,75 +75,20 @@ class EntregasModel extends Model
         return $builder->get()->getResultArray();
     }
 
-    public function obtenerEntregasVencidas()
-    {
-        $builder = $this->db->table('entregables e');
-        $builder->select('e.identregable, e.fechahoraentrega, e.fecha_real_entrega, e.estado, e.observaciones,
-                         p.nombres as nombre_cliente, p.apellidos as apellido_cliente,
-                         s.servicio, sc.direccion, sc.fechahoraservicio,
-                         per.nombres as nombre_entrega, per.apellidos as apellido_entrega,
-                         sc.cantidad, sc.precio,
-                         DATEDIFF(NOW(), e.fechahoraentrega) as dias_vencida');
-        $builder->join('servicioscontratados sc', 'sc.idserviciocontratado = e.idserviciocontratado');
-        $builder->join('cotizaciones c', 'c.idcotizacion = sc.idcotizacion');
-        $builder->join('clientes cl', 'cl.idcliente = c.idcliente');
-        $builder->join('personas p', 'p.idpersona = cl.idpersona');
-        $builder->join('servicios s', 's.idservicio = sc.idservicio');
-        $builder->join('personas per', 'per.idpersona = e.idpersona', 'left');
-
-        // Entregas pendientes pero con fecha vencida
-        $builder->where('e.estado', 'pendiente');
-        $builder->where('e.fechahoraentrega <', date('Y-m-d H:i:s'));
-
-        $builder->orderBy('e.fechahoraentrega', 'ASC');
-
-        return $builder->get()->getResultArray();
-    }
-
-    public function obtenerEntregasCompletadas()
-    {
-        $builder = $this->db->table('entregables e');
-        $builder->select('e.identregable, e.fechahoraentrega, e.fecha_real_entrega, e.estado, e.observaciones,
-                         p.nombres as nombre_cliente, p.apellidos as apellido_cliente,
-                         s.servicio, sc.direccion, sc.fechahoraservicio,
-                         per.nombres as nombre_entrega, per.apellidos as apellido_entrega,
-                         sc.cantidad, sc.precio,
-                         DATEDIFF(e.fecha_real_entrega, sc.fechahoraservicio) as dias_total_produccion');
-        $builder->join('servicioscontratados sc', 'sc.idserviciocontratado = e.idserviciocontratado');
-        $builder->join('cotizaciones c', 'c.idcotizacion = sc.idcotizacion');
-        $builder->join('clientes cl', 'cl.idcliente = c.idcliente');
-        $builder->join('personas p', 'p.idpersona = cl.idpersona');
-        $builder->join('servicios s', 's.idservicio = sc.idservicio');
-        $builder->join('personas per', 'per.idpersona = e.idpersona', 'left');
-
-        // Solo entregas completadas
-        $builder->where('e.estado', 'completada');
-
-        $builder->orderBy('e.fecha_real_entrega', 'DESC');
-
-        return $builder->get()->getResultArray();
-    }
-
     public function obtenerEntregaCompleta($id)
     {
         $builder = $this->db->table('entregables e');
-        $builder->select('e.identregable, e.fechahoraentrega, e.fecha_real_entrega, e.estado, e.observaciones,
-                         p.nombres as nombre_cliente, p.apellidos as apellido_cliente,
-                         p.tipodoc, p.numerodoc, p.telprincipal, p.direccion,
-                         s.servicio, s.descripcion as descripcion_servicio,
-                         sc.direccion as direccion_servicio, sc.fechahoraservicio,
-                         sc.cantidad, sc.precio,
-                         per.nombres as nombre_entrega, per.apellidos as apellido_entrega,
-                         per.tipodoc as tipodoc_entrega, per.numerodoc as numerodoc_entrega,
-                         c.idcotizacion, contr.idcontrato,
-                         DATEDIFF(e.fechahoraentrega, sc.fechahoraservicio) as dias_postproduccion,
-                         DATEDIFF(e.fechahoraentrega, NOW()) as dias_restantes,
-                         CASE 
-                             WHEN e.estado = "completada" THEN "Completada"
-                             WHEN e.estado = "pendiente" AND e.fechahoraentrega < NOW() THEN "Vencida"
-                             WHEN e.estado = "pendiente" THEN "En Postproducción"
-                             ELSE "Desconocido"
-                         END as estado_visual');
+        $builder->select('e.identregable, e.fechahoraentrega, e.fecha_real_entrega, e.estado, e.observaciones, e.comprobante_entrega,
+                     p.nombres as nombre_cliente, p.apellidos as apellido_cliente,
+                     p.tipodoc, p.numerodoc, p.telprincipal, p.direccion,
+                     s.servicio, s.descripcion as descripcion_servicio,
+                     sc.direccion as direccion_servicio, sc.fechahoraservicio,
+                     sc.cantidad, sc.precio,
+                     per.nombres as nombre_entrega, per.apellidos as apellido_entrega,
+                     per.tipodoc as tipodoc_entrega, per.numerodoc as numerodoc_entrega,
+                     c.idcotizacion, contr.idcontrato,
+                     DATEDIFF(e.fechahoraentrega, sc.fechahoraservicio) as dias_postproduccion,
+                     DATEDIFF(e.fechahoraentrega, NOW()) as dias_restantes');
         $builder->join('servicioscontratados sc', 'sc.idserviciocontratado = e.idserviciocontratado');
         $builder->join('cotizaciones c', 'c.idcotizacion = sc.idcotizacion');
         $builder->join('contratos contr', 'contr.idcotizacion = c.idcotizacion', 'left');
@@ -152,84 +98,188 @@ class EntregasModel extends Model
         $builder->join('personas per', 'per.idpersona = e.idpersona', 'left');
         $builder->where('e.identregable', $id);
 
-        return $builder->get()->getRowArray();
+        $entrega = $builder->get()->getRowArray();
+
+        // Agregar el estado_visual si existe la entrega
+        if ($entrega) {
+            if ($entrega['estado'] == 'completada') {
+                $entrega['estado_visual'] = "✅ ENTREGADO";
+            } else if ($entrega['estado'] == 'pendiente' && strtotime($entrega['fechahoraentrega']) < time()) {
+                $entrega['estado_visual'] = "⚠️ VENCIDA";
+            } else if ($entrega['estado'] == 'pendiente') {
+                $entrega['estado_visual'] = "⏳ EN POSTPRODUCCIÓN";
+            } else {
+                $entrega['estado_visual'] = "❓ DESCONOCIDO";
+            }
+        }
+
+        return $entrega;
     }
 
-    public function contarEntregasPorEstado()
+    public function obtenerContratosConEstadoPago()
     {
-        $builder = $this->db->table('entregables');
-        $builder->select('estado, COUNT(*) as total');
-        $builder->groupBy('estado');
+        // Esta consulta es más directa para verificar el estado de pago
+        $builder = $this->db->table('contratos c');
+        $builder->select('
+            c.idcontrato, c.idcotizacion,
+            CONCAT(COALESCE(p.nombres, emp.razonsocial), " ", COALESCE(p.apellidos, "")) as cliente_nombre,
+            co.fechaevento, te.evento as tipo_evento,
+            (SELECT SUM(sc.cantidad * sc.precio) FROM servicioscontratados sc WHERE sc.idcotizacion = c.idcotizacion) as monto_total,
+            (SELECT SUM(cp.amortizacion) FROM controlpagos cp WHERE cp.idcontrato = c.idcontrato) as monto_pagado,
+            (SELECT COUNT(*) FROM entregables e JOIN servicioscontratados sc ON sc.idserviciocontratado = e.idserviciocontratado 
+             WHERE sc.idcotizacion = c.idcotizacion) as total_entregas
+        ');
+        $builder->join('clientes cl', 'cl.idcliente = c.idcliente');
+        $builder->join('personas p', 'p.idpersona = cl.idpersona', 'left');
+        $builder->join('empresas emp', 'emp.idempresa = cl.idempresa', 'left');
+        $builder->join('cotizaciones co', 'co.idcotizacion = c.idcotizacion');
+        $builder->join('tipoeventos te', 'te.idtipoevento = co.idtipoevento');
+        $builder->orderBy('co.fechaevento', 'DESC');
 
-        $result = $builder->get()->getResultArray();
+        $contratos = $builder->get()->getResultArray();
 
-        $contadores = [
-            'pendiente' => 0,
-            'completada' => 0,
-            'total' => 0
-        ];
-
-        foreach ($result as $row) {
-            $contadores[$row['estado']] = $row['total'];
-            $contadores['total'] += $row['total'];
+        // Calcular deuda manualmente para mayor precisión
+        foreach ($contratos as &$contrato) {
+            $contrato['deuda_actual'] = $contrato['monto_total'] - $contrato['monto_pagado'];
+            // Pequeña tolerancia para evitar problemas de redondeo
+            if ($contrato['deuda_actual'] < 0.01) {
+                $contrato['deuda_actual'] = 0;
+            }
         }
 
-        return $contadores;
+        return $contratos;
     }
 
-    // Agregar este método al modelo:
-    public function puedeCambiarEstado($idEntrega, $nuevoEstado)
+    public function obtenerContratosPagadosCompletos()
     {
-        $entrega = $this->find($idEntrega);
+        $builder = $this->db->table('contratos c');
+        $builder->select('c.idcontrato, c.idcotizacion, c.idcliente,
+                         cl.idpersona, cl.idempresa,
+                         CONCAT(COALESCE(p.nombres, emp.razonsocial), " ", COALESCE(p.apellidos, "")) as cliente_nombre,
+                         co.fechaevento,
+                         (SELECT SUM(sc.cantidad * sc.precio) FROM servicioscontratados sc WHERE sc.idcotizacion = c.idcotizacion) as monto_total,
+                         (SELECT SUM(cp.amortizacion) FROM controlpagos cp WHERE cp.idcontrato = c.idcontrato) as monto_pagado');
+        $builder->join('clientes cl', 'cl.idcliente = c.idcliente');
+        $builder->join('personas p', 'p.idpersona = cl.idpersona', 'left');
+        $builder->join('empresas emp', 'emp.idempresa = cl.idempresa', 'left');
+        $builder->join('cotizaciones co', 'co.idcotizacion = c.idcotizacion');
 
-        if (!$entrega) {
-            return false;
+        $contratos = $builder->get()->getResultArray();
+
+        // Filtrar manualmente solo los contratos pagados
+        $contratosPagados = [];
+        foreach ($contratos as $contrato) {
+            $deuda = $contrato['monto_total'] - $contrato['monto_pagado'];
+            if ($deuda < 0.01) { // Tolerancia para redondeo
+                $contrato['deuda_actual'] = 0;
+                $contratosPagados[] = $contrato;
+            }
         }
 
-        // No permitir cambiar de completada a pendiente
-        if ($entrega['estado'] == 'completada' && $nuevoEstado == 'pendiente') {
-            return false;
-        }
-
-        return true;
+        return $contratosPagados;
     }
 
-    // Y modificar el método actualizarEstadoEntrega:
-    public function actualizarEstadoEntrega($id, $estado, $fechaReal = null)
+    public function obtenerServiciosPorContratoPagado($idcontrato)
     {
-        // Validar si se puede cambiar el estado
-        if (!$this->puedeCambiarEstado($id, $estado)) {
-            log_message('error', 'Intento de cambio de estado no permitido: ID ' . $id . ' a ' . $estado);
-            return false;
-        }
-
-        $data = ['estado' => $estado];
-
-        if ($fechaReal && $estado == 'completada') {
-            $data['fecha_real_entrega'] = $fechaReal;
-        }
-
-        log_message('debug', 'Actualizando entrega ID: ' . $id . ' con datos: ' . print_r($data, true));
-
-        return $this->update($id, $data);
+        $builder = $this->db->table('servicioscontratados sc');
+        $builder->select('sc.idserviciocontratado, sc.idservicio, sc.cantidad, sc.precio, 
+                         sc.fechahoraservicio, sc.direccion,
+                         s.servicio, s.descripcion,
+                         c.idcotizacion, c.fechaevento');
+        $builder->join('servicios s', 's.idservicio = sc.idservicio');
+        $builder->join('cotizaciones c', 'c.idcotizacion = sc.idcotizacion');
+        $builder->join('contratos cont', 'cont.idcotizacion = c.idcotizacion');
+        $builder->where('cont.idcontrato', $idcontrato);
+        $builder->where('sc.idserviciocontratado NOT IN (
+            SELECT e.idserviciocontratado FROM entregables e WHERE e.idserviciocontratado IS NOT NULL
+        )');
+        $builder->orderBy('sc.fechahoraservicio', 'DESC');
+        return $builder->get()->getResultArray();
     }
 
-    /**
-     * Verificar el estado actual de una entrega
-     */
-    public function verificarEstadoEntrega($id)
+    public function obtenerContratoPagado($idcontrato)
     {
-        $builder = $this->db->table('entregables');
-        $builder->select('estado, fechahoraentrega, fecha_real_entrega');
-        $builder->where('identregable', $id);
-        $result = $builder->get()->getRowArray();
+        $builder = $this->db->table('contratos c');
+        $builder->select('
+            c.idcontrato, c.idcotizacion,
+            (SELECT SUM(sc.cantidad * sc.precio) FROM servicioscontratados sc WHERE sc.idcotizacion = c.idcotizacion) as monto_total,
+            (SELECT SUM(cp.amortizacion) FROM controlpagos cp WHERE cp.idcontrato = c.idcontrato) as monto_pagado
+        ');
+        $builder->where('c.idcontrato', $idcontrato);
+        $contrato = $builder->get()->getRowArray();
 
-        if ($result) {
-            $result['esta_completada'] = ($result['estado'] == 'completada');
-            $result['esta_vencida'] = ($result['estado'] == 'pendiente' &&
-                strtotime($result['fechahoraentrega']) < time());
+        if ($contrato) {
+            $contrato['deuda_actual'] = $contrato['monto_total'] - $contrato['monto_pagado'];
+            // Pequeña tolerancia para evitar problemas de redondeo
+            if ($contrato['deuda_actual'] < 0.01) {
+                $contrato['deuda_actual'] = 0;
+                return $contrato;
+            }
         }
-
-        return $result;
+        return null;
     }
+
+    public function obtenerEntregasCompletasConDetalle()
+    {
+        $builder = $this->db->table('entregables e');
+        $builder->select('e.identregable, e.fechahoraentrega, e.fecha_real_entrega, e.estado, e.observaciones, e.comprobante_entrega,
+                     p.nombres as nombre_cliente, p.apellidos as apellido_cliente,
+                     s.servicio, sc.direccion, sc.fechahoraservicio,
+                     per.nombres as nombre_entrega, per.apellidos as apellido_entrega,
+                     sc.cantidad, sc.precio, contr.idcontrato,
+                     CASE 
+                         WHEN e.estado = "completada" THEN "Completada"
+                         WHEN e.estado = "pendiente" AND e.fechahoraentrega < NOW() THEN "Vencida"
+                         WHEN e.estado = "pendiente" THEN "Pendiente"
+                         ELSE "Desconocido"
+                     END as estado_visual');
+        $builder->join('servicioscontratados sc', 'sc.idserviciocontratado = e.idserviciocontratado');
+        $builder->join('cotizaciones c', 'c.idcotizacion = sc.idcotizacion');
+        $builder->join('contratos contr', 'contr.idcotizacion = c.idcotizacion', 'left');
+        $builder->join('clientes cl', 'cl.idcliente = c.idcliente');
+        $builder->join('personas p', 'p.idpersona = cl.idpersona');
+        $builder->join('servicios s', 's.idservicio = sc.idservicio');
+        $builder->join('personas per', 'per.idpersona = e.idpersona', 'left');
+
+        // IMPORTANTE: Elimina cualquier condición WHERE que pueda estar filtrando 
+        // las entregas, como estado='completada'
+        // NO filtres por estado para mostrar todas las entregas, sean completadas o pendientes
+
+        $builder->orderBy('e.fechahoraentrega', 'DESC');
+
+        return $builder->get()->getResultArray();
+    }
+
+    public function obtenerTodasLasEntregas()
+    {
+        // Consulta extremadamente simplificada que debería mostrar TODAS las entregas
+        // sin importar si tienen relaciones completas
+        $sql = "SELECT e.*, 
+        sc.fechahoraservicio,
+        s.servicio,
+        IFNULL(p_cliente.nombres, 'Sin nombre') as nombre_cliente,
+        IFNULL(p_cliente.apellidos, 'Sin apellido') as apellido_cliente,
+        IFNULL(p_entrega.nombres, 'Sin nombre') as nombre_entrega,
+        IFNULL(p_entrega.apellidos, 'Sin apellido') as apellido_entrega,
+        IFNULL(contr.idcontrato, 0) as idcontrato,
+        CASE 
+            WHEN e.estado = 'completada' THEN '✅ ENTREGADO'
+            WHEN e.estado = 'pendiente' AND e.fechahoraentrega < NOW() THEN '⚠️ VENCIDA'
+            WHEN e.estado = 'pendiente' THEN '⏳ EN POSTPRODUCCIÓN'
+            ELSE '❓ DESCONOCIDO'
+        END as estado_visual
+        FROM entregables e
+        LEFT JOIN servicioscontratados sc ON sc.idserviciocontratado = e.idserviciocontratado
+        LEFT JOIN servicios s ON s.idservicio = sc.idservicio
+        LEFT JOIN cotizaciones c ON c.idcotizacion = sc.idcotizacion
+        LEFT JOIN contratos contr ON contr.idcotizacion = c.idcotizacion
+        LEFT JOIN clientes cl ON cl.idcliente = c.idcliente
+        LEFT JOIN personas p_cliente ON p_cliente.idpersona = cl.idpersona
+        LEFT JOIN personas p_entrega ON p_entrega.idpersona = e.idpersona
+        ORDER BY e.identregable DESC";
+
+        $query = $this->db->query($sql);
+        return $query->getResultArray();
+    }
+
 }

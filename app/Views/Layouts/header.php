@@ -233,18 +233,13 @@
               <div class="collapse" id="entregas">
                 <ul class="nav nav-collapse">
                   <li>
-                    <a href="<?= base_url('/entregas/pendientes') ?>">
-                      <span class="sub-item">Pendientes</span>
-                    </a>
-                  </li>
-                  <li>
                     <a href="<?= base_url('/entregas') ?>">
-                      <span class="sub-item">Entregados</span>
+                      <span class="sub-item">Lista de Entregas</span>
                     </a>
                   </li>
                   <li>
-                    <a href="<?= base_url('/entregas/crear') ?>">
-                      <span class="sub-item">Programar Entrega</span>
+                    <a href="<?= base_url('/entregas/pendientes') ?>">
+                      <span class="sub-item">Entrega Pendientes</span>
                     </a>
                   </li>
                 </ul>

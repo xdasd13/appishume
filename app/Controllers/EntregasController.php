@@ -2,430 +2,237 @@
 
 namespace App\Controllers;
 
-use App\Controllers\BaseController;
 use App\Models\EntregasModel;
-use App\Models\ServiciosContratadosModel;
-use App\Models\PersonasModel;
 
 class EntregasController extends BaseController
 {
     protected $entregasModel;
-    protected $serviciosContratadosModel;
-    protected $personasModel;
-    protected $db;
 
     public function __construct()
     {
         $this->entregasModel = new EntregasModel();
-        $this->serviciosContratadosModel = new ServiciosContratadosModel();
-        $this->personasModel = new PersonasModel();
-        $this->db = \Config\Database::connect();
     }
 
+    // Listado principal de contratos y entregas
     public function index()
     {
-        $datos['entregas'] = $this->entregasModel->obtenerEntregasCompletas();
+        $datos['contratos'] = $this->entregasModel->obtenerContratosConEstadoPago();
         $datos['header'] = view('Layouts/header');
         $datos['footer'] = view('Layouts/footer');
-        return view('/entregas/index', $datos);
+        return view('entregas/listar', $datos);
     }
 
-    public function ver($id)
-    {
-        if (!is_numeric($id) || $id <= 0) {
-            return redirect()->to('/entregas')->with('error', 'ID de entrega inválido');
-        }
-
-        $entrega = $this->entregasModel->obtenerEntregaCompleta($id);
-
-        if (!$entrega) {
-            return redirect()->to('/entregas')->with('error', 'Entrega no encontrada');
-        }
-
-        $datos['entrega'] = $entrega;
-        $datos['header'] = view('Layouts/header');
-        $datos['footer'] = view('Layouts/footer');
-
-        return view('/entregas/ver', $datos);
-    }
-
+    // Página para crear nueva entrega (solo contratos pagados)
     public function crear()
     {
-        // Obtener servicios contratados con sus fechas
-        $builder = $this->db->table('servicioscontratados sc');
-        $builder->select('sc.idserviciocontratado, sc.fechahoraservicio, s.servicio as servicio_nombre');
-        $builder->join('servicios s', 's.idservicio = sc.idservicio');
-        $builder->where('sc.fechahoraservicio <=', date('Y-m-d H:i:s')); // Solo servicios ya realizados
-        $datos['servicios'] = $builder->get()->getResultArray();
+        $contratoId = $this->request->getGet('contrato');
 
-        // Solo obtener personas que pueden realizar entregas (empleados)
-        $datos['personas'] = $this->personasModel
-            ->join('usuarios u', 'u.idpersona = personas.idpersona', 'left')
-            ->where('u.idusuario IS NOT NULL')
-            ->findAll();
+        // Si se especificó un contrato, verificar que esté completamente pagado
+        if ($contratoId) {
+            // Verificar que el contrato existe y está pagado
+            $contrato = $this->entregasModel->obtenerContratoPagado($contratoId);
 
+            if (!$contrato) {
+                return redirect()->to('entregas')->with('error', 'El contrato seleccionado no existe o no está pagado completamente.');
+            }
+
+            // Obtener servicios disponibles para este contrato
+            $datos['servicios'] = $this->entregasModel->obtenerServiciosPorContratoPagado($contratoId);
+            $datos['contrato'] = $contrato;
+            $datos['usuario_actual'] = session()->get('usuario_nombre');
+            $datos['usuario_id'] = session()->get('usuario_id');
+            $datos['header'] = view('Layouts/header');
+            $datos['footer'] = view('Layouts/footer');
+            return view('entregas/crear', $datos);
+        }
+
+        // Si no se especificó contrato, mostrar listado de contratos pagados
+        $datos['contratos'] = $this->entregasModel->obtenerContratosPagadosCompletos();
+        $datos['usuario_actual'] = session()->get('usuario_nombre');
+        $datos['usuario_id'] = session()->get('usuario_id');
         $datos['header'] = view('Layouts/header');
         $datos['footer'] = view('Layouts/footer');
-
-        return view('/entregas/crear', $datos);
+        return view('entregas/crear', $datos);
     }
 
+    // AJAX: obtener servicios de un contrato pagado
+    public function obtenerServiciosPorContrato($idcontrato)
+    {
+        $servicios = $this->entregasModel->obtenerServiciosPorContratoPagado($idcontrato);
+        return $this->response->setJSON(['success' => true, 'servicios' => $servicios]);
+    }
+
+    // Guardar nueva entrega
     public function guardar()
     {
-        $validation = \Config\Services::validation();
+        // Importante: Asegúrate de que obtienes el ID de persona, no el ID de usuario
+        $usuarioId = session()->get('usuario_id');
+        $personaId = session()->get('persona_id'); // Añade esto a tu sesión al iniciar sesión
 
-        // Reglas básicas
+        $validation = \Config\Services::validation();
         $validation->setRules([
+            'idcontrato' => 'required|numeric',
             'idserviciocontratado' => 'required|numeric|is_not_unique[servicioscontratados.idserviciocontratado]',
-            'idpersona' => 'required|numeric|is_not_unique[personas.idpersona]',
-            'fechahoraentrega' => 'required|valid_date',
-            'estado_entrega' => 'required|in_list[pendiente,completada]',
-            'observaciones' => 'required|min_length[10]'
-        ], [
-            'observaciones' => [
-                'required' => 'El formato de entrega es obligatorio',
-                'min_length' => 'El formato de entrega debe tener al menos 10 caracteres'
-            ],
-            'estado_entrega' => [
-                'required' => 'El estado de la entrega es obligatorio',
-                'in_list' => 'El estado debe ser Pendiente o Completada'
-            ]
+            'observaciones' => 'required|min_length[10]',
+            'comprobante_entrega' => 'uploaded[comprobante_entrega]|max_size[comprobante_entrega,5120]|ext_in[comprobante_entrega,pdf]'
         ]);
 
         if (!$validation->withRequest($this->request)->run()) {
             return redirect()->back()->withInput()->with('errors', $validation->getErrors());
         }
 
-        // VALIDACIÓN MANUAL de las 3 semanas
-        $servicioId = $this->request->getPost('idserviciocontratado');
-        $servicioContratado = $this->serviciosContratadosModel->find($servicioId);
-
-        if (!$servicioContratado || !$servicioContratado['fechahoraservicio']) {
-            return redirect()->back()->withInput()->with('error', 'El servicio seleccionado no es válido');
+        $comprobante = $this->request->getFile('comprobante_entrega');
+        $nombreComprobante = null;
+        if ($comprobante && $comprobante->isValid() && !$comprobante->hasMoved()) {
+            $nuevoNombre = $comprobante->getRandomName();
+            $comprobante->move(ROOTPATH . 'public/uploads/comprobantes_entrega', $nuevoNombre);
+            $nombreComprobante = $nuevoNombre;
         }
 
-        $fechaEntrega = strtotime($this->request->getPost('fechahoraentrega'));
-        $fechaServicio = strtotime($servicioContratado['fechahoraservicio']);
-        $fechaMaxima = strtotime('+3 weeks', $fechaServicio);
+        // Usamos la fecha actual para la entrega
+        $fechaActual = date('Y-m-d H:i:s');
 
-        // Validar que sea día hábil (lunes a viernes)
-        $diaEntrega = date('N', $fechaEntrega);
-        $esDiaHabil = ($diaEntrega >= 1 && $diaEntrega <= 5);
-
-        // Validar horario laboral (8am - 6pm)
-        $horaEntrega = date('H', $fechaEntrega);
-        $enHorarioLaboral = ($horaEntrega >= 8 && $horaEntrega <= 18);
-
-        if ($fechaEntrega <= $fechaServicio) {
-            return redirect()->back()->withInput()->with('error', 'La fecha de entrega debe ser posterior al servicio');
-        }
-
-        if ($fechaEntrega > $fechaMaxima) {
-            return redirect()->back()->withInput()->with('error', 'La entrega no puede ser más de 3 semanas después del servicio');
-        }
-
-        if (!$esDiaHabil) {
-            return redirect()->back()->withInput()->with('error', 'Solo se permiten entregas en días hábiles (Lunes a Viernes)');
-        }
-
-        if (!$enHorarioLaboral) {
-            return redirect()->back()->withInput()->with('error', 'Solo se permiten entregas en horario laboral (8:00 AM - 6:00 PM)');
-        }
-
-        // Validación adicional para estado "completada"
-        $estado = $this->request->getPost('estado_entrega');
-        $fechaReal = $this->request->getPost('fecha_real_entrega');
-
-        if ($estado == 'completada') {
-            // Si no se proporciona fecha real, usar fecha actual
-            if (empty($fechaReal)) {
-                $fechaReal = date('Y-m-d H:i:s');
-            } else {
-                $fechaRealTimestamp = strtotime($fechaReal);
-                if ($fechaRealTimestamp > time()) {
-                    return redirect()->back()->withInput()->with('error', 'La fecha real de entrega no puede ser futura');
-                }
-            }
-        }
-
-        // Verificar que la persona existe
-        $persona = $this->personasModel->find($this->request->getPost('idpersona'));
-        if (!$persona) {
-            return redirect()->back()->withInput()->with('error', 'La persona seleccionada no existe');
-        }
-
-        // Verificar que no exista ya una entrega para este servicio
-        $entregaExistente = $this->entregasModel
-            ->where('idserviciocontratado', $this->request->getPost('idserviciocontratado'))
-            ->first();
-
-        if ($entregaExistente) {
-            return redirect()->back()->withInput()->with('error', 'Ya existe una entrega registrada para este servicio contratado');
-        }
-
+        // IMPORTANTE: Verifica qué ID estás usando y asegúrate que sea coherente
+        // Si tu relación es con personas, necesitas el ID de persona, no el ID de usuario
         $data = [
             'idserviciocontratado' => $this->request->getPost('idserviciocontratado'),
-            'idpersona' => $this->request->getPost('idpersona'),
-            'fechahoraentrega' => $this->request->getPost('fechahoraentrega'),
+            'idpersona' => $personaId, // Usa persona_id en lugar de usuario_id
+            'fechahoraentrega' => $fechaActual,
             'observaciones' => $this->request->getPost('observaciones'),
-            'estado' => $estado,
-            'fecha_real_entrega' => $estado == 'completada' ? $fechaReal : null
+            'estado' => 'pendiente',
+            'comprobante_entrega' => $nombreComprobante
         ];
 
-        // Si es completada y no tiene fecha real, usar fecha actual (doble verificación)
-        if ($estado == 'completada' && empty($data['fecha_real_entrega'])) {
-            $data['fecha_real_entrega'] = date('Y-m-d H:i:s');
+        if ($this->entregasModel->save($data)) {
+            return redirect()->to('entregas')->with('success', 'Entrega registrada correctamente');
+        } else {
+            return redirect()->back()->withInput()->with('error', 'Error al registrar la entrega');
         }
-
-        // Usar transacción
-        $this->db->transStart();
-
-        try {
-            if ($this->entregasModel->save($data)) {
-                // Si se marca como completada, registrar en tabla de completados
-                if ($estado == 'completada') {
-                    $this->registrarEntregaCompletada($this->entregasModel->getInsertID());
-                }
-
-                $this->db->transCommit();
-
-                // Mensaje diferente según el estado
-                $mensaje = $estado == 'completada'
-                    ? 'Entrega completada registrada correctamente'
-                    : 'Entrega pendiente registrada correctamente';
-
-                return redirect()->to('/entregas')->with('success', $mensaje);
-            } else {
-                $this->db->transRollback();
-                return redirect()->back()->withInput()->with('error', 'Error al registrar la entrega');
-            }
-        } catch (\Exception $e) {
-            $this->db->transRollback();
-            log_message('error', 'Error al guardar entrega: ' . $e->getMessage());
-            return redirect()->back()->withInput()->with('error', 'Error interno del sistema al registrar la entrega');
-        }
-    }
-    public function pendientes()
-    {
-        $datos['entregas'] = $this->entregasModel->obtenerEntregasPendientes();
-        $datos['header'] = view('Layouts/header');
-        $datos['footer'] = view('Layouts/footer');
-        return view('/entregas/pendientes', $datos);
     }
 
     public function editar($id)
     {
-        if (!is_numeric($id) || $id <= 0) {
-            return redirect()->to('/entregas')->with('error', 'ID de entrega inválido');
-        }
-
-        $entrega = $this->entregasModel->find($id);
-
+        $entrega = $this->entregasModel->obtenerEntregaCompleta($id);
         if (!$entrega) {
-            return redirect()->to('/entregas')->with('error', 'Entrega no encontrada');
+            return redirect()->to('entregas')->with('error', 'Entrega no encontrada');
         }
-
-        // Obtener servicios contratados con sus fechas
-        $builder = $this->db->table('servicioscontratados sc');
-        $builder->select('sc.idserviciocontratado, sc.fechahoraservicio, s.servicio as servicio_nombre');
-        $builder->join('servicios s', 's.idservicio = sc.idservicio');
-        $datos['servicios'] = $builder->get()->getResultArray();
-
-        // Solo obtener personas que pueden realizar entregas
-        $datos['personas'] = $this->personasModel
-            ->join('usuarios u', 'u.idpersona = personas.idpersona', 'left')
-            ->where('u.idusuario IS NOT NULL')
-            ->findAll();
-
         $datos['entrega'] = $entrega;
         $datos['header'] = view('Layouts/header');
         $datos['footer'] = view('Layouts/footer');
-
-        return view('/entregas/editar', $datos);
+        return view('entregas/editar', $datos);
     }
 
     public function actualizar($id)
     {
-
-        if (!is_numeric($id) || $id <= 0) {
-            return redirect()->to('/entregas')->with('error', 'ID de entrega inválido');
-        }
-
-        $entregaExistente = $this->entregasModel->find($id);
-        if (!$entregaExistente) {
-            return redirect()->to('/entregas')->with('error', 'Entrega no encontrada');
-        }
-
-        // VALIDACIÓN: No permitir cambiar de completada a pendiente
-        $nuevoEstado = $this->request->getPost('estado');
-        if ($entregaExistente['estado'] == 'completada' && $nuevoEstado == 'pendiente') {
-            return redirect()->back()->withInput()->with('error', 'No se puede revertir una entrega completada a pendiente');
-        }
-
-        if (!is_numeric($id) || $id <= 0) {
-            return redirect()->to('/entregas')->with('error', 'ID de entrega inválido');
-        }
-
-        $entregaExistente = $this->entregasModel->find($id);
-        if (!$entregaExistente) {
-            return redirect()->to('/entregas')->with('error', 'Entrega no encontrada');
-        }
-
         $validation = \Config\Services::validation();
-
-        // Reglas básicas
         $validation->setRules([
-            'idserviciocontratado' => 'required|numeric|is_not_unique[servicioscontratados.idserviciocontratado]',
-            'idpersona' => 'required|numeric|is_not_unique[personas.idpersona]',
-            'fechahoraentrega' => 'required|valid_date',
-            'estado' => 'required|in_list[pendiente,completada]',
-            'observaciones' => 'required|min_length[10]'
-        ], [
-            'observaciones' => [
-                'required' => 'El formato de entrega es obligatorio',
-                'min_length' => 'El formato de entrega debe tener al menos 10 caracteres'
-            ],
-            'estado' => [
-                'required' => 'El estado de la entrega es obligatorio',
-                'in_list' => 'El estado debe ser Pendiente o Completada'
-            ]
+            'observaciones' => 'required|min_length[10]',
+            'comprobante_entrega' => 'if_exist|max_size[comprobante_entrega,5120]|ext_in[comprobante_entrega,pdf]'
         ]);
-
         if (!$validation->withRequest($this->request)->run()) {
             return redirect()->back()->withInput()->with('errors', $validation->getErrors());
         }
-
-        // Obtener el nuevo estado
-        $nuevoEstado = $this->request->getPost('estado');
-
-        // Validar que el estado sea válido según la base de datos
-        $estadosPermitidos = ['pendiente', 'completada'];
-        if (!in_array($nuevoEstado, $estadosPermitidos)) {
-            return redirect()->back()->withInput()->with('error', 'Estado no válido');
+        $entrega = $this->entregasModel->find($id);
+        if (!$entrega) {
+            return redirect()->to('entregas')->with('error', 'Entrega no encontrada');
         }
-
-        // Manejar la fecha real de entrega
-        $fechaReal = $this->request->getPost('fecha_real_entrega');
-
-        // Si se marca como completada y no se proporciona fecha real, usar fecha actual
-        if ($nuevoEstado == 'completada' && empty($fechaReal)) {
-            $fechaReal = date('Y-m-d H:i:s');
+        $comprobante = $this->request->getFile('comprobante_entrega');
+        $nombreComprobante = $entrega['comprobante_entrega'];
+        if ($comprobante && $comprobante->isValid() && !$comprobante->hasMoved()) {
+            $nuevoNombre = $comprobante->getRandomName();
+            $comprobante->move(ROOTPATH . 'public/uploads/comprobantes_entrega', $nuevoNombre);
+            $nombreComprobante = $nuevoNombre;
         }
-
-        // Si se cambia a pendiente, limpiar la fecha real
-        if ($nuevoEstado == 'pendiente') {
-            $fechaReal = null;
-        }
-
         $data = [
-            'idserviciocontratado' => $this->request->getPost('idserviciocontratado'),
-            'idpersona' => $this->request->getPost('idpersona'),
-            'fechahoraentrega' => $this->request->getPost('fechahoraentrega'),
             'observaciones' => $this->request->getPost('observaciones'),
-            'estado' => $nuevoEstado,
-            'fecha_real_entrega' => $fechaReal
+            'comprobante_entrega' => $nombreComprobante
         ];
-
-        // Log para depuración
-        log_message('debug', 'Actualizando entrega ID: ' . $id . ' con datos: ' . print_r($data, true));
-
-        // Usar transacción
-        $this->db->transStart();
-
-        try {
-            $estadoAnterior = $entregaExistente['estado'];
-
-            if ($this->entregasModel->update($id, $data)) {
-                // Si se cambió de pendiente a completada, registrar en tabla de completados
-                if ($estadoAnterior == 'pendiente' && $nuevoEstado == 'completada') {
-                    $this->registrarEntregaCompletada($id);
-                }
-
-                $this->db->transCommit();
-                log_message('debug', 'Entrega actualizada exitosamente');
-                return redirect()->to('/entregas/ver/' . $id)->with('success', 'Entrega actualizada correctamente');
-            } else {
-                $this->db->transRollback();
-                return redirect()->back()->withInput()->with('error', 'Error al actualizar la entrega');
-            }
-        } catch (\Exception $e) {
-            $this->db->transRollback();
-            log_message('error', 'Error al actualizar entrega: ' . $e->getMessage());
-            return redirect()->back()->withInput()->with('error', 'Error interno del sistema al actualizar la entrega');
+        if ($this->entregasModel->update($id, $data)) {
+            return redirect()->to('entregas')->with('success', 'Entrega actualizada correctamente');
+        } else {
+            return redirect()->back()->withInput()->with('error', 'Error al actualizar la entrega');
         }
     }
 
     public function eliminar($id)
     {
-        if (!is_numeric($id) || $id <= 0) {
-            return redirect()->to('/entregas')->with('error', 'ID de entrega inválido');
+        if ($this->entregasModel->delete($id)) {
+            return redirect()->to('entregas')->with('success', 'Entrega eliminada correctamente');
+        } else {
+            return redirect()->to('entregas')->with('error', 'No se pudo eliminar la entrega');
         }
+    }
 
-        $entrega = $this->entregasModel->find($id);
+    public function pendientes()
+    {
+        $datos['entregas'] = $this->entregasModel->obtenerEntregasPendientes();
+        $datos['header'] = view('Layouts/header');
+        $datos['footer'] = view('Layouts/footer');
+        return view('entregas/pendientes', $datos);
+    }
 
+    public function ver($id)
+    {
+        $entrega = $this->entregasModel->obtenerEntregaCompleta($id);
+
+        // Si no se encuentra la entrega, intentamos al menos mostrar datos básicos
         if (!$entrega) {
-            return redirect()->to('/entregas')->with('error', 'Entrega no encontrada');
-        }
+            // Intenta obtener al menos los datos básicos de la entrega
+            $entregaBasica = $this->entregasModel->find($id);
 
-        // Usar transacción
-        $this->db->transStart();
-
-        try {
-            if ($this->entregasModel->delete($id)) {
-                // También eliminar de la tabla de completados si existe
-                $this->db->table('entregas_completadas')->where('identregable', $id)->delete();
-
-                $this->db->transCommit();
-                return redirect()->to('/entregas')->with('success', 'Entrega eliminada correctamente');
-            } else {
-                $this->db->transRollback();
-                return redirect()->to('/entregas')->with('error', 'Error al eliminar la entrega');
+            if (!$entregaBasica) {
+                return redirect()->to('entregas/historial')->with('error', 'Entrega no encontrada');
             }
-        } catch (\Exception $e) {
-            $this->db->transRollback();
-            log_message('error', 'Error al eliminar entrega: ' . $e->getMessage());
-            return redirect()->to('/entregas')->with('error', 'Error interno del sistema al eliminar la entrega');
+
+            $entrega = $entregaBasica;
+            $entrega['nombre_cliente'] = 'Información no disponible';
+            $entrega['apellido_cliente'] = '';
+            $entrega['servicio'] = 'Información no disponible';
+            $entrega['nombre_entrega'] = 'Información no disponible';
+            $entrega['apellido_entrega'] = '';
+
+            // Agregamos el estado_visual que falta
+            if ($entrega['estado'] == 'completada') {
+                $entrega['estado_visual'] = "✅ ENTREGADO";
+            } else if ($entrega['estado'] == 'pendiente') {
+                $entrega['estado_visual'] = "⏳ EN POSTPRODUCCIÓN";
+            } else {
+                $entrega['estado_visual'] = "❓ DESCONOCIDO";
+            }
         }
-    }
 
-    /**
-     * Registrar entrega en tabla de completados
-     */
-    private function registrarEntregaCompletada($idEntrega)
-    {
-        $entrega = $this->entregasModel->find($idEntrega);
-
-        if ($entrega) {
-            $dataCompletada = [
-                'identregable' => $idEntrega,
-                'fecha_completada' => date('Y-m-d H:i:s'),
-                'observaciones' => 'Entrega completada: ' . ($entrega['observaciones'] ?? 'Sin observaciones')
-            ];
-
-            // Insertar en tabla de completados
-            $this->db->table('entregas_completadas')->insert($dataCompletada);
-        }
-    }
-
-    /**
-     * Método para ver entregas completadas
-     */
-    public function completadas()
-    {
-        $datos['entregas'] = $this->entregasModel->obtenerEntregasCompletadas();
+        $datos['entrega'] = $entrega;
         $datos['header'] = view('Layouts/header');
         $datos['footer'] = view('Layouts/footer');
-        return view('/entregas/completadas', $datos);
+        return view('entregas/ver', $datos);
     }
 
-    /**
-     * Método para ver entregas vencidas
-     */
-    public function vencidas()
+    public function historial()
     {
-        $datos['entregas'] = $this->entregasModel->obtenerEntregasVencidas();
+        // Usa el método del modelo en lugar de intentar crear la consulta directamente
+        $datos['entregas'] = $this->entregasModel->obtenerTodasLasEntregas();
+
         $datos['header'] = view('Layouts/header');
         $datos['footer'] = view('Layouts/footer');
-        return view('/entregas/vencidas', $datos);
+        return view('entregas/completadas', $datos);
+    }
+
+    public function marcarCompletada($id)
+    {
+        $entrega = $this->entregasModel->find($id);
+        if (!$entrega) {
+            return redirect()->to('entregas/completadas')->with('error', 'Entrega no encontrada');
+        }
+
+        $data = [
+            'estado' => 'completada',
+            'fecha_real_entrega' => date('Y-m-d H:i:s')
+        ];
+
+        if ($this->entregasModel->update($id, $data)) {
+            return redirect()->to('entregas/ver/' . $id)->with('success', 'Entrega marcada como completada');
+        } else {
+            return redirect()->to('entregas/ver/' . $id)->with('error', 'Error al actualizar el estado de la entrega');
+        }
     }
 }

@@ -54,15 +54,19 @@ $routes->group('', ['filter' => 'auth:trabajador'], function($routes) {
 // Ruta original del sistema
 $routes->get('home', 'Home::index');
 
-// Rutas para la gestión de entregas
-$routes->get('/entregas', 'EntregasController::index');
-$routes->get('/entregas/ver/(:num)', 'EntregasController::ver/$1');
-$routes->get('/entregas/crear', 'EntregasController::crear');
-$routes->post('/entregas/guardar', 'EntregasController::guardar');
-$routes->get('/entregas/editar/(:num)', 'EntregasController::editar/$1');
-$routes->post('/entregas/actualizar/(:num)', 'EntregasController::actualizar/$1');
-$routes->get('/entregas/eliminar/(:num)', 'EntregasController::eliminar/$1');
-$routes->get('/entregas/pendientes', 'EntregasController::pendientes');
+// Rutas para el módulo de entregas
+$routes->get('entregas', 'EntregasController::index');
+$routes->get('entregas/crear', 'EntregasController::crear');
+$routes->post('entregas/guardar', 'EntregasController::guardar');
+$routes->get('entregas/editar/(:num)', 'EntregasController::editar/$1');
+$routes->post('entregas/actualizar/(:num)', 'EntregasController::actualizar/$1');
+$routes->get('entregas/eliminar/(:num)', 'EntregasController::eliminar/$1');
+$routes->get('entregas/ver/(:num)', 'EntregasController::ver/$1');
+$routes->get('entregas/pendientes', 'EntregasController::pendientes');
+$routes->get('entregas/obtenerServiciosPorContrato/(:num)', 'EntregasController::obtenerServiciosPorContrato/$1');
+$routes->get('entregas/historial', 'EntregasController::historial');
+$routes->get('entregas/imprimir/(:num)', 'EntregasController::imprimir/$1');
+$routes->get('entregas/marcarCompletada/(:num)', 'EntregasController::marcarCompletada/$1');
 
 // Rutas de Control de Pagos: //
 $routes->get('controlpagos', [ControlPagoController::class, 'index']);
