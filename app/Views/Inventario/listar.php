@@ -15,7 +15,7 @@
                 </a>
             </div>
         </div>
-    </div>
+    </div>  
 
     <!-- Tarjetas de Estadísticas -->
     <div class="row mb-4">
