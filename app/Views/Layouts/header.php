@@ -57,7 +57,7 @@
       <div class="sidebar-logo">
         <!-- Logo Header -->
         <div class="logo-header" data-background-color="dark">
-          <a href="<?= base_url('/dashboard') ?>" class="logo">
+          <a href="<?= base_url('/welcome') ?>" class="logo">
             <img src="<?= base_url() . 'assets/img/kaiadmin/logo_light.svg' ?>" alt="IShume Logo" class="navbar-brand"
               height="20" />
           </a>
@@ -382,7 +382,7 @@
         <div class="main-header-logo">
           <!-- Logo Header -->
           <div class="logo-header" data-background-color="dark">
-            <a href="<?= base_url('/dashboard') ?>" class="logo">
+            <a href="<?= base_url('/welcome') ?>" class="logo">
               <img src="<?= base_url() . 'assets/img/kaiadmin/logo_light.svg' ?>" alt="IShume Logo" class="navbar-brand"
                 height="20" />
             </a>

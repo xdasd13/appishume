@@ -262,7 +262,7 @@ class AuthController extends BaseController
             $result = $query->getRow();
             echo "<p>Total usuarios en BD: " . $result->total . "</p>";
             
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             echo "<p style='color: red;'>❌ Error de base de datos: " . $e->getMessage() . "</p>";
         }
 
@@ -297,7 +297,7 @@ class AuthController extends BaseController
         try {
             $controller = new \App\Controllers\UsuariosController();
             echo "<p style='color: green;'>✅ UsuariosController cargado correctamente</p>";
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             echo "<p style='color: red;'>❌ Error cargando UsuariosController: " . $e->getMessage() . "</p>";
         }
 
@@ -305,7 +305,7 @@ class AuthController extends BaseController
         try {
             $usuarioModel = new \App\Models\UsuarioModel();
             echo "<p style='color: green;'>✅ UsuarioModel cargado correctamente</p>";
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             echo "<p style='color: red;'>❌ Error cargando UsuarioModel: " . $e->getMessage() . "</p>";
         }
 

@@ -20,7 +20,6 @@ $routes->get('test_simple', 'AuthController::testSimple');
 
 
 
-
 // Rutas SIMPLES para usuarios (sin autenticación por ahora)
 $routes->get('usuarios-simple', 'UsuariosControllerSimple::index');
 $routes->get('usuarios-simple/crear', 'UsuariosControllerSimple::crear');
@@ -52,7 +51,7 @@ $routes->group('', ['filter' => 'auth:trabajador'], function($routes) {
 });
 
 // Ruta original del sistema
-$routes->get('home', 'Home::index');
+$routes->get('Home', 'Home::index');
 
 // Rutas para el módulo de entregas
 $routes->get('entregas', 'EntregasController::index');
