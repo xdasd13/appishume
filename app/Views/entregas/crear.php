@@ -53,6 +53,7 @@
                         </div>
                         
                         <form action="<?= base_url('entregas/guardar') ?>" method="post" class="form-validate" enctype="multipart/form-data">
+                            <?= csrf_field() ?>
                             <!-- Campo oculto con el ID del usuario actual -->
                             <input type="hidden" name="idusuario_creacion" value="<?= $usuario_id ?>">
                             
