@@ -593,7 +593,6 @@
             <!-- Aquí iría el contenido específico de cada página -->
 
             <!-- Antes de cerrar el body -->
-            <script src="<?= base_url('assets/js/custom.js') ?>"></script>
 
             <!-- SweetAlert2 para confirmación de logout -->
             <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>

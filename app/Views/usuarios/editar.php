@@ -65,7 +65,7 @@
                     <div class="card-body">
                         <form id="editarUsuarioForm" novalidate>
                             <input type="hidden" name="idusuario" value="<?= $usuario->idusuario ?>">
-                            <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf_token, ENT_QUOTES, 'UTF-8') ?>">
+                            <input type="hidden" name="<?= csrf_token() ?>" value="<?= csrf_hash() ?>">
 
                             <!-- Información de la Persona (solo lectura) -->
                             <div class="form-section">
@@ -308,8 +308,7 @@
                     // Preparar datos del formulario
                     const formData = new FormData(form);
                     
-                    // Agregar el token CSRF para CodeIgniter 4
-                    formData.append('<?= csrf_token() ?>', '<?= csrf_hash() ?>');
+                    // El token CSRF ya está incluido en el formulario
                     
                     // Usar fetch API en lugar de jQuery para mayor consistencia
                     const response = await fetch('<?= base_url('usuarios/actualizar/' . $usuario->idusuario) ?>', {

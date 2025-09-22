@@ -196,7 +196,7 @@
                                  id="existente" role="tabpanel">
                                 <form id="formExistente" class="needs-validation" novalidate>
                                     <input type="hidden" name="tipo_creacion" value="existente">
-                                    <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf_token, ENT_QUOTES, 'UTF-8') ?>">
+                                    <input type="hidden" name="<?= csrf_token() ?>" value="<?= csrf_hash() ?>">
                                     
                                     <div class="form-section">
                                         <h6 class="section-title">Datos del Personal</h6>
@@ -248,7 +248,7 @@
                                                 <div class="form-floating">
                                                     <input type="email" class="form-control" id="email_existente" 
                                                            name="email" required placeholder=" " 
-                                                           pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$">
+                                                           pattern="[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}">
                                                     <label for="email_existente">Email *</label>
                                                 </div>
                                                 <span class="example-text">Ejemplo: juan.perez@empresa.com</span>
@@ -311,7 +311,7 @@
                                  id="nuevo" role="tabpanel">
                                 <form id="formNuevo" class="needs-validation" novalidate>
                                     <input type="hidden" name="tipo_creacion" value="nuevo">
-                                    <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf_token, ENT_QUOTES, 'UTF-8') ?>">
+                                    <input type="hidden" name="<?= csrf_token() ?>" value="<?= csrf_hash() ?>">
                                     
                                     <div class="form-section">
                                         <h6 class="section-title">Datos Personales</h6>
@@ -450,7 +450,7 @@
                                                 <div class="form-floating">
                                                     <input type="email" class="form-control" id="email_nuevo" 
                                                            name="email" required placeholder=" " 
-                                                           pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$">
+                                                           pattern="[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}">
                                                     <label for="email_nuevo">Email *</label>
                                                 </div>
                                                 <span class="example-text">Ejemplo: juan.perez@empresa.com</span>
@@ -636,12 +636,32 @@
                 $button.prop('disabled', true);
                 $button.data('original-text', originalText);
                 $button.html('<i class="fas fa-spinner fa-spin me-1"></i> En proceso...');
+                
+                // Timeout de seguridad: resetear botón después de 30 segundos
+                setTimeout(() => {
+                    if ($button.prop('disabled')) {
+                        console.warn('Timeout de seguridad: reseteando botón');
+                        resetButton($button, originalText);
+                    }
+                }, 30000);
             }
             
             function resetButton($button, originalText) {
                 $button.prop('disabled', false);
                 // Restaurar el texto original
                 $button.html(originalText);
+            }
+            
+            // Función de seguridad para resetear botones en caso de error
+            function resetAllButtons() {
+                $('#formExistente button[type="submit"]').each(function() {
+                    $(this).prop('disabled', false);
+                    $(this).html('<i class="fas fa-save me-1"></i> Crear Credenciales');
+                });
+                $('#formNuevo button[type="submit"]').each(function() {
+                    $(this).prop('disabled', false);
+                    $(this).html('<i class="fas fa-save me-1"></i> Crear Personal y Credenciales');
+                });
             }
             
             // Validar fortaleza de contraseña y actualizar requisitos visualmente
@@ -819,19 +839,13 @@
                     cancelButtonText: 'Cancelar'
                 }).then((result) => {
                     if (result.isConfirmed) {
-                        // Cambiar botón a estado de carga solo si el formulario es válido
+                        // Cambiar botón a estado de carga solo DESPUÉS de confirmar
                         setButtonLoading($submitButton, originalButtonText);
                         // Enviar formulario
                         guardarUsuario(this, $submitButton, originalButtonText);
-                    } else {
-                        resetButton($submitButton, originalButtonText);
                     }
+                    // No necesitamos resetear aquí porque el botón no se ha cambiado aún
                 });
-            });
-            
-            // Resetear validación al cambiar de pestaña
-            $('button[data-bs-toggle="tab"]').on('shown.bs.tab', function (e) {
-                $('#formExistente, #formNuevo').removeClass('was-validated');
             });
             
             // Función para enviar el formulario
@@ -870,6 +884,8 @@
                         } else {
                             // Mostrar error pero mantener los datos del formulario
                             showAlert('error', 'Error de validación', response.message || 'Por favor revise los campos marcados en rojo.');
+                            // Función de seguridad adicional para errores del servidor
+                            setTimeout(() => resetAllButtons(), 100);
                             if (response.errors) {
                                 console.error(response.errors);
                                 // Mostrar errores específicos en el formulario
@@ -880,6 +896,8 @@
                     error: function(xhr, status, error) {
                         Swal.close();
                         resetButton($submitButton, originalButtonText);
+                        // Función de seguridad adicional
+                        setTimeout(() => resetAllButtons(), 100);
                         showAlert('error', 'Error', 'Error en la solicitud: ' + error);
                     }
                 });

@@ -17,34 +17,7 @@ class UsuariosController extends BaseController
         $this->personaModel = new PersonaModel();
     }
     
-    /**
-     * Generar token CSRF específico para un contexto
-     */
-    private function generateCSRFToken($context, $identifier = null)
-    {
-        $token = bin2hex(random_bytes(32));
-        $key = 'csrf_token_' . $context . ($identifier ? '_' . $identifier : '');
-        session()->set($key, $token);
-        return $token;
-    }
-    
-    /**
-     * Validar token CSRF específico para un contexto
-     */
-    private function validateCSRFToken($context, $identifier = null)
-    {
-        $token_recibido = $this->request->getPost('csrf_token');
-        $key = 'csrf_token_' . $context . ($identifier ? '_' . $identifier : '');
-        $token_almacenado = session()->get($key);
-        
-        if (!$token_recibido || !$token_almacenado || !hash_equals($token_almacenado, $token_recibido)) {
-            return false;
-        }
-        
-        // Eliminar el token usado para evitar reutilización
-        session()->remove($key);
-        return true;
-    }
+    // Los tokens CSRF ahora se manejan automáticamente por CodeIgniter
     
     // Listar usuarios
     public function index()
@@ -62,8 +35,9 @@ class UsuariosController extends BaseController
     // Mostrar formulario de crear usuario
     public function crear($tipo = 'existente')
     {
-        // Generar token CSRF específico para crear usuarios
-        $csrf_token = $this->generateCSRFToken('crear_usuario');
+        // Usar el token CSRF nativo de CodeIgniter
+        $csrf_token = csrf_token();
+        $csrf_hash = csrf_hash();
         
         // Obtener personas sin usuario para el select
         $personaModel = new \App\Models\PersonaModel();
@@ -74,7 +48,8 @@ class UsuariosController extends BaseController
             'personas' => $personaModel->getPersonasSinUsuario(),
             'cargos' => $cargoModel->findAll(),
             'tipo_creacion' => $tipo,
-            'csrf_token' => $csrf_token, // Pasar el token a la vista
+            'csrf_token' => $csrf_hash, // Usar el hash nativo
+            'csrf_token_name' => $csrf_token, // Nombre del token
             'header' => view('Layouts/header'),
             'footer' => view('Layouts/footer')
         ];
@@ -85,13 +60,8 @@ class UsuariosController extends BaseController
     // Guardar nuevo usuario
     public function guardar()
     {
-        // Verificar token CSRF específico para crear usuarios
-        if (!$this->validateCSRFToken('crear_usuario')) {
-            return $this->response->setJSON([
-                'success' => false,
-                'message' => 'Token de seguridad inválido. Por favor, recargue la página e intente nuevamente.'
-            ]);
-        }
+        // El CSRF se maneja automáticamente por CodeIgniter
+        // No necesitamos validación manual adicional
         
         // Validar que las contraseñas coincidan primero
         $password = $this->request->getPost('password');
@@ -122,13 +92,13 @@ class UsuariosController extends BaseController
             'tipo_creacion' => 'required|in_list[existente,nuevo]',
             'idcargo' => 'required|integer',
             'nombreusuario' => [
-                'rules' => 'required|min_length[5]|max_length[50]|is_unique[usuarios.nombreusuario]|regex_match[/^[a-zA-Z0-9_]+$/]',
+                'rules' => 'required|min_length[4]|max_length[20]|is_unique[usuarios.nombreusuario]|regex_match[/^[a-zA-Z0-9_\-]+$/]',
                 'errors' => [
                     'required' => 'El nombre de usuario es obligatorio',
-                    'min_length' => 'El nombre de usuario debe tener al menos 5 caracteres',
-                    'max_length' => 'El nombre de usuario no puede exceder 50 caracteres',
+                    'min_length' => 'El nombre de usuario debe tener al menos 4 caracteres',
+                    'max_length' => 'El nombre de usuario no puede exceder 20 caracteres',
                     'is_unique' => 'Este nombre de usuario ya existe',
-                    'regex_match' => 'El nombre de usuario solo puede contener letras, números y guiones bajos'
+                    'regex_match' => 'El nombre de usuario solo puede contener letras, números, guiones bajos y guiones'
                 ]
             ],
             'email' => [
@@ -330,8 +300,9 @@ class UsuariosController extends BaseController
     // Mostrar formulario para editar usuario
     public function editar($idusuario)
     {
-        // Generar token CSRF específico para editar usuarios
-        $csrf_token = $this->generateCSRFToken('editar_usuario', $idusuario);
+        // Usar el token CSRF nativo de CodeIgniter
+        $csrf_token = csrf_token();
+        $csrf_hash = csrf_hash();
         
         $usuario = $this->usuarioModel->getUsuarioCompleto($idusuario);
         
@@ -345,7 +316,8 @@ class UsuariosController extends BaseController
             'title' => 'Editar Credenciales - ISHUME',
             'usuario' => $usuario,
             'cargos' => $cargoModel->findAll(),
-            'csrf_token' => $csrf_token, // Pasar el token a la vista
+            'csrf_token' => $csrf_hash, // Usar el hash nativo
+            'csrf_token_name' => $csrf_token, // Nombre del token
             'header' => view('Layouts/header'),
             'footer' => view('Layouts/footer')
         ];
@@ -375,13 +347,8 @@ class UsuariosController extends BaseController
     // Actualizar usuario
     public function actualizar($idusuario)
     {
-        // Verificar token CSRF específico para editar usuarios
-        if (!$this->validateCSRFToken('editar_usuario', $idusuario)) {
-            return $this->response->setJSON([
-                'success' => false,
-                'message' => 'Token de seguridad inválido. Por favor, recargue la página e intente nuevamente.'
-            ]);
-        }
+        // El CSRF se maneja automáticamente por CodeIgniter
+        // No necesitamos validación manual adicional
         
         log_message('info', 'UsuariosController::actualizar - ID: ' . $idusuario);
         log_message('info', 'POST data: ' . json_encode($this->request->getPost()));

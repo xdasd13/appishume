@@ -75,12 +75,13 @@
 
       <!-- Kaiadmin JS -->
       <script src="<?= base_url() . 'assets/js/kaiadmin.min.js'?>"></script>
+      <!-- Custom JS - Cargado después de jQuery -->
+      <script src="<?= base_url('assets/js/custom.js') ?>"></script>
 
       <!-- CONTROL DE PAGOS - Remover jQuery duplicado -->
       <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
       <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
       <script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap4.min.js"></script>
-      <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
       <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
