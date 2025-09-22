@@ -18,7 +18,7 @@ class AuthController extends BaseController
     {
         // Si ya está logueado, redirigir al dashboard
         if (session()->get('usuario_logueado')) {
-            return redirect()->to('/dashboard');
+            return redirect()->to('/welcome');
         }
 
         $data = [
