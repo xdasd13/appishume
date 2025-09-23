@@ -237,19 +237,16 @@
 }
 
 /* Mejoras en cards */
-.card {
+.card-3d {
     border-radius: 15px;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
-    margin-bottom: 25px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
     border: none;
     transition: all 0.3s ease;
 }
 
-.card-header {
-    border-bottom: 1px solid #eee;
-    background-color: #fff;
-    padding: 15px 20px;
-    border-radius: 15px 15px 0 0 !important;
+.card-3d:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
 }
 
 /* Botones mejorados */
@@ -343,10 +340,17 @@
 }
 
 /* Mejoras en formularios */
+.form-control {
+    border-radius: 8px;
+    border: 1px solid #e0e0e0;
+    padding: 12px 15px;
+    transition: all 0.3s ease;
+}
+
 .form-control:focus {
     border-color: #007bff;
     box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
-    transform: translateZ(0);
+    transform: translateY(-1px);
 }
 
 .custom-file-label::after {
@@ -404,10 +408,9 @@
 
 /* Mejoras en los alerts */
 .alert {
+    border-radius: 10px;
     border: none;
-    border-radius: 12px;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-    transition: all 0.3s ease;
+    padding: 15px 20px;
 }
 
 .alert:hover {
@@ -621,4 +624,152 @@
         padding: 0.25rem 0.5rem;
         font-size: 0.75rem;
     }
+}
+
+/* Estilos personalizados para el sistema de control de pagos - MEJORADO */
+
+/* Mejoras en botones */
+.btn-primary {
+    background: linear-gradient(135deg, #3a516a, #0056b3);
+    border: none;
+    border-radius: 8px;
+    padding: 10px 25px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 123, 255, 0.3);
+}
+
+.btn-secondary {
+    background: linear-gradient(135deg, #6c757d, #495057);
+    border: none;
+    border-radius: 8px;
+    padding: 10px 25px;
+    font-weight: 600;
+}
+
+/* Mejoras en cards */
+.card-3d {
+    border-radius: 15px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+    border: none;
+    transition: all 0.3s ease;
+}
+
+.card-3d:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+}
+
+/* Mejoras en formularios */
+.form-control {
+    border-radius: 8px;
+    border: 1px solid #e0e0e0;
+    padding: 12px 15px;
+    transition: all 0.3s ease;
+}
+
+.form-control:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    transform: translateY(-1px);
+}
+
+/* Mejoras en alertas */
+.alert {
+    border-radius: 10px;
+    border: none;
+    padding: 15px 20px;
+}
+
+.alert-warning {
+    background: linear-gradient(135deg, #fff3cd, #ffeaa7);
+    color: #856404;
+}
+
+.alert-info {
+    background: linear-gradient(135deg, #d1ecf1, #bee5eb);
+    color: #0c5460;
+}
+
+/* Resumen del pago mejorado */
+#resumen-pago .card-body {
+    background: linear-gradient(135deg, #f8f9fa, #e9ecef); /* color de el calculo */
+    border-radius: 10px;
+    color: #000000;
+}
+
+/* Previsualización de archivos */
+#preview-content {
+    background: #f8f9fa;
+    border-radius: 8px;
+    min-height: 100px;
+}
+
+/* Animaciones suaves */
+.animate__animated {
+    animation-duration: 0.5s;
+}
+
+/* Mejoras en la tabla */
+.table th {
+    background: linear-gradient(135deg, #d1e1f3, #e4eef9);
+    color: white;
+    border: none;
+    font-weight: 600;
+}
+
+.table td {
+    vertical-align: middle;
+}
+
+/* Badges mejorados */
+.badge {
+    border-radius: 20px;
+    padding: 8px 15px;
+    font-weight: 600;
+}
+
+/* Select2 personalizado */
+.select2-container--bootstrap .select2-selection {
+    border-radius: 8px;
+    border: 1px solid #e0e0e0;
+    padding: 8px;
+}
+
+/* Botones de acción en tabla */
+.btn-sm {
+    border-radius: 6px;
+    padding: 5px 12px;
+    font-size: 12px;
+}
+
+/* Responsive mejorado */
+@media (max-width: 768px) {
+    .card-body {
+        padding: 15px;
+    }
+    
+    .btn-lg {
+        padding: 10px 20px;
+        font-size: 14px;
+    }
+    
+    .table-responsive {
+        font-size: 14px;
+    }
+}
+
+/* Efectos de carga */
+.loading {
+    opacity: 0.7;
+    pointer-events: none;
+}
+
+/* Iconos mejorados */
+.fas, .far {
+    margin-right: 5px;
 }

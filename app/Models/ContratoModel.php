@@ -20,11 +20,22 @@ class ContratoModel extends Model
                     ->findAll();
     }
     
-    // Obtener monto total de un contrato
+    // Obtener monto total de un contrato (CALCULO REAL)
     public function obtenerMontoContrato($idcontrato)
     {
-        // Esta función debería calcular el monto total basado en los servicios contratados
-        // Por ahora devolvemos un valor estático para demostración
-        return ['monto_total' => 2800.00];
+        $db = db_connect();
+        
+        $query = $db->query("
+            SELECT SUM(sc.cantidad * sc.precio) as monto_total 
+            FROM servicioscontratados sc 
+            JOIN cotizaciones co ON co.idcotizacion = sc.idcotizacion 
+            WHERE co.idcotizacion IN (
+                SELECT idcotizacion FROM contratos WHERE idcontrato = ?
+            )
+        ", [$idcontrato]);
+        
+        $result = $query->getRow();
+        
+        return ['monto_total' => $result->monto_total ?? 0];
     }
 }

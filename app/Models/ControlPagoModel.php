@@ -26,6 +26,7 @@ class ControlPagoModel extends Model
         $builder->select('p.*, 
                          tp.tipopago, 
                          u.nombreusuario,
+                         CONCAT(per.nombres, " ", per.apellidos) as nombre_completo,
                          per.nombres, per.apellidos, 
                          emp.razonsocial');
         $builder->join('tipospago tp', 'tp.idtipopago = p.idtipopago', 'left');

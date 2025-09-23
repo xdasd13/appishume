@@ -19,6 +19,10 @@ class ControlPagoController extends BaseController
 
     public function index()
     {
+        if (!session()->get('usuario_logueado')) {
+            return redirect()->to('/login')->with('error', 'Acceso denegado.');
+        }
+
         // Obtener parámetros de filtro
         $filtro_contrato = $this->request->getGet('filtro_contrato');
         $filtro_estado = $this->request->getGet('filtro_estado');
@@ -47,6 +51,10 @@ class ControlPagoController extends BaseController
 
     public function crear()
     {
+        if (!session()->get('usuario_logueado')) {
+            return redirect()->to('/login')->with('error', 'Acceso denegado.');
+        }
+
         // Obtener contratos para el formulario
         $contratoModel = new ContratoModel();
         $datos['contratos'] = $contratoModel->obtenerContratosConClientes();
@@ -64,6 +72,10 @@ class ControlPagoController extends BaseController
 
     public function guardar()
     {
+        if (!session()->get('usuario_logueado')) {
+            return redirect()->to('/login')->with('error', 'Acceso denegado.');
+        }
+
         // Validar los datos del formulario
         $reglas = [
             'idcontrato' => 'required|numeric',
@@ -115,7 +127,7 @@ class ControlPagoController extends BaseController
             $nombreComprobante = $nuevoNombre;
         }
 
-        // Preparar datos para guardar
+        // Preparar datos para guardar - USAR EL USUARIO QUE INICIÓ SESIÓN
         $data = [
             'idcontrato' => $idcontrato,
             'saldo' => $saldo,
@@ -124,7 +136,7 @@ class ControlPagoController extends BaseController
             'idtipopago' => $this->request->getPost('idtipopago'),
             'numtransaccion' => $this->request->getPost('numtransaccion'),
             'fechahora' => $this->request->getPost('fechahora'),
-            'idusuario' => session()->get('idusuario'), // ID del usuario logueado
+            'idusuario' => session()->get('usuario_id'), // ID del usuario que inició sesión
             'comprobante' => $nombreComprobante
         ];
 
@@ -381,4 +393,5 @@ class ControlPagoController extends BaseController
 
         return $estadisticas;
     }
+    
 }
