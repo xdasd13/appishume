@@ -42,6 +42,10 @@ $routes->group('', ['filter' => 'auth:admin'], function($routes) {
     $routes->get('usuarios/obtener-persona/(:num)', 'UsuariosController::obtenerPersona/$1');
     $routes->post('usuarios/eliminar/(:num)', 'UsuariosController::eliminar/$1');
     $routes->get('usuarios/personas-sin-usuario', 'UsuariosController::getPersonasSinUsuario');
+    
+    // Rutas AJAX para validación RENIEC
+    $routes->post('usuarios/ajax-check-dni', 'UsuariosController::ajaxCheckDni');
+    $routes->get('usuarios/reniec-stats', 'UsuariosController::reniecStats');
 });
 
 // Rutas protegidas para trabajador
@@ -122,3 +126,5 @@ $routes->get('inventario/estadisticas', 'InventarioController::estadisticas');
 
 // Rutas para servicios
 $routes->get('servicios/(:num)', 'Servicios::detalle/$1');
+
+// Rutas RENIEC limpias - solo para producción

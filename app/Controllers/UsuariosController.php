@@ -5,16 +5,19 @@ namespace App\Controllers;
 use App\Models\UsuarioModel;
 use App\Models\PersonaModel;
 use App\Models\CargoModel;
+use App\Libraries\ReniecService;
 
 class UsuariosController extends BaseController
 {
     protected $usuarioModel;
     protected $personaModel;
+    protected $cargoModel;
     
     public function __construct()
     {
         $this->usuarioModel = new UsuarioModel();
         $this->personaModel = new PersonaModel();
+        $this->cargoModel = new CargoModel();
     }
     
     // Los tokens CSRF ahora se manejan automáticamente por CodeIgniter
@@ -529,4 +532,145 @@ class UsuariosController extends BaseController
             ]);
         }
     }
+
+    /**
+     * Validar DNI via AJAX usando RENIEC/Decolecta
+     * 
+     * @return \CodeIgniter\HTTP\ResponseInterface
+     */
+    public function ajaxCheckDni()
+    {
+        // Solo permitir POST
+        if (!$this->request->isAJAX() || !$this->request->getMethod() === 'post') {
+            return $this->response->setJSON([
+                'status' => 'error',
+                'message' => 'Método no permitido'
+            ])->setStatusCode(405);
+        }
+
+        try {
+            // El CSRF se valida automáticamente por el filtro global
+            
+            $dni = $this->request->getPost('dni');
+            
+            // Validación básica del DNI
+            if (empty($dni)) {
+                return $this->response->setJSON([
+                    'status' => 'error',
+                    'message' => 'DNI es requerido'
+                ]);
+            }
+
+            // Validar formato de DNI
+            if (!preg_match('/^\d{8}$/', $dni)) {
+                return $this->response->setJSON([
+                    'status' => 'error',
+                    'message' => 'DNI debe tener exactamente 8 dígitos numéricos'
+                ]);
+            }
+
+            // Verificar si el DNI ya existe en la base de datos local
+            try {
+                $existingPerson = $this->personaModel->where('numerodoc', $dni)->first();
+                if ($existingPerson) {
+                    return $this->response->setJSON([
+                        'status' => 'exists',
+                        'message' => 'Este DNI ya está registrado en el sistema',
+                        'data' => [
+                            'dni' => $existingPerson->numerodoc,
+                            'nombres' => $existingPerson->nombres,
+                            'apellidos' => $existingPerson->apellidos,
+                            'source' => 'local_db'
+                        ]
+                    ]);
+                }
+            } catch (\Exception $e) {
+                // Si falla la consulta local, continuar con RENIEC
+                log_message('warning', 'No se pudo verificar DNI en BD local: ' . $e->getMessage());
+            }
+
+            // Consultar RENIEC via Decolecta
+            $reniecService = new ReniecService();
+            $result = $reniecService->consultarDni($dni);
+
+            // Log de la consulta para auditoría
+            log_message('info', "UsuariosController::ajaxCheckDni - DNI: {$dni}, Result: " . json_encode($result));
+
+            if ($result['status'] === 'success') {
+                return $this->response->setJSON([
+                    'status' => 'success',
+                    'message' => 'DNI válido encontrado en RENIEC',
+                    'data' => [
+                        'dni' => $result['data']['dni'],
+                        'nombres' => $result['data']['nombres'],
+                        'apellido_paterno' => $result['data']['apellido_paterno'],
+                        'apellido_materno' => $result['data']['apellido_materno'],
+                        'apellidos_completos' => $result['data']['apellidos_completos'],
+                        'fecha_nacimiento' => $result['data']['fecha_nacimiento'],
+                        'sexo' => $result['data']['sexo'],
+                        'source' => $result['data']['source'],
+                        'privacy_notice' => 'Los datos fueron obtenidos de RENIEC y están protegidos por la Ley de Protección de Datos Personales'
+                    ]
+                ]);
+            } else {
+                return $this->response->setJSON([
+                    'status' => 'error',
+                    'message' => $result['message'],
+                    'data' => null
+                ]);
+            }
+
+        } catch (\Exception $e) {
+            log_message('error', 'UsuariosController::ajaxCheckDni - Error: ' . $e->getMessage());
+            log_message('error', 'UsuariosController::ajaxCheckDni - File: ' . $e->getFile() . ':' . $e->getLine());
+            log_message('error', 'UsuariosController::ajaxCheckDni - Trace: ' . $e->getTraceAsString());
+            
+            // En desarrollo, mostrar más detalles del error
+            $errorMessage = 'Error interno del servidor. Intente nuevamente.';
+            if (ENVIRONMENT === 'development') {
+                $errorMessage .= ' Debug: ' . $e->getMessage() . ' in ' . $e->getFile() . ':' . $e->getLine();
+            }
+            
+            return $this->response->setJSON([
+                'status' => 'error',
+                'message' => $errorMessage,
+                'debug' => ENVIRONMENT === 'development' ? [
+                    'error' => $e->getMessage(),
+                    'file' => $e->getFile(),
+                    'line' => $e->getLine(),
+                    'trace' => $e->getTraceAsString()
+                ] : null
+            ])->setStatusCode(500);
+        }
+    }
+
+    /**
+     * Obtener estadísticas del servicio RENIEC (solo admin)
+     * 
+     * @return \CodeIgniter\HTTP\ResponseInterface
+     */
+    public function reniecStats()
+    {
+        // Verificar permisos de administrador
+        // TODO: Implementar verificación de rol admin
+        
+        try {
+            $reniecService = new ReniecService();
+            $stats = $reniecService->getStats();
+            
+            return $this->response->setJSON([
+                'status' => 'success',
+                'data' => $stats
+            ]);
+            
+        } catch (\Exception $e) {
+            log_message('error', 'UsuariosController::reniecStats - Error: ' . $e->getMessage());
+            
+            return $this->response->setJSON([
+                'status' => 'error',
+                'message' => 'Error obteniendo estadísticas'
+            ])->setStatusCode(500);
+        }
+    }
+
 }

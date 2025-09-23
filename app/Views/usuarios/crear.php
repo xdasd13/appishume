@@ -247,8 +247,7 @@
                                             <div class="col-md-6 mb-3">
                                                 <div class="form-floating">
                                                     <input type="email" class="form-control" id="email_existente" 
-                                                           name="email" required placeholder=" " 
-                                                           pattern="[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}">
+                                                           name="email" required placeholder=" ">
                                                     <label for="email_existente">Email *</label>
                                                 </div>
                                                 <span class="example-text">Ejemplo: juan.perez@empresa.com</span>
@@ -320,7 +319,7 @@
                                                 <div class="form-floating">
                                                     <input type="text" class="form-control" id="nombres" 
                                                            name="nombres" required placeholder=" " 
-                                                           pattern="[A-Za-záéíóúÁÉÍÓÚñÑ\s]{2,50}">
+                                                           pattern="[A-Za-z\s]{2,50}">
                                                     <label for="nombres">Nombres *</label>
                                                 </div>
                                                 <span class="example-text">Ejemplo: Juan Carlos (solo letras y espacios, 2-50 caracteres)</span>
@@ -332,7 +331,7 @@
                                                 <div class="form-floating">
                                                     <input type="text" class="form-control" id="apellidos" 
                                                            name="apellidos" required placeholder=" " 
-                                                           pattern="[A-Za-záéíóúÁÉÍÓÚñÑ\s]{2,50}">
+                                                           pattern="[A-Za-z\s]{2,50}">
                                                     <label for="apellidos">Apellidos *</label>
                                                 </div>
                                                 <span class="example-text">Ejemplo: Pérez García (solo letras y espacios, 2-50 caracteres)</span>
@@ -346,23 +345,30 @@
                                             <div class="col-md-4 mb-3">
                                                 <div class="form-floating">
                                                     <select class="form-select" id="tipodoc" name="tipodoc" required>
-                                                        <option value="DNI">DNI</option>
-                                                        <option value="Carne de Extranjería">Carne de Extranjería</option>
-                                                        <option value="Pasaporte">Pasaporte</option>
+                                                        <option value="DNI" selected>DNI</option>
                                                     </select>
                                                     <label for="tipodoc">Tipo de Documento *</label>
                                                 </div>
-                                                <span class="example-text">Seleccione el tipo de documento</span>
+                                                <span class="example-text">Solo se acepta DNI</span>
                                             </div>
                                             <div class="col-md-4 mb-3">
                                                 <div class="form-floating">
                                                     <input type="text" class="form-control" id="numerodoc" 
-                                                           name="numerodoc" required placeholder=" " maxlength="12">
+                                                           name="numerodoc" required placeholder=" " maxlength="8" pattern="[0-9]{8}">
                                                     <label for="numerodoc">Número de Documento *</label>
                                                 </div>
                                                 <span class="example-text" id="example-numerodoc">Ejemplo: 12345678 (8 dígitos)</span>
+                                                <div class="valid-feedback" id="success-numerodoc" style="display: none;">
+                                                    ✓ DNI válido encontrado en RENIEC
+                                                </div>
                                                 <div class="invalid-feedback" id="error-numerodoc">
                                                     Por favor ingrese un número de documento válido.
+                                                </div>
+                                                <div class="text-info small" id="loading-numerodoc" style="display: none;">
+                                                    <i class="fas fa-spinner fa-spin"></i> Validando DNI con RENIEC...
+                                                </div>
+                                                <div class="text-warning small" id="privacy-notice" style="display: none;">
+                                                    <i class="fas fa-shield-alt"></i> Datos obtenidos de RENIEC - Protegidos por Ley de Protección de Datos Personales
                                                 </div>
                                             </div>
                                             <div class="col-md-4 mb-3">
@@ -412,7 +418,7 @@
                                                 <div class="form-floating">
                                                     <input type="text" class="form-control" id="direccion" 
                                                            name="direccion" required placeholder=" " 
-                                                           pattern="[A-Za-z0-9áéíóúÁÉÍÓÚñÑ\s.,\-]{5,150}">
+                                                           pattern="[A-Za-z0-9\s.,-]{5,150}">
                                                     <label for="direccion">Dirección *</label>
                                                 </div>
                                                 <span class="example-text">Ejemplo: Av. Principal 123, Urb. Las Flores</span>
@@ -449,8 +455,7 @@
                                             <div class="col-md-6 mb-3">
                                                 <div class="form-floating">
                                                     <input type="email" class="form-control" id="email_nuevo" 
-                                                           name="email" required placeholder=" " 
-                                                           pattern="[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}">
+                                                           name="email" required placeholder=" ">
                                                     <label for="email_nuevo">Email *</label>
                                                 </div>
                                                 <span class="example-text">Ejemplo: juan.perez@empresa.com</span>
@@ -535,18 +540,8 @@
             });
             
             function updateDocumentExample() {
-                const tipoDoc = $('#tipodoc').val();
-                let exampleText = '';
-                
-                if (tipoDoc === 'DNI') {
-                    exampleText = 'Ejemplo: 12345678 (8 dígitos)';
-                } else if (tipoDoc === 'Carne de Extranjería') {
-                    exampleText = 'Ejemplo: A12345678 (8-12 caracteres alfanuméricos)';
-                } else if (tipoDoc === 'Pasaporte') {
-                    exampleText = 'Ejemplo: AB123456 (6-12 caracteres alfanuméricos)';
-                }
-                
-                $('#example-numerodoc').text(exampleText);
+                // Solo DNI permitido
+                $('#example-numerodoc').text('Ejemplo: 12345678 (8 dígitos)');
             }
             
             // Función para toggle de visibilidad de contraseña
@@ -581,21 +576,9 @@
             });
             
             function validarNumeroDocumento() {
-                const tipoDoc = $('#tipodoc').val();
                 const numeroDoc = $('#numerodoc').val();
-                let esValido = false;
-                let mensajeError = '';
-                
-                if (tipoDoc === 'DNI') {
-                    esValido = /^\d{8}$/.test(numeroDoc);
-                    mensajeError = 'El DNI debe tener exactamente 8 dígitos numéricos.';
-                } else if (tipoDoc === 'Carne de Extranjería') {
-                    esValido = /^[a-zA-Z0-9]{8,12}$/.test(numeroDoc);
-                    mensajeError = 'El Carné de Extranjería debe tener entre 8 y 12 caracteres alfanuméricos.';
-                } else if (tipoDoc === 'Pasaporte') {
-                    esValido = /^[a-zA-Z0-9]{6,12}$/.test(numeroDoc);
-                    mensajeError = 'El Pasaporte debe tener entre 6 y 12 caracteres alfanuméricos.';
-                }
+                const esValido = /^\d{8}$/.test(numeroDoc);
+                const mensajeError = 'El DNI debe tener exactamente 8 dígitos numéricos.';
                 
                 if (numeroDoc && !esValido) {
                     $('#numerodoc').get(0).setCustomValidity(mensajeError);
@@ -950,6 +933,240 @@
             
             // Inicializar ejemplos de documento
             updateDocumentExample();
+
+            // ==================== VALIDACIÓN AUTOMÁTICA DNI CON RENIEC ====================
+            let dniValidationTimeout;
+            let lastValidatedDni = '';
+            let dniValidationInProgress = false;
+
+            // Validación automática del DNI con debounce
+            $('#numerodoc').on('input', function() {
+                const dni = $(this).val().trim();
+                const $input = $(this);
+                
+                // Limpiar timeout anterior
+                clearTimeout(dniValidationTimeout);
+                
+                // Reset visual states
+                resetDniValidationState();
+                
+                // Validar formato básico
+                if (dni.length === 0) {
+                    return;
+                }
+                
+                if (!/^\d{1,8}$/.test(dni)) {
+                    showDniError('Solo se permiten números');
+                    return;
+                }
+                
+                if (dni.length < 8) {
+                    $('#example-numerodoc').text(`Faltan ${8 - dni.length} dígitos`).addClass('text-muted');
+                    return;
+                } else {
+                    $('#example-numerodoc').text('Ejemplo: 12345678 (8 dígitos)').removeClass('text-muted');
+                }
+                
+                // Si es el mismo DNI ya validado, no revalidar
+                if (dni === lastValidatedDni) {
+                    return;
+                }
+                
+                // Debounce: esperar 500ms sin escribir
+                dniValidationTimeout = setTimeout(() => {
+                    validateDniWithReniec(dni);
+                }, 500);
+            });
+
+            /**
+             * Validar DNI con RENIEC via AJAX
+             */
+            function validateDniWithReniec(dni) {
+                if (dniValidationInProgress) {
+                    return;
+                }
+                
+                dniValidationInProgress = true;
+                showDniLoading();
+                
+                $.ajax({
+                    url: '<?= base_url('usuarios/ajax-check-dni') ?>',
+                    type: 'POST',
+                    data: {
+                        dni: dni,
+                        '<?= csrf_token() ?>': '<?= csrf_hash() ?>'
+                    },
+                    timeout: 15000, // 15 segundos timeout
+                    success: function(response) {
+                        dniValidationInProgress = false;
+                        lastValidatedDni = dni;
+                        
+                        if (response.status === 'success') {
+                            handleDniSuccess(response);
+                        } else if (response.status === 'exists') {
+                            handleDniExists(response);
+                        } else {
+                            handleDniError(response.message || 'DNI no encontrado');
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        dniValidationInProgress = false;
+                        
+                        if (status === 'timeout') {
+                            handleDniError('Tiempo de espera agotado. Intente nuevamente.');
+                        } else if (xhr.status === 429) {
+                            handleDniError('Demasiadas consultas. Espere un momento e intente nuevamente.');
+                        } else {
+                            handleDniError('Error de conexión. Verifique su internet e intente nuevamente.');
+                        }
+                        
+                        console.error('Error validando DNI:', xhr.responseText);
+                    }
+                });
+            }
+
+            /**
+             * Manejar DNI válido encontrado en RENIEC
+             */
+            function handleDniSuccess(response) {
+                const data = response.data;
+                
+                // Mostrar éxito
+                showDniSuccess('DNI válido encontrado en RENIEC');
+                
+                // Autocompletar campos
+                $('#nombres').val(data.nombres || '').addClass('is-valid');
+                $('#apellidos').val(data.apellidos_completos || '').addClass('is-valid');
+                
+                // Marcar campos como readonly para evitar modificaciones
+                $('#nombres, #apellidos').attr('readonly', true).addClass('bg-light');
+                
+                // Mostrar aviso de privacidad
+                $('#privacy-notice').show();
+                
+                // Mostrar notificación elegante
+                Swal.fire({
+                    icon: 'success',
+                    title: '¡DNI Válido!',
+                    html: `
+                        <strong>Datos encontrados en RENIEC:</strong><br>
+                        <strong>Nombres:</strong> ${data.nombres}<br>
+                        <strong>Apellidos:</strong> ${data.apellidos_completos}<br>
+                        <small class="text-muted">Fuente: ${data.source === 'cache' ? 'Cache local' : 'RENIEC'}</small>
+                    `,
+                    timer: 4000,
+                    timerProgressBar: true,
+                    toast: true,
+                    position: 'top-end',
+                    showConfirmButton: false
+                });
+                
+                // Log para debugging
+                console.log('DNI validado exitosamente:', data);
+            }
+
+            /**
+             * Manejar DNI que ya existe en el sistema
+             */
+            function handleDniExists(response) {
+                const data = response.data;
+                
+                showDniError('Este DNI ya está registrado en el sistema');
+                
+                // Mostrar información del registro existente
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'DNI Ya Registrado',
+                    html: `
+                        <p>Este DNI ya pertenece a:</p>
+                        <strong>${data.nombres} ${data.apellidos}</strong>
+                        <br><small class="text-muted">Registrado en la base de datos local</small>
+                    `,
+                    showCancelButton: true,
+                    confirmButtonText: 'Ver Usuarios Existentes',
+                    cancelButtonText: 'Entendido',
+                    confirmButtonColor: '#3085d6'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        window.location.href = '<?= base_url('usuarios') ?>';
+                    }
+                });
+            }
+
+            /**
+             * Manejar error en validación de DNI
+             */
+            function handleDniError(message) {
+                showDniError(message);
+                
+                // Limpiar campos autocompletados
+                $('#nombres, #apellidos').val('').removeClass('is-valid bg-light').attr('readonly', false);
+                $('#privacy-notice').hide();
+            }
+
+            /**
+             * Mostrar estado de carga
+             */
+            function showDniLoading() {
+                resetDniValidationState();
+                $('#loading-numerodoc').show();
+                $('#numerodoc').removeClass('is-valid is-invalid');
+            }
+
+            /**
+             * Mostrar éxito en validación
+             */
+            function showDniSuccess(message) {
+                resetDniValidationState();
+                $('#success-numerodoc').text(message).show();
+                $('#numerodoc').removeClass('is-invalid').addClass('is-valid');
+            }
+
+            /**
+             * Mostrar error en validación
+             */
+            function showDniError(message) {
+                resetDniValidationState();
+                $('#error-numerodoc').text(message);
+                $('#numerodoc').removeClass('is-valid').addClass('is-invalid');
+                
+                // Limpiar campos relacionados
+                $('#nombres, #apellidos').removeClass('is-valid bg-light').attr('readonly', false);
+                $('#privacy-notice').hide();
+            }
+
+            /**
+             * Resetear estados visuales de validación DNI
+             */
+            function resetDniValidationState() {
+                $('#loading-numerodoc, #success-numerodoc, #privacy-notice').hide();
+                $('#error-numerodoc').text('Por favor ingrese un número de documento válido.');
+            }
+
+            // Limpiar validación cuando se borra el campo
+            $('#numerodoc').on('keyup', function() {
+                if ($(this).val().length === 0) {
+                    resetDniValidationState();
+                    $('#numerodoc').removeClass('is-valid is-invalid');
+                    $('#nombres, #apellidos').val('').removeClass('is-valid bg-light').attr('readonly', false);
+                    $('#privacy-notice').hide();
+                    lastValidatedDni = '';
+                }
+            });
+
+            // Prevenir envío del formulario si hay validación en progreso
+            $('#formNuevo').on('submit', function(e) {
+                if (dniValidationInProgress) {
+                    e.preventDefault();
+                    Swal.fire({
+                        icon: 'info',
+                        title: 'Validación en Progreso',
+                        text: 'Por favor espere a que termine la validación del DNI',
+                        timer: 2000
+                    });
+                    return false;
+                }
+            });
         });
     </script>
     <?= $footer ?>
