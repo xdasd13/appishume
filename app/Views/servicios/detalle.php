@@ -175,15 +175,15 @@
                                                 <i class="fas fa-user"></i>
                                             </div>
                                             <div>
-                                                <strong><?= $equipo->nombres . ' ' . $equipo->apellidos ?></strong>
+                                                <strong><?= $equipo['nombres'] . ' ' . $equipo['apellidos'] ?></strong>
                                                 <br>
-                                                <small class="text-muted">@<?= $equipo->nombreusuario ?></small>
+                                                <small class="text-muted">@<?= $equipo['nombreusuario'] ?></small>
                                             </div>
                                         </div>
                                     </td>
                                     <td>
-                                        <span class="d-inline-block text-truncate" style="max-width: 300px;" title="<?= $equipo->descripcion ?>">
-                                            <?= $equipo->descripcion ?>
+                                        <span class="d-inline-block text-truncate" style="max-width: 300px;" title="<?= $equipo['descripcion'] ?>">
+                                            <?= $equipo['descripcion'] ?>
                                         </span>
                                     </td>
                                     <td>
@@ -201,14 +201,14 @@
                                             'Programado' => 'fa-calendar-check'
                                         ];
                                         ?>
-                                        <span class="badge <?= $badge_class[$equipo->estadoservicio] ?>">
-                                            <i class="fas <?= $icon_class[$equipo->estadoservicio] ?> me-1"></i>
-                                            <?= $equipo->estadoservicio ?>
+                                        <span class="badge <?= $badge_class[$equipo['estadoservicio']] ?>">
+                                            <i class="fas <?= $icon_class[$equipo['estadoservicio']] ?> me-1"></i>
+                                            <?= $equipo['estadoservicio'] ?>
                                         </span>
                                     </td>
                                     <td>
                                         <div class="btn-group" role="group">
-                                            <a href="<?= base_url('equipos/editar/'.$equipo->idequipo) ?>" class="btn btn-warning btn-sm" title="Editar Asignación">
+                                            <a href="<?= base_url('equipos/editar/'.$equipo['idequipo']) ?>" class="btn btn-warning btn-sm" title="Editar Asignación">
                                                 <i class="fas fa-edit"></i>
                                             </a>
                                         </div>

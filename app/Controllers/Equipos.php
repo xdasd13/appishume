@@ -4,317 +4,238 @@ namespace App\Controllers;
 
 use App\Controllers\BaseController;
 use App\Models\EquipoModel;
-use App\Models\ServicioModel;
-use App\Models\UsuarioModel;
+use App\Services\EquipoService;
 
+/**
+ * Controlador de Equipos refactorizado aplicando KISS
+ * Responsabilidades claras: solo manejo de flujo HTTP
+ */
 class Equipos extends BaseController
 {
-    protected $equipoModel;
-    protected $servicioModel;
-    protected $usuarioModel;
+    protected EquipoModel $equipoModel;
+    protected EquipoService $equipoService;
 
     public function __construct()
     {
         $this->equipoModel = new EquipoModel();
-        $this->servicioModel = new ServicioModel();
-        $this->usuarioModel = new UsuarioModel();
+        $this->equipoService = new EquipoService();
+        helper('estado'); // Cargar helper de estados
     }
 
-    // Listar todos los equipos
-    public function index()
+    /**
+     * Método privado para renderizar vistas con header/footer
+     * KISS: elimina duplicación de código
+     */
+    private function render(string $view, array $data = []): string
     {
-        $datos['header'] = view('Layouts/header');
-        $datos['footer'] = view('Layouts/footer');
-        $datos['equipos'] = $this->equipoModel->getEquipos();
-        $datos['titulo'] = 'Gestión de Equipos';
-        
-        return view('equipos/listar', $datos);
+        $data['header'] = view('Layouts/header');
+        $data['footer'] = view('Layouts/footer');
+        return view($view, $data);
     }
 
-    // Asignar equipo a un servicio - MEJORADO
-    public function asignar($idserviciocontratado)
+    /**
+     * Vista principal del tablero Kanban
+     * KISS: método simple y claro
+     */
+    public function index(): string
     {
-        $datos['header'] = view('Layouts/header');
-        $datos['footer'] = view('Layouts/footer');
-        $datos['servicio'] = $this->servicioModel->getServicioContratado($idserviciocontratado);
+        $data = [
+            'titulo' => 'Gestión de Equipos',
+            'equiposKanban' => $this->equipoModel->getEquiposParaKanban(),
+            'estadisticas' => $this->equipoService->obtenerEstadisticas()
+        ];
         
-        // Obtener usuarios con información de disponibilidad
-        $datos['usuarios'] = $this->equipoModel->getUsuariosDisponibles($idserviciocontratado);
-        $datos['titulo'] = 'Asignar Equipo al Servicio';
-        
-        return view('equipos/asignar', $datos);
+        return $this->render('equipos/listar', $data);
     }
 
-    // Guardar asignación de equipo - MEJORADO CON VALIDACIONES
-    public function guardar()
+    /**
+     * Vista para asignar técnico a un servicio
+     * KISS: delegación clara al servicio
+     */
+    public function asignar(int $idserviciocontratado): string
     {
-        $validation = \Config\Services::validation();
+        $servicio = $this->equipoModel->getServicioInfo($idserviciocontratado);
         
+        if (!$servicio) {
+            session()->setFlashdata('error', 'Servicio no encontrado');
+            return redirect()->to('equipos');
+        }
+
+        $data = [
+            'titulo' => 'Asignar Técnico al Servicio',
+            'servicio' => $servicio,
+            'tecnicos' => $this->equipoService->obtenerTecnicosDisponibles(
+                $idserviciocontratado, 
+                $servicio['fechahoraservicio']
+            )
+        ];
+        
+        return $this->render('equipos/asignar', $data);
+    }
+
+    /**
+     * Método unificado para guardar/actualizar equipos
+     * KISS: una sola función para ambas operaciones
+     */
+    public function saveEquipo(): \CodeIgniter\HTTP\RedirectResponse
+    {
+        // Validaciones básicas
         $rules = [
-            'idusuario' => 'required',
-            'descripcion' => 'required',
-            'estadoservicio' => 'required'
+            'idusuario' => 'required|integer',
+            'descripcion' => 'required|min_length[10]',
+            'estadoservicio' => 'required|in_list[Pendiente,En Proceso,Completado,Programado]'
         ];
 
         if (!$this->validate($rules)) {
-            session()->setFlashdata('error', 'Por favor complete todos los campos requeridos.');
-            return redirect()->back();
+            session()->setFlashdata('error', 'Por favor complete correctamente todos los campos.');
+            return redirect()->back()->withInput();
         }
 
-        $idusuario = $this->request->getPost('idusuario');
-        $idserviciocontratado = $this->request->getPost('idserviciocontratado');
+        $equipoId = $this->request->getPost('idequipo'); // null si es nuevo
+        $usuarioId = (int)$this->request->getPost('idusuario');
+        $servicioId = (int)$this->request->getPost('idserviciocontratado');
+        $descripcion = $this->request->getPost('descripcion');
+        $estado = $this->request->getPost('estadoservicio');
 
-        // VALIDACIONES PERSONALIZADAS
-        $erroresValidacion = $this->equipoModel->validarAsignacion($idusuario, $idserviciocontratado);
-        
-        if (!empty($erroresValidacion)) {
-            foreach ($erroresValidacion as $error) {
+        // Obtener información del servicio
+        $servicio = $this->equipoModel->getServicioInfo($servicioId);
+        if (!$servicio) {
+            session()->setFlashdata('error', 'Servicio no encontrado.');
+            return redirect()->to('equipos');
+        }
+
+        // Validar asignación usando el servicio
+        $validacion = $this->equipoService->validarAsignacion(
+            $usuarioId, 
+            $servicioId, 
+            $servicio['fechahoraservicio'], 
+            $equipoId
+        );
+
+        if (!$validacion['valido']) {
+            foreach ($validacion['errores'] as $error) {
                 session()->setFlashdata('error', $error);
             }
             return redirect()->back()->withInput();
         }
 
+        // Preparar datos
         $data = [
-            'idserviciocontratado' => $idserviciocontratado,
-            'idusuario' => $idusuario,
-            'descripcion' => $this->request->getPost('descripcion'),
-            'estadoservicio' => $this->request->getPost('estadoservicio')
+            'idusuario' => $usuarioId,
+            'descripcion' => $descripcion,
+            'estadoservicio' => $estado
         ];
 
-        if ($this->equipoModel->insertEquipo($data)) {
-            session()->setFlashdata('success', 'Equipo asignado correctamente.');
-        } else {
-            session()->setFlashdata('error', 'Error al asignar el equipo.');
-        }
-
-        return redirect()->to('equipos/por-servicio/' . $data['idserviciocontratado']);
-    }
-
-    // Editar asignación de equipo - MEJORADO
-    public function editar($idequipo)
-    {
-        $equipo = $this->equipoModel->getEquipo($idequipo);
-        
-        if (!$equipo) {
-            session()->setFlashdata('error', 'Equipo no encontrado.');
-            return redirect()->to('equipos');
-        }
-
-        $datos['header'] = view('Layouts/header');
-        $datos['footer'] = view('Layouts/footer');
-        $datos['equipo'] = $equipo;
-        
-        // Obtener usuarios con información de disponibilidad
-        $datos['usuarios'] = $this->equipoModel->getUsuariosDisponibles($equipo->idserviciocontratado);
-        $datos['titulo'] = 'Editar Asignación de Equipo';
-        
-        return view('equipos/editar', $datos);
-    }
-
-    // Actualizar asignación de equipo
-    public function actualizar()
-    {
-        $validation = \Config\Services::validation();
-        
-        $rules = [
-            'idusuario' => 'required',
-            'descripcion' => 'required',
-            'estadoservicio' => 'required'
-        ];
-
-        if (!$this->validate($rules)) {
-            session()->setFlashdata('error', 'Por favor complete todos los campos requeridos.');
-            return redirect()->back();
-        }
-
-        $idequipo = $this->request->getPost('idequipo');
-        $idusuario = $this->request->getPost('idusuario');
-        
-        // Obtener equipo actual para validaciones
-        $equipoActual = $this->equipoModel->find($idequipo);
-        if (!$equipoActual) {
-            session()->setFlashdata('error', 'Equipo no encontrado.');
-            return redirect()->to('equipos');
-        }
-
-        // VALIDACIONES
-        $erroresValidacion = $this->equipoModel->validarAsignacion($idusuario, $equipoActual['idserviciocontratado'], $idequipo);
-        
-        if (!empty($erroresValidacion)) {
-            foreach ($erroresValidacion as $error) {
-                session()->setFlashdata('error', $error);
+        // Guardar o actualizar
+        try {
+            if ($equipoId) {
+                // Actualizar
+                $success = $this->equipoModel->update($equipoId, $data);
+                $mensaje = $success ? 'Asignación actualizada correctamente' : 'Error al actualizar';
+            } else {
+                // Crear nuevo
+                $data['idserviciocontratado'] = $servicioId;
+                $success = $this->equipoModel->insert($data);
+                $mensaje = $success ? 'Técnico asignado correctamente' : 'Error al asignar técnico';
             }
-            return redirect()->back()->withInput();
-        }
 
-        $data = [
-            'idusuario' => $idusuario,
-            'descripcion' => $this->request->getPost('descripcion'),
-            'estadoservicio' => $this->request->getPost('estadoservicio')
-        ];
-
-        if ($this->equipoModel->updateEquipo($idequipo, $data)) {
-            session()->setFlashdata('success', 'Asignación actualizada correctamente.');
-        } else {
-            session()->setFlashdata('error', 'Error al actualizar la asignación.');
+            session()->setFlashdata($success ? 'success' : 'error', $mensaje);
+            
+        } catch (\Exception $e) {
+            log_message('error', 'Error en saveEquipo: ' . $e->getMessage());
+            session()->setFlashdata('error', 'Error interno del sistema');
         }
 
         return redirect()->to('equipos');
     }
 
-    // Ver equipos por servicio
-    public function por_servicio($idserviciocontratado)
+    /**
+     * Vista para editar asignación de equipo
+     * KISS: método simple y claro
+     */
+    public function editar(int $idequipo): string
     {
-        $datos['header'] = view('Layouts/header');
-        $datos['footer'] = view('Layouts/footer');
-        $datos['equipos'] = $this->equipoModel->getEquiposPorServicio($idserviciocontratado);
-        $datos['servicio'] = $this->servicioModel->getServicioContratado($idserviciocontratado);
-        $datos['titulo'] = 'Equipos Asignados al Servicio';
+        $equipo = $this->equipoModel->getEquipoConDetalles($idequipo);
         
-        return view('equipos/listar', $datos);
-    }
-
-    // Ver equipos por usuario
-    public function por_usuario($idusuario)
-    {
-        $datos['header'] = view('Layouts/header');
-        $datos['footer'] = view('Layouts/footer');
-        $datos['equipos'] = $this->equipoModel->getEquiposPorUsuario($idusuario);
-        $datos['usuario'] = $this->usuarioModel->getUsuario($idusuario);
-        $datos['titulo'] = 'Equipos Asignados al Usuario';
-        
-        return view('equipos/listar', $datos);
-    }
-
-    // NUEVO: Endpoint AJAX para verificar disponibilidad de usuarios
-    public function verificarDisponibilidad()
-    {
-        $idusuario = $this->request->getPost('idusuario');
-        $idserviciocontratado = $this->request->getPost('idserviciocontratado');
-        
-        if (!$idusuario || !$idserviciocontratado) {
-            return $this->response->setJSON(['error' => 'Parámetros faltantes']);
+        if (!$equipo) {
+            session()->setFlashdata('error', 'Equipo no encontrado');
+            return redirect()->to('equipos');
         }
 
-        $errores = $this->equipoModel->validarAsignacion($idusuario, $idserviciocontratado);
-        
-        $response = [
-            'disponible' => empty($errores),
-            'errores' => $errores
+        $data = [
+            'titulo' => 'Editar Asignación de Equipo',
+            'equipo' => $equipo,
+            'tecnicos' => $this->equipoService->obtenerTecnicosDisponibles(
+                $equipo['idserviciocontratado'], 
+                $equipo['fechahoraservicio']
+            )
         ];
-
-        // Si hay conflictos de horario, obtener detalles
-        if (!$response['disponible']) {
-            $builderServicio = $this->equipoModel->db->table('servicioscontratados');
-            $builderServicio->select('fechahoraservicio');
-            $builderServicio->where('idserviciocontratado', $idserviciocontratado);
-            $servicio = $builderServicio->get()->getRow();
-            
-            if ($servicio) {
-                $response['conflictos'] = $this->equipoModel->getDetalleConflictos($idusuario, $servicio->fechahoraservicio);
-            }
-        }
-
-        return $this->response->setJSON($response);
+        
+        return $this->render('equipos/editar', $data);
     }
 
-    // NUEVO: Endpoint AJAX para actualizar estado de equipos con validaciones
-    public function actualizarEstado()
+    /**
+     * Vistas filtradas por servicio o usuario
+     * KISS: métodos simples para vistas específicas
+     */
+    public function porServicio(int $servicioId): string
     {
-        // Verificar que sea una petición AJAX
+        $servicio = $this->equipoModel->getServicioInfo($servicioId);
+        
+        if (!$servicio) {
+            session()->setFlashdata('error', 'Servicio no encontrado');
+            return redirect()->to('equipos');
+        }
+
+        $data = [
+            'titulo' => 'Equipos del Servicio: ' . $servicio['servicio'],
+            'equiposKanban' => $this->equipoModel->getEquiposParaKanban($servicioId),
+            'servicio' => $servicio
+        ];
+        
+        return $this->render('equipos/listar', $data);
+    }
+
+    public function porUsuario(int $usuarioId): string
+    {
+        $equipos = $this->equipoModel->getEquiposPorUsuario($usuarioId);
+        
+        $data = [
+            'titulo' => 'Mis Asignaciones',
+            'equipos' => $equipos
+        ];
+        
+        return $this->render('equipos/listar', $data);
+    }
+
+    /**
+     * Endpoint AJAX para actualizar estado de equipos
+     * KISS: delegación completa al servicio
+     */
+    public function actualizarEstado(): \CodeIgniter\HTTP\ResponseInterface
+    {
         if (!$this->request->isAJAX()) {
-            return $this->response->setStatusCode(400)->setJSON(['error' => 'Petición no válida']);
+            return $this->response->setStatusCode(400)
+                ->setJSON(['success' => false, 'message' => 'Petición no válida']);
         }
 
         $input = json_decode($this->request->getBody(), true);
-        $idequipo = $input['id'] ?? null;
-        $nuevoEstado = $input['estado'] ?? null;
+        $equipoId = (int)($input['id'] ?? 0);
+        $nuevoEstado = $input['estado'] ?? '';
 
-        if (!$idequipo || !$nuevoEstado) {
+        if (!$equipoId || !$nuevoEstado) {
             return $this->response->setJSON([
-                'success' => false,
-                'error' => 'Parámetros faltantes'
+                'success' => false, 
+                'message' => 'Parámetros faltantes'
             ]);
         }
 
-        // Obtener el equipo actual
-        $equipo = $this->equipoModel->find($idequipo);
-        if (!$equipo) {
-            return $this->response->setJSON([
-                'success' => false,
-                'error' => 'Equipo no encontrado'
-            ]);
-        }
-
-        $estadoActual = $equipo['estadoservicio'];
-
-        // VALIDACIONES DE TRANSICIÓN DE ESTADOS
-        $validacion = $this->validarTransicionEstado($estadoActual, $nuevoEstado);
+        // Delegar al servicio
+        $resultado = $this->equipoService->actualizarEstado($equipoId, $nuevoEstado);
         
-        if (!$validacion['valido']) {
-            return $this->response->setJSON([
-                'success' => false,
-                'error' => $validacion['mensaje']
-            ]);
-        }
-
-        // Actualizar el estado en la base de datos
-        $data = ['estadoservicio' => $nuevoEstado];
-        
-        if ($this->equipoModel->update($idequipo, $data)) {
-            return $this->response->setJSON([
-                'success' => true,
-                'message' => 'Estado actualizado correctamente'
-            ]);
-        } else {
-            return $this->response->setJSON([
-                'success' => false,
-                'error' => 'Error al actualizar el estado en la base de datos'
-            ]);
-        }
-    }
-
-    // Función para validar transiciones de estado
-    private function validarTransicionEstado($estadoActual, $nuevoEstado)
-    {
-        // Normalizar estados para comparación
-        $estadoActual = trim($estadoActual);
-        $nuevoEstado = trim($nuevoEstado);
-
-        // Validación 1: Si el servicio está completo, no se puede mover a pendiente o en proceso
-        if ($estadoActual === 'Completado') {
-            if ($nuevoEstado === 'Pendiente' || $nuevoEstado === 'En Proceso') {
-                return [
-                    'valido' => false,
-                    'mensaje' => 'Este servicio ya está completo'
-                ];
-            }
-        }
-
-        // Validación 2: Si el servicio está pendiente y se quiere mover directamente a completo
-        if ($estadoActual === 'Pendiente' || $estadoActual === 'Programado') {
-            if ($nuevoEstado === 'Completado') {
-                return [
-                    'valido' => false,
-                    'mensaje' => 'Este servicio aún no tiene proceso'
-                ];
-            }
-        }
-
-        // Validación 3: Si el servicio está en proceso y se quiere mover a pendiente
-        if ($estadoActual === 'En Proceso') {
-            if ($nuevoEstado === 'Pendiente') {
-                return [
-                    'valido' => false,
-                    'mensaje' => 'Este servicio está en proceso'
-                ];
-            }
-        }
-
-        // Si llegamos aquí, la transición es válida
-        return [
-            'valido' => true,
-            'mensaje' => 'Transición válida'
-        ];
+        return $this->response->setJSON([
+            'success' => $resultado['success'],
+            'message' => $resultado['message']
+        ]);
     }
 }

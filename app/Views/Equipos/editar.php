@@ -7,9 +7,9 @@
                     <h4 class="mb-0"><i class="fas fa-edit me-2"></i><?= $titulo ?></h4>
                 </div>
                 <div class="card-body">
-                    <form method="post" action="<?= base_url('equipos/actualizar') ?>" id="equipoForm">
+                    <form method="post" action="<?= base_url('equipos/saveEquipo') ?>" id="equipoForm">
                         <?= csrf_field() ?>
-                        <input type="hidden" name="idequipo" value="<?= $equipo->idequipo ?>">
+                        <input type="hidden" name="idequipo" value="<?= $equipo['idequipo'] ?>">
                         
                         <div class="mb-3">
                             <label for="idusuario" class="form-label">
@@ -17,9 +17,9 @@
                             </label>
                             <select class="form-select" id="idusuario" name="idusuario" required>
                                 <option value="">Seleccionar usuario</option>
-                                <?php foreach ($usuarios as $usuario): ?>
-                                    <option value="<?= $usuario->idusuario ?>" <?= $usuario->idusuario == $equipo->idusuario ? 'selected' : '' ?>>
-                                        <?= $usuario->nombres . ' ' . $usuario->apellidos . ' (' . $usuario->cargo . ')' ?>
+                                <?php foreach ($tecnicos as $tecnico): ?>
+                                    <option value="<?= $tecnico['idusuario'] ?>" <?= $tecnico['idusuario'] == $equipo['idusuario'] ? 'selected' : '' ?>>
+                                        <?= $tecnico['nombreCompleto'] . ' (' . $tecnico['cargo'] . ')' ?>
                                     </option>
                                 <?php endforeach; ?>
                             </select>
@@ -29,7 +29,7 @@
                             <label for="descripcion" class="form-label">
                                 <i class="fas fa-clipboard-list me-2 text-primary"></i>Descripción del Equipo
                             </label>
-                            <textarea class="form-control" id="descripcion" name="descripcion" rows="3" required><?= $equipo->descripcion ?></textarea>
+                            <textarea class="form-control" id="descripcion" name="descripcion" rows="3" required><?= $equipo['descripcion'] ?></textarea>
                         </div>
                         
                         <div class="mb-4">
@@ -37,16 +37,16 @@
                                 <i class="fas fa-tasks me-2 text-primary"></i>Estado del Servicio
                             </label>
                             <select class="form-select" id="estadoservicio" name="estadoservicio" required>
-                                <option value="Programado" <?= $equipo->estadoservicio == 'Programado' ? 'selected' : '' ?>>
+                                <option value="Programado" <?= $equipo['estadoservicio'] == 'Programado' ? 'selected' : '' ?>>
                                     <i class="fas fa-calendar-alt"></i> Programado
                                 </option>
-                                <option value="En Proceso" <?= $equipo->estadoservicio == 'En Proceso' ? 'selected' : '' ?>>
+                                <option value="En Proceso" <?= $equipo['estadoservicio'] == 'En Proceso' ? 'selected' : '' ?>>
                                     <i class="fas fa-spinner"></i> En Proceso
                                 </option>
-                                <option value="Completado" <?= $equipo->estadoservicio == 'Completado' ? 'selected' : '' ?>>
+                                <option value="Completado" <?= $equipo['estadoservicio'] == 'Completado' ? 'selected' : '' ?>>
                                     <i class="fas fa-check-circle"></i> Completado
                                 </option>
-                                <option value="Pendiente" <?= $equipo->estadoservicio == 'Pendiente' ? 'selected' : '' ?>>
+                                <option value="Pendiente" <?= $equipo['estadoservicio'] == 'Pendiente' ? 'selected' : '' ?>>
                                     <i class="fas fa-clock"></i> Pendiente
                                 </option>
                             </select>

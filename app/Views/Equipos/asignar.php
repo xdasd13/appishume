@@ -278,19 +278,19 @@
         <div class="card-body">
             <div class="row">
                 <div class="col-md-6">
-                    <p><strong>Servicio:</strong> <?= $servicio->servicio ?></p>
-                    <p><strong>Cliente:</strong> <?= !empty($servicio->razonsocial) ? $servicio->razonsocial : $servicio->nombres . ' ' . $servicio->apellidos ?></p>
+                    <p><strong>Servicio:</strong> <?= $servicio['servicio'] ?></p>
+                    <p><strong>Cliente:</strong> <?= !empty($servicio['cliente_nombre']) ? $servicio['cliente_nombre'] : 'Cliente no especificado' ?></p>
                 </div>
                 <div class="col-md-6">
-                    <p><strong>Fecha del Evento:</strong> <?= date('d/m/Y H:i', strtotime($servicio->fechahoraservicio)) ?></p>
-                    <p><strong>Dirección:</strong> <?= $servicio->direccion ?></p>
+                    <p><strong>Fecha del Evento:</strong> <?= date('d/m/Y H:i', strtotime($servicio['fechahoraservicio'])) ?></p>
+                    <p><strong>Dirección:</strong> <?= $servicio['direccion'] ?></p>
                 </div>
             </div>
         </div>
     </div>
     
-    <form method="post" action="<?= base_url('equipos/guardar') ?>" class="mt-4" id="form-asignacion">
-        <input type="hidden" name="idserviciocontratado" value="<?= $servicio->idserviciocontratado ?>">
+    <form method="post" action="<?= base_url('equipos/saveEquipo') ?>" class="mt-4" id="form-asignacion">
+        <input type="hidden" name="idserviciocontratado" value="<?= $servicio['idserviciocontratado'] ?>">
         
         <div class="card mb-4">
             <div class="card-header">
@@ -304,33 +304,33 @@
                     </label>
                     <select class="form-select" id="idusuario" name="idusuario" required>
                         <option value="">Seleccionar usuario</option>
-                        <?php foreach ($usuarios as $usuario): ?>
-                            <option value="<?= $usuario->idusuario ?>" 
+                        <?php foreach ($tecnicos as $usuario): ?>
+                            <option value="<?= $usuario['idusuario'] ?>" 
                                     class="<?php 
-                                        if ($usuario->disponible) {
+                                        if ($usuario['disponible']) {
                                             echo 'usuario-disponible';
-                                        } elseif ($usuario->yaAsignado) {
+                                        } elseif ($usuario['yaAsignado']) {
                                             echo 'usuario-ya-asignado';
                                         } else {
                                             echo 'usuario-no-disponible';
                                         }
                                     ?>"
-                                    data-disponible="<?= $usuario->disponible ? '1' : '0' ?>"
-                                    data-ya-asignado="<?= $usuario->yaAsignado ? '1' : '0' ?>"
-                                    data-conflictos="<?= htmlspecialchars(json_encode($usuario->conflictos)) ?>"
-                                    data-nombre="<?= $usuario->nombres . ' ' . $usuario->apellidos ?>"
-                                    <?= !$usuario->disponible ? 'disabled' : '' ?>>
-                                <?= $usuario->nombres . ' ' . $usuario->apellidos . ' (' . $usuario->cargo . ')' ?>
-                                <?php if ($usuario->disponible): ?>
+                                    data-disponible="<?= $usuario['disponible'] ? '1' : '0' ?>"
+                                    data-ya-asignado="<?= $usuario['yaAsignado'] ? '1' : '0' ?>"
+                                    data-conflictos="<?= htmlspecialchars(json_encode($usuario['conflictos'])) ?>"
+                                    data-nombre="<?= $usuario['nombres'] . ' ' . $usuario['apellidos'] ?>"
+                                    <?= !$usuario['disponible'] ? 'disabled' : '' ?>>
+                                <?= $usuario['nombres'] . ' ' . $usuario['apellidos'] . ' (' . $usuario['cargo'] . ')' ?>
+                                <?php if ($usuario['disponible']): ?>
                                     <span class="badge badge-disponible">Disponible</span>
-                                <?php elseif ($usuario->yaAsignado): ?>
+                                <?php elseif ($usuario['yaAsignado']): ?>
                                     <span class="badge badge-asignado">Ya asignado</span>
                                 <?php else: ?>
                                     <span class="badge badge-ocupado">Ocupado</span>
                                 <?php endif; ?>
                             </option>
                         <?php endforeach; ?>
-                    </select>+
+                    </select>
                     
                     <!-- Área para mostrar información de disponibilidad -->
                     <div id="disponibilidad-info" class="disponibilidad-alert"></div>
@@ -363,9 +363,9 @@
             <div class="summary-body">
                 <div class="row">
                     <?php 
-                    $disponibles = array_filter($usuarios, fn($u) => $u->disponible);
-                    $yaAsignados = array_filter($usuarios, fn($u) => $u->yaAsignado);
-                    $ocupados = array_filter($usuarios, fn($u) => !$u->disponible && !$u->yaAsignado);
+                    $disponibles = array_filter($tecnicos, fn($u) => $u['disponible']);
+                    $yaAsignados = array_filter($tecnicos, fn($u) => $u['yaAsignado']);
+                    $ocupados = array_filter($tecnicos, fn($u) => !$u['disponible'] && !$u['yaAsignado']);
                     ?>
                     
                     <div class="col-md-4">
@@ -375,7 +375,7 @@
                         </div>
                         <ul class="user-list">
                             <?php foreach ($disponibles as $usuario): ?>
-                                <li><?= $usuario->nombres . ' ' . $usuario->apellidos ?></li>
+                                <li><?= $usuario['nombres'] . ' ' . $usuario['apellidos'] ?></li>
                             <?php endforeach; ?>
                         </ul>
                     </div>
@@ -387,7 +387,7 @@
                         </div>
                         <ul class="user-list">
                             <?php foreach ($yaAsignados as $usuario): ?>
-                                <li><?= $usuario->nombres . ' ' . $usuario->apellidos ?></li>
+                                <li><?= $usuario['nombres'] . ' ' . $usuario['apellidos'] ?></li>
                             <?php endforeach; ?>
                         </ul>
                     </div>
@@ -399,7 +399,7 @@
                         </div>
                         <ul class="user-list">
                             <?php foreach ($ocupados as $usuario): ?>
-                                <li><?= $usuario->nombres . ' ' . $usuario->apellidos ?></li>
+                                <li><?= $usuario['nombres'] . ' ' . $usuario['apellidos'] ?></li>
                             <?php endforeach; ?>
                         </ul>
                     </div>
@@ -408,7 +408,7 @@
         </div>
         
         <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-            <a href="<?= base_url('equipos/por-servicio/'.$servicio->idserviciocontratado) ?>" class="btn btn-secondary me-md-2">
+            <a href="<?= base_url('equipos/porServicio/'.$servicio['idserviciocontratado']) ?>" class="btn btn-secondary me-md-2">
                 <i class="fas fa-arrow-left"></i> Cancelar
             </a>
             <button type="submit" class="btn btn-primary" id="btn-asignar" disabled>

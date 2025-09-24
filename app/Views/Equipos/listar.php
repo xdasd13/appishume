@@ -1,11 +1,35 @@
 <?= $header ?>
-<div class="container mt-4">
-    <!-- Encabezado y Alertas -->
+
+<!-- Cargar helper de estados -->
+<?php helper('estado'); ?>
+
+<div class="container-fluid mt-4">
+    <!-- Encabezado con estadísticas -->
     <div class="row mb-4">
         <div class="col-12">
-            <h2 class="text-primary"><i class="fas fa-users-cog me-2"></i><?= $titulo ?></h2>
-            
-            <!-- Las alertas ahora se muestran con SweetAlert -->
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h2 class="text-primary mb-0">
+                    <i class="fas fa-users-cog me-2"></i><?= $titulo ?>
+                </h2>
+                
+                <!-- Estadísticas rápidas -->
+                <?php if (isset($estadisticas)): ?>
+                <div class="d-flex gap-3">
+                    <div class="badge bg-warning fs-6 px-3 py-2">
+                        <i class="fas fa-clock me-1"></i>
+                        Pendientes: <?= $estadisticas['Pendiente'] ?? 0 ?>
+                    </div>
+                    <div class="badge bg-info fs-6 px-3 py-2">
+                        <i class="fas fa-spinner me-1"></i>
+                        En Proceso: <?= $estadisticas['En Proceso'] ?? 0 ?>
+                    </div>
+                    <div class="badge bg-success fs-6 px-3 py-2">
+                        <i class="fas fa-check-circle me-1"></i>
+                        Completados: <?= $estadisticas['Completado'] ?? 0 ?>
+                    </div>
+                </div>
+                <?php endif; ?>
+            </div>
         </div>
     </div>
 
@@ -86,256 +110,84 @@
     </div>
     <?php endif; ?>
 
-    <!-- Tablero Kanban de Equipos -->
+    <!-- Tablero Kanban Refactorizado -->
     <div class="row">
         <div class="col-12">
-            <div class="kanban-header mb-4">
-                <div class="d-flex justify-content-between align-items-center">
-                    <h4 class="mb-0 text-dark"><i class="fas fa-columns me-2 text-orange"></i>Tablero de Equipos Asignados</h4>
-                    <a href="<?= base_url('equipos') ?>" class="btn btn-outline-orange">
-                        <i class="fas fa-eye me-2"></i>Ver Todos los Equipos
-                    </a>
-                </div>
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h4 class="mb-0 text-dark">
+                    <i class="fas fa-columns me-2 text-primary"></i>Tablero Kanban
+                </h4>
+                <?php if (isset($servicio)): ?>
+                <a href="<?= base_url('equipos/asignar/'.$servicio['idserviciocontratado']) ?>" class="btn btn-primary">
+                    <i class="fas fa-plus me-2"></i>Asignar Técnico
+                </a>
+                <?php endif; ?>
             </div>
             
-            <?php if (!empty($equipos)): ?>
-            <!-- Tablero Kanban -->
+            <?php 
+            // Usar datos agrupados del modelo o crear estructura por defecto
+            $equiposKanban = $equiposKanban ?? [
+                'Pendiente' => [],
+                'En Proceso' => [],
+                'Completado' => []
+            ];
+            ?>
+            
+            <?php if (!empty(array_filter($equiposKanban))): ?>
+            <!-- Tablero Kanban Simplificado -->
             <div class="kanban-board">
-                <div class="row g-3 kanban-columns-container d-flex flex-nowrap flex-lg-nowrap flex-md-wrap flex-sm-wrap overflow-auto" style="gap:1rem;">
-                    <!-- Columna Pendiente -->
-                    <div class="col-lg-4 col-md-6 col-sm-12 kanban-column-wrapper d-flex flex-column" style="min-width:320px;max-width:100vw;">
+                <div class="row g-4">
+                    <?php 
+                    // Configuración de columnas KISS
+                    $columnas = [
+                        'Pendiente' => ['color' => 'warning', 'icono' => 'fas fa-clock'],
+                        'En Proceso' => ['color' => 'info', 'icono' => 'fas fa-spinner'],
+                        'Completado' => ['color' => 'success', 'icono' => 'fas fa-check-circle']
+                    ];
+                    ?>
+                    
+                    <?php foreach ($columnas as $estado => $config): ?>
+                    <div class="col-lg-4 col-md-6">
                         <div class="kanban-column">
-                            <div class="kanban-column-header bg-warning">
+                            <!-- Header de columna -->
+                            <div class="kanban-column-header bg-<?= $config['color'] ?>">
                                 <h5 class="text-center text-white mb-0">
-                                    <i class="fas fa-clock me-2"></i>Pendiente
+                                    <i class="<?= $config['icono'] ?> me-2"></i><?= $estado ?>
+                                    <span class="badge bg-light text-dark ms-2">
+                                        <?= count($equiposKanban[$estado]) ?>
+                                    </span>
                                 </h5>
                             </div>
-                            <div class="kanban-column-body" id="pendiente">
-                                <?php 
-                                $pendientes = array_filter($equipos, function($equipo) {
-                                    return $equipo->estadoservicio === 'Pendiente' || $equipo->estadoservicio === 'Programado';
-                                });
-                                ?>
-                                <?php foreach ($pendientes as $equipo): ?>
-                                <div class="kanban-card" data-id="<?= $equipo->idequipo ?>" data-status="<?= $equipo->estadoservicio ?>">
-                                    <div class="card-header-kanban">
-                                        <span class="badge badge-pendiente">
-                                            <i class="fas fa-clock me-1"></i><?= $equipo->estadoservicio ?>
-                                        </span>
-                                        <span class="kanban-card-id">#<?= $equipo->idequipo ?></span>
+                            
+                            <!-- Cuerpo de columna -->
+                            <div class="kanban-column-body" id="<?= strtolower(str_replace(' ', '-', $estado)) ?>" 
+                                 data-estado="<?= $estado ?>">
+                                
+                                <?php if (!empty($equiposKanban[$estado])): ?>
+                                    <?php foreach ($equiposKanban[$estado] as $equipo): ?>
+                                        <?= renderEquipoCard($equipo, $estado) ?>
+                                    <?php endforeach; ?>
+                                <?php else: ?>
+                                    <div class="kanban-empty-state">
+                                        <i class="fas fa-inbox fa-2x mb-2 text-muted"></i>
+                                        <p class="text-muted mb-0">No hay equipos en <?= strtolower($estado) ?></p>
                                     </div>
-                                    <div class="card-body-kanban">
-                                        <div class="info-field">
-                                            <strong class="text-orange">Servicio:</strong>
-                                            <span><?= $equipo->servicio ?></span>
-                                        </div>
-                                        <div class="info-field">
-                                            <strong class="text-orange">Usuario:</strong>
-                                            <span>
-                                                <?php 
-                                                $nombreCompleto = isset($equipo->nombres) ? $equipo->nombres . ' ' . $equipo->apellidos : $equipo->nombreusuario;
-                                                $nombres = explode(' ', $nombreCompleto);
-                                                echo count($nombres) > 1 ? $nombres[0] . ' ' . substr($nombres[1], 0, 1) . '.' : $nombres[0];
-                                                ?>
-                                            </span>
-                                        </div>
-                                        <?php if (isset($servicio)): ?>
-                                        <div class="info-field">
-                                            <strong class="text-orange">Cliente:</strong>
-                                            <span>
-                                                <?php 
-                                                $cliente = !empty($servicio->razonsocial) ? $servicio->razonsocial : $servicio->nombres . ' ' . $servicio->apellidos;
-                                                echo strlen($cliente) > 20 ? substr($cliente, 0, 20) . '...' : $cliente;
-                                                ?>
-                                            </span>
-                                        </div>
-                                        <?php endif; ?>
-                                        <div class="info-field">
-                                            <strong class="text-orange">Descripción:</strong>
-                                            <span class="description-text">
-                                                <?= strlen($equipo->descripcion) > 50 ? substr($equipo->descripcion, 0, 50) . '...' : $equipo->descripcion ?>
-                                            </span>
-                                        </div>
-                                    </div>
-                                    <div class="card-actions">
-                                        <a href="<?= base_url('servicios/'.$equipo->idserviciocontratado) ?>" class="btn btn-sm btn-outline-orange" title="Ver Detalle">
-                                            <i class="fas fa-eye"></i>
-                                        </a>
-                                        <a href="<?= base_url('equipos/editar/'.$equipo->idequipo) ?>" class="btn btn-sm btn-orange" title="Editar">
-                                            <i class="fas fa-edit"></i>
-                                        </a>
-                                    </div>
-                                </div>
-                                <?php endforeach; ?>
-                                <?php if (empty($pendientes)): ?>
-                                <div class="kanban-empty-state">
-                                    <i class="fas fa-inbox fa-2x mb-2"></i>
-                                    <p class="mb-0">No hay equipos pendientes</p>
-                                </div>
                                 <?php endif; ?>
                             </div>
                         </div>
                     </div>
-
-                    <!-- Columna En Proceso -->
-                    <div class="col-lg-4 col-md-6 col-sm-12 kanban-column-wrapper d-flex flex-column" style="min-width:320px;max-width:100vw;">
-                        <div class="kanban-column">
-                            <div class="kanban-column-header bg-info">
-                                <h5 class="text-center text-white mb-0">
-                                    <i class="fas fa-spinner me-2"></i>En Proceso
-                                </h5>
-                            </div>
-                            <div class="kanban-column-body" id="en-proceso">
-                                <?php 
-                                $enProceso = array_filter($equipos, function($equipo) {
-                                    return $equipo->estadoservicio === 'En Proceso';
-                                });
-                                ?>
-                                <?php foreach ($enProceso as $equipo): ?>
-                                <div class="kanban-card" data-id="<?= $equipo->idequipo ?>" data-status="En Proceso">
-                                    <div class="card-header-kanban">
-                                        <span class="badge badge-en-proceso">
-                                            <i class="fas fa-spinner me-1"></i>En Proceso
-                                        </span>
-                                        <span class="kanban-card-id">#<?= $equipo->idequipo ?></span>
-                                    </div>
-                                    <div class="card-body-kanban">
-                                        <div class="info-field">
-                                            <strong class="text-orange">Servicio:</strong>
-                                            <span><?= $equipo->servicio ?></span>
-                                        </div>
-                                        <div class="info-field">
-                                            <strong class="text-orange">Usuario:</strong>
-                                            <span>
-                                                <?php 
-                                                $nombreCompleto = isset($equipo->nombres) ? $equipo->nombres . ' ' . $equipo->apellidos : $equipo->nombreusuario;
-                                                $nombres = explode(' ', $nombreCompleto);
-                                                echo count($nombres) > 1 ? $nombres[0] . ' ' . substr($nombres[1], 0, 1) . '.' : $nombres[0];
-                                                ?>
-                                            </span>
-                                        </div>
-                                        <?php if (isset($servicio)): ?>
-                                        <div class="info-field">
-                                            <strong class="text-orange">Cliente:</strong>
-                                            <span>
-                                                <?php 
-                                                $cliente = !empty($servicio->razonsocial) ? $servicio->razonsocial : $servicio->nombres . ' ' . $servicio->apellidos;
-                                                echo strlen($cliente) > 20 ? substr($cliente, 0, 20) . '...' : $cliente;
-                                                ?>
-                                            </span>
-                                        </div>
-                                        <?php endif; ?>
-                                        <div class="info-field">
-                                            <strong class="text-orange">Descripción:</strong>
-                                            <span class="description-text">
-                                                <?= strlen($equipo->descripcion) > 50 ? substr($equipo->descripcion, 0, 50) . '...' : $equipo->descripcion ?>
-                                            </span>
-                                        </div>
-                                    </div>
-                                    <div class="card-actions">
-                                        <a href="<?= base_url('servicios/'.$equipo->idserviciocontratado) ?>" class="btn btn-sm btn-outline-orange" title="Ver Detalle">
-                                            <i class="fas fa-eye"></i>
-                                        </a>
-                                        <a href="<?= base_url('equipos/editar/'.$equipo->idequipo) ?>" class="btn btn-sm btn-orange" title="Editar">
-                                            <i class="fas fa-edit"></i>
-                                        </a>
-                                    </div>
-                                </div>
-                                <?php endforeach; ?>
-                                <?php if (empty($enProceso)): ?>
-                                <div class="kanban-empty-state">
-                                    <i class="fas fa-inbox fa-2x mb-2"></i>
-                                    <p class="mb-0">No hay equipos en proceso</p>
-                                </div>
-                                <?php endif; ?>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Columna Completo -->
-                    <div class="col-lg-4 col-md-6 col-sm-12 kanban-column-wrapper d-flex flex-column" style="min-width:320px;max-width:100vw;">
-                        <div class="kanban-column">
-                            <div class="kanban-column-header bg-success">
-                                <h5 class="text-center text-white mb-0">
-                                    <i class="fas fa-check-circle me-2"></i>Completo
-                                </h5>
-                            </div>
-                            <div class="kanban-column-body" id="completo">
-                                <?php 
-                                $completados = array_filter($equipos, function($equipo) {
-                                    return $equipo->estadoservicio === 'Completado';
-                                });
-                                ?>
-                                <?php foreach ($completados as $equipo): ?>
-                                <div class="kanban-card" data-id="<?= $equipo->idequipo ?>" data-status="Completado">
-                                    <div class="card-header-kanban">
-                                        <span class="badge badge-completo">
-                                            <i class="fas fa-check-circle me-1"></i>Completado
-                                        </span>
-                                        <span class="kanban-card-id">#<?= $equipo->idequipo ?></span>
-                                    </div>
-                                    <div class="card-body-kanban">
-                                        <div class="info-field">
-                                            <strong class="text-orange">Servicio:</strong>
-                                            <span><?= $equipo->servicio ?></span>
-                                        </div>
-                                        <div class="info-field">
-                                            <strong class="text-orange">Usuario:</strong>
-                                            <span>
-                                                <?php 
-                                                $nombreCompleto = isset($equipo->nombres) ? $equipo->nombres . ' ' . $equipo->apellidos : $equipo->nombreusuario;
-                                                $nombres = explode(' ', $nombreCompleto);
-                                                echo count($nombres) > 1 ? $nombres[0] . ' ' . substr($nombres[1], 0, 1) . '.' : $nombres[0];
-                                                ?>
-                                            </span>
-                                        </div>
-                                        <?php if (isset($servicio)): ?>
-                                        <div class="info-field">
-                                            <strong class="text-orange">Cliente:</strong>
-                                            <span>
-                                                <?php 
-                                                $cliente = !empty($servicio->razonsocial) ? $servicio->razonsocial : $servicio->nombres . ' ' . $servicio->apellidos;
-                                                echo strlen($cliente) > 20 ? substr($cliente, 0, 20) . '...' : $cliente;
-                                                ?>
-                                            </span>
-                                        </div>
-                                        <?php endif; ?>
-                                        <div class="info-field">
-                                            <strong class="text-orange">Descripción:</strong>
-                                            <span class="description-text">
-                                                <?= strlen($equipo->descripcion) > 50 ? substr($equipo->descripcion, 0, 50) . '...' : $equipo->descripcion ?>
-                                            </span>
-                                        </div>
-                                    </div>
-                                    <div class="card-actions">
-                                        <a href="<?= base_url('servicios/'.$equipo->idserviciocontratado) ?>" class="btn btn-sm btn-outline-orange" title="Ver Detalle">
-                                            <i class="fas fa-eye"></i>
-                                        </a>
-                                        <a href="<?= base_url('equipos/editar/'.$equipo->idequipo) ?>" class="btn btn-sm btn-orange" title="Editar">
-                                            <i class="fas fa-edit"></i>
-                                        </a>
-                                    </div>
-                                </div>
-                                <?php endforeach; ?>
-                                <?php if (empty($completados)): ?>
-                                <div class="kanban-empty-state">
-                                    <i class="fas fa-inbox fa-2x mb-2"></i>
-                                    <p class="mb-0">No hay equipos completados</p>
-                                </div>
-                                <?php endif; ?>
-                            </div>
-                        </div>
-                    </div>
+                    <?php endforeach; ?>
                 </div>
             </div>
             <?php else: ?>
+            <!-- Estado vacío -->
             <div class="text-center py-5">
-                <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                <i class="fas fa-clipboard-list fa-3x text-muted mb-3"></i>
                 <h5 class="text-muted">No hay equipos asignados</h5>
-                <p class="text-muted">No se encontraron equipos asignados para esta consulta.</p>
+                <p class="text-muted">Comienza asignando técnicos a los servicios contratados.</p>
                 <?php if (isset($servicio)): ?>
-                <a href="<?= base_url('equipos/asignar/'.$servicio->idserviciocontratado) ?>" class="btn btn-orange mt-2">
-                    <i class="fas fa-plus-circle me-2"></i>Asignar Primer Equipo
+                <a href="<?= base_url('equipos/asignar/'.$servicio['idserviciocontratado']) ?>" class="btn btn-primary mt-3">
+                    <i class="fas fa-plus me-2"></i>Asignar Primer Técnico
                 </a>
                 <?php endif; ?>
             </div>
@@ -344,809 +196,592 @@
     </div>
 </div>
 
-<!-- Scripts del Tablero Kanban -->
+<!-- Función PHP para renderizar tarjetas (componente reutilizable) -->
+<?php
+function renderEquipoCard(array $equipo, string $estado): string {
+    // Mapeo local de colores e iconos (KISS: simple y directo)
+    $colores = [
+        'Pendiente' => 'warning',
+        'En Proceso' => 'info', 
+        'Completado' => 'success'
+    ];
+    
+    $iconos = [
+        'Pendiente' => 'fas fa-clock',
+        'En Proceso' => 'fas fa-spinner',
+        'Completado' => 'fas fa-check-circle'
+    ];
+    
+    $colorEstado = $colores[$estado] ?? 'secondary';
+    $iconoEstado = $iconos[$estado] ?? 'fas fa-question-circle';
+    
+    // Truncar descripción a 2 líneas (aproximadamente 80 caracteres)
+    $descripcionCorta = strlen($equipo['descripcion']) > 80 
+        ? substr($equipo['descripcion'], 0, 80) . '...' 
+        : $equipo['descripcion'];
+    
+    // Nombre corto del técnico
+    $nombreCorto = !empty($equipo['nombre_completo']) 
+        ? explode(' ', $equipo['nombre_completo'])[0] . ' ' . substr(explode(' ', $equipo['nombre_completo'])[1] ?? '', 0, 1) . '.'
+        : $equipo['nombreusuario'];
+    
+    ob_start();
+    ?>
+    <div class="kanban-card" data-id="<?= $equipo['idequipo'] ?>" data-status="<?= $equipo['estadoservicio'] ?>" draggable="true">
+        <!-- Header de tarjeta -->
+        <div class="card-header-kanban">
+            <span class="badge bg-<?= $colorEstado ?> text-white">
+                <i class="<?= $iconoEstado ?> me-1"></i><?= $estado ?>
+            </span>
+            <span class="kanban-card-id text-muted">#<?= $equipo['idequipo'] ?></span>
+        </div>
+        
+        <!-- Cuerpo de tarjeta -->
+        <div class="card-body-kanban">
+            <div class="mb-2">
+                <strong class="text-primary d-block"><?= esc($equipo['servicio']) ?></strong>
+                <small class="text-muted">
+                    <i class="fas fa-user me-1"></i><?= esc($nombreCorto) ?>
+                    <span class="ms-2">
+                        <i class="fas fa-briefcase me-1"></i><?= esc($equipo['cargo']) ?>
+                    </span>
+                </small>
+            </div>
+            
+            <div class="description-container mb-3">
+                <p class="description-text mb-0" title="<?= esc($equipo['descripcion']) ?>">
+                    <?= esc($descripcionCorta) ?>
+                </p>
+                <?php if (strlen($equipo['descripcion']) > 80): ?>
+                <button class="btn btn-link btn-sm p-0 text-decoration-none" onclick="toggleDescription(this)">
+                    <small>Ver más</small>
+                </button>
+                <?php endif; ?>
+            </div>
+            
+            <div class="text-muted small mb-2">
+                <i class="fas fa-calendar me-1"></i>
+                <?= date('d/m/Y H:i', strtotime($equipo['fechahoraservicio'])) ?>
+            </div>
+        </div>
+        
+        <!-- Acciones de tarjeta -->
+        <div class="card-actions">
+            <a href="<?= base_url('equipos/editar/'.$equipo['idequipo']) ?>" 
+               class="btn btn-sm btn-outline-primary" 
+               title="Editar asignación" 
+               data-bs-toggle="tooltip">
+                <i class="fas fa-edit"></i>
+            </a>
+            <a href="<?= base_url('servicios/'.$equipo['idserviciocontratado']) ?>" 
+               class="btn btn-sm btn-outline-info" 
+               title="Ver servicio completo" 
+               data-bs-toggle="tooltip">
+                <i class="fas fa-eye"></i>
+            </a>
+        </div>
+    </div>
+    <?php
+    return ob_get_clean();
+}
+?>
+
+<!-- CSS Personalizado para Kanban -->
+<style>
+:root {
+    --kanban-card-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    --kanban-card-hover-shadow: 0 4px 16px rgba(0,0,0,0.15);
+    --kanban-transition: all 0.3s ease;
+}
+
+.kanban-board {
+    min-height: 60vh;
+}
+
+.kanban-column {
+    background: #f8f9fa;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.kanban-column-header {
+    padding: 1rem;
+    font-weight: 600;
+}
+
+.kanban-column-body {
+    padding: 1rem;
+    min-height: 400px;
+    max-height: 70vh;
+    overflow-y: auto;
+}
+
+.kanban-card {
+    background: white;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    box-shadow: var(--kanban-card-shadow);
+    transition: var(--kanban-transition);
+    cursor: grab;
+    border-left: 4px solid transparent;
+}
+
+.kanban-card:hover {
+    box-shadow: var(--kanban-card-hover-shadow);
+    transform: translateY(-2px);
+}
+
+.kanban-card.dragging {
+    opacity: 0.5;
+    transform: rotate(5deg);
+    cursor: grabbing;
+}
+
+.kanban-column-body.drag-over {
+    background-color: #e3f2fd;
+    border: 2px dashed #2196f3;
+}
+
+.card-header-kanban {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+}
+
+.card-actions {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 1rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid #e9ecef;
+}
+
+.kanban-empty-state {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: #6c757d;
+}
+
+.description-text {
+    line-height: 1.4;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+/* Colores por estado */
+.kanban-card[data-status="Pendiente"],
+.kanban-card[data-status="Programado"] {
+    border-left-color: #ffc107;
+}
+
+.kanban-card[data-status="En Proceso"] {
+    border-left-color: #0dcaf0;
+}
+
+.kanban-card[data-status="Completado"] {
+    border-left-color: #198754;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .kanban-column-body {
+        max-height: 50vh;
+    }
+    
+    .kanban-card {
+        padding: 0.75rem;
+    }
+}
+</style>
+
+<!-- JavaScript Refactorizado para Kanban -->
 <script>
+// Variables globales
+let draggedCard = null;
+
 document.addEventListener('DOMContentLoaded', function() {
-    // Mostrar notificaciones de flash messages con SweetAlert
+    // Mostrar notificaciones flash con SweetAlert
+    showFlashMessages();
+    
+    // Inicializar funcionalidades
+    initializeTooltips();
+    initializeDragAndDrop();
+    
+    console.log('Kanban Board inicializado correctamente');
+});
+
+/**
+ * Mostrar mensajes flash con SweetAlert
+ * KISS: función simple y reutilizable
+ */
+function showFlashMessages() {
     <?php if (session()->getFlashdata('success')): ?>
         showNotification('<?= addslashes(session()->getFlashdata('success')) ?>', 'success');
     <?php endif; ?>
+    
     <?php if (session()->getFlashdata('error')): ?>
         showNotification('<?= addslashes(session()->getFlashdata('error')) ?>', 'error');
     <?php endif; ?>
-
-    // Inicializar tooltips
-    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[title]'));
-    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-        return new bootstrap.Tooltip(tooltipTriggerEl);
-    });
-
-    // Inicializar Drag and Drop
-    initializeDragAndDrop();
-
-    // Ajustar altura de columnas
-    adjustColumnHeights();
-    window.addEventListener('resize', adjustColumnHeights);
-});
-
-function adjustColumnHeights() {
-    const columns = document.querySelectorAll('.kanban-column-body');
-    let maxHeight = 0;
-    
-    // Reiniciar alturas
-    columns.forEach(col => {
-        col.style.minHeight = 'auto';
-    });
-    
-    // Encontrar la altura máxima
-    columns.forEach(col => {
-        if (col.scrollHeight > maxHeight) {
-            maxHeight = col.scrollHeight;
-        }
-    });
-    
-    // Aplicar altura máxima a todas las columnas
-    columns.forEach(col => {
-        col.style.minHeight = maxHeight + 'px';
-    });
 }
 
+/**
+ * Mostrar notificación con SweetAlert
+ * KISS: configuración consistente
+ */
+function showNotification(message, type) {
+    const config = {
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 4000,
+        timerProgressBar: true,
+        title: message
+    };
+    
+    switch(type) {
+        case 'success':
+            config.icon = 'success';
+            config.background = '#d4edda';
+            break;
+        case 'error':
+            config.icon = 'error';
+            config.background = '#f8d7da';
+            break;
+        case 'info':
+            config.icon = 'info';
+            config.background = '#d1ecf1';
+            break;
+    }
+    
+    Swal.fire(config);
+}
+
+/**
+ * Inicializar tooltips de Bootstrap
+ */
+function initializeTooltips() {
+    const tooltips = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+    tooltips.forEach(el => new bootstrap.Tooltip(el));
+}
+
+/**
+ * Inicializar Drag and Drop
+ * KISS: eventos simples y claros
+ */
 function initializeDragAndDrop() {
     const cards = document.querySelectorAll('.kanban-card');
     const columns = document.querySelectorAll('.kanban-column-body');
-
-    // Hacer las tarjetas arrastrables
-    cards.forEach(card => {
-        card.draggable = true;
-        
-        card.addEventListener('dragstart', function(e) {
-            this.classList.add('dragging');
-            e.dataTransfer.setData('text/plain', this.dataset.id);
-            e.dataTransfer.setData('application/json', JSON.stringify({
-                id: this.dataset.id,
-                status: this.dataset.status
-            }));
-        });
-
-        card.addEventListener('dragend', function(e) {
-            this.classList.remove('dragging');
-            cards.forEach(c => c.classList.remove('drag-over'));
-        });
-    });
-
-    // Configurar las columnas como zonas de drop
-    columns.forEach(column => {
-        column.addEventListener('dragover', function(e) {
-            e.preventDefault();
-            this.classList.add('drag-over');
-        });
-
-        column.addEventListener('dragleave', function(e) {
-            if (!this.contains(e.relatedTarget)) {
-                this.classList.remove('drag-over');
-            }
-        });
-
-        column.addEventListener('drop', async function(e) {
-            e.preventDefault();
-            this.classList.remove('drag-over');
-            
-            const cardData = JSON.parse(e.dataTransfer.getData('application/json'));
-            const cardElement = document.querySelector(`[data-id="${cardData.id}"]`);
-            
-            if (cardElement && this !== cardElement.parentNode) {
-                // Determinar el nuevo estado basado en la columna
-                let newStatus = '';
-                let statusText = '';
-                let statusIcon = '';
-                
-                switch(this.id) {
-                    case 'en-proceso':
-                        newStatus = 'En Proceso';
-                        statusText = 'en proceso';
-                        statusIcon = 'info';
-                        break;
-                    case 'pendiente':
-                        newStatus = 'Pendiente';
-                        statusText = 'pendiente';
-                        statusIcon = 'warning';
-                        break;
-                    case 'completo':
-                        newStatus = 'Completado';
-                        statusText = 'completado';
-                        statusIcon = 'success';
-                        break;
-                }
-
-                // VALIDACIONES DEL LADO CLIENTE
-                const estadoActual = cardData.status;
-                const validacion = validarTransicionEstado(estadoActual, newStatus);
-                
-                if (!validacion.valido) {
-                    // Mostrar error de validación
-                    Swal.fire({
-                        title: 'Movimiento no permitido',
-                        text: validacion.mensaje,
-                        icon: 'error',
-                        confirmButtonText: 'Entendido',
-                        confirmButtonColor: '#ff6b35'
-                    });
-                    return;
-                }
-
-                // Confirmar el cambio de estado con SweetAlert
-                const result = await Swal.fire({
-                    title: 'Cambiar Estado del Equipo',
-                    text: `¿Deseas cambiar el estado del equipo #${cardData.id} a "${statusText}"?`,
-                    icon: statusIcon,
-                    showCancelButton: true,
-                    confirmButtonText: 'Sí, cambiar',
-                    cancelButtonText: 'Cancelar',
-                    confirmButtonColor: '#ff6b35',
-                    cancelButtonColor: '#6c757d'
-                });
-
-                if (result.isConfirmed) {
-                    // Mostrar loading
-                    Swal.fire({
-                        title: 'Actualizando estado...',
-                        allowOutsideClick: false,
-                        allowEscapeKey: false,
-                        showConfirmButton: false,
-                        didOpen: () => {
-                            Swal.showLoading();
-                        }
-                    });
-
-                    // Llamada AJAX para actualizar el estado en la base de datos
-                    try {
-                        const success = await updateEquipmentStatus(cardData.id, newStatus);
-                        
-                        if (success) {
-                            // Actualizar la tarjeta visualmente
-                            updateCardStatus(cardElement, newStatus);
-                            
-                            // Mover la tarjeta a la nueva columna
-                            this.appendChild(cardElement);
-                            
-                            // Actualizar estados vacíos
-                            updateEmptyStates();
-                            
-                            // Cerrar loading y mostrar éxito
-                            Swal.close();
-                            showNotification(`Estado cambiado a "${statusText}" correctamente`, 'success');
-                        } else {
-                            // Error al actualizar
-                            Swal.close();
-                            showNotification('Error al actualizar el estado', 'error');
-                        }
-                    } catch (error) {
-                        Swal.close();
-                        showNotification('Error de conexión', 'error');
-                        console.error('Error:', error);
-                    }
-                } else {
-                    // Si se cancela, devolver la tarjeta a su posición original
-                    cardElement.style.transform = '';
-                    cardElement.style.opacity = '';
-                }
-            }
-        });
-    });
-}
-
-function updateEmptyStates() {
-    const columns = document.querySelectorAll('.kanban-column-body');
     
+    // Configurar tarjetas como draggables
+    cards.forEach(card => {
+        card.addEventListener('dragstart', handleDragStart);
+        card.addEventListener('dragend', handleDragEnd);
+    });
+    
+    // Configurar columnas como drop zones
     columns.forEach(column => {
-        const emptyState = column.querySelector('.kanban-empty-state');
-        const hasCards = column.querySelector('.kanban-card:not(.kanban-empty-state)');
-        
-        if (hasCards) {
-            if (emptyState) {
-                emptyState.style.display = 'none';
-            }
-        } else {
-            if (!emptyState) {
-                // Crear el estado vacío como un nuevo elemento
-                const status = column.id;
-                let text = '';
-                
-                switch(status) {
-                    case 'pendiente':
-                        text = 'No hay equipos pendientes';
-                        break;
-                    case 'en-proceso':
-                        text = 'No hay equipos en proceso';
-                        break;
-                    case 'completo':
-                        text = 'No hay equipos completados';
-                        break;
-                }
-                
-                const emptyStateDiv = document.createElement('div');
-                emptyStateDiv.className = 'kanban-empty-state';
-                emptyStateDiv.innerHTML = `
-                    <i class="fas fa-inbox fa-2x mb-2"></i>
-                    <p class="mb-0">${text}</p>
-                `;
-                
-                // Añadir el estado vacío al final de la columna
-                column.appendChild(emptyStateDiv);
-            } else {
-                emptyState.style.display = 'flex';
-            }
-        }
+        column.addEventListener('dragover', handleDragOver);
+        column.addEventListener('drop', handleDrop);
+        column.addEventListener('dragenter', handleDragEnter);
+        column.addEventListener('dragleave', handleDragLeave);
     });
 }
 
-function updateCardStatus(cardElement, newStatus) {
-    const badge = cardElement.querySelector('.badge');
-    const statusMap = {
-        'En Proceso': {
-            class: 'badge-en-proceso',
-            icon: 'fa-spinner',
-            text: 'En Proceso'
-        },
-        'Pendiente': {
-            class: 'badge-pendiente',
-            icon: 'fa-clock',
-            text: 'Pendiente'
-        },
-        'Completado': {
-            class: 'badge-completo',
-            icon: 'fa-check-circle',
-            text: 'Completado'
-        }
-    };
+/**
+ * Manejar inicio de arrastre
+ */
+function handleDragStart(e) {
+    draggedCard = this;
+    this.classList.add('dragging');
+    
+    // Guardar datos para el drop
+    e.dataTransfer.setData('text/plain', JSON.stringify({
+        id: this.dataset.id,
+        currentStatus: this.dataset.status
+    }));
+}
 
-    if (badge && statusMap[newStatus]) {
-        // Remover clases anteriores
-        badge.className = 'badge ' + statusMap[newStatus].class;
-        
-        // Actualizar contenido
-        badge.innerHTML = `<i class="fas ${statusMap[newStatus].icon} me-1"></i>${statusMap[newStatus].text}`;
-        
-        // Actualizar data-status
-        cardElement.dataset.status = newStatus;
+/**
+ * Manejar fin de arrastre
+ */
+function handleDragEnd(e) {
+    this.classList.remove('dragging');
+    
+    // Limpiar estados visuales
+    document.querySelectorAll('.kanban-column-body').forEach(col => {
+        col.classList.remove('drag-over');
+    });
+    
+    draggedCard = null;
+}
+
+/**
+ * Manejar dragover
+ */
+function handleDragOver(e) {
+    e.preventDefault();
+    this.classList.add('drag-over');
+}
+
+/**
+ * Manejar dragenter
+ */
+function handleDragEnter(e) {
+    e.preventDefault();
+}
+
+/**
+ * Manejar dragleave
+ */
+function handleDragLeave(e) {
+    if (!this.contains(e.relatedTarget)) {
+        this.classList.remove('drag-over');
     }
 }
 
-async function updateEquipmentStatus(equipmentId, newStatus) {
+/**
+ * Manejar drop - Lógica principal del Kanban
+ */
+async function handleDrop(e) {
+    e.preventDefault();
+    this.classList.remove('drag-over');
+    
+    if (!draggedCard) return;
+    
+    const cardData = JSON.parse(e.dataTransfer.getData('text/plain'));
+    const newStatus = this.dataset.estado;
+    const currentStatus = cardData.currentStatus;
+    
+    // Si no hay cambio de estado, no hacer nada
+    if (currentStatus === newStatus) return;
+    
+    // Validar transición usando helper
+    const validation = validarTransicionEstado(currentStatus, newStatus);
+    
+    if (!validation.valido) {
+        Swal.fire({
+            title: 'Movimiento no permitido',
+            text: validation.mensaje,
+            icon: 'warning',
+            confirmButtonText: 'Entendido',
+            confirmButtonColor: '#6c757d'
+        });
+        return;
+    }
+    
+    // Confirmar cambio de estado
+    const confirmed = await confirmStateChange(cardData.id, currentStatus, newStatus);
+    if (!confirmed) return;
+    
+    // Actualizar estado en servidor
+    const success = await updateCardStatus(cardData.id, newStatus);
+    
+    if (success) {
+        // Mover tarjeta visualmente
+        moveCardToColumn(draggedCard, this, newStatus);
+        showNotification(`Estado cambiado a "${newStatus}" correctamente`, 'success');
+    } else {
+        showNotification('Error al actualizar el estado', 'error');
+    }
+}
+
+/**
+ * Confirmar cambio de estado con SweetAlert
+ */
+async function confirmStateChange(cardId, currentStatus, newStatus) {
+    const result = await Swal.fire({
+        title: 'Cambiar Estado',
+        text: `¿Cambiar de "${currentStatus}" a "${newStatus}"?`,
+        icon: getStatusIcon(newStatus),
+        showCancelButton: true,
+        confirmButtonText: 'Sí, cambiar',
+        cancelButtonText: 'Cancelar',
+        confirmButtonColor: '#0d6efd',
+        cancelButtonColor: '#6c757d'
+    });
+    
+    return result.isConfirmed;
+}
+
+/**
+ * Actualizar estado en servidor via AJAX
+ */
+async function updateCardStatus(cardId, newStatus) {
     try {
-        const response = await fetch('<?= base_url("equipos/actualizar-estado") ?>', {
+        // Mostrar loading
+        Swal.fire({
+            title: 'Actualizando...',
+            allowOutsideClick: false,
+            showConfirmButton: false,
+            didOpen: () => Swal.showLoading()
+        });
+        
+        const response = await fetch('<?= base_url("equipos/actualizarEstado") ?>', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'X-Requested-With': 'XMLHttpRequest'
             },
             body: JSON.stringify({
-                id: equipmentId,
+                id: cardId,
                 estado: newStatus
             })
         });
-
+        
         const data = await response.json();
+        Swal.close();
         
-        if (data.success) {
-            return true;
-        } else {
-            // Si hay un error específico del servidor, mostrarlo
-            if (data.error) {
-                showNotification(data.error, 'error');
-            }
-            return false;
+        if (!data.success && data.message) {
+            showNotification(data.message, 'error');
         }
+        
+        return data.success;
+        
     } catch (error) {
+        Swal.close();
         console.error('Error:', error);
-        throw error;
+        showNotification('Error de conexión', 'error');
+        return false;
     }
 }
 
-// Función para validar transiciones de estado del lado cliente
-function validarTransicionEstado(estadoActual, nuevoEstado) {
-    // Normalizar estados para comparación
-    estadoActual = estadoActual.trim();
-    nuevoEstado = nuevoEstado.trim();
-
-    // Validación 1: Si el servicio está completo, no se puede mover a pendiente o en proceso
-    if (estadoActual === 'Completado') {
-        if (nuevoEstado === 'Pendiente' || nuevoEstado === 'En Proceso') {
-            return {
-                valido: false,
-                mensaje: 'Este servicio ya está completo'
-            };
-        }
+/**
+ * Mover tarjeta a nueva columna visualmente
+ */
+function moveCardToColumn(card, newColumn, newStatus) {
+    // Actualizar datos de la tarjeta
+    card.dataset.status = newStatus;
+    
+    // Actualizar badge de estado
+    const badge = card.querySelector('.badge');
+    if (badge) {
+        badge.className = `badge bg-${getStatusColor(newStatus)} text-white`;
+        badge.innerHTML = `<i class="${getStatusIcon(newStatus)} me-1"></i>${newStatus}`;
     }
-
-    // Validación 2: Si el servicio está pendiente y se quiere mover directamente a completo
-    if (estadoActual === 'Pendiente' || estadoActual === 'Programado') {
-        if (nuevoEstado === 'Completado') {
-            return {
-                valido: false,
-                mensaje: 'Este servicio aún no tiene proceso'
-            };
-        }
-    }
-
-    // Validación 3: Si el servicio está en proceso y se quiere mover a pendiente
-    if (estadoActual === 'En Proceso') {
-        if (nuevoEstado === 'Pendiente') {
-            return {
-                valido: false,
-                mensaje: 'Este servicio está en proceso'
-            };
-        }
-    }
-
-    // Si llegamos aquí, la transición es válida
-    return {
-        valido: true,
-        mensaje: 'Transición válida'
-    };
+    
+    // Mover al DOM
+    newColumn.appendChild(card);
+    
+    // Actualizar contadores
+    updateColumnCounters();
+    
+    // Verificar estados vacíos
+    updateEmptyStates();
 }
 
-function showNotification(message, type = 'info') {
-    // Usar SweetAlert Toast para notificaciones elegantes
-    const Toast = Swal.mixin({
-        toast: true,
-        position: "top-end",
-        showConfirmButton: false,
-        timer: 3000,
-        timerProgressBar: true,
-        didOpen: (toast) => {
-            toast.onmouseenter = Swal.stopTimer;
-            toast.onmouseleave = Swal.resumeTimer;
-        }
-    });
-
-    Toast.fire({
-        icon: type === 'success' ? 'success' : type === 'error' ? 'error' : 'info',
-        title: message
-    });
-}
-
-// Función para animar las tarjetas al cargar
-function animateCards() {
-    const cards = document.querySelectorAll('.kanban-card');
-    cards.forEach((card, index) => {
-        card.style.opacity = '0';
-        card.style.transform = 'translateY(20px)';
+/**
+ * Actualizar contadores de columnas
+ */
+function updateColumnCounters() {
+    document.querySelectorAll('.kanban-column').forEach(column => {
+        const header = column.querySelector('.kanban-column-header h5');
+        const body = column.querySelector('.kanban-column-body');
+        const cards = body.querySelectorAll('.kanban-card').length;
+        const counter = header.querySelector('.badge');
         
-        setTimeout(() => {
-            card.style.transition = 'all 0.3s ease';
-            card.style.opacity = '1';
-            card.style.transform = 'translateY(0)';
-        }, index * 100);
+        if (counter) {
+            counter.textContent = cards;
+        }
     });
 }
 
-// Ejecutar animación al cargar
-setTimeout(animateCards, 100);
+/**
+ * Actualizar estados vacíos
+ */
+function updateEmptyStates() {
+    document.querySelectorAll('.kanban-column-body').forEach(column => {
+        const cards = column.querySelectorAll('.kanban-card');
+        const emptyState = column.querySelector('.kanban-empty-state');
+        
+        if (cards.length === 0 && !emptyState) {
+            const estado = column.dataset.estado;
+            column.innerHTML = `
+                <div class="kanban-empty-state">
+                    <i class="fas fa-inbox fa-2x mb-2 text-muted"></i>
+                    <p class="text-muted mb-0">No hay equipos en ${estado.toLowerCase()}</p>
+                </div>
+            `;
+        } else if (cards.length > 0 && emptyState) {
+            emptyState.remove();
+        }
+    });
+}
+
+/**
+ * Funciones helper para estados
+ */
+function getStatusColor(status) {
+    const colors = {
+        'Pendiente': 'warning',
+        'Programado': 'warning', 
+        'En Proceso': 'info',
+        'Completado': 'success'
+    };
+    return colors[status] || 'secondary';
+}
+
+function getStatusIcon(status) {
+    const icons = {
+        'Pendiente': 'fas fa-clock',
+        'Programado': 'fas fa-clock',
+        'En Proceso': 'fas fa-spinner', 
+        'Completado': 'fas fa-check-circle'
+    };
+    return icons[status] || 'fas fa-question-circle';
+}
+
+/**
+ * Validar transición de estado (lado cliente)
+ * Usando la misma lógica del helper PHP
+ */
+function validarTransicionEstado(estadoActual, nuevoEstado) {
+    // Regla 1: Completado no puede regresar
+    if (estadoActual === 'Completado') {
+        return {
+            valido: false,
+            mensaje: 'Este servicio ya está completo'
+        };
+    }
+    
+    // Regla 2: No saltar directamente a Completado
+    if ((estadoActual === 'Pendiente' || estadoActual === 'Programado') && nuevoEstado === 'Completado') {
+        return {
+            valido: false,
+            mensaje: 'Este servicio aún no tiene proceso'
+        };
+    }
+    
+    // Regla 3: En Proceso no puede regresar a Pendiente
+    if (estadoActual === 'En Proceso' && nuevoEstado === 'Pendiente') {
+        return {
+            valido: false,
+            mensaje: 'Este servicio está en proceso'
+        };
+    }
+    
+    return { valido: true, mensaje: 'Transición válida' };
+}
+
+/**
+ * Toggle descripción completa
+ */
+function toggleDescription(button) {
+    const container = button.closest('.description-container');
+    const text = container.querySelector('.description-text');
+    const isExpanded = text.style.webkitLineClamp === 'unset';
+    
+    if (isExpanded) {
+        text.style.webkitLineClamp = '2';
+        button.innerHTML = '<small>Ver más</small>';
+    } else {
+        text.style.webkitLineClamp = 'unset';
+        button.innerHTML = '<small>Ver menos</small>';
+    }
+}
 </script>
-
-<!-- CSS Mejorado del Tablero Kanban -->
-<style>
-/* Variables CSS */
-:root {
-    --orange-primary: #ff6b35;
-    --orange-secondary: #ff8c42;
-    --orange-light: #ffb366;
-    --orange-dark: #e55a2b;
-    --orange-subtle: #fff4f0;
-    --gray-50: #fafafa;
-    --gray-100: #f5f5f5;
-    --gray-200: #eeeeee;
-    --gray-300: #e0e0e0;
-    --gray-400: #bdbdbd;
-    --gray-500: #9e9e9e;
-    --gray-600: #757575;
-    --gray-700: #616161;
-    --gray-800: #424242;
-    --gray-900: #212121;
-    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-    --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-    --radius-sm: 0.375rem;
-    --radius-md: 0.5rem;
-    --radius-lg: 0.75rem;
-    --radius-xl: 1rem;
-    --transition-fast: 0.15s ease-in-out;
-    --transition-normal: 0.3s ease-in-out;
-}
-
-/* Estilos de colores naranja */
-.text-orange {
-    color: var(--orange-primary) !important;
-}
-
-.bg-orange {
-    background-color: var(--orange-primary) !important;
-}
-
-.btn-orange {
-    background-color: var(--orange-primary);
-    border-color: var(--orange-primary);
-    color: white;
-    font-weight: 500;
-    transition: all var(--transition-fast);
-    box-shadow: var(--shadow-sm);
-}
-
-.btn-orange:hover {
-    background-color: var(--orange-dark);
-    border-color: var(--orange-dark);
-    color: white;
-    transform: translateY(-1px);
-    box-shadow: var(--shadow-md);
-}
-
-.btn-outline-orange {
-    border-color: var(--orange-primary);
-    color: var(--orange-primary);
-    font-weight: 500;
-    transition: all var(--transition-fast);
-}
-
-.btn-outline-orange:hover {
-    background-color: var(--orange-primary);
-    border-color: var(--orange-primary);
-    color: white;
-    transform: translateY(-1px);
-    box-shadow: var(--shadow-md);
-}
-
-/* Layout principal del tablero Kanban */
-.kanban-board {
-    background: linear-gradient(135deg, var(--gray-50) 0%, white 100%);
-    border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-lg);
-    padding: 1.5rem;
-    margin-bottom: 1.5rem;
-    width: 100%;
-    overflow-x: auto;
-}
-
-.kanban-columns-container {
-    display: flex;
-    flex-wrap: nowrap;
-    min-width: min-content;
-}
-
-.kanban-column-wrapper {
-    flex: 1;
-    min-width: 320px;
-    max-width: 400px;
-}
-
-/* Columnas del tablero */
-.kanban-column {
-    background-color: white;
-    border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-md);
-    overflow: hidden;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    transition: all var(--transition-normal);
-}
-
-.kanban-column:hover {
-    box-shadow: var(--shadow-xl);
-    transform: translateY(-2px);
-}
-
-.kanban-column-header {
-    padding: 1rem;
-    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
-    position: relative;
-    overflow: hidden;
-}
-
-.kanban-column-header h5 {
-    font-size: 1rem;
-    font-weight: 600;
-    letter-spacing: 0.025em;
-    margin: 0;
-    color: white;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-}
-
-.kanban-column-body {
-    padding: 1rem;
-    flex: 1;
-    overflow-y: auto;
-    background-color: var(--gray-50);
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-    min-height: 400px;
-}
-
-/* Tarjetas del tablero */
-.kanban-card {
-    background: white;
-    border: 1px solid var(--gray-200);
-    border-radius: var(--radius-md);
-    box-shadow: var(--shadow-sm);
-    transition: all var(--transition-normal);
-    cursor: grab;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-    min-height: 180px;
-}
-
-.kanban-card:hover {
-    box-shadow: var(--shadow-lg);
-    transform: translateY(-2px);
-    border-color: var(--orange-light);
-}
-
-.kanban-card:active {
-    cursor: grabbing;
-}
-
-.card-header-kanban {
-    padding: 0.5rem 0.75rem;
-    border-bottom: 1px solid var(--gray-200);
-    background: var(--gray-50);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    min-height: 32px;
-}
-
-.kanban-card-id {
-    font-size: 0.7rem;
-    color: var(--gray-500);
-    font-weight: 500;
-}
-
-.card-body-kanban {
-    padding: 0.75rem;
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-    overflow: hidden;
-}
-
-.card-actions {
-    padding: 0.5rem 0.75rem;
-    border-top: 1px solid var(--gray-200);
-    background: var(--gray-50);
-    display: flex;
-    gap: 0.5rem;
-    justify-content: center;
-    min-height: 40px;
-    align-items: center;
-}
-
-/* Información dentro de las tarjetas */
-.info-field {
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
-    font-size: 0.875rem;
-    line-height: 1.3;
-}
-
-.info-field strong {
-    font-weight: 600;
-    font-size: 0.75rem;
-    color: var(--orange-primary);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    margin: 0;
-}
-
-.info-field span {
-    color: var(--gray-700);
-    font-weight: 400;
-    line-height: 1.2;
-    font-size: 0.875rem;
-    word-break: break-word;
-}
-
-.description-text {
-    font-style: italic;
-    color: var(--gray-600);
-    font-size: 0.8rem;
-    line-height: 1.3;
-}
-
-/* Badges de estado */
-.badge {
-    font-size: 0.75rem;
-    padding: 0.375rem 0.75rem;
-    border-radius: var(--radius-sm);
-    font-weight: 500;
-    letter-spacing: 0.025em;
-    box-shadow: var(--shadow-sm);
-    border: none;
-}
-
-.badge-en-proceso {
-    background:rgb(16, 196, 241);
-    color: white;
-}
-
-.badge-pendiente {
-    background: #ffc107;
-    color: var(--gray-800);
-}
-
-.badge-completo {
-    background: #28a745;
-    color: white;
-}
-
-/* Estado vacío */
-.kanban-empty-state {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 2rem 1rem;
-    color: var(--gray-500);
-    text-align: center;
-    flex: 1;
-}
-
-/* Botones */
-.btn-sm {
-    padding: 0.375rem 0.75rem;
-    font-size: 0.75rem;
-    border-radius: var(--radius-sm);
-    font-weight: 500;
-    transition: all var(--transition-fast);
-    border: none;
-    box-shadow: var(--shadow-sm);
-    min-width: 60px;
-}
-
-.btn-sm:hover {
-    transform: translateY(-1px);
-    box-shadow: var(--shadow-md);
-}
-
-/* Animaciones drag and drop */
-.kanban-card.dragging {
-    opacity: 0.7;
-    transform: rotate(3deg) scale(1.02);
-    box-shadow: var(--shadow-xl);
-    z-index: 1000;
-}
-
-.kanban-column-body.drag-over {
-    background: linear-gradient(135deg, var(--orange-subtle) 0%, rgba(255, 107, 53, 0.1) 100%);
-    border: 2px dashed var(--orange-primary);
-    border-radius: var(--radius-md);
-}
-
-/* Animaciones de entrada */
-@keyframes slideInUp {
-    from {
-        opacity: 0;
-        transform: translateY(20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-.kanban-card {
-    animation: slideInUp 0.3s ease-out;
-}
-
-/* Diseño responsive */
-@media (max-width: 1200px) {
-    .kanban-board {
-        padding: 1rem;
-    }
-    
-    .kanban-column-wrapper {
-        min-width: 300px;
-    }
-}
-
-@media (max-width: 992px) {
-    .kanban-columns-container {
-        flex-wrap: wrap;
-        justify-content: center;
-    }
-    
-    .kanban-column-wrapper {
-        margin-bottom: 1rem;
-    }
-}
-
-@media (max-width: 768px) {
-    .kanban-board {
-        padding: 0.75rem;
-    }
-
-    .kanban-column-wrapper {
-        min-width: 100%;
-    }
-
-    .kanban-card {
-        min-height: 160px;
-    }
-}
-
-@media (max-width: 480px) {
-    .kanban-board {
-        padding: 0.5rem;
-    }
-
-    .kanban-column-header {
-        padding: 0.75rem;
-    }
-
-    .kanban-column-header h5 {
-        font-size: 0.875rem;
-    }
-
-    .kanban-card {
-        min-height: 140px;
-    }
-
-    .card-actions {
-        flex-direction: row;
-        gap: 0.25rem;
-    }
-
-    .btn-sm {
-        font-size: 0.7rem;
-        padding: 0.25rem 0.5rem;
-        min-width: 50px;
-    }
-}
-
-/* Scrollbar personalizado */
-.kanban-column-body::-webkit-scrollbar {
-    width: 6px;
-}
-
-.kanban-column-body::-webkit-scrollbar-track {
-    background: var(--gray-100);
-    border-radius: var(--radius-sm);
-}
-
-.kanban-column-body::-webkit-scrollbar-thumb {
-    background: var(--gray-300);
-    border-radius: var(--radius-sm);
-}
-
-.kanban-column-body::-webkit-scrollbar-thumb:hover {
-    background: var(--orange-primary);
-}
-
-/* Mejoras en accesibilidad */
-.kanban-card:focus {
-    outline: 2px solid var(--orange-primary);
-    outline-offset: 2px;
-}
-
-.btn:focus {
-    box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.25);
-}
-
-/* Estilos generales mejorados */
-.card {
-    border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-md);
-    overflow: hidden;
-    border: 1px solid var(--gray-200);
-}
-
-.container {
-    max-width: 100%;
-    padding: 0 15px;
-}
-</style>
 <?= $footer ?>

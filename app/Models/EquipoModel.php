@@ -4,200 +4,162 @@ namespace App\Models;
 
 use CodeIgniter\Model;
 
+/**
+ * Modelo de Equipos refactorizado aplicando KISS
+ * Consultas limpias y sin duplicación
+ */
 class EquipoModel extends Model
 {
     protected $table = 'equipos';
     protected $primaryKey = 'idequipo';
     protected $allowedFields = ['idserviciocontratado', 'idusuario', 'descripcion', 'estadoservicio'];
-
-    // Obtener todos los equipos
-    public function getEquipos()
-    {
-        $builder = $this->db->table('equipos e');
-        $builder->select('e.*, u.nombreusuario, p.nombres, p.apellidos, s.servicio, sc.direccion, sc.fechahoraservicio');
-        $builder->join('usuarios u', 'e.idusuario = u.idusuario');
-        $builder->join('personas p', 'u.idpersona = p.idpersona');
-        $builder->join('servicioscontratados sc', 'e.idserviciocontratado = sc.idserviciocontratado');
-        $builder->join('servicios s', 'sc.idservicio = s.idservicio');
-        return $builder->get()->getResult();
-    }
-
-    // Obtener equipos por servicio
-    public function getEquiposPorServicio($idserviciocontratado)
-    {
-        $builder = $this->db->table('equipos e');
-        $builder->select('e.*, u.nombreusuario, p.nombres, p.apellidos, s.servicio');
-        $builder->join('usuarios u', 'e.idusuario = u.idusuario');
-        $builder->join('personas p', 'u.idpersona = p.idpersona');
-        $builder->join('servicioscontratados sc', 'e.idserviciocontratado = sc.idserviciocontratado');
-        $builder->join('servicios s', 'sc.idservicio = s.idservicio');
-        $builder->where('e.idserviciocontratado', $idserviciocontratado);
-        return $builder->get()->getResult();
-    }
-
-    // Obtener equipos por usuario
-    public function getEquiposPorUsuario($idusuario)
-    {
-        $builder = $this->db->table('equipos e');
-        $builder->select('e.*, s.servicio, sc.direccion, sc.fechahoraservicio');
-        $builder->join('servicioscontratados sc', 'e.idserviciocontratado = sc.idserviciocontratado');
-        $builder->join('servicios s', 'sc.idservicio = s.idservicio');
-        $builder->where('e.idusuario', $idusuario);
-        return $builder->get()->getResult();
-    }
-
-    // Obtener un equipo específico
-    public function getEquipo($idequipo)
-    {
-        $builder = $this->db->table('equipos e');
-        $builder->select('e.*, u.nombreusuario, p.nombres, p.apellidos, s.servicio, sc.idserviciocontratado');
-        $builder->join('usuarios u', 'e.idusuario = u.idusuario');
-        $builder->join('personas p', 'u.idpersona = p.idpersona');
-        $builder->join('servicioscontratados sc', 'e.idserviciocontratado = sc.idserviciocontratado');
-        $builder->join('servicios s', 'sc.idservicio = s.idservicio');
-        $builder->where('e.idequipo', $idequipo);
-        return $builder->get()->getRow();
-    }
-
-    // Insertar nuevo equipo
-    public function insertEquipo($data)
-    {
-        $builder = $this->db->table('equipos');
-        return $builder->insert($data);
-    }
-
-    // Actualizar equipo
-    public function updateEquipo($idequipo, $data)
-    {
-        $builder = $this->db->table('equipos');
-        $builder->where('idequipo', $idequipo);
-        return $builder->update($data);
-    }
-
-    // **NUEVAS FUNCIONES PARA VALIDACIONES**
+    protected $useTimestamps = false;
+    protected $returnType = 'array';
 
     /**
-     * Verificar si un usuario ya está asignado a un servicio específico
+     * Consulta base con todos los joins necesarios
+     * Aplicando DRY: una sola consulta reutilizable
      */
-    public function usuarioYaAsignado($idusuario, $idserviciocontratado)
+    private function getBaseQuery(): \CodeIgniter\Database\BaseBuilder
     {
-        $builder = $this->db->table('equipos');
-        $builder->where('idusuario', $idusuario);
-        $builder->where('idserviciocontratado', $idserviciocontratado);
-        $result = $builder->get()->getRow();
-        return $result !== null;
+        return $this->db->table('equipos e')
+            ->select('
+                e.idequipo,
+                e.idserviciocontratado,
+                e.idusuario,
+                e.descripcion,
+                e.estadoservicio,
+                u.nombreusuario,
+                p.nombres,
+                p.apellidos,
+                c.cargo,
+                s.servicio,
+                sc.direccion,
+                sc.fechahoraservicio,
+                co.fechaevento,
+                te.evento as tipoevento,
+                CONCAT(p.nombres, " ", p.apellidos) as nombre_completo
+            ')
+            ->join('usuarios u', 'e.idusuario = u.idusuario')
+            ->join('personas p', 'u.idpersona = p.idpersona')
+            ->join('cargos c', 'u.idcargo = c.idcargo')
+            ->join('servicioscontratados sc', 'e.idserviciocontratado = sc.idserviciocontratado')
+            ->join('servicios s', 'sc.idservicio = s.idservicio')
+            ->join('cotizaciones co', 'sc.idcotizacion = co.idcotizacion')
+            ->join('tipoeventos te', 'co.idtipoevento = te.idtipoevento', 'left');
     }
 
     /**
-     * Verificar conflictos de horario para un usuario en una fecha/hora específica
+     * Obtiene todos los equipos con detalles completos
+     * KISS: método simple y claro
      */
-    public function verificarConflictoHorario($idusuario, $fechahoraservicio, $idserviciocontratadoExcluir = null)
+    public function getEquiposConDetalles(): array
     {
-        $builder = $this->db->table('equipos e');
-        $builder->select('e.*, sc.fechahoraservicio, s.servicio');
-        $builder->join('servicioscontratados sc', 'e.idserviciocontratado = sc.idserviciocontratado');
-        $builder->join('servicios s', 'sc.idservicio = s.idservicio');
-        $builder->where('e.idusuario', $idusuario);
-        
-        // Excluir el servicio actual si se está editando
-        if ($idserviciocontratadoExcluir) {
-            $builder->where('e.idserviciocontratado !=', $idserviciocontratadoExcluir);
-        }
-
-        // Verificar conflictos en un rango de ±4 horas (ajusta según tus necesidades)
-        $fechaInicio = date('Y-m-d H:i:s', strtotime($fechahoraservicio . ' -4 hours'));
-        $fechaFin = date('Y-m-d H:i:s', strtotime($fechahoraservicio . ' +4 hours'));
-        
-        $builder->where('sc.fechahoraservicio BETWEEN "' . $fechaInicio . '" AND "' . $fechaFin . '"');
-        
-        return $builder->get()->getResult();
+        return $this->getBaseQuery()
+            ->orderBy('sc.fechahoraservicio', 'DESC')
+            ->get()
+            ->getResultArray();
     }
 
     /**
-     * Obtener usuarios disponibles para un servicio específico
+     * Obtiene equipos por servicio específico
+     * KISS: reutiliza consulta base
      */
-    public function getUsuariosDisponibles($idserviciocontratado)
+    public function getEquiposPorServicio(int $idserviciocontratado): array
     {
-        // Primero obtenemos la fecha/hora del servicio
-        $builderServicio = $this->db->table('servicioscontratados');
-        $builderServicio->select('fechahoraservicio');
-        $builderServicio->where('idserviciocontratado', $idserviciocontratado);
-        $servicio = $builderServicio->get()->getRow();
-        
-        if (!$servicio) {
-            return [];
-        }
-
-        // Obtener todos los usuarios activos
-        $builderUsuarios = $this->db->table('usuarios u');
-        $builderUsuarios->select('u.idusuario, p.nombres, p.apellidos, c.cargo');
-        $builderUsuarios->join('personas p', 'u.idpersona = p.idpersona');
-        $builderUsuarios->join('cargos c', 'u.idcargo = c.idcargo');
-        $builderUsuarios->where('u.estado', 1);
-        $usuarios = $builderUsuarios->get()->getResult();
-
-        // Verificar disponibilidad de cada usuario
-        foreach ($usuarios as &$usuario) {
-            $usuario->yaAsignado = $this->usuarioYaAsignado($usuario->idusuario, $idserviciocontratado);
-            $usuario->conflictos = $this->verificarConflictoHorario($usuario->idusuario, $servicio->fechahoraservicio, $idserviciocontratado);
-            $usuario->disponible = !$usuario->yaAsignado && empty($usuario->conflictos);
-        }
-
-        return $usuarios;
+        return $this->getBaseQuery()
+            ->where('e.idserviciocontratado', $idserviciocontratado)
+            ->orderBy('e.estadoservicio')
+            ->get()
+            ->getResultArray();
     }
 
     /**
-     * Obtener información detallada de conflictos para un usuario
+     * Obtiene equipos por usuario específico
+     * KISS: reutiliza consulta base
      */
-    public function getDetalleConflictos($idusuario, $fechahoraservicio)
+    public function getEquiposPorUsuario(int $idusuario): array
     {
-        $conflictos = $this->verificarConflictoHorario($idusuario, $fechahoraservicio);
+        return $this->getBaseQuery()
+            ->where('e.idusuario', $idusuario)
+            ->orderBy('sc.fechahoraservicio', 'DESC')
+            ->get()
+            ->getResultArray();
+    }
+
+    /**
+     * Obtiene un equipo específico con todos los detalles
+     * KISS: reutiliza consulta base
+     */
+    public function getEquipoConDetalles(int $idequipo): ?array
+    {
+        $resultado = $this->getBaseQuery()
+            ->where('e.idequipo', $idequipo)
+            ->get()
+            ->getRowArray();
+            
+        return $resultado ?: null;
+    }
+
+    /**
+     * Obtiene equipos agrupados por estado para el Kanban
+     * KISS: método específico para la vista
+     */
+    public function getEquiposParaKanban(?int $servicioId = null): array
+    {
+        $query = $this->getBaseQuery();
         
-        $detalles = [];
-        foreach ($conflictos as $conflicto) {
-            $detalles[] = [
-                'servicio' => $conflicto->servicio,
-                'fecha' => date('d/m/Y H:i', strtotime($conflicto->fechahoraservicio)),
-                'descripcion' => $conflicto->descripcion
-            ];
+        if ($servicioId) {
+            $query->where('e.idserviciocontratado', $servicioId);
         }
         
-        return $detalles;
-    }
+        $equipos = $query->orderBy('sc.fechahoraservicio', 'ASC')
+            ->get()
+            ->getResultArray();
 
-    /**
-     * Validar antes de insertar/actualizar asignación
-     */
-    public function validarAsignacion($idusuario, $idserviciocontratado, $idequipoExcluir = null)
-    {
-        $errores = [];
+        // Agrupar por estado para facilitar el renderizado
+        $agrupados = [
+            'Pendiente' => [],
+            'En Proceso' => [],
+            'Completado' => []
+        ];
 
-        // Verificar si el usuario ya está asignado
-        if ($this->usuarioYaAsignado($idusuario, $idserviciocontratado)) {
-            // Si estamos editando, verificar que no sea la misma asignación
-            if ($idequipoExcluir) {
-                $equipoActual = $this->find($idequipoExcluir);
-                if (!$equipoActual || $equipoActual['idusuario'] != $idusuario) {
-                    $errores[] = 'El usuario ya está asignado a este servicio.';
-                }
-            } else {
-                $errores[] = 'El usuario ya está asignado a este servicio.';
+        foreach ($equipos as $equipo) {
+            $estado = $equipo['estadoservicio'];
+            // Agrupar Programado con Pendiente
+            if ($estado === 'Programado') {
+                $estado = 'Pendiente';
+            }
+            
+            if (isset($agrupados[$estado])) {
+                $agrupados[$estado][] = $equipo;
             }
         }
 
-        // Obtener fecha del servicio para verificar conflictos
-        $builderServicio = $this->db->table('servicioscontratados');
-        $builderServicio->select('fechahoraservicio');
-        $builderServicio->where('idserviciocontratado', $idserviciocontratado);
-        $servicio = $builderServicio->get()->getRow();
+        return $agrupados;
+    }
 
-        if ($servicio) {
-            $conflictos = $this->verificarConflictoHorario($idusuario, $servicio->fechahoraservicio, $idserviciocontratado);
-            if (!empty($conflictos)) {
-                $errores[] = 'El usuario tiene conflictos de horario con otros servicios programados.';
-            }
-        }
-
-        return $errores;
+    /**
+     * Obtiene información básica de un servicio contratado
+     * KISS: método simple para obtener datos del servicio
+     */
+    public function getServicioInfo(int $servicioId): ?array
+    {
+        return $this->db->table('servicioscontratados sc')
+            ->select('sc.*, s.servicio, co.fechaevento, te.evento as tipoevento,
+                     CASE 
+                        WHEN cl.idpersona IS NOT NULL THEN CONCAT(p.nombres, " ", p.apellidos)
+                        WHEN cl.idempresa IS NOT NULL THEN e.razonsocial
+                        ELSE "Cliente no especificado"
+                     END as cliente_nombre')
+            ->join('servicios s', 'sc.idservicio = s.idservicio')
+            ->join('cotizaciones co', 'sc.idcotizacion = co.idcotizacion')
+            ->join('clientes cl', 'co.idcliente = cl.idcliente')
+            ->join('tipoeventos te', 'co.idtipoevento = te.idtipoevento', 'left')
+            ->join('personas p', 'cl.idpersona = p.idpersona', 'left')
+            ->join('empresas e', 'cl.idempresa = e.idempresa', 'left')
+            ->where('sc.idserviciocontratado', $servicioId)
+            ->get()
+            ->getRowArray();
     }
 }
