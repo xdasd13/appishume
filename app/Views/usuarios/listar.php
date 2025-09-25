@@ -1,12 +1,13 @@
 <?= $header ?>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
 <style>
-    /* ✅ RESET Y ESTILOS BASE */
+    /* RESET Y ESTILOS BASE */
     .container-fluid.py-4 {
         margin: 0 !important;
         padding: 1.5rem !important;
     }
     
-    /* ✅ CONTENEDOR PRINCIPAL MEJORADO */
+    /*  CONTENEDOR PRINCIPAL MEJORADO */
     .usuarios-grid {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
@@ -16,7 +17,7 @@
         width: 100%;
     }
     
-    /* ✅ TARJETA BASE CON TEXTO MÁS GRANDE */
+    /*  TARJETA BASE CON TEXTO MÁS GRANDE */
     .usuarios-grid .card-credential {
         background: #ffffff;
         border: 1px solid #e3e6f0;
@@ -32,14 +33,14 @@
         overflow: hidden;
     }
     
-    /* ✅ HOVER */
+    /*  HOVER */
     .usuarios-grid .card-credential:hover {
         transform: translateY(-3px);
         box-shadow: 0 8px 25px rgba(0,0,0,0.15);
         border-color: #4e73df;
     }
     
-    /* ✅ HEADER */
+    /*  HEADER */
     .usuarios-grid .card-credential .card-header {
         background: #f8f9fc;
         border-bottom: 1px solid #e3e6f0;
@@ -48,7 +49,7 @@
         flex-shrink: 0;
     }
     
-    /* ✅ BODY CON PADDING MEJORADO */
+    /* BODY CON PADDING MEJORADO */
     .usuarios-grid .card-credential .card-body {
         padding: 20px !important; /* Aumentado */
         flex: 1;
@@ -57,7 +58,7 @@
         justify-content: space-between;
     }
     
-    /* ✅ FOOTER */
+    /*  FOOTER */
     .usuarios-grid .card-credential .card-footer {
         background: #f8f9fc;
         border-top: 1px solid #e3e6f0;
@@ -67,7 +68,7 @@
         flex-shrink: 0;
     }
     
-    /* ✅ USUARIO INFO */
+    /*  USUARIO INFO */
     .usuarios-grid .card-credential .user-header {
         display: flex;
         align-items: center;
@@ -75,7 +76,7 @@
         width: 100%;
     }
     
-    /* ✅ AVATAR MÁS GRANDE */
+    /* AVATAR MÁS GRANDE */
     .usuarios-grid .card-credential .user-avatar {
         width: 50px; /* Aumentado */
         height: 50px; /* Aumentado */
@@ -92,19 +93,19 @@
         transition: transform 0.3s ease;
     }
     
-    /* ✅ HOVER AVATAR */
+    /*  HOVER AVATAR */
     .usuarios-grid .card-credential:hover .user-avatar {
         transform: scale(1.05);
     }
     
-    /* ✅ USER INFO */
+    /*  USER INFO */
     .usuarios-grid .card-credential .user-info {
         flex: 1;
         min-width: 0;
         overflow: hidden;
     }
     
-    /* ✅ USER NAME MÁS GRANDE */
+    /*  USER NAME MÁS GRANDE */
     .usuarios-grid .card-credential .user-name {
         font-size: 16px !important; /* Aumentado significativamente */
         font-weight: 600;
@@ -117,7 +118,7 @@
         white-space: nowrap;
     }
     
-    /* ✅ USER ROLE MÁS GRANDE */
+    /*  USER ROLE MÁS GRANDE */
     .usuarios-grid .card-credential .user-role {
         font-size: 14px !important; /* Aumentado */
         color: #718096;
@@ -127,13 +128,13 @@
         white-space: nowrap;
     }
     
-    /* ✅ DETALLES */
+    /*  DETALLES */
     .usuarios-grid .card-credential .user-details {
         flex: 1;
         margin-top: 12px; /* Aumentado */
     }
     
-    /* ✅ DETAIL ITEM MÁS GRANDE */
+    /*  DETAIL ITEM MÁS GRANDE */
     .usuarios-grid .card-credential .detail-item {
         display: flex;
         align-items: flex-start;
@@ -147,7 +148,7 @@
         margin-bottom: 0;
     }
     
-    /* ✅ ICONOS MÁS GRANDES */
+    /*  ICONOS MÁS GRANDES */
     .usuarios-grid .card-credential .detail-item i {
         width: 18px; /* Aumentado */
         color: #a0aec0;
@@ -158,7 +159,7 @@
         font-size: 14px; /* Aumentado */
     }
     
-    /* ✅ STRONG */
+    /*  STRONG */
     .usuarios-grid .card-credential .detail-item strong {
         color: #4a5568;
         margin-right: 6px; /* Aumentado */
@@ -166,7 +167,7 @@
         font-size: 14px; /* Aumentado */
     }
     
-    /* ✅ SPAN */
+    /* SPAN */
     .usuarios-grid .card-credential .detail-item span {
         color: #2d3748;
         word-break: break-all;
@@ -175,7 +176,7 @@
         font-size: 14px; /* Aumentado */
     }
     
-    /* ✅ BADGES MÁS GRANDES */
+    /*  BADGES MÁS GRANDES */
     .badge-admin {
         background: #e53e3e !important;
         color: white !important;
@@ -196,7 +197,7 @@
         border: none;
     }
     
-    /* ✅ BOTONES MÁS GRANDES */
+    /*  BOTONES MÁS GRANDES */
     .usuarios-grid .card-credential .btn-group-actions {
         display: flex;
         gap: 8px; /* Aumentado */
@@ -214,7 +215,7 @@
         transition: all 0.2s ease;
     }
     
-    /* ✅ DROPDOWN FUNCIONAL */
+    /*  DROPDOWN FUNCIONAL */
     .dropdown-menu {
         border: 1px solid #e3e6f0;
         box-shadow: 0 4px 12px rgba(0,0,0,0.1);
@@ -378,13 +379,14 @@
     }
 </style>
 
-<!-- ✅ INCLUIR FONT AWESOME PARA LOS ICONOS -->
+<!--  INCLUIR FONT AWESOME PARA LOS ICONOS -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
 
 <div class="container-fluid py-4">
     <div class="row">
         <div class="col-12">
-            <!-- ✅ HEADER CORREGIDO -->
+            <!--  HEADER CORREGIDO -->
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <div>
                     <h1 class="h3 mb-0 text-gray-800">
@@ -394,7 +396,7 @@
                 </div>
                 
                 <div class="d-flex gap-2">
-                    <!-- ✅ FILTROS DE ESTADO -->
+                    <!--  FILTROS DE ESTADO -->
                     <div class="btn-group" role="group" aria-label="Filtrar usuarios por estado">
                         <a href="<?= base_url('usuarios?estado=activos') ?>" 
                            class="btn btn-sm <?= ($filtro_actual ?? '') === 'activos' ? 'btn-primary' : 'btn-outline-primary' ?>"
@@ -413,7 +415,7 @@
                         </a>
                     </div>
                     
-                    <!-- ✅ DROPDOWN CORREGIDO - AHORA FUNCIONAL -->
+                    <!--  DROPDOWN CORREGIDO - AHORA FUNCIONAL -->
                     <div class="dropdown">
                         <button class="btn btn-primary dropdown-toggle" type="button" 
                                 id="dropdownMenuButton" data-bs-toggle="dropdown" 
@@ -440,7 +442,7 @@
                 </div>
             </div>
 
-            <!-- ✅ ALERTAS -->
+            <!--  ALERTAS -->
             <?php if (session()->getFlashdata('success')): ?>
                 <div class="alert alert-success alert-dismissible fade show" role="alert" aria-live="polite">
                     <i class="fas fa-check-circle me-2" aria-hidden="true"></i>
@@ -457,7 +459,7 @@
                 </div>
             <?php endif; ?>
 
-            <!-- ✅ TARJETA PRINCIPAL -->
+            <!-- TARJETA PRINCIPAL -->
             <div class="card shadow">
                 <div class="card-header bg-white py-3">
                     <h2 class="h6 m-0 font-weight-bold text-primary">
@@ -575,7 +577,7 @@
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script>
-    // ✅ FUNCIONALIDAD DEL DROPDOWN ASEGURADA
+    // ✅  FUNCIONALIDAD DEL DROPDOWN ASEGURADA
     document.addEventListener('DOMContentLoaded', function() {
         // Inicializar dropdowns de Bootstrap
         var dropdownElementList = [].slice.call(document.querySelectorAll('.dropdown-toggle'));
