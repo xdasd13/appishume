@@ -41,6 +41,7 @@ $routes->group('', ['filter' => 'auth:admin'], function($routes) {
     $routes->post('usuarios/actualizar/(:num)', 'UsuariosController::actualizar/$1');
     $routes->get('usuarios/obtener-persona/(:num)', 'UsuariosController::obtenerPersona/$1');
     $routes->post('usuarios/eliminar/(:num)', 'UsuariosController::eliminar/$1');
+    $routes->post('usuarios/reactivar/(:num)', 'UsuariosController::reactivar/$1');
     $routes->get('usuarios/personas-sin-usuario', 'UsuariosController::getPersonasSinUsuario');
     
     // Rutas AJAX para validación RENIEC

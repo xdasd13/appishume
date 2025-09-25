@@ -1,163 +1,219 @@
 <?= $header ?>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <!-- SweetAlert2 CSS -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+
 <style>
-        /* Estilos originales conservados */
+    /* Estilos originales conservados */
+    .card-credential {
+        transition: transform 0.2s;
+        border: 1px solid #dee2e6;
+        border-radius: 10px;
+    }
+    .card-credential:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+    .badge-admin {
+        background-color: #dc3545;
+        font-size: 0.75em;
+        padding: 0.35em 0.65em;
+    }
+    .badge-trabajador {
+        background-color: #0d6efd;
+        font-size: 0.75em;
+        padding: 0.35em 0.65em;
+    }
+    .user-avatar {
+        width: 60px;
+        height: 60px;
+        background: linear-gradient(45deg,rgb(255, 136, 0),rgb(224, 126, 60));
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+        color: white;
+        font-weight: bold;
+    }
+    
+    /* CORRECCIÓN: Estilos para el efecto de label flotante con mayor especificidad */
+    .card-body .form-floating {
+        position: relative;
+        margin-bottom: 0.5rem;
+    }
+    
+    .card-body .form-floating > label {
+        position: absolute;
+        top: 0;
+        left: 0;
+        height: 100%;
+        padding: 1rem 0.75rem;
+        pointer-events: none;
+        border: 1px solid transparent;
+        transform-origin: 0 0;
+        transition: opacity 0.1s ease-in-out, transform 0.1s ease-in-out;
+        color: #6e707e;
+    }
+    
+    .card-body .form-floating > .form-control {
+        height: calc(3.5rem + 2px);
+        padding: 1rem 0.75rem;
+        border: 1px solid #d1d3e2;
+        border-radius: 0.35rem;
+    }
+    
+    .card-body .form-floating > .form-control:focus,
+    .card-body .form-floating > .form-control:not(:placeholder-shown) {
+        padding-top: 1.625rem;
+        padding-bottom: 0.625rem;
+        border-color: #4e73df;
+        box-shadow: 0 0 0 0.2rem rgba(78, 115, 223, 0.25);
+    }
+    
+    .card-body .form-floating > .form-control:focus ~ label,
+    .card-body .form-floating > .form-control:not(:placeholder-shown) ~ label {
+        transform: scale(0.85) translateY(-0.7rem) translateX(0.15rem);
+        color: #4e73df;
+        background-color: white;
+        padding: 0 0.5rem;
+        margin-left: 0.25rem;
+        height: auto;
+        width: auto;
+    }
+    
+    .password-toggle {
+        position: absolute;
+        right: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: none;
+        border: none;
+        color: #6e707e;
+        cursor: pointer;
+        z-index: 10;
+    }
+    
+    .password-toggle:hover {
+        color: #4e73df;
+    }
+    
+    .password-strength {
+        height: 5px;
+        margin-top: 5px;
+        border-radius: 5px;
+        transition: all 0.3s ease;
+        width: 0%;
+    }
+    
+    .password-strength.bg-danger { background-color: #dc3545; }
+    .password-strength.bg-warning { background-color: #ffc107; }
+    .password-strength.bg-success { background-color: #28a745; }
+    
+    /* Estilos para los selects */
+    .form-select {
+        height: calc(3.5rem + 2px);
+        padding: 1rem 0.75rem;
+        border: 1px solid #d1d3e2;
+        border-radius: 0.35rem;
+    }
+    
+    .form-select:focus {
+        border-color: #4e73df;
+        box-shadow: 0 0 0 0.2rem rgba(78, 115, 223, 0.25);
+    }
+    
+    .form-label {
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        color: #4e73df;
+    }
+    
+    /* Estilos para ejemplos */
+    .example-text {
+        font-size: 0.8rem;
+        color: #6c757d;
+        margin-top: 0.25rem;
+        display: block;
+    }
+    
+    .section-title {
+        border-bottom: 2px solid #4e73df;
+        padding-bottom: 0.5rem;
+        margin-bottom: 1.5rem;
+        color: #4e73df;
+    }
+    
+    .form-section {
+        background-color: #f8f9fc;
+        padding: 1.5rem;
+        border-radius: 0.5rem;
+        margin-bottom: 1.5rem;
+        border-left: 4px solid #4e73df;
+    }
+    
+    /* Estilos para feedback de seguridad */
+    .security-feedback {
+        font-size: 0.8rem;
+        margin-top: 0.25rem;
+    }
+    
+    .requirement-met {
+        color: #28a745;
+    }
+    
+    .requirement-unmet {
+        color: #6c757d;
+    }
+    
+    .requirement-met::before {
+        content: "✓ ";
+        font-weight: bold;
+    }
+    
+    .requirement-unmet::before {
+        content: "✗ ";
+        font-weight: bold;
+    }
+    
+    /* CORRECCIÓN: Estilos mejorados para campos readonly */
+    .card-body .form-control[readonly].bg-light {
+        background-color: #f8f9fa !important;
+        border-color: #28a745;
+        color: #495057;
+        cursor: not-allowed;
+    }
+    
+    .card-body .form-control[readonly].bg-light:focus {
+        background-color: #f8f9fa !important;
+        border-color: #28a745;
+        box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25);
+        outline: none;
+    }
+    
+    /* Responsividad */
+    @media (max-width: 768px) {
         .card-credential {
-            transition: transform 0.2s;
-            border: 1px solid #dee2e6;
-            border-radius: 10px;
-        }
-        .card-credential:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-        }
-        .badge-admin {
-            background-color: #dc3545;
-        }
-        .badge-trabajador {
-            background-color: #0d6efd;
-        }
-        .user-avatar {
-            width: 60px;
-            height: 60px;
-            background: linear-gradient(45deg,rgb(255, 136, 0),rgb(224, 126, 60));
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 24px;
-            color: white;
-            font-weight: bold;
-        }
-        
-        /* Nuevos estilos para el efecto de label flotante (solo inputs) */
-        .form-floating {
-            position: relative;
-            margin-bottom: 0.5rem;
-        }
-        
-        .form-floating > label {
-            position: absolute;
-            top: 0;
-            left: 0;
-            height: 100%;
-            padding: 1rem 0.75rem;
-            pointer-events: none;
-            border: 1px solid transparent;
-            transform-origin: 0 0;
-            transition: opacity 0.1s ease-in-out, transform 0.1s ease-in-out;
-            color: #6e707e;
-        }
-        
-        .form-floating > .form-control {
-            height: calc(3.5rem + 2px);
-            padding: 1rem 0.75rem;
-            border: 1px solid #d1d3e2;
-            border-radius: 0.35rem;
-        }
-        
-        .form-floating > .form-control:focus,
-        .form-floating > .form-control:not(:placeholder-shown) {
-            padding-top: 1.625rem;
-            padding-bottom: 0.625rem;
-            border-color: #4e73df;
-            box-shadow: 0 0 0 0.2rem rgba(78, 115, 223, 0.25);
-        }
-        
-        .form-floating > .form-control:focus ~ label,
-        .form-floating > .form-control:not(:placeholder-shown) ~ label {
-            transform: scale(0.85) translateY(-0.7rem) translateX(0.15rem);
-            color: #4e73df;
-            background-color: white;
-            padding: 0 0.5rem;
-            margin-left: 0.25rem;
-            height: auto;
-            width: auto;
-        }
-        
-        .password-toggle {
-            position: absolute;
-            right: 12px;
-            top: 50%;
-            transform: translateY(-50%);
-            background: none;
-            border: none;
-            color: #6e707e;
-            cursor: pointer;
-            z-index: 10;
-        }
-        
-        .password-toggle:hover {
-            color: #4e73df;
-        }
-        
-        .password-strength {
-            height: 5px;
-            margin-top: 5px;
-            border-radius: 5px;
-            transition: all 0.3s ease;
-        }
-        
-        /* Estilos para los selects (sin efecto flotante) */
-        .form-select {
-            height: calc(3.5rem + 2px);
-            padding: 1rem 0.75rem;
-            border: 1px solid #d1d3e2;
-            border-radius: 0.35rem;
-        }
-        
-        .form-select:focus {
-            border-color: #4e73df;
-            box-shadow: 0 0 0 0.2rem rgba(78, 115, 223, 0.25);
-        }
-        
-        .form-label {
-            font-weight: 600;
-            margin-bottom: 0.5rem;
-            color: #4e73df;
-        }
-        
-        /* Nuevos estilos para ejemplos */
-        .example-text {
-            font-size: 0.8rem;
-            color: #6c757d;
-            margin-top: 0.25rem;
-            display: block;
-        }
-        
-        .section-title {
-            border-bottom: 2px solid #4e73df;
-            padding-bottom: 0.5rem;
-            margin-bottom: 1.5rem;
-            color: #4e73df;
+            margin-bottom: 1rem;
         }
         
         .form-section {
-            background-color: #f8f9fc;
-            padding: 1.5rem;
-            border-radius: 0.5rem;
-            margin-bottom: 1.5rem;
-            border-left: 4px solid #4e73df;
+            padding: 1rem;
         }
         
-        /* Nuevos estilos para feedback de seguridad */
-        .security-feedback {
-            font-size: 0.8rem;
-            margin-top: 0.25rem;
+        .user-avatar {
+            width: 50px;
+            height: 50px;
+            font-size: 20px;
         }
         
-        .requirement-met {
-            color: #28a745;
+        .card-body .form-floating > .form-control {
+            height: calc(3rem + 2px);
+            padding: 0.75rem 0.5rem;
         }
-        
-        .requirement-unmet {
-            color: #6c757d;
-        }
-    </style>    
+    }
+</style> 
 <div class="container-fluid py-4">
     <div class="row justify-content-center">
         <div class="col-xl-10 col-lg-12">
@@ -236,7 +292,7 @@
                                                 <div class="form-floating">
                                                     <input type="text" class="form-control" id="nombreusuario_existente" 
                                                            name="nombreusuario" required placeholder=" " 
-                                                           pattern="[a-zA-Z0-9_\-]{4,20}">
+                                                           pattern="[a-zA-Z0-9_-]{4,20}">
                                                     <label for="nombreusuario_existente">Nombre de Usuario *</label>
                                                 </div>
                                                 <span class="example-text">Ejemplo: juan.perez, jperez2023 (4-20 caracteres alfanuméricos)</span>
@@ -319,7 +375,7 @@
                                                 <div class="form-floating">
                                                     <input type="text" class="form-control" id="nombres" 
                                                            name="nombres" required placeholder=" " 
-                                                           pattern="[A-Za-z\s]{2,50}">
+                                                           minlength="2" maxlength="50">
                                                     <label for="nombres">Nombres *</label>
                                                 </div>
                                                 <span class="example-text">Ejemplo: Juan Carlos (solo letras y espacios, 2-50 caracteres)</span>
@@ -331,7 +387,7 @@
                                                 <div class="form-floating">
                                                     <input type="text" class="form-control" id="apellidos" 
                                                            name="apellidos" required placeholder=" " 
-                                                           pattern="[A-Za-z\s]{2,50}">
+                                                           minlength="2" maxlength="50">
                                                     <label for="apellidos">Apellidos *</label>
                                                 </div>
                                                 <span class="example-text">Ejemplo: Pérez García (solo letras y espacios, 2-50 caracteres)</span>
@@ -344,9 +400,8 @@
                                         <div class="row">
                                             <div class="col-md-4 mb-3">
                                                 <div class="form-floating">
-                                                    <select class="form-select" id="tipodoc" name="tipodoc" required>
-                                                        <option value="DNI" selected>DNI</option>
-                                                    </select>
+                                                    <input type="text" class="form-control" id="tipodoc" 
+                                                           name="tipodoc" value="DNI" readonly required>
                                                     <label for="tipodoc">Tipo de Documento *</label>
                                                 </div>
                                                 <span class="example-text">Solo se acepta DNI</span>
@@ -418,7 +473,7 @@
                                                 <div class="form-floating">
                                                     <input type="text" class="form-control" id="direccion" 
                                                            name="direccion" required placeholder=" " 
-                                                           pattern="[A-Za-z0-9\s.,-]{5,150}">
+                                                           minlength="5" maxlength="150">
                                                     <label for="direccion">Dirección *</label>
                                                 </div>
                                                 <span class="example-text">Ejemplo: Av. Principal 123, Urb. Las Flores</span>
@@ -444,7 +499,7 @@
                                                 <div class="form-floating">
                                                     <input type="text" class="form-control" id="nombreusuario_nuevo" 
                                                            name="nombreusuario" required placeholder=" " 
-                                                           pattern="[a-zA-Z0-9_\-]{4,20}">
+                                                           pattern="[a-zA-Z0-9_-]{4,20}">
                                                     <label for="nombreusuario_nuevo">Nombre de Usuario *</label>
                                                 </div>
                                                 <span class="example-text">Ejemplo: juan.perez, jperez2023 (4-20 caracteres alfanuméricos)</span>
@@ -533,14 +588,9 @@
                 });
             }
             
-            // Actualizar ejemplo según tipo de documento
-            $('#tipodoc').on('change', function() {
-                validarNumeroDocumento();
-                updateDocumentExample();
-            });
-            
+            // Función para actualizar ejemplo de documento (ya no necesaria con campo readonly)
             function updateDocumentExample() {
-                // Solo DNI permitido
+                // Solo DNI permitido - campo ahora es readonly
                 $('#example-numerodoc').text('Ejemplo: 12345678 (8 dígitos)');
             }
             
@@ -566,10 +616,7 @@
             setupPasswordToggle('password_nuevo', 'togglePasswordNuevo');
             setupPasswordToggle('confirm_password_nuevo', 'toggleConfirmPasswordNuevo');
             
-            // Validar número de documento según tipo seleccionado
-            $('#tipodoc').on('change', function() {
-                validarNumeroDocumento();
-            });
+            // Validación de número de documento (tipodoc ahora es readonly)
             
             $('#numerodoc').on('input', function() {
                 validarNumeroDocumento();
@@ -1003,8 +1050,12 @@
                         
                         if (response.status === 'success') {
                             handleDniSuccess(response);
-                        } else if (response.status === 'exists') {
-                            handleDniExists(response);
+                        } else if (response.status === 'exists_active') {
+                            handleDniExistsActive(response);
+                        } else if (response.status === 'exists_inactive') {
+                            handleDniExistsInactive(response);
+                        } else if (response.status === 'exists_no_user') {
+                            handleDniExistsNoUser(response);
                         } else {
                             handleDniError(response.message || 'DNI no encontrado');
                         }
@@ -1034,9 +1085,15 @@
                 // Mostrar éxito
                 showDniSuccess('DNI válido encontrado en RENIEC');
                 
-                // Autocompletar campos
-                $('#nombres').val(data.nombres || '').addClass('is-valid');
-                $('#apellidos').val(data.apellidos_completos || '').addClass('is-valid');
+                // Autocompletar campos con validación robusta
+                const nombres = data.nombres || '';
+                const apellidos = data.apellidos_completos || 
+                                 (data.apellido_paterno && data.apellido_materno ? 
+                                  data.apellido_paterno + ' ' + data.apellido_materno : 
+                                  data.apellido_paterno || data.apellido_materno || '');
+                
+                $('#nombres').val(nombres).addClass('is-valid');
+                $('#apellidos').val(apellidos).addClass('is-valid');
                 
                 // Marcar campos como readonly para evitar modificaciones
                 $('#nombres, #apellidos').attr('readonly', true).addClass('bg-light');
@@ -1066,29 +1123,172 @@
             }
 
             /**
-             * Manejar DNI que ya existe en el sistema
+             * Manejar DNI con usuario activo
              */
-            function handleDniExists(response) {
+            function handleDniExistsActive(response) {
                 const data = response.data;
                 
-                showDniError('Este DNI ya está registrado en el sistema');
+                showDniError('Este DNI ya tiene credenciales ACTIVAS');
                 
-                // Mostrar información del registro existente
+                // Mostrar información del usuario activo
                 Swal.fire({
-                    icon: 'warning',
-                    title: 'DNI Ya Registrado',
+                    icon: 'error',
+                    title: 'Usuario Ya Existe',
                     html: `
-                        <p>Este DNI ya pertenece a:</p>
-                        <strong>${data.nombres} ${data.apellidos}</strong>
-                        <br><small class="text-muted">Registrado en la base de datos local</small>
+                        <div class="text-start">
+                            <p><strong>Este DNI ya tiene credenciales activas:</strong></p>
+                            <hr>
+                            <p><i class="fas fa-user me-2"></i><strong>Nombre:</strong> ${data.nombres} ${data.apellidos}</p>
+                            <p><i class="fas fa-id-card me-2"></i><strong>DNI:</strong> ${data.dni}</p>
+                            <p><i class="fas fa-envelope me-2"></i><strong>Email:</strong> ${data.email}</p>
+                            <p><i class="fas fa-user-circle me-2"></i><strong>Usuario:</strong> ${data.usuario}</p>
+                            <p><span class="badge bg-success">Estado: ACTIVO</span></p>
+                        </div>
                     `,
                     showCancelButton: true,
-                    confirmButtonText: 'Ver Usuarios Existentes',
+                    confirmButtonText: 'Ver Lista de Usuarios',
                     cancelButtonText: 'Entendido',
-                    confirmButtonColor: '#3085d6'
+                    confirmButtonColor: '#3085d6',
+                    width: '500px'
                 }).then((result) => {
                     if (result.isConfirmed) {
                         window.location.href = '<?= base_url('usuarios') ?>';
+                    }
+                });
+            }
+
+            /**
+             * Manejar DNI con usuario desactivado
+             */
+            function handleDniExistsInactive(response) {
+                const data = response.data;
+                
+                showDniError('Este DNI tiene credenciales DESACTIVADAS');
+                
+                // Mostrar información del usuario desactivado con opción de reactivar
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Usuario Desactivado',
+                    html: `
+                        <div class="text-start">
+                            <p><strong>Este DNI pertenece a un usuario desactivado:</strong></p>
+                            <hr>
+                            <p><i class="fas fa-user me-2"></i><strong>Nombre:</strong> ${data.nombres} ${data.apellidos}</p>
+                            <p><i class="fas fa-id-card me-2"></i><strong>DNI:</strong> ${data.dni}</p>
+                            <p><i class="fas fa-envelope me-2"></i><strong>Email:</strong> ${data.email}</p>
+                            <p><i class="fas fa-user-circle me-2"></i><strong>Usuario:</strong> ${data.usuario}</p>
+                            <p><span class="badge bg-danger">Estado: DESACTIVADO</span></p>
+                            <hr>
+                            <p class="text-info"><i class="fas fa-info-circle me-2"></i>¿Desea reactivar este usuario en lugar de crear uno nuevo?</p>
+                        </div>
+                    `,
+                    showDenyButton: true,
+                    showCancelButton: true,
+                    confirmButtonText: 'Reactivar Usuario',
+                    denyButtonText: 'Ver Lista de Usuarios',
+                    cancelButtonText: 'Cancelar',
+                    confirmButtonColor: '#28a745',
+                    denyButtonColor: '#3085d6',
+                    width: '550px'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        // Reactivar usuario
+                        reactivarUsuario(data.idusuario, data.nombres + ' ' + data.apellidos);
+                    } else if (result.isDenied) {
+                        window.location.href = '<?= base_url('usuarios') ?>';
+                    }
+                });
+            }
+
+            /**
+             * Manejar DNI de persona sin usuario
+             */
+            function handleDniExistsNoUser(response) {
+                const data = response.data;
+                
+                showDniError('Esta persona ya está registrada pero sin credenciales');
+                
+                // Mostrar información y sugerir crear credenciales para persona existente
+                Swal.fire({
+                    icon: 'info',
+                    title: 'Persona Ya Registrada',
+                    html: `
+                        <div class="text-start">
+                            <p><strong>Esta persona ya está en el sistema:</strong></p>
+                            <hr>
+                            <p><i class="fas fa-user me-2"></i><strong>Nombre:</strong> ${data.nombres} ${data.apellidos}</p>
+                            <p><i class="fas fa-id-card me-2"></i><strong>DNI:</strong> ${data.dni}</p>
+                            <p><span class="badge bg-warning">Sin credenciales de acceso</span></p>
+                            <hr>
+                            <p class="text-info"><i class="fas fa-info-circle me-2"></i>Se recomienda crear credenciales para esta persona existente en lugar de registrarla nuevamente.</p>
+                        </div>
+                    `,
+                    showDenyButton: true,
+                    showCancelButton: true,
+                    confirmButtonText: 'Crear Credenciales',
+                    denyButtonText: 'Ver Lista de Personal',
+                    cancelButtonText: 'Continuar Aquí',
+                    confirmButtonColor: '#28a745',
+                    denyButtonColor: '#3085d6',
+                    width: '550px'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        // Ir al formulario de crear credenciales para personal existente
+                        window.location.href = '<?= base_url('usuarios/crear/existente') ?>';
+                    } else if (result.isDenied) {
+                        window.location.href = '<?= base_url('usuarios') ?>';
+                    }
+                    // Si cancela, puede continuar con el formulario actual
+                });
+            }
+
+            /**
+             * Reactivar usuario desactivado
+             */
+            function reactivarUsuario(idusuario, nombreCompleto) {
+                Swal.fire({
+                    title: 'Reactivando Usuario...',
+                    text: 'Por favor espere',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+
+                $.ajax({
+                    url: '<?= base_url('usuarios/reactivar/') ?>' + idusuario,
+                    type: 'POST',
+                    data: {
+                        '<?= csrf_token() ?>': '<?= csrf_hash() ?>'
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: '¡Usuario Reactivado!',
+                                text: `Las credenciales de ${nombreCompleto} han sido reactivadas exitosamente.`,
+                                confirmButtonColor: '#28a745',
+                                timer: 3000,
+                                timerProgressBar: true
+                            }).then(() => {
+                                window.location.href = '<?= base_url('usuarios') ?>';
+                            });
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error',
+                                text: response.message || 'No se pudo reactivar el usuario',
+                                confirmButtonColor: '#dc3545'
+                            });
+                        }
+                    },
+                    error: function() {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error de Conexión',
+                            text: 'No se pudo conectar con el servidor',
+                            confirmButtonColor: '#dc3545'
+                        });
                     }
                 });
             }

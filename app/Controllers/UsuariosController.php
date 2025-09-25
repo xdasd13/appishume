@@ -25,9 +25,35 @@ class UsuariosController extends BaseController
     // Listar usuarios
     public function index()
     {
+        // Obtener filtro de estado desde GET (activos=1, desactivados=0, todos=null)
+        $filtroEstado = $this->request->getGet('estado');
+        
+        // Convertir a entero o null
+        if ($filtroEstado === '0') {
+            $estado = 0; // Desactivados
+        } elseif ($filtroEstado === 'todos') {
+            $estado = null; // Todos
+        } else {
+            $estado = 1; // Activos (por defecto)
+        }
+        
+        $usuarios = $this->usuarioModel->getUsuariosCompletos($estado);
+        
+        // Determinar título según filtro
+        $titulo = 'Gestión de Credenciales de Trabajadores - ISHUME';
+        $subtitulo = 'Lista de Credenciales Activas';
+        
+        if ($estado === 0) {
+            $subtitulo = 'Lista de Credenciales Desactivadas';
+        } elseif ($estado === null) {
+            $subtitulo = 'Lista de Todas las Credenciales';
+        }
+        
         $data = [
-            'title' => 'Gestión de Credenciales de Trabajadores - ISHUME',
-            'usuarios' => $this->usuarioModel->getUsuariosCompletos(),
+            'title' => $titulo,
+            'subtitulo' => $subtitulo,
+            'usuarios' => $usuarios,
+            'filtro_actual' => $filtroEstado ?: 'activos',
             'header' => view('Layouts/header'),
             'footer' => view('Layouts/footer')
         ];
@@ -146,12 +172,11 @@ class UsuariosController extends BaseController
                     ]
                 ],
                 'numerodoc' => [
-                    'rules' => 'required|exact_length[8]|numeric|is_unique[personas.numerodoc]',
+                    'rules' => 'required|exact_length[8]|numeric',
                     'errors' => [
                         'required' => 'El número de documento es obligatorio',
                         'exact_length' => 'El DNI debe tener exactamente 8 dígitos',
-                        'numeric' => 'El DNI solo debe contener números',
-                        'is_unique' => 'Este número de documento ya está registrado'
+                        'numeric' => 'El DNI solo debe contener números'
                     ]
                 ],
                 'telprincipal' => [
@@ -192,28 +217,63 @@ class UsuariosController extends BaseController
             ]);
         }
 
+        // Validación adicional para DNI duplicado (solo para tipo_creacion = 'nuevo')
+        if ($tipoCreacion === 'nuevo') {
+            $dni = trim($this->request->getPost('numerodoc'));
+            $existingPerson = $this->personaModel->where('numerodoc', $dni)->first();
+            
+            if ($existingPerson) {
+                // Verificar si tiene usuario activo
+                $existingUser = $this->usuarioModel->where('idpersona', $existingPerson->idpersona)->first();
+                
+                if ($existingUser && $existingUser->estado == 1) {
+                    return $this->response->setJSON([
+                        'success' => false,
+                        'message' => 'Este DNI ya tiene credenciales activas en el sistema'
+                    ]);
+                }
+                
+                // Si tiene usuario desactivado o no tiene usuario, permitir continuar
+                // (el JavaScript ya manejó estos casos y el usuario decidió continuar)
+                log_message('info', "DNI {$dni} existe pero usuario decidió continuar - Estado usuario: " . 
+                           ($existingUser ? ($existingUser->estado ? 'activo' : 'desactivado') : 'sin usuario'));
+            }
+        }
+
         try {
             $db = \Config\Database::connect();
             $db->transStart();
 
             if ($tipoCreacion === 'nuevo') {
+                // Log de datos recibidos para debugging
+                log_message('info', 'Datos POST recibidos: ' . json_encode($this->request->getPost()));
+                
                 // Crear nueva persona
                 $personaData = [
                     'nombres' => trim($this->request->getPost('nombres')),
                     'apellidos' => trim($this->request->getPost('apellidos')),
                     'numerodoc' => trim($this->request->getPost('numerodoc')),
-                    'tipodoc' => $this->request->getPost('tipodoc') ?: 'DNI',
+                    'tipodoc' => 'DNI', // Campo readonly, siempre DNI
                     'telprincipal' => trim($this->request->getPost('telprincipal')),
                     'telalternativo' => trim($this->request->getPost('telalternativo')) ?: null,
                     'direccion' => trim($this->request->getPost('direccion')),
                     'referencia' => trim($this->request->getPost('referencia')) ?: null
                 ];
+                
+                log_message('info', 'Datos persona a insertar: ' . json_encode($personaData));
 
-                $this->personaModel->insert($personaData);
+                $insertResult = $this->personaModel->insert($personaData);
+                if (!$insertResult) {
+                    $errors = $this->personaModel->errors();
+                    log_message('error', 'Error al insertar persona: ' . json_encode($errors));
+                    throw new \Exception('Error al crear la persona: ' . implode(', ', $errors));
+                }
+                
                 $idpersona = $this->personaModel->insertID();
+                log_message('info', 'Persona creada con ID: ' . $idpersona);
 
                 if (!$idpersona) {
-                    throw new \Exception('Error al crear la persona');
+                    throw new \Exception('Error al obtener ID de la persona creada');
                 }
             } else {
                 $idpersona = $this->request->getPost('idpersona');
@@ -235,7 +295,17 @@ class UsuariosController extends BaseController
                 'estado' => 1
             ];
 
-            $this->usuarioModel->insert($usuarioData);
+            log_message('info', 'Datos usuario a insertar: ' . json_encode($usuarioData));
+            
+            $insertUserResult = $this->usuarioModel->insert($usuarioData);
+            if (!$insertUserResult) {
+                $userErrors = $this->usuarioModel->errors();
+                log_message('error', 'Error al insertar usuario: ' . json_encode($userErrors));
+                throw new \Exception('Error al crear el usuario: ' . implode(', ', $userErrors));
+            }
+            
+            $idusuario = $this->usuarioModel->insertID();
+            log_message('info', 'Usuario creado con ID: ' . $idusuario);
             
             $db->transComplete();
 
@@ -573,16 +643,56 @@ class UsuariosController extends BaseController
             try {
                 $existingPerson = $this->personaModel->where('numerodoc', $dni)->first();
                 if ($existingPerson) {
-                    return $this->response->setJSON([
-                        'status' => 'exists',
-                        'message' => 'Este DNI ya está registrado en el sistema',
-                        'data' => [
-                            'dni' => $existingPerson->numerodoc,
-                            'nombres' => $existingPerson->nombres,
-                            'apellidos' => $existingPerson->apellidos,
-                            'source' => 'local_db'
-                        ]
-                    ]);
+                    // Verificar si esta persona tiene usuario activo o desactivado
+                    $existingUser = $this->usuarioModel->where('idpersona', $existingPerson->idpersona)->first();
+                    
+                    if ($existingUser) {
+                        if ($existingUser->estado == 1) {
+                            // Usuario activo
+                            return $this->response->setJSON([
+                                'status' => 'exists_active',
+                                'message' => 'Este DNI ya está registrado con credenciales ACTIVAS',
+                                'data' => [
+                                    'dni' => $existingPerson->numerodoc,
+                                    'nombres' => $existingPerson->nombres,
+                                    'apellidos' => $existingPerson->apellidos,
+                                    'usuario' => $existingUser->nombreusuario,
+                                    'email' => $existingUser->email,
+                                    'estado' => 'activo',
+                                    'source' => 'local_db'
+                                ]
+                            ]);
+                        } else {
+                            // Usuario desactivado
+                            return $this->response->setJSON([
+                                'status' => 'exists_inactive',
+                                'message' => 'Este DNI pertenece a un usuario con credenciales DESACTIVADAS',
+                                'data' => [
+                                    'dni' => $existingPerson->numerodoc,
+                                    'nombres' => $existingPerson->nombres,
+                                    'apellidos' => $existingPerson->apellidos,
+                                    'usuario' => $existingUser->nombreusuario,
+                                    'email' => $existingUser->email,
+                                    'estado' => 'desactivado',
+                                    'idusuario' => $existingUser->idusuario,
+                                    'source' => 'local_db'
+                                ]
+                            ]);
+                        }
+                    } else {
+                        // Persona existe pero sin usuario (disponible para crear credenciales)
+                        return $this->response->setJSON([
+                            'status' => 'exists_no_user',
+                            'message' => 'Esta persona ya está registrada pero sin credenciales',
+                            'data' => [
+                                'dni' => $existingPerson->numerodoc,
+                                'nombres' => $existingPerson->nombres,
+                                'apellidos' => $existingPerson->apellidos,
+                                'idpersona' => $existingPerson->idpersona,
+                                'source' => 'local_db'
+                            ]
+                        ]);
+                    }
                 }
             } catch (\Exception $e) {
                 // Si falla la consulta local, continuar con RENIEC
@@ -670,6 +780,55 @@ class UsuariosController extends BaseController
                 'status' => 'error',
                 'message' => 'Error obteniendo estadísticas'
             ])->setStatusCode(500);
+        }
+    }
+
+    /**
+     * Reactivar usuario desactivado
+     */
+    public function reactivar($idusuario)
+    {
+        log_message('info', 'UsuariosController::reactivar - ID: ' . $idusuario);
+
+        try {
+            $usuario = $this->usuarioModel->find($idusuario);
+            
+            if (!$usuario) {
+                return $this->response->setJSON([
+                    'success' => false,
+                    'message' => 'Usuario no encontrado'
+                ]);
+            }
+
+            if ($usuario->estado == 1) {
+                return $this->response->setJSON([
+                    'success' => false,
+                    'message' => 'El usuario ya está activo'
+                ]);
+            }
+
+            // Reactivar usuario (cambiar estado a 1)
+            $result = $this->usuarioModel->update($idusuario, ['estado' => 1]);
+
+            if ($result) {
+                log_message('info', 'Usuario reactivado exitosamente - ID: ' . $idusuario);
+                return $this->response->setJSON([
+                    'success' => true,
+                    'message' => 'Usuario reactivado exitosamente'
+                ]);
+            } else {
+                return $this->response->setJSON([
+                    'success' => false,
+                    'message' => 'Error al reactivar el usuario'
+                ]);
+            }
+
+        } catch (\Exception $e) {
+            log_message('error', 'Error al reactivar usuario: ' . $e->getMessage());
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'Error interno del servidor: ' . $e->getMessage()
+            ]);
         }
     }
 

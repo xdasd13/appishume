@@ -56,7 +56,7 @@ class UsuarioModel extends Model
     }
 
     // Obtener todos los usuarios con información completa para gestión de credenciales
-    public function getUsuariosCompletos()
+    public function getUsuariosCompletos($estado = 1)
     {
         $builder = $this->db->table('usuarios u');
         $builder->select('u.idusuario, u.idpersona, u.idcargo, u.nombreusuario, u.email, u.tipo_usuario, u.estado, 
@@ -68,7 +68,12 @@ class UsuarioModel extends Model
                          COALESCE(c.cargo, "Sin cargo") as cargo');
         $builder->join('personas p', 'u.idpersona = p.idpersona', 'left');
         $builder->join('cargos c', 'u.idcargo = c.idcargo', 'left');
-        $builder->where('u.estado', 1);
+        
+        // Filtrar por estado: 1 = activos, 0 = desactivados, null = todos
+        if ($estado !== null) {
+            $builder->where('u.estado', $estado);
+        }
+        
         $builder->orderBy('p.nombres', 'ASC');
         return $builder->get()->getResult();
     }
