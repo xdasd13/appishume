@@ -139,9 +139,29 @@
                                         <input type="email" class="form-control" value="<?= $usuario->email ?>" readonly>
                                         <small class="form-text text-muted">El email no puede ser modificado</small>
                                     </div>
+                                    <div class="col-md-6">
+                                      <label for="form-label">Contraseña</label>
+                                      <input type="text" class="form-control" value="<?= $usuario->password_hash ?>">
+                                       <span class="example-text">Ejemplo: ClaveSegura123! (mín. 8 caracteres, 1 mayúscula, 1 minúscula, 1 número, 1 símbolo)</span>
+                                                                                       <div class="security-feedback">
+                                                    <div id="password-strength-existente" class="password-strength"></div>
+                                                    <div id="password-requirements-existente">
+                                                        <small class="requirement-unmet" id="length-existente">• Mínimo 8 caracteres</small><br>
+                                                        <small class="requirement-unmet" id="uppercase-existente">• Al menos una mayúscula</small><br>
+                                                        <small class="requirement-unmet" id="lowercase-existente">• Al menos una minúscula</small><br>
+                                                        <small class="requirement-unmet" id="number-existente">• Al menos un número</small><br>
+                                                        <small class="requirement-unmet" id="special-existente">• Al menos un símbolo</small>
+                                                    </div>
+                                                </div>          
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="from-label">Confirmar Contraseña</label>
+                                        <input type="text" class="form-control" value="<?= $usuario->password_hash ?>">
+                                    </div>
                                 </div>
                             </div>
 
+                        
                             <div class="d-flex justify-content-between mt-4">
                                 <a href="<?= base_url('usuarios') ?>" class="btn btn-secondary">
                                     <i class="fas fa-arrow-left me-1"></i> Volver

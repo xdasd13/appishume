@@ -371,33 +371,6 @@
                                     <div class="form-section">
                                         <h6 class="section-title">Datos Personales</h6>
                                         <div class="row">
-                                            <div class="col-md-6 mb-3">
-                                                <div class="form-floating">
-                                                    <input type="text" class="form-control" id="nombres" 
-                                                           name="nombres" required placeholder=" " 
-                                                           minlength="2" maxlength="50">
-                                                    <label for="nombres">Nombres *</label>
-                                                </div>
-                                                <span class="example-text">Ejemplo: Juan Carlos (solo letras y espacios, 2-50 caracteres)</span>
-                                                <div class="invalid-feedback">
-                                                    Por favor ingrese nombres válidos (solo letras y espacios, 2-50 caracteres).
-                                                </div>
-                                            </div>
-                                            <div class="col-md-6 mb-3">
-                                                <div class="form-floating">
-                                                    <input type="text" class="form-control" id="apellidos" 
-                                                           name="apellidos" required placeholder=" " 
-                                                           minlength="2" maxlength="50">
-                                                    <label for="apellidos">Apellidos *</label>
-                                                </div>
-                                                <span class="example-text">Ejemplo: Pérez García (solo letras y espacios, 2-50 caracteres)</span>
-                                                <div class="invalid-feedback">
-                                                    Por favor ingrese apellidos válidos (solo letras y espacios, 2-50 caracteres).
-                                                </div>
-                                            </div>
-                                        </div>
-                                        
-                                        <div class="row">
                                             <div class="col-md-4 mb-3">
                                                 <div class="form-floating">
                                                     <input type="text" class="form-control" id="tipodoc" 
@@ -426,6 +399,34 @@
                                                     <i class="fas fa-shield-alt"></i> Datos obtenidos de RENIEC - Protegidos por Ley de Protección de Datos Personales
                                                 </div>
                                             </div>
+                                            <div class="col-md-6 mb-3">
+                                                <div class="form-floating">
+                                                    <input type="text" class="form-control" id="nombres" 
+                                                           name="nombres" required placeholder=" " 
+                                                           minlength="2" maxlength="50" readonly required>
+                                                    <label for="nombres">Nombres *</label>
+                                                </div>
+                                                <span class="example-text">Ejemplo: Juan Carlos (solo letras y espacios, 2-50 caracteres)</span>
+                                                <div class="invalid-feedback">
+                                                    Por favor ingrese nombres válidos (solo letras y espacios, 2-50 caracteres).
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6 mb-3">
+                                                <div class="form-floating">
+                                                    <input type="text" class="form-control" id="apellidos" 
+                                                           name="apellidos" required placeholder=" " 
+                                                           minlength="2" maxlength="50" readonly required>
+                                                    <label for="apellidos">Apellidos *</label>
+                                                </div>
+                                                <span class="example-text">Ejemplo: Pérez García (solo letras y espacios, 2-50 caracteres)</span>
+                                                <div class="invalid-feedback">
+                                                    Por favor ingrese apellidos válidos (solo letras y espacios, 2-50 caracteres).
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="row">
+                                            
                                             <div class="col-md-4 mb-3">
                                                 <div class="form-floating">
                                                     <select class="form-select" id="idcargo_nuevo" name="idcargo" required>

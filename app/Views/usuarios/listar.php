@@ -542,7 +542,7 @@
                             <?php endforeach; ?>
                         </div>
                     <?php else: ?>
-                        <!-- ✅ ESTADO VACÍO -->
+                        <!--  ESTADO VACÍO -->
                         <div class="text-center py-5" aria-live="polite">
                             <i class="fas fa-users fa-3x text-muted mb-3" aria-hidden="true"></i>
                             <?php if (($filtro_actual ?? '') === '0'): ?>
