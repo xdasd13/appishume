@@ -8,6 +8,7 @@ class UsuarioModel extends Model
 {
     protected $table = 'usuarios';
     protected $primaryKey = 'idusuario';
+    protected $returnType = 'object';
     protected $allowedFields = [
         'idpersona', 'idcargo', 'nombreusuario', 'claveacceso', 
         'tipo_usuario', 'email', 'password_hash', 'estado'

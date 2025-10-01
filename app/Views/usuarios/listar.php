@@ -246,6 +246,46 @@
         outline: none;
     }
     
+    /* ✅ ESTILOS PARA ACCIONES PELIGROSAS */
+    .danger-zone {
+        border-top: 1px solid #e74a3b;
+        padding-top: 12px;
+        margin-top: 8px;
+    }
+    
+    .danger-label {
+        font-size: 0.75rem;
+        color: #e74a3b;
+        font-weight: 600;
+        margin-bottom: 6px;
+        display: block;
+        text-align: center;
+    }
+    
+    .btn-danger-destructive {
+        background: linear-gradient(135deg, #e74a3b, #dc3545);
+        color: white;
+        border: none;
+        font-weight: 500;
+        width: 100%;
+    }
+    
+    .btn-danger-destructive:hover {
+        background: linear-gradient(135deg, #dc3545, #c82333);
+        transform: translateY(-1px);
+        box-shadow: 0 2px 8px rgba(220, 53, 69, 0.3);
+    }
+    
+    .action-buttons-container {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .border-top {
+        border-top: 1px solid #e3e6f0 !important;
+    }
+    
     .sr-only {
         position: absolute;
         width: 1px;
@@ -517,24 +557,44 @@
                                         </div>
                                     </div>
                                     <div class="card-footer">
-                                        <div class="btn-group-actions">
-                                            <a href="<?= base_url('usuarios/editar/' . $usuario->idusuario) ?>" 
-                                               class="btn btn-outline-primary"
-                                               aria-label="Editar usuario <?= htmlspecialchars($usuario->nombres) ?>">
-                                                <i class="fas fa-edit me-1" aria-hidden="true"></i> Editar
-                                            </a>
+                                        <div class="action-buttons-container">
                                             <?php if ($usuario->estado == 1): ?>
-                                                <button onclick="confirmarEliminacion(<?= $usuario->idusuario ?>, '<?= htmlspecialchars(addslashes($usuario->nombres)) ?>')" 
-                                                        class="btn btn-outline-danger"
-                                                        aria-label="Desactivar usuario <?= htmlspecialchars($usuario->nombres) ?>">
-                                                    <i class="fas fa-user-times me-1" aria-hidden="true"></i> Desactivar
-                                                </button>
+                                                <!-- USUARIO ACTIVO -->
+                                                <div class="btn-group-actions">
+                                                    <a href="<?= base_url('usuarios/editar/' . $usuario->idusuario) ?>" 
+                                                       class="btn btn-outline-primary"
+                                                       aria-label="Editar usuario <?= htmlspecialchars($usuario->nombres) ?>">
+                                                        <i class="fas fa-edit me-1" aria-hidden="true"></i> Editar
+                                                    </a>
+                                                    <button onclick="confirmarEliminacion(<?= $usuario->idusuario ?>, '<?= htmlspecialchars(addslashes($usuario->nombres)) ?>')" 
+                                                            class="btn btn-outline-danger"
+                                                            aria-label="Desactivar usuario <?= htmlspecialchars($usuario->nombres) ?>">
+                                                        <i class="fas fa-user-times me-1" aria-hidden="true"></i> Desactivar
+                                                    </button>
+                                                </div>
                                             <?php else: ?>
-                                                <button onclick="confirmarReactivacion(<?= $usuario->idusuario ?>, '<?= htmlspecialchars(addslashes($usuario->nombres)) ?>')" 
-                                                        class="btn btn-outline-success"
-                                                        aria-label="Reactivar usuario <?= htmlspecialchars($usuario->nombres) ?>">
-                                                    <i class="fas fa-user-check me-1" aria-hidden="true"></i> Reactivar
-                                                </button>
+                                                <!-- USUARIO DESACTIVADO -->
+                                                <div class="mb-2">
+                                                    <button onclick="confirmarReactivacion(<?= $usuario->idusuario ?>, '<?= htmlspecialchars(addslashes($usuario->nombres)) ?>')" 
+                                                            class="btn btn-success w-100 mb-1"
+                                                            aria-label="Reactivar usuario <?= htmlspecialchars($usuario->nombres) ?>"
+                                                            data-bs-toggle="tooltip" 
+                                                            title="Restaurar el acceso del usuario">
+                                                        <i class="fas fa-user-check me-1" aria-hidden="true"></i> Reactivar
+                                                    </button>
+                                                </div>
+                                                
+                                                <!-- ZONA DE ACCIONES PELIGROSAS -->
+                                                <div class="danger-zone">
+                                                    <span class="danger-label">ACCIÓN IRREVERSIBLE</span>
+                                                    <button onclick="confirmarEliminacionPermanente(<?= $usuario->idusuario ?>, '<?= htmlspecialchars(addslashes($usuario->nombres)) ?>')" 
+                                                            class="btn btn-danger-destructive"
+                                                            aria-label="Eliminar permanentemente usuario <?= htmlspecialchars($usuario->nombres) ?>"
+                                                            data-bs-toggle="tooltip" 
+                                                            title="Eliminar permanentemente el usuario y todos sus datos">
+                                                        <i class="fas fa-trash-alt me-1" aria-hidden="true"></i> Eliminar Permanentemente
+                                                    </button>
+                                                </div>
                                             <?php endif; ?>
                                         </div>
                                     </div>
@@ -572,12 +632,12 @@
     </div>
 </div>
 
-<!-- ✅ SCRIPTS -->
+<!--  SCRIPTS -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script>
-    // ✅  FUNCIONALIDAD DEL DROPDOWN ASEGURADA
+    //  FUNCIONALIDAD DEL DROPDOWN ASEGURADA
     document.addEventListener('DOMContentLoaded', function() {
         // Inicializar dropdowns de Bootstrap
         var dropdownElementList = [].slice.call(document.querySelectorAll('.dropdown-toggle'));
@@ -596,7 +656,12 @@
             });
         });
     });
-
+    document.addEventListener('DOMContentLoaded', function() {
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl)
+    })
+});
     // ✅ MANEJO DE ERRORES
     window.addEventListener('error', function(e) {
         console.error('Error JavaScript:', e.error);
@@ -716,7 +781,7 @@
         }
     }
 
-    // ✅ FUNCIÓN PARA REACTIVAR USUARIO
+    // FUNCIÓN PARA REACTIVAR USUARIO
     async function reactivarUsuario(id, nombre) {
         Swal.fire({
             title: 'Reactivando...',
@@ -761,6 +826,108 @@
             });
         }
     }
+    // FUNCIÓN PARA CONFIRMAR ELIMINACIÓN PERMANENTE
+async function confirmarEliminacionPermanente(id, nombre) {
+    try {
+        const result = await Swal.fire({
+            title: '⚠️ ¡ATENCIÓN! Eliminación Permanente',
+            html: `
+                <div class="text-start">
+                    <p><strong>Está a punto de eliminar PERMANENTEMENTE a:</strong></p>
+                    <p class="text-center"><strong class="text-danger">${nombre}</strong></p>
+                    <hr>
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <strong>Esta acción NO se puede deshacer</strong>
+                    </div>
+                    <ul class="text-danger">
+                        <li>Se eliminará el usuario de la base de datos</li>
+                        <li>Se perderán todos sus datos</li>
+                        <li>No podrá recuperarse posteriormente</li>
+                    </ul>
+                    <p class="text-muted"><small>Solo use esta opción si está completamente seguro.</small></p>
+                </div>
+            `,
+            icon: 'warning',
+            showDenyButton: true,
+            showCancelButton: true,
+            confirmButtonColor: '#dc3545',
+            denyButtonColor: '#28a745',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: '<i class="fas fa-trash"></i> Sí, eliminar permanentemente',
+            denyButtonText: '<i class="fas fa-user-check"></i> Mejor reactivar',
+            cancelButtonText: '<i class="fas fa-times"></i> Cancelar',
+            reverseButtons: true,
+            focusCancel: true,
+            width: '600px'
+        });
+
+        if (result.isConfirmed) {
+            await eliminarUsuarioPermanente(id, nombre);
+        } else if (result.isDenied) {
+            await reactivarUsuario(id, nombre);
+        }
+    } catch (error) {
+        console.error('Error en confirmarEliminacionPermanente:', error);
+        await Swal.fire({
+            title: 'Error',
+            text: 'Error al procesar la solicitud',
+            icon: 'error',
+            confirmButtonColor: '#4e73df'
+        });
+    }
+}
+
+// FUNCIÓN PARA ELIMINAR USUARIO PERMANENTEMENTE
+async function eliminarUsuarioPermanente(id, nombre) {
+    Swal.fire({
+        title: 'Eliminando...',
+        text: 'Eliminando usuario permanentemente de la base de datos',
+        allowOutsideClick: false,
+        didOpen: () => {
+            Swal.showLoading();
+        }
+    });
+
+    try {
+        const response = await fetch('<?= base_url('usuarios/eliminar-permanente/') ?>' + id, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify({
+                '<?= csrf_token() ?>': '<?= csrf_hash() ?>'
+            })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            await Swal.fire({
+                title: '¡Eliminado!',
+                text: `${nombre} ha sido eliminado permanentemente del sistema.`,
+                icon: 'success',
+                confirmButtonColor: '#4e73df',
+                timer: 3000,
+                timerProgressBar: true
+            });
+            
+            // Recargar la página para actualizar la lista
+            window.location.reload();
+        } else {
+            throw new Error(data.message || 'Error desconocido');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        await Swal.fire({
+            title: 'Error',
+            text: error.message || 'Error al eliminar el usuario permanentemente',
+            icon: 'error',
+            confirmButtonColor: '#4e73df'
+        });
+    }
+}
 </script>
 
 <?= $footer ?>

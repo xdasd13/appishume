@@ -19,9 +19,7 @@ class UsuariosController extends BaseController
         $this->personaModel = new PersonaModel();
         $this->cargoModel = new CargoModel();
     }
-    
-    // Los tokens CSRF ahora se manejan automáticamente por CodeIgniter
-    
+        
     // Listar usuarios
     public function index()
     {
@@ -762,7 +760,6 @@ class UsuariosController extends BaseController
     public function reniecStats()
     {
         // Verificar permisos de administrador
-        // TODO: Implementar verificación de rol admin
         
         try {
             $reniecService = new ReniecService();
@@ -800,7 +797,10 @@ class UsuariosController extends BaseController
                 ]);
             }
 
-            if ($usuario->estado == 1) {
+            // Manejar tanto arrays como objetos
+            $estado = is_array($usuario) ? $usuario['estado'] : $usuario->estado;
+            
+            if ($estado == 1) {
                 return $this->response->setJSON([
                     'success' => false,
                     'message' => 'El usuario ya está activo'
@@ -825,6 +825,59 @@ class UsuariosController extends BaseController
 
         } catch (\Exception $e) {
             log_message('error', 'Error al reactivar usuario: ' . $e->getMessage());
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'Error interno del servidor: ' . $e->getMessage()
+            ]);
+        }
+    }
+
+    /**
+     * Eliminar usuario permanentemente de la base de datos
+     */
+    public function eliminarPermanente($idusuario)
+    {
+        log_message('info', 'UsuariosController::eliminarPermanente - ID: ' . $idusuario);
+
+        try {
+            $usuario = $this->usuarioModel->find($idusuario);
+            
+            if (!$usuario) {
+                return $this->response->setJSON([
+                    'success' => false,
+                    'message' => 'Usuario no encontrado'
+                ]);
+            }
+
+            // Manejar tanto arrays como objetos
+            $estado = is_array($usuario) ? $usuario['estado'] : $usuario->estado;
+            
+            // Solo permitir eliminar usuarios desactivados
+            if ($estado == 1) {
+                return $this->response->setJSON([
+                    'success' => false,
+                    'message' => 'No se puede eliminar un usuario activo. Primero debe desactivarlo.'
+                ]);
+            }
+
+            // Eliminar usuario permanentemente
+            $result = $this->usuarioModel->delete($idusuario);
+
+            if ($result) {
+                log_message('info', 'Usuario eliminado permanentemente - ID: ' . $idusuario);
+                return $this->response->setJSON([
+                    'success' => true,
+                    'message' => 'Usuario eliminado permanentemente'
+                ]);
+            } else {
+                return $this->response->setJSON([
+                    'success' => false,
+                    'message' => 'Error al eliminar el usuario'
+                ]);
+            }
+
+        } catch (\Exception $e) {
+            log_message('error', 'Error al eliminar usuario permanentemente: ' . $e->getMessage());
             return $this->response->setJSON([
                 'success' => false,
                 'message' => 'Error interno del servidor: ' . $e->getMessage()
