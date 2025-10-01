@@ -81,9 +81,16 @@
                                                         <i class="fas fa-truck"></i> Registrar entrega
                                                     </a>
                                                 <?php else: ?>
-                                                    <span class="text-danger small">
-                                                        <i class="fas fa-exclamation-triangle"></i> Contrato con deuda
-                                                    </span>
+                                                    <div class="btn-group-vertical" role="group">
+                                                        <a href="<?= base_url('controlpagos/crear?contrato=' . $c['idcontrato']) ?>"
+                                                            class="btn btn-warning btn-sm mb-1" 
+                                                            title="Proceder con el pago del contrato">
+                                                            <i class="fas fa-credit-card"></i> Completar pago
+                                                        </a>
+                                                        <small class="text-danger">
+                                                            <i class="fas fa-exclamation-triangle"></i> Deuda: S/ <?= number_format($c['deuda_actual'], 2) ?>
+                                                        </small>
+                                                    </div>
                                                 <?php endif; ?>
                                             </td>
                                         </tr>

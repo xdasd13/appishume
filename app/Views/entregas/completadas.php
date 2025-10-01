@@ -41,7 +41,7 @@
                 <div class="alert alert-info">
                   <i class="fas fa-info-circle mr-2"></i>
                   <strong>Información completa:</strong> Aquí encontrará todas las entregas registradas con sus
-                  comprobantes, fechas y responsables para responder rápidamente a reclamos.
+                  fechas y responsables para responder rápidamente a reclamos.
                 </div>
               </div>
             </div>
@@ -56,7 +56,6 @@
                     <th>Fecha Entrega</th>
                     <th>Responsable</th>
                     <th>Estado</th>
-                    <th>Comprobante</th>
                     <th>Acciones</th>
                   </tr>
                 </thead>
@@ -102,24 +101,9 @@
                       <?php endif; ?>
                     </td>
                     <td>
-                      <?php if(isset($e['comprobante_entrega']) && $e['comprobante_entrega']): ?>
-                      <button type="button" class="btn btn-sm btn-danger ver-pdf" data-toggle="modal"
-                        data-target="#pdfModal"
-                        data-pdf="<?= base_url('uploads/comprobantes_entrega/' . $e['comprobante_entrega']) ?>">
-                        <i class="fas fa-file-pdf mr-1"></i> Ver PDF
-                      </button>
-                      <?php else: ?>
-                      <span class="badge badge-secondary">Sin comprobante</span>
-                      <?php endif; ?>
-                    </td>
-                    <td>
                       <div class="btn-group">
                         <a href="<?= base_url('entregas/ver/' . $e['identregable']) ?>" class="btn btn-sm btn-primary">
                           <i class="fas fa-eye"></i> Ver Detalle
-                        </a>
-                        <a href="<?= base_url('entregas/imprimir/' . $e['identregable']) ?>" class="btn btn-sm btn-info"
-                          target="_blank">
-                          <i class="fas fa-print"></i> Imprimir
                         </a>
                       </div>
                     </td>
@@ -135,30 +119,6 @@
   </div>
 </div>
 
-<!-- Modal para ver PDF -->
-<div class="modal fade" id="pdfModal" tabindex="-1" aria-labelledby="pdfModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-lg modal-dialog-centered">
-    <div class="modal-content">
-      <div class="modal-header bg-danger text-white">
-        <h5 class="modal-title" id="pdfModalLabel"><i class="fas fa-file-pdf mr-2"></i>Comprobante de Entrega</h5>
-        <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
-          <span aria-hidden="true">&times;</span>
-        </button>
-      </div>
-      <div class="modal-body p-0">
-        <div style="height: 70vh;">
-          <iframe id="pdfViewer" style="width: 100%; height: 100%; border: none;"></iframe>
-        </div>
-      </div>
-      <div class="modal-footer">
-        <a id="downloadPdf" href="#" class="btn btn-success" download>
-          <i class="fas fa-download mr-2"></i>Descargar
-        </a>
-        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
-      </div>
-    </div>
-  </div>
-</div>
 
 <script>
 $(document).ready(function() {
@@ -173,12 +133,6 @@ $(document).ready(function() {
     "responsive": true
   });
 
-  // Manejar la visualización de PDF
-  $('.ver-pdf').on('click', function() {
-    var pdfUrl = $(this).data('pdf');
-    $('#pdfViewer').attr('src', pdfUrl);
-    $('#downloadPdf').attr('href', pdfUrl);
-  });
 });
 </script>
 
