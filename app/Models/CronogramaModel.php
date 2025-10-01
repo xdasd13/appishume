@@ -77,20 +77,21 @@ class CronogramaModel extends Model
                 $whereClause = "AND sc.fechahoraservicio BETWEEN '$start' AND '$end'";
             }
 
-            $query = "
+            // Primero intentar consulta completa
+            $queryCompleta = "
                 SELECT 
                     sc.idserviciocontratado as id,
-                    CONCAT(s.servicio, ' - ', 
+                    CONCAT(COALESCE(s.servicio, 'Servicio'), ' - ', 
                         CASE 
-                            WHEN c.idempresa IS NOT NULL THEN e.razonsocial
-                            ELSE CONCAT(p.nombres, ' ', p.apellidos)
+                            WHEN c.idempresa IS NOT NULL THEN COALESCE(e.razonsocial, 'Empresa')
+                            ELSE CONCAT(COALESCE(p.nombres, 'Cliente'), ' ', COALESCE(p.apellidos, ''))
                         END
                     ) as title,
                     sc.fechahoraservicio as start,
-                    sc.direccion,
+                    COALESCE(sc.direccion, 'Sin dirección') as direccion,
                     CASE 
-                        WHEN c.idempresa IS NOT NULL THEN e.telefono
-                        ELSE p.telefono
+                        WHEN c.idempresa IS NOT NULL THEN COALESCE(e.telefono, 'Sin teléfono')
+                        ELSE COALESCE(p.telefono, 'Sin teléfono')
                     END as telefono,
                     COALESCE(eq.estadoservicio, 'Pendiente') as estado,
                     CASE 
@@ -100,18 +101,43 @@ class CronogramaModel extends Model
                         ELSE '#757575'
                     END as color
                 FROM servicioscontratados sc
-                INNER JOIN cotizaciones cot ON sc.idcotizacion = cot.idcotizacion
-                INNER JOIN contratos con ON cot.idcotizacion = con.idcotizacion
-                INNER JOIN clientes c ON cot.idcliente = c.idcliente
+                LEFT JOIN cotizaciones cot ON sc.idcotizacion = cot.idcotizacion
+                LEFT JOIN contratos con ON cot.idcotizacion = con.idcotizacion
+                LEFT JOIN clientes c ON cot.idcliente = c.idcliente
                 LEFT JOIN personas p ON c.idpersona = p.idpersona
                 LEFT JOIN empresas e ON c.idempresa = e.idempresa
-                INNER JOIN servicios s ON sc.idservicio = s.idservicio
+                LEFT JOIN servicios s ON sc.idservicio = s.idservicio
                 LEFT JOIN equipos eq ON sc.idserviciocontratado = eq.idserviciocontratado
                 WHERE 1=1 $whereClause
                 ORDER BY sc.fechahoraservicio ASC
             ";
 
-            $eventos = $this->db->query($query)->getResult();
+            log_message('info', 'CronogramaModel - Intentando consulta completa');
+            $eventos = $this->db->query($queryCompleta)->getResult();
+            
+            // Si no hay resultados, intentar consulta simplificada
+            if (empty($eventos)) {
+                log_message('info', 'CronogramaModel - Consulta completa sin resultados, intentando simplificada');
+                
+                $querySimple = "
+                    SELECT 
+                        sc.idserviciocontratado as id,
+                        CONCAT('Servicio ID: ', sc.idservicio, ' - ', DATE_FORMAT(sc.fechahoraservicio, '%d/%m/%Y %H:%i')) as title,
+                        sc.fechahoraservicio as start,
+                        COALESCE(sc.direccion, 'Sin dirección') as direccion,
+                        'Sin teléfono' as telefono,
+                        'Pendiente' as estado,
+                        '#2196f3' as color
+                    FROM servicioscontratados sc
+                    WHERE 1=1 $whereClause
+                    ORDER BY sc.fechahoraservicio ASC
+                ";
+                
+                $eventos = $this->db->query($querySimple)->getResult();
+                log_message('info', 'CronogramaModel - Consulta simple encontró: ' . count($eventos) . ' eventos');
+            } else {
+                log_message('info', 'CronogramaModel - Consulta completa encontró: ' . count($eventos) . ' eventos');
+            }
             
             // Formatear eventos para FullCalendar
             $eventosFormateados = [];
@@ -129,11 +155,41 @@ class CronogramaModel extends Model
                 ];
             }
 
+            log_message('info', 'CronogramaModel - Eventos formateados: ' . count($eventosFormateados));
             return $eventosFormateados;
 
         } catch (\Exception $e) {
             log_message('error', 'Error en getEventosCalendario: ' . $e->getMessage());
-            return [];
+            log_message('error', 'Error trace: ' . $e->getTraceAsString());
+            
+            // En caso de error, intentar consulta mínima
+            try {
+                log_message('info', 'CronogramaModel - Intentando consulta de emergencia');
+                $queryEmergencia = "SELECT idserviciocontratado, fechahoraservicio, direccion FROM servicioscontratados ORDER BY fechahoraservicio";
+                $eventosEmergencia = $this->db->query($queryEmergencia)->getResult();
+                
+                $eventosFormateados = [];
+                foreach ($eventosEmergencia as $evento) {
+                    $eventosFormateados[] = [
+                        'id' => $evento->idserviciocontratado,
+                        'title' => 'Servicio - ' . date('d/m/Y H:i', strtotime($evento->fechahoraservicio)),
+                        'start' => $evento->fechahoraservicio,
+                        'color' => '#ff9800',
+                        'extendedProps' => [
+                            'direccion' => $evento->direccion ?? 'Sin dirección',
+                            'telefono' => 'Sin teléfono',
+                            'estado' => 'Pendiente'
+                        ]
+                    ];
+                }
+                
+                log_message('info', 'CronogramaModel - Consulta de emergencia encontró: ' . count($eventosFormateados) . ' eventos');
+                return $eventosFormateados;
+                
+            } catch (\Exception $e2) {
+                log_message('error', 'Error en consulta de emergencia: ' . $e2->getMessage());
+                return [];
+            }
         }
     }
 

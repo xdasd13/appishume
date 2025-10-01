@@ -39,6 +39,92 @@
             color: #e76f00;
         }
 
+        /* Estilos para campos editables */
+        .form-text .fa-edit {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        /* Estilos para validación de contraseña */
+        .password-strength-container {
+            margin-top: 8px;
+        }
+
+        .password-strength-bar {
+            width: 100%;
+            height: 4px;
+            background-color: #e9ecef;
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .password-strength-fill {
+            height: 100%;
+            transition: all 0.3s ease;
+            border-radius: 2px;
+        }
+
+        .password-strength-fill.weak {
+            width: 25%;
+            background-color: #dc3545;
+        }
+
+        .password-strength-fill.fair {
+            width: 50%;
+            background-color: #fd7e14;
+        }
+
+        .password-strength-fill.good {
+            width: 75%;
+            background-color: #ffc107;
+        }
+
+        .password-strength-fill.strong {
+            width: 100%;
+            background-color: #28a745;
+        }
+
+        .password-requirements {
+            font-size: 0.875rem;
+        }
+
+        .requirement {
+            display: block;
+            margin-bottom: 2px;
+            transition: all 0.3s ease;
+        }
+
+        .requirement.met {
+            color: #28a745;
+        }
+
+        .requirement.met i {
+            color: #28a745;
+        }
+
+        .requirement.met i:before {
+            content: "\f00c"; /* fa-check */
+        }
+
+        .password-match {
+            font-size: 0.875rem;
+        }
+
+        /* Mejorar input groups */
+        .input-group .password-toggle {
+            border-left: none;
+        }
+
+        .input-group .form-control:focus + .password-toggle {
+            border-color: #86b7fe;
+            box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+        }
+
     </style>
     
     <div class="container-fluid py-4">
@@ -87,14 +173,31 @@
                                         <label class="form-label">Documento</label>
                                         <input type="text" class="form-control" 
                                                value="<?= $usuario->tipodoc . ': ' . $usuario->numerodoc ?>" readonly>
+                                        <small class="form-text text-muted">
+                                            <i class="fas fa-lock text-secondary"></i> Campo no editable
+                                        </small>
                                     </div>
                                     <div class="col-md-4">
-                                        <label class="form-label">Teléfono</label>
-                                        <input type="text" class="form-control" value="<?= $usuario->telprincipal ?>" readonly>
+                                        <label class="form-label">Teléfono *</label>
+                                        <input type="tel" class="form-control" name="telprincipal" 
+                                               value="<?= $usuario->telprincipal ?>" 
+                                               pattern="[0-9]{9}" maxlength="9" required
+                                               placeholder="Ej: 987654321">
+                                        <div class="invalid-feedback">Ingrese un teléfono válido (9 dígitos)</div>
+                                        <small class="form-text text-muted">
+                                            <i class="fas fa-edit text-primary"></i> Campo editable
+                                        </small>
                                     </div>
                                     <div class="col-md-4">
-                                        <label class="form-label">Dirección</label>
-                                        <input type="text" class="form-control" value="<?= $usuario->direccion ?>" readonly>
+                                        <label class="form-label">Dirección *</label>
+                                        <input type="text" class="form-control" name="direccion" 
+                                               value="<?= $usuario->direccion ?>" 
+                                               maxlength="200" required
+                                               placeholder="Ej: Av. Los Pinos 123, San Isidro">
+                                        <div class="invalid-feedback">La dirección es requerida</div>
+                                        <small class="form-text text-muted">
+                                            <i class="fas fa-edit text-primary"></i> Campo editable
+                                        </small>
                                     </div>
                                 </div>
                             </div>
@@ -137,26 +240,90 @@
                                     <div class="col-md-6">
                                         <label class="form-label">Email</label>
                                         <input type="email" class="form-control" value="<?= $usuario->email ?>" readonly>
-                                        <small class="form-text text-muted">El email no puede ser modificado</small>
+                                        <small class="form-text text-muted">
+                                            <i class="fas fa-lock text-secondary"></i> El email no puede ser modificado
+                                        </small>
                                     </div>
+                                </div>
+                            </div>
+
+                            <!-- Sección de Cambio de Contraseña -->
+                            <div class="form-section">
+                                <h6 class="text-primary mb-3">
+                                    <i class="fas fa-lock me-2"></i>Cambio de Contraseña
+                                    <small class="text-muted">(Opcional - Solo completar si desea cambiar la contraseña)</small>
+                                </h6>
+                                
+                                <div class="row">
                                     <div class="col-md-6">
-                                      <label for="form-label">Contraseña</label>
-                                      <input type="text" class="form-control" value="<?= $usuario->password_hash ?>">
-                                       <span class="example-text">Ejemplo: ClaveSegura123! (mín. 8 caracteres, 1 mayúscula, 1 minúscula, 1 número, 1 símbolo)</span>
-                                                                                       <div class="security-feedback">
-                                                    <div id="password-strength-existente" class="password-strength"></div>
-                                                    <div id="password-requirements-existente">
-                                                        <small class="requirement-unmet" id="length-existente">• Mínimo 8 caracteres</small><br>
-                                                        <small class="requirement-unmet" id="uppercase-existente">• Al menos una mayúscula</small><br>
-                                                        <small class="requirement-unmet" id="lowercase-existente">• Al menos una minúscula</small><br>
-                                                        <small class="requirement-unmet" id="number-existente">• Al menos un número</small><br>
-                                                        <small class="requirement-unmet" id="special-existente">• Al menos un símbolo</small>
-                                                    </div>
-                                                </div>          
+                                        <label class="form-label">Nueva Contraseña</label>
+                                        <div class="input-group">
+                                            <input type="password" class="form-control" id="nueva_password" name="nueva_password" 
+                                                   placeholder="Ingrese nueva contraseña (opcional)"
+                                                   minlength="8" maxlength="50">
+                                            <button class="btn btn-outline-secondary password-toggle" type="button" 
+                                                    onclick="togglePassword('nueva_password')" tabindex="-1">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                        </div>
+                                        <div class="invalid-feedback">
+                                            La contraseña debe tener al menos 8 caracteres
+                                        </div>
+                                        <small class="form-text text-muted">
+                                            Mín. 8 caracteres, 1 mayúscula, 1 minúscula, 1 número, 1 símbolo
+                                        </small>
+                                        
+                                        <!-- Indicador de fortaleza de contraseña -->
+                                        <div class="password-strength-container mt-2" style="display: none;">
+                                            <div class="password-strength-bar">
+                                                <div class="password-strength-fill" id="strength-fill"></div>
+                                            </div>
+                                            <small class="password-strength-text" id="strength-text">Fortaleza de contraseña</small>
+                                        </div>
+                                        
+                                        <!-- Requisitos de contraseña -->
+                                        <div class="password-requirements mt-2" id="password-requirements" style="display: none;">
+                                            <small class="requirement" id="length-req">
+                                                <i class="fas fa-times text-danger"></i> Mínimo 8 caracteres
+                                            </small><br>
+                                            <small class="requirement" id="uppercase-req">
+                                                <i class="fas fa-times text-danger"></i> Al menos una mayúscula
+                                            </small><br>
+                                            <small class="requirement" id="lowercase-req">
+                                                <i class="fas fa-times text-danger"></i> Al menos una minúscula
+                                            </small><br>
+                                            <small class="requirement" id="number-req">
+                                                <i class="fas fa-times text-danger"></i> Al menos un número
+                                            </small><br>
+                                            <small class="requirement" id="special-req">
+                                                <i class="fas fa-times text-danger"></i> Al menos un símbolo especial
+                                            </small>
+                                        </div>
                                     </div>
+                                    
                                     <div class="col-md-6">
-                                        <label for="from-label">Confirmar Contraseña</label>
-                                        <input type="text" class="form-control" value="<?= $usuario->password_hash ?>">
+                                        <label class="form-label">Confirmar Nueva Contraseña</label>
+                                        <div class="input-group">
+                                            <input type="password" class="form-control" id="confirmar_password" name="confirmar_password" 
+                                                   placeholder="Confirme la nueva contraseña">
+                                            <button class="btn btn-outline-secondary password-toggle" type="button" 
+                                                    onclick="togglePassword('confirmar_password')" tabindex="-1">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                        </div>
+                                        <div class="invalid-feedback" id="confirm-password-feedback">
+                                            Las contraseñas no coinciden
+                                        </div>
+                                        <small class="form-text text-muted">
+                                            Debe coincidir con la nueva contraseña
+                                        </small>
+                                        
+                                        <!-- Indicador de coincidencia -->
+                                        <div class="password-match mt-2" id="password-match" style="display: none;">
+                                            <small class="text-success">
+                                                <i class="fas fa-check"></i> Las contraseñas coinciden
+                                            </small>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -182,18 +349,135 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
+        /**
+         * Alternar visibilidad de contraseña
+         * @param {string} inputId - ID del campo de contraseña
+         */
         function togglePassword(inputId) {
             const input = document.getElementById(inputId);
-            const icon = input.nextElementSibling.querySelector('i');
+            const button = input.nextElementSibling;
+            const icon = button.querySelector('i');
             
             if (input.type === 'password') {
                 input.type = 'text';
                 icon.classList.remove('fa-eye');
                 icon.classList.add('fa-eye-slash');
+                button.setAttribute('title', 'Ocultar contraseña');
             } else {
                 input.type = 'password';
                 icon.classList.remove('fa-eye-slash');
                 icon.classList.add('fa-eye');
+                button.setAttribute('title', 'Mostrar contraseña');
+            }
+        }
+
+        /**
+         * Validar fortaleza de contraseña
+         * @param {string} password - Contraseña a validar
+         * @returns {object} - Objeto con información de validación
+         */
+        function validatePasswordStrength(password) {
+            const requirements = {
+                length: password.length >= 8,
+                uppercase: /[A-Z]/.test(password),
+                lowercase: /[a-z]/.test(password),
+                number: /\d/.test(password),
+                special: /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)
+            };
+
+            const metCount = Object.values(requirements).filter(Boolean).length;
+            let strength = 'weak';
+            
+            if (metCount >= 5) strength = 'strong';
+            else if (metCount >= 4) strength = 'good';
+            else if (metCount >= 3) strength = 'fair';
+
+            return { requirements, strength, score: metCount };
+        }
+
+        /**
+         * Actualizar indicadores visuales de fortaleza de contraseña
+         * @param {string} password - Contraseña actual
+         */
+        function updatePasswordStrength(password) {
+            const strengthContainer = document.querySelector('.password-strength-container');
+            const strengthFill = document.getElementById('strength-fill');
+            const strengthText = document.getElementById('strength-text');
+            const requirementsDiv = document.getElementById('password-requirements');
+
+            if (password.length === 0) {
+                strengthContainer.style.display = 'none';
+                requirementsDiv.style.display = 'none';
+                return;
+            }
+
+            strengthContainer.style.display = 'block';
+            requirementsDiv.style.display = 'block';
+
+            const validation = validatePasswordStrength(password);
+            
+            // Actualizar barra de fortaleza
+            strengthFill.className = `password-strength-fill ${validation.strength}`;
+            
+            // Actualizar texto de fortaleza
+            const strengthTexts = {
+                weak: 'Débil',
+                fair: 'Regular',
+                good: 'Buena',
+                strong: 'Fuerte'
+            };
+            strengthText.textContent = `Fortaleza: ${strengthTexts[validation.strength]}`;
+
+            // Actualizar requisitos individuales
+            const reqElements = {
+                length: document.getElementById('length-req'),
+                uppercase: document.getElementById('uppercase-req'),
+                lowercase: document.getElementById('lowercase-req'),
+                number: document.getElementById('number-req'),
+                special: document.getElementById('special-req')
+            };
+
+            Object.keys(validation.requirements).forEach(req => {
+                const element = reqElements[req];
+                const icon = element.querySelector('i');
+                
+                if (validation.requirements[req]) {
+                    element.classList.add('met');
+                    icon.className = 'fas fa-check text-success';
+                } else {
+                    element.classList.remove('met');
+                    icon.className = 'fas fa-times text-danger';
+                }
+            });
+        }
+
+        /**
+         * Validar coincidencia de contraseñas
+         */
+        function validatePasswordMatch() {
+            const newPassword = document.getElementById('nueva_password').value;
+            const confirmPassword = document.getElementById('confirmar_password').value;
+            const matchIndicator = document.getElementById('password-match');
+            const confirmInput = document.getElementById('confirmar_password');
+
+            if (confirmPassword.length === 0) {
+                matchIndicator.style.display = 'none';
+                confirmInput.classList.remove('is-valid', 'is-invalid');
+                return true;
+            }
+
+            if (newPassword === confirmPassword && newPassword.length > 0) {
+                matchIndicator.style.display = 'block';
+                matchIndicator.innerHTML = '<small class="text-success"><i class="fas fa-check"></i> Las contraseñas coinciden</small>';
+                confirmInput.classList.remove('is-invalid');
+                confirmInput.classList.add('is-valid');
+                return true;
+            } else {
+                matchIndicator.style.display = 'block';
+                matchIndicator.innerHTML = '<small class="text-danger"><i class="fas fa-times"></i> Las contraseñas no coinciden</small>';
+                confirmInput.classList.remove('is-valid');
+                confirmInput.classList.add('is-invalid');
+                return false;
             }
         }
 
@@ -202,6 +486,34 @@
             const tipoUsuarioSelect = form.querySelector('select[name="tipo_usuario"]');
             const originalTipoUsuario = '<?= $usuario->tipo_usuario ?>';
 
+            // Referencias a campos de contraseña
+            const newPasswordInput = document.getElementById('nueva_password');
+            const confirmPasswordInput = document.getElementById('confirmar_password');
+
+            // Event listeners para validación de contraseña en tiempo real
+            if (newPasswordInput) {
+                newPasswordInput.addEventListener('input', function() {
+                    updatePasswordStrength(this.value);
+                    validatePasswordMatch();
+                });
+
+                newPasswordInput.addEventListener('focus', function() {
+                    if (this.value.length > 0) {
+                        document.querySelector('.password-strength-container').style.display = 'block';
+                        document.getElementById('password-requirements').style.display = 'block';
+                    }
+                });
+            }
+
+            if (confirmPasswordInput) {
+                confirmPasswordInput.addEventListener('input', validatePasswordMatch);
+            }
+
+            // Agregar tooltips a los botones de visibilidad
+            document.querySelectorAll('.password-toggle').forEach(button => {
+                button.setAttribute('title', 'Mostrar contraseña');
+            });
+
             form.addEventListener('submit', async function(e) {
                 e.preventDefault();
                 const submitBtn = document.getElementById('submitBtn');
@@ -209,6 +521,37 @@
                 // Prevenir múltiples envíos
                 if (submitBtn.disabled) {
                     return;
+                }
+
+                // Validación adicional para contraseñas
+                const newPassword = newPasswordInput ? newPasswordInput.value : '';
+                const confirmPassword = confirmPasswordInput ? confirmPasswordInput.value : '';
+                
+                // Si se ingresó una nueva contraseña, validar que sea segura
+                if (newPassword.length > 0) {
+                    const validation = validatePasswordStrength(newPassword);
+                    if (validation.score < 4) {
+                        Swal.fire({
+                            title: 'Contraseña Insegura',
+                            text: 'La contraseña debe cumplir al menos 4 de los 5 requisitos de seguridad.',
+                            icon: 'warning',
+                            confirmButtonColor: '#ffc107',
+                            confirmButtonText: 'Entendido'
+                        });
+                        return;
+                    }
+                    
+                    if (newPassword !== confirmPassword) {
+                        Swal.fire({
+                            title: 'Contraseñas No Coinciden',
+                            text: 'La nueva contraseña y su confirmación deben ser idénticas.',
+                            icon: 'error',
+                            confirmButtonColor: '#dc3545',
+                            confirmButtonText: 'Entendido'
+                        });
+                        confirmPasswordInput.focus();
+                        return;
+                    }
                 }
 
                 // Validar el formulario

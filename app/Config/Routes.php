@@ -111,6 +111,7 @@ $routes->get('cronograma/proyectos-estado/(:segment)', 'Cronograma::proyectosPor
 
 // Ruta de prueba para debugging
 $routes->get('test-db', 'Cronograma::testDatabase');
+$routes->get('debug-eventos', 'Cronograma::debugEventos');
 
 // ==================== RUTAS PARA INVENTARIO DE EQUIPOS ====================
 // Rutas principales del inventario

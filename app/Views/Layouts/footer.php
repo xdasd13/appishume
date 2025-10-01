@@ -4,7 +4,7 @@
               <nav class="pull-left">
                 <ul class="nav">
                   <li class="nav-item">
-                    <a class="nav-link" href="<?= base_url () . 'http://www.themekita.com'?>">
+                    <a class="nav-link" href="<?= base_url() . 'http://www.themekita.com'?>">
                       ThemeKita
                     </a>
                   </li>
@@ -40,7 +40,7 @@
       <script src="<?= base_url() . 'assets/js/plugin/chart.js/chart.min.js'?>"></script>
 
       <!-- jQuery Sparkline -->
-      <script src=" <?= base_url () . 'assets/js/plugin/jquery.sparkline/jquery.sparkline.min.js'?>"></script>
+      <script src=" <?= base_url() . 'assets/js/plugin/jquery.sparkline/jquery.sparkline.min.js'?>"></script>
 
       <!-- Chart Circle -->
       <script src="<?= base_url(). 'assets/js/plugin/chart-circle/circles.min.js'?>"></script>
@@ -52,8 +52,8 @@
       <script src="<?= base_url() . 'assets/js/plugin/bootstrap-notify/bootstrap-notify.min.js'?>"></script>
 
       <!-- jQuery Vector Maps -->
-      <script src="<?= base_url () . 'assets/js/plugin/jsvectormap/jsvectormap.min.js'?>"></script>
-      <script src="<?= base_url () . 'assets/js/plugin/jsvectormap/world.js'?>"></script>
+      <script src="<?= base_url() . 'assets/js/plugin/jsvectormap/jsvectormap.min.js'?>"></script>
+      <script src="<?= base_url() . 'assets/js/plugin/jsvectormap/world.js'?>"></script>
 
       <!-- Google Maps Plugin -->
       <script src="<?= base_url() . 'assets/js/plugin/gmaps/gmaps.js'?>"></script>
@@ -78,19 +78,7 @@
       <!-- Custom JS - Cargado después de jQuery -->
       <script src="<?= base_url('assets/js/custom.js') ?>"></script>
 
-      <!-- CONTROL DE PAGOS - Remover jQuery duplicado -->
-      <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-      <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
-      <script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap4.min.js"></script>
-
-      <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/i18n/es.js"></script>
-<script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
-<script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap5.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
-      <!-- FIN DE CONTROL DE PAGOS -->
+   
 
     </body>
   </html>

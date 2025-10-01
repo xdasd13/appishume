@@ -76,13 +76,19 @@ class Cronograma extends BaseController
             $start = $this->request->getGet('start');
             $end = $this->request->getGet('end');
 
+            log_message('info', "getEventos - Parámetros: start=$start, end=$end");
+
             // Obtener eventos para el calendario
             $eventos = $this->cronogramaModel->getEventosCalendario($start, $end);
+
+            log_message('info', "getEventos - Eventos encontrados: " . count($eventos));
+            log_message('info', "getEventos - Datos: " . json_encode($eventos));
 
             return $this->response->setJSON($eventos);
             
         } catch (\Exception $e) {
             log_message('error', 'Error en getEventos: ' . $e->getMessage());
+            log_message('error', 'Error trace: ' . $e->getTraceAsString());
             return $this->response->setStatusCode(500)->setJSON(['error' => 'Error al obtener eventos']);
         }
     }
@@ -383,5 +389,77 @@ class Cronograma extends BaseController
         ];
 
         return view('cronograma/configuracion', $data);
+    }
+
+    /**
+     * Debug simple para verificar datos de servicios contratados
+     */
+    public function debugEventos()
+    {
+        try {
+            // Inicializar conexión a base de datos
+            $this->db = \Config\Database::connect();
+            
+            echo "<h2>Debug Eventos Calendario</h2>";
+            
+            // Verificar servicios contratados básicos
+            $servicios = $this->db->query("SELECT * FROM servicioscontratados ORDER BY fechahoraservicio")->getResult();
+            echo "<h3>Servicios Contratados (" . count($servicios) . "):</h3>";
+            echo "<pre>" . json_encode($servicios, JSON_PRETTY_PRINT) . "</pre>";
+            
+            // Verificar cotizaciones
+            $cotizaciones = $this->db->query("SELECT * FROM cotizaciones")->getResult();
+            echo "<h3>Cotizaciones (" . count($cotizaciones) . "):</h3>";
+            echo "<pre>" . json_encode($cotizaciones, JSON_PRETTY_PRINT) . "</pre>";
+            
+            // Verificar contratos
+            $contratos = $this->db->query("SELECT * FROM contratos")->getResult();
+            echo "<h3>Contratos (" . count($contratos) . "):</h3>";
+            echo "<pre>" . json_encode($contratos, JSON_PRETTY_PRINT) . "</pre>";
+            
+            // Verificar clientes
+            $clientes = $this->db->query("SELECT * FROM clientes")->getResult();
+            echo "<h3>Clientes (" . count($clientes) . "):</h3>";
+            echo "<pre>" . json_encode($clientes, JSON_PRETTY_PRINT) . "</pre>";
+            
+            // Verificar servicios
+            $serviciosTabla = $this->db->query("SELECT * FROM servicios")->getResult();
+            echo "<h3>Servicios (" . count($serviciosTabla) . "):</h3>";
+            echo "<pre>" . json_encode($serviciosTabla, JSON_PRETTY_PRINT) . "</pre>";
+            
+            // Probar consulta simplificada
+            echo "<h3>Consulta Simplificada:</h3>";
+            $querySimple = "
+                SELECT 
+                    sc.idserviciocontratado as id,
+                    CONCAT('Servicio ', sc.idservicio) as title,
+                    sc.fechahoraservicio as start,
+                    sc.direccion,
+                    'Sin teléfono' as telefono,
+                    'Pendiente' as estado,
+                    '#2196f3' as color
+                FROM servicioscontratados sc
+                ORDER BY sc.fechahoraservicio ASC
+            ";
+            
+            $eventosSimples = $this->db->query($querySimple)->getResult();
+            echo "<p>Eventos encontrados con consulta simple: " . count($eventosSimples) . "</p>";
+            echo "<pre>" . json_encode($eventosSimples, JSON_PRETTY_PRINT) . "</pre>";
+            
+            // Probar consulta completa del modelo
+            if (!isset($this->cronogramaModel)) {
+                $this->cronogramaModel = new CronogramaModel();
+            }
+            
+            echo "<h3>Consulta Completa del Modelo:</h3>";
+            $eventosCompletos = $this->cronogramaModel->getEventosCalendario();
+            echo "<p>Eventos encontrados con consulta completa: " . count($eventosCompletos) . "</p>";
+            echo "<pre>" . json_encode($eventosCompletos, JSON_PRETTY_PRINT) . "</pre>";
+            
+        } catch (\Exception $e) {
+            echo "<h2>Error:</h2>";
+            echo "<p>" . $e->getMessage() . "</p>";
+            echo "<pre>" . $e->getTraceAsString() . "</pre>";
+        }
     }
 }

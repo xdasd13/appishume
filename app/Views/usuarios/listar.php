@@ -631,7 +631,6 @@
         </div>
     </div>
 </div>
-
 <!--  SCRIPTS -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -662,18 +661,18 @@
         return new bootstrap.Tooltip(tooltipTriggerEl)
     })
 });
-    // ✅ MANEJO DE ERRORES
+    // Manejo de errores
     window.addEventListener('error', function(e) {
         console.error('Error JavaScript:', e.error);
     });
 
-    // ✅ FUNCIÓN DE ELIMINACIÓN
+    // Función de eliminación
     async function confirmarEliminacion(id, nombre) {
         try {
             const result = await Swal.fire({
-                title: '¿Eliminar Credenciales?',
+                title: '¿Desacivar Credenciales?',
                 html: `
-                    <p>Está a punto de eliminar las credenciales de:</p>
+                    <p>Está a punto de desactivar las credenciales de:</p>
                     <p><strong>${nombre}</strong></p>
                     <p class="text-danger"><small><i class="fas fa-exclamation-triangle"></i> Esta acción desactivará el acceso del usuario al sistema.</small></p>
                 `,
@@ -681,7 +680,7 @@
                 showCancelButton: true,
                 confirmButtonColor: '#dc3545',
                 cancelButtonColor: '#6c757d',
-                confirmButtonText: '<i class="fas fa-trash"></i> Sí, eliminar',
+                confirmButtonText: '<i class="fas fa-trash"></i> Sí, desactivar',
                 cancelButtonText: '<i class="fas fa-times"></i> Cancelar',
                 reverseButtons: true,
                 focusCancel: true
@@ -701,7 +700,7 @@
         }
     }
 
-    // ✅ FUNCIÓN DE REACTIVACIÓN
+    // Función de confirmación de reactivación
     async function confirmarReactivacion(id, nombre) {
         try {
             const result = await Swal.fire({
@@ -735,7 +734,7 @@
         }
     }
 
-    // ✅ FUNCIÓN PARA ELIMINAR USUARIO
+    // Función para eliminar usuario
     async function eliminarUsuario(id, nombre) {
         Swal.fire({
             title: 'Eliminando...',
@@ -781,7 +780,7 @@
         }
     }
 
-    // FUNCIÓN PARA REACTIVAR USUARIO
+    // Función para reactivar usuario
     async function reactivarUsuario(id, nombre) {
         Swal.fire({
             title: 'Reactivando...',
@@ -826,11 +825,11 @@
             });
         }
     }
-    // FUNCIÓN PARA CONFIRMAR ELIMINACIÓN PERMANENTE
+    // Función de confirmación de eliminación permanente
 async function confirmarEliminacionPermanente(id, nombre) {
     try {
         const result = await Swal.fire({
-            title: '⚠️ ¡ATENCIÓN! Eliminación Permanente',
+            title: '¡ATENCIÓN! Eliminación Permanente',
             html: `
                 <div class="text-start">
                     <p><strong>Está a punto de eliminar PERMANENTEMENTE a:</strong></p>
@@ -878,7 +877,7 @@ async function confirmarEliminacionPermanente(id, nombre) {
     }
 }
 
-// FUNCIÓN PARA ELIMINAR USUARIO PERMANENTEMENTE
+// Función para eliminar usuario permanentemente
 async function eliminarUsuarioPermanente(id, nombre) {
     Swal.fire({
         title: 'Eliminando...',
@@ -929,5 +928,4 @@ async function eliminarUsuarioPermanente(id, nombre) {
     }
 }
 </script>
-
 <?= $footer ?>

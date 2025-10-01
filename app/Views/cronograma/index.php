@@ -512,6 +512,8 @@
 <script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/locales/es.min.js'></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('Inicializando calendario...');
+    
     var calendarEl = document.getElementById('calendar');
     var calendar = new FullCalendar.Calendar(calendarEl, {
         locale: 'es',
@@ -522,7 +524,22 @@ document.addEventListener('DOMContentLoaded', function() {
             center: 'title',
             right: 'dayGridMonth,timeGridWeek,timeGridDay'
         },
-        events: '<?= base_url('cronograma/getEventos') ?>',
+        events: {
+            url: '<?= base_url('cronograma/eventos') ?>',
+            failure: function() {
+                console.error('Error al cargar eventos del calendario');
+                alert('Error al cargar los eventos del calendario. Verifique la conexión.');
+            }
+        },
+        eventDidMount: function(info) {
+            console.log('Evento cargado:', info.event.title, info.event.start);
+        },
+        eventsSet: function(events) {
+            console.log('Total eventos cargados:', events.length);
+            if (events.length === 0) {
+                console.warn('No se encontraron eventos para mostrar en el calendario');
+            }
+        },
         eventClick: function(info) {
             const evento = info.event.extendedProps;
             Swal.fire({
@@ -551,7 +568,9 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
     });
+    
     calendar.render();
+    console.log('Calendario renderizado');
 });
 </script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
