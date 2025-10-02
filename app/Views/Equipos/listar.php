@@ -551,7 +551,18 @@ async function handleDrop(e) {
     e.preventDefault();
     this.classList.remove('drag-over');
     
-    if (!draggedCard) return;
+    console.log('handleDrop - draggedCard:', draggedCard);
+    
+    if (!draggedCard) {
+        console.error('draggedCard es null en handleDrop');
+        return;
+    }
+    
+    // Guardar referencias antes de operaciones asíncronas
+    const currentCard = draggedCard;
+    const targetColumn = this;
+    
+    console.log('Referencias guardadas - currentCard:', currentCard, 'targetColumn:', targetColumn);
     
     const cardData = JSON.parse(e.dataTransfer.getData('text/plain'));
     const newStatus = this.dataset.estado;
@@ -582,8 +593,8 @@ async function handleDrop(e) {
     const success = await updateCardStatus(cardData.id, newStatus);
     
     if (success) {
-        // Mover tarjeta visualmente
-        moveCardToColumn(draggedCard, this, newStatus);
+        // Mover tarjeta visualmente usando las referencias guardadas
+        moveCardToColumn(currentCard, targetColumn, newStatus);
         showNotification(`Estado cambiado a "${newStatus}" correctamente`, 'success');
     } else {
         showNotification('Error al actualizar el estado', 'error');
@@ -621,17 +632,23 @@ async function updateCardStatus(cardId, newStatus) {
             didOpen: () => Swal.showLoading()
         });
         
-        const response = await fetch('<?= base_url("equipos/actualizarEstado") ?>', {
+        const response = await fetch('<?= base_url("equipos/actualizar-estado") ?>', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'X-Requested-With': 'XMLHttpRequest'
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRF-TOKEN': '<?= csrf_hash() ?>'
             },
             body: JSON.stringify({
                 id: cardId,
-                estado: newStatus
+                estado: newStatus,
+                <?= csrf_token() ?>: '<?= csrf_hash() ?>'
             })
         });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
         
         const data = await response.json();
         Swal.close();
@@ -654,6 +671,14 @@ async function updateCardStatus(cardId, newStatus) {
  * Mover tarjeta a nueva columna visualmente
  */
 function moveCardToColumn(card, newColumn, newStatus) {
+    // Validar parámetros
+    if (!card || !newColumn || !newStatus) {
+        console.error('moveCardToColumn: Parámetros inválidos', {card, newColumn, newStatus});
+        return;
+    }
+    
+    console.log('Moviendo tarjeta:', card.dataset.id, 'a columna:', newColumn.dataset.estado);
+    
     // Actualizar datos de la tarjeta
     card.dataset.status = newStatus;
     
@@ -661,7 +686,7 @@ function moveCardToColumn(card, newColumn, newStatus) {
     const badge = card.querySelector('.badge');
     if (badge) {
         badge.className = `badge bg-${getStatusColor(newStatus)} text-white`;
-        badge.innerHTML = `<i class="${getStatusIcon(newStatus)} me-1"></i>${newStatus}`;
+        badge.innerHTML = `<i class="${getStatusFontAwesome(newStatus)} me-1"></i>${newStatus}`;
     }
     
     // Mover al DOM
@@ -726,6 +751,16 @@ function getStatusColor(status) {
 }
 
 function getStatusIcon(status) {
+    const icons = {
+        'Pendiente': 'warning',
+        'Programado': 'warning',
+        'En Proceso': 'info', 
+        'Completado': 'success'
+    };
+    return icons[status] || 'question';
+}
+
+function getStatusFontAwesome(status) {
     const icons = {
         'Pendiente': 'fas fa-clock',
         'Programado': 'fas fa-clock',

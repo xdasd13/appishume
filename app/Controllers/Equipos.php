@@ -19,7 +19,7 @@ class Equipos extends BaseController
     {
         $this->equipoModel = new EquipoModel();
         $this->equipoService = new EquipoService();
-        helper('estado'); // Cargar helper de estados
+        helper(['estado', 'url']); // Cargar helpers necesarios
     }
 
     /**
@@ -52,7 +52,7 @@ class Equipos extends BaseController
      * Vista para asignar técnico a un servicio
      * KISS: delegación clara al servicio
      */
-    public function asignar(int $idserviciocontratado): string
+    public function asignar(int $idserviciocontratado)
     {
         $servicio = $this->equipoModel->getServicioInfo($idserviciocontratado);
         
@@ -71,6 +71,24 @@ class Equipos extends BaseController
         ];
         
         return $this->render('equipos/asignar', $data);
+    }
+
+    /**
+     * Método unificado para guardar/actualizar equipos
+     * KISS: una sola función para ambas operaciones
+     */
+    public function guardar(): \CodeIgniter\HTTP\RedirectResponse
+    {
+        return $this->saveEquipo();
+    }
+
+    /**
+     * Método unificado para guardar/actualizar equipos
+     * KISS: una sola función para ambas operaciones
+     */
+    public function actualizar(): \CodeIgniter\HTTP\RedirectResponse
+    {
+        return $this->saveEquipo();
     }
 
     /**
@@ -153,7 +171,7 @@ class Equipos extends BaseController
      * Vista para editar asignación de equipo
      * KISS: método simple y claro
      */
-    public function editar(int $idequipo): string
+    public function editar(int $idequipo)
     {
         $equipo = $this->equipoModel->getEquipoConDetalles($idequipo);
         
@@ -178,7 +196,7 @@ class Equipos extends BaseController
      * Vistas filtradas por servicio o usuario
      * KISS: métodos simples para vistas específicas
      */
-    public function porServicio(int $servicioId): string
+    public function porServicio(int $servicioId)
     {
         $servicio = $this->equipoModel->getServicioInfo($servicioId);
         
@@ -214,28 +232,44 @@ class Equipos extends BaseController
      */
     public function actualizarEstado(): \CodeIgniter\HTTP\ResponseInterface
     {
+        // Log para debugging
+        log_message('info', 'Método actualizarEstado llamado');
+        
         if (!$this->request->isAJAX()) {
+            log_message('error', 'Petición no es AJAX');
             return $this->response->setStatusCode(400)
                 ->setJSON(['success' => false, 'message' => 'Petición no válida']);
         }
 
         $input = json_decode($this->request->getBody(), true);
+        log_message('info', 'Input recibido: ' . json_encode($input));
+        
         $equipoId = (int)($input['id'] ?? 0);
         $nuevoEstado = $input['estado'] ?? '';
 
         if (!$equipoId || !$nuevoEstado) {
+            log_message('error', 'Parámetros faltantes - ID: ' . $equipoId . ', Estado: ' . $nuevoEstado);
             return $this->response->setJSON([
                 'success' => false, 
                 'message' => 'Parámetros faltantes'
             ]);
         }
 
-        // Delegar al servicio
-        $resultado = $this->equipoService->actualizarEstado($equipoId, $nuevoEstado);
-        
-        return $this->response->setJSON([
-            'success' => $resultado['success'],
-            'message' => $resultado['message']
-        ]);
+        try {
+            // Delegar al servicio
+            $resultado = $this->equipoService->actualizarEstado($equipoId, $nuevoEstado);
+            log_message('info', 'Resultado del servicio: ' . json_encode($resultado));
+            
+            return $this->response->setJSON([
+                'success' => $resultado['success'],
+                'message' => $resultado['message']
+            ]);
+        } catch (\Exception $e) {
+            log_message('error', 'Error en actualizarEstado: ' . $e->getMessage());
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'Error interno del servidor'
+            ]);
+        }
     }
 }

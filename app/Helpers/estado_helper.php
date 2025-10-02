@@ -110,3 +110,21 @@ if (!function_exists('getIconoEstado')) {
         };
     }
 }
+
+if (!function_exists('getSweetAlertIcon')) {
+    /**
+     * Obtiene el ícono compatible con SweetAlert2 para un estado
+     * 
+     * @param string $estado
+     * @return string
+     */
+    function getSweetAlertIcon(string $estado): string
+    {
+        return match ($estado) {
+            'Pendiente', 'Programado' => 'warning',
+            'En Proceso' => 'info',
+            'Completado' => 'success',
+            default => 'question'
+        };
+    }
+}

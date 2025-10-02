@@ -91,9 +91,11 @@ $routes->get('equipos/asignar/(:num)', 'Equipos::asignar/$1');
 $routes->post('equipos/guardar', 'Equipos::guardar');
 $routes->get('equipos/editar/(:num)', 'Equipos::editar/$1');
 $routes->post('equipos/actualizar', 'Equipos::actualizar');
-$routes->get('equipos/por-servicio/(:num)', 'Equipos::por_servicio/$1');
-$routes->get('equipos/por-usuario/(:num)', 'Equipos::por_usuario/$1');
+$routes->get('equipos/por-servicio/(:num)', 'Equipos::porServicio/$1');
+$routes->get('equipos/por-usuario/(:num)', 'Equipos::porUsuario/$1');
 $routes->post('equipos/verificar-disponibilidad', 'Equipos::verificarDisponibilidad');
+
+// Ruta AJAX para actualizar estado (sin filtros de autenticación)
 $routes->post('equipos/actualizar-estado', 'Equipos::actualizarEstado');
 
 // ==================== RUTAS PARA CRONOGRAMA Y PROYECTOS ====================
