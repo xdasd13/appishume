@@ -126,16 +126,25 @@ class ControlPagoController extends BaseController
             'idtipopago' => 'required|numeric',
             'numtransaccion' => 'permit_empty|string',
             'fechahora' => 'required|valid_date',
-            'comprobante' => 'uploaded[comprobante]|max_size[comprobante,2048]|ext_in[comprobante,png,jpg,jpeg,pdf]'
+            'comprobante' => 'permit_empty|uploaded[comprobante]|max_size[comprobante,2048]|ext_in[comprobante,png,jpg,jpeg,pdf]'
         ];
 
         if (!$this->validate($reglas)) {
-            return redirect()->back()->withInput()->with('error', 'Por favor, complete todos los campos requeridos correctamente.');
+            $errors = $this->validator->getErrors();
+            $errorMessage = 'Por favor, corrija los siguientes errores:<br><ul>';
+            foreach ($errors as $field => $error) {
+                $errorMessage .= '<li>' . $error . '</li>';
+            }
+            $errorMessage .= '</ul>';
+            return redirect()->back()->withInput()->with('error', $errorMessage);
         }
 
         // Obtener datos del formulario
         $idcontrato = $this->request->getPost('idcontrato');
         $amortizacion = $this->request->getPost('amortizacion');
+        
+        // Log para debugging
+        log_message('info', 'Guardando pago - Contrato: ' . $idcontrato . ', Amortización: ' . $amortizacion);
 
         // Obtener el último pago del contrato para calcular saldos
         $ultimoPago = $this->controlPagoModel->obtenerUltimoPagoContrato($idcontrato);
@@ -160,13 +169,19 @@ class ControlPagoController extends BaseController
             return redirect()->back()->withInput()->with('error', 'La amortización debe ser mayor a cero.');
         }
 
-        // Procesar comprobante
+        // Procesar comprobante (opcional)
         $comprobante = $this->request->getFile('comprobante');
         $nombreComprobante = null;
 
         if ($comprobante && $comprobante->isValid() && !$comprobante->hasMoved()) {
+            // Crear directorio si no existe
+            $uploadPath = ROOTPATH . 'public/uploads/comprobantes';
+            if (!is_dir($uploadPath)) {
+                mkdir($uploadPath, 0755, true);
+            }
+            
             $nuevoNombre = $comprobante->getRandomName();
-            $comprobante->move(ROOTPATH . 'public/uploads/comprobantes', $nuevoNombre);
+            $comprobante->move($uploadPath, $nuevoNombre);
             $nombreComprobante = $nuevoNombre;
         }
 
@@ -178,18 +193,20 @@ class ControlPagoController extends BaseController
             'deuda' => $deuda,
             'idtipopago' => $this->request->getPost('idtipopago'),
             'numtransaccion' => $this->request->getPost('numtransaccion'),
-            'fechahora' => $this->request->getPost('fechahora'),
+            'fechahora' => $this->request->getPost('fechahora_hidden') ?: $this->getPeruDateTime(),
             'idusuario' => session()->get('usuario_id'), // ID del usuario que inició sesión
             'comprobante' => $nombreComprobante
         ];
 
         // Guardar en la base de datos
         if ($this->controlPagoModel->save($data)) {
-            $mensaje = 'Pago registrado correctamente';
+            $mensaje = '✅ Pago registrado correctamente';
             
             // Verificar si el contrato quedó completamente pagado
-            if ($deuda == 0) {
+            if ($deuda <= 0.01) { // Tolerancia para redondeo
                 $mensaje .= '. ¡Felicidades! El contrato ha sido completamente pagado.';
+            } else {
+                $mensaje .= '. Saldo restante: S/ ' . number_format($deuda, 2);
             }
             
             return redirect()->to('/controlpagos')->with('success', $mensaje);
@@ -251,44 +268,62 @@ class ControlPagoController extends BaseController
         return view('ControlPagos/ver', $datos);
     }
 
-    // Nuevo método para obtener información del contrato via AJAX
+    // Función helper para obtener fecha y hora de Perú
+    private function getPeruDateTime()
+    {
+        // Configurar zona horaria de Perú
+        date_default_timezone_set('America/Lima');
+        $peruDateTime = date('Y-m-d H:i:s');
+        
+        // Restaurar zona horaria por defecto
+        date_default_timezone_set('UTC');
+        
+        return $peruDateTime;
+    }
+
+    // Método para obtener información del contrato via AJAX
     public function infoContrato($idcontrato)
     {
         if (!session()->get('usuario_logueado')) {
-            return $this->response->setJSON(['error' => 'Acceso denegado'])->setStatusCode(401);
+            return $this->response->setJSON(['error' => 'Acceso denegado']);
         }
         
         try {
-            // Log para debugging
-            log_message('info', 'infoContrato llamado para contrato: ' . $idcontrato);
+            // Verificar que el contrato existe
+            $contrato = $this->contratoModel->find($idcontrato);
+            if (!$contrato) {
+                return $this->response->setJSON([
+                    'error' => 'Contrato no encontrado',
+                    'saldo_actual' => 0,
+                    'monto_total' => 0
+                ]);
+            }
             
+            // Obtener monto total del contrato
+            $montoInfo = $this->contratoModel->obtenerMontoContrato($idcontrato);
+            $montoTotal = $montoInfo['monto_total'] ?? 0;
+            
+            // Obtener último pago del contrato
             $ultimoPago = $this->controlPagoModel->obtenerUltimoPagoContrato($idcontrato);
-
-            // Obtener monto total del contrato usando el mismo método que funciona en entregas
-            $montoTotal = $this->contratoModel->obtenerMontoContrato($idcontrato)['monto_total'] ?? 0;
-
+            
             if ($ultimoPago) {
                 $saldo = $ultimoPago['deuda'];
             } else {
                 $saldo = $montoTotal;
             }
 
-            $response = [
+            return $this->response->setJSON([
                 'saldo_actual' => $saldo,
-                'monto_total' => $montoTotal
-            ];
-            
-            log_message('info', 'Respuesta infoContrato: ' . json_encode($response));
-            
-            return $this->response->setJSON($response);
+                'monto_total' => $montoTotal,
+                'contrato_id' => $idcontrato
+            ]);
             
         } catch (\Exception $e) {
-            log_message('error', 'Error en infoContrato: ' . $e->getMessage());
             return $this->response->setJSON([
-                'error' => 'Error al obtener información del contrato',
+                'error' => 'Error: ' . $e->getMessage(),
                 'saldo_actual' => 0,
                 'monto_total' => 0
-            ])->setStatusCode(500);
+            ]);
         }
     }
 

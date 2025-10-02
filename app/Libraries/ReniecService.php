@@ -32,15 +32,20 @@ class ReniecService
         $this->client = \Config\Services::curlrequest();
         $this->cacheModel = new ReniecCacheModel();
         
-        // Configuración desde .env
-        $this->apiUrl = getenv('DECOLECTA_API_URL') ?: 'https://api.decolecta.com/v1/reniec/dni';
-        $this->apiToken = getenv('DECOLECTA_API_TOKEN') ?: 'sk_10069.nuBfTnQrhikrkOdGQ44JvDUJZvJx3NEk';
-        $this->timeout = (int)(getenv('DECOLECTA_TIMEOUT') ?: 10);
-        $this->maxRetries = (int)(getenv('DECOLECTA_MAX_RETRIES') ?: 2);
+        // Load environment variables from envxD file
+        $this->loadEnvironmentVariables();
+        
+        // Configuración desde variables de entorno
+        $this->apiUrl = $this->getEnvVar('DECOLECTA_API_URL', 'https://api.decolecta.com/v1/reniec/dni');
+        $this->apiToken = $this->getEnvVar('DECOLECTA_API_TOKEN', 'sk_10069.nuBfTnQrhikrkOdGQ44JvDUJZvJx3NEk');
+        $this->timeout = (int)$this->getEnvVar('DECOLECTA_TIMEOUT', '10');
+        $this->maxRetries = (int)$this->getEnvVar('DECOLECTA_MAX_RETRIES', '2');
 
         // Validar configuración
-        if (empty($this->apiToken) || $this->apiToken === 'sk_10069.nuBfTnQrhikrkOdGQ44JvDUJZvJx3NEk') {
+        if (empty($this->apiToken)) {
             log_message('error', 'ReniecService: Token de Decolecta no configurado');
+        } else {
+            log_message('info', 'ReniecService: Token configurado correctamente');
         }
     }
 
@@ -333,5 +338,49 @@ class ReniecService
     public function cleanExpiredCache(): int
     {
         return $this->cacheModel->cleanExpiredCache();
+    }
+
+    /**
+     * Load environment variables from envxD file
+     */
+    private function loadEnvironmentVariables(): void
+    {
+        $envFile = FCPATH . '../envxD';
+        
+        if (file_exists($envFile)) {
+            $lines = file($envFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+            
+            foreach ($lines as $line) {
+                // Skip comments
+                if (strpos(trim($line), '#') === 0) {
+                    continue;
+                }
+                
+                // Parse key=value pairs
+                if (strpos($line, '=') !== false) {
+                    list($key, $value) = explode('=', $line, 2);
+                    $key = trim($key);
+                    $value = trim($value);
+                    
+                    // Set environment variable if not already set
+                    if (!getenv($key)) {
+                        putenv("$key=$value");
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Get environment variable with fallback
+     * 
+     * @param string $key Environment variable key
+     * @param string $default Default value if not found
+     * @return string Environment variable value or default
+     */
+    private function getEnvVar(string $key, string $default = ''): string
+    {
+        $value = getenv($key);
+        return $value !== false ? $value : $default;
     }
 }

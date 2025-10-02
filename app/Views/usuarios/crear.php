@@ -1472,4 +1472,273 @@
     });
 });
     </script>
+    
     <?= $footer ?>
+    
+    <!-- Script para DNI validation - ejecutado después de jQuery -->
+    <script>
+    // Variables globales para validación DNI
+    let dniValidationTimeout;
+    let lastValidatedDni = '';
+    let dniValidationInProgress = false;
+
+    $(document).ready(function() {
+        console.log('jQuery disponible, inicializando validación DNI');
+        
+        // Inicializar validación DNI después de que jQuery esté disponible
+        initializeDniValidation();
+    });
+    
+    function initializeDniValidation() {
+        console.log('Inicializando validación DNI con jQuery disponible');
+        
+        // Bind eventos de validación DNI
+        $('#numerodoc').off('input').on('input', function() {
+            const dni = $(this).val().trim();
+            const $input = $(this);
+            
+            // Limpiar timeout anterior
+            clearTimeout(dniValidationTimeout);
+            
+            // Reset visual states
+            resetDniValidationState();
+            
+            // Validar formato básico
+            if (dni.length === 0) {
+                return;
+            }
+            
+            if (!/^\d{1,8}$/.test(dni)) {
+                showDniError('Solo se permiten números');
+                return;
+            }
+            
+            if (dni.length < 8) {
+                $('#example-numerodoc').text(`Faltan ${8 - dni.length} dígitos`).addClass('text-muted');
+                return;
+            } else {
+                $('#example-numerodoc').text('Ejemplo: 12345678 (8 dígitos)').removeClass('text-muted');
+            }
+            
+            // Si es el mismo DNI ya validado, no revalidar
+            if (dni === lastValidatedDni) {
+                return;
+            }
+            
+            // Debounce: esperar 500ms sin escribir
+            dniValidationTimeout = setTimeout(() => {
+                validateDniWithReniec(dni);
+            }, 500);
+        });
+
+        // Limpiar validación cuando se borra el campo
+        $('#numerodoc').off('keyup').on('keyup', function() {
+            if ($(this).val().length === 0) {
+                resetDniValidationState();
+                $('#numerodoc').removeClass('is-valid is-invalid');
+                $('#nombres, #apellidos, #email_nuevo').val('').removeClass('is-valid bg-light').attr('readonly', false);
+                $('#privacy-notice').hide();
+                lastValidatedDni = '';
+            }
+        });
+
+        // Prevenir envío del formulario si hay validación en progreso
+        $('#formNuevo').off('submit').on('submit', function(e) {
+            if (dniValidationInProgress) {
+                e.preventDefault();
+                Swal.fire({
+                    icon: 'info',
+                    title: 'Validación en Progreso',
+                    text: 'Por favor espere a que termine la validación del DNI',
+                    timer: 2000
+                });
+                return false;
+            }
+        });
+    }
+
+    /**
+     * Validar DNI con RENIEC via AJAX
+     */
+    function validateDniWithReniec(dni) {
+        console.log('validateDniWithReniec llamada con DNI:', dni);
+        if (dniValidationInProgress) {
+            console.log('Validación ya en progreso, saliendo...');
+            return;
+        }
+        
+        dniValidationInProgress = true;
+        showDniLoading();
+        
+        $.ajax({
+            url: '<?= base_url('usuarios/ajax-check-dni') ?>',
+            type: 'POST',
+            data: {
+                dni: dni,
+                '<?= csrf_token() ?>': '<?= csrf_hash() ?>'
+            },
+            timeout: 15000, // 15 segundos timeout
+            success: function(response) {
+                console.log('AJAX Success - Response:', response);
+                dniValidationInProgress = false;
+                lastValidatedDni = dni;
+                
+                if (response.status === 'success') {
+                    handleDniSuccess(response);
+                } else if (response.status === 'exists_active') {
+                    handleDniExistsActive(response);
+                } else if (response.status === 'exists_inactive') {
+                    handleDniExistsInactive(response);
+                } else if (response.status === 'exists_no_user') {
+                    handleDniExistsNoUser(response);
+                } else {
+                    handleDniError(response.message || 'DNI no encontrado');
+                }
+            },
+            error: function(xhr, status, error) {
+                console.log('AJAX Error:', status, error);
+                dniValidationInProgress = false;
+                
+                let errorMessage = 'Error de conexión con el servicio RENIEC';
+                
+                if (status === 'timeout') {
+                    errorMessage = 'Tiempo de espera agotado. Intente nuevamente.';
+                } else if (xhr.status === 0) {
+                    errorMessage = 'Sin conexión a internet. Verifique su conexión.';
+                } else if (xhr.status >= 500) {
+                    errorMessage = 'Error del servidor. Intente más tarde.';
+                }
+                
+                handleDniError(errorMessage);
+            }
+        });
+    }
+
+    /**
+     * Manejar éxito en validación de DNI
+     */
+    function handleDniSuccess(response) {
+        const data = response.data;
+        
+        // Autocompletar campos
+        $('#nombres').val(data.nombres).addClass('is-valid bg-light').attr('readonly', true);
+        $('#apellidos').val(data.apellidos_completos).addClass('is-valid bg-light').attr('readonly', true);
+        
+        // Generar email automático
+        const email = generateEmail(data.nombres, data.apellidos_completos);
+        $('#email_nuevo').val(email).addClass('is-valid bg-light').attr('readonly', true);
+        
+        // Mostrar aviso de privacidad
+        $('#privacy-notice').show();
+        
+        // Mostrar éxito
+        showDniSuccess('DNI válido encontrado en RENIEC');
+    }
+
+    /**
+     * Manejar DNI que ya existe con usuario activo
+     */
+    function handleDniExistsActive(response) {
+        showDniError('Este DNI ya tiene credenciales activas en el sistema');
+    }
+
+    /**
+     * Manejar DNI que existe pero usuario inactivo
+     */
+    function handleDniExistsInactive(response) {
+        showDniError('Este DNI tiene un usuario desactivado. Contacte al administrador.');
+    }
+
+    /**
+     * Manejar DNI que existe pero sin usuario
+     */
+    function handleDniExistsNoUser(response) {
+        showDniError('Este DNI ya existe en el sistema pero sin usuario asociado.');
+    }
+
+    /**
+     * Manejar error en validación de DNI
+     */
+    function handleDniError(message) {
+        showDniError(message);
+        
+        // Limpiar campos autocompletados
+        $('#nombres, #apellidos, #email_nuevo').val('').removeClass('is-valid bg-light').attr('readonly', false);
+        $('#privacy-notice').hide();
+    }
+
+    /**
+     * Mostrar estado de carga
+     */
+    function showDniLoading() {
+        resetDniValidationState();
+        $('#loading-numerodoc').show();
+        $('#numerodoc').removeClass('is-valid is-invalid');
+    }
+
+    /**
+     * Mostrar éxito en validación
+     */
+    function showDniSuccess(message) {
+        resetDniValidationState();
+        $('#success-numerodoc').text(message).show();
+        $('#numerodoc').removeClass('is-invalid').addClass('is-valid');
+    }
+
+    /**
+     * Mostrar error en validación
+     */
+    function showDniError(message) {
+        resetDniValidationState();
+        $('#error-numerodoc').text(message);
+        $('#numerodoc').removeClass('is-valid').addClass('is-invalid');
+        
+        // Limpiar campos relacionados
+        $('#nombres, #apellidos, #email_nuevo').removeClass('is-valid bg-light').attr('readonly', false);
+        $('#privacy-notice').hide();
+    }
+
+    /**
+     * Resetear estados visuales de validación DNI
+     */
+    function resetDniValidationState() {
+        $('#loading-numerodoc, #success-numerodoc, #privacy-notice').hide();
+        $('#error-numerodoc').text('Por favor ingrese un número de documento válido.');
+    }
+
+    /**
+     * Generar email automático basado en nombres y apellidos
+     */
+    function generateEmail(nombres, apellidos) {
+        if (!nombres || !apellidos) return '';
+        
+        // Limpiar y normalizar
+        const nombresClean = nombres.toLowerCase()
+            .replace(/[áàäâ]/g, 'a')
+            .replace(/[éèëê]/g, 'e')
+            .replace(/[íìïî]/g, 'i')
+            .replace(/[óòöô]/g, 'o')
+            .replace(/[úùüû]/g, 'u')
+            .replace(/ñ/g, 'n')
+            .replace(/[^a-z\s]/g, '')
+            .trim();
+        
+        const apellidosClean = apellidos.toLowerCase()
+            .replace(/[áàäâ]/g, 'a')
+            .replace(/[éèëê]/g, 'e')
+            .replace(/[íìïî]/g, 'i')
+            .replace(/[óòöô]/g, 'o')
+            .replace(/[úùüû]/g, 'u')
+            .replace(/ñ/g, 'n')
+            .replace(/[^a-z\s]/g, '')
+            .trim();
+        
+        // Tomar primera palabra de nombres y primera palabra de apellidos
+        const nombre = nombresClean.split(' ')[0];
+        const apellido = apellidosClean.split(' ')[0];
+        
+        const email = `${nombre}.${apellido}@ishume.com`;
+        
+        return email;
+    }
+    </script>

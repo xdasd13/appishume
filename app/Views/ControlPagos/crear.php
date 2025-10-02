@@ -1,3 +1,22 @@
+<?php
+// Función helper para obtener fecha y hora de Perú
+function getPeruDateTime() {
+    $originalTimezone = date_default_timezone_get();
+    date_default_timezone_set('America/Lima');
+    $peruDateTime = date('Y-m-d H:i:s');
+    date_default_timezone_set($originalTimezone);
+    return $peruDateTime;
+}
+
+function getPeruDateTimeFormatted() {
+    $originalTimezone = date_default_timezone_get();
+    date_default_timezone_set('America/Lima');
+    $peruDateTime = date('d/m/Y H:i');
+    date_default_timezone_set($originalTimezone);
+    return $peruDateTime;
+}
+?>
+
 <?= $header ?>
 <div class="page-inner">
     <div class="row">
@@ -19,7 +38,7 @@
                             <div class="col-md-6">
                                 <div class="form-group">
                                     <label for="idcontrato">Contrato *</label>
-                                    <select class="form-control select2" id="idcontrato" name="idcontrato" required>
+                                    <select class="form-control" id="idcontrato" name="idcontrato" required>
                                         <option value="">Seleccione un contrato</option>
                                         <?php if (!empty($contratos)): ?>
                                             <?php foreach ($contratos as $contrato): ?>
@@ -39,7 +58,7 @@
                             <div class="col-md-6">
                                 <div class="form-group">
                                     <label for="idtipopago">Tipo de Pago *</label>
-                                    <select class="form-control select2" id="idtipopago" name="idtipopago" required>
+                                    <select class="form-control" id="idtipopago" name="idtipopago" required>
                                         <option value="">Seleccione tipo de pago</option>
                                         <?php if (!empty($tipospago)): ?>
                                             <?php foreach ($tipospago as $tipo): ?>
@@ -80,15 +99,17 @@
                             <div class="col-md-6">
                                 <div class="form-group">
                                     <label for="numtransaccion">Número de Transacción/Referencia</label>
-                                    <input type="text" class="form-control" id="numtransaccion" name="numtransaccion" required>
+                                    <input type="text" class="form-control" id="numtransaccion" name="numtransaccion">
                                     <small class="form-text text-muted">Ingrese el número de transacción bancaria o referencia de pago</small>
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="form-group">
                                     <label for="fechahora">Fecha y Hora del Pago *</label>
-                                    <input type="datetime-local" class="form-control" id="fechahora" name="fechahora" 
-                                           value="<?= date('Y-m-d\TH:i') ?>" required>
+                                    <input type="text" class="form-control" id="fechahora" name="fechahora" 
+                                           value="<?= getPeruDateTimeFormatted() ?>" readonly style="background-color: #f8f9fa;">
+                                    <input type="hidden" name="fechahora_hidden" value="<?= getPeruDateTime() ?>">
+                                    <small class="form-text text-muted">Hora de Perú (UTC-5)</small>
                                 </div>
                             </div>
                         </div>
@@ -99,7 +120,7 @@
                                     <label for="comprobante">Comprobante de Pago</label>
                                     <div class="custom-file">
                                         <input type="file" class="custom-file-input" id="comprobante" name="comprobante" 
-                                               accept=".png,.jpg,.jpeg,.pdf" required>
+                                               accept=".png,.jpg,.jpeg,.pdf">
                                         <label class="custom-file-label" for="comprobante">Seleccionar archivo</label>
                                     </div>
                                     <small class="form-text text-muted">Formatos permitidos: PNG, JPG, JPEG, PDF (Máx. 2MB)</small>
@@ -188,27 +209,19 @@
 <!-- Scripts para la funcionalidad del formulario -->
 <script>
 $(document).ready(function() {
-    // Inicializar select2
-    $('.select2').select2({
-        theme: "bootstrap"
-    });
-
     // Si hay un contrato pre-seleccionado, cargar su información automáticamente
     <?php if (isset($contrato_seleccionado) && $contrato_seleccionado): ?>
-        // Usar setTimeout para asegurar que select2 esté completamente inicializado
-        setTimeout(function() {
-            console.log('Cargando información del contrato pre-seleccionado: <?= $contrato_seleccionado ?>');
-            
-            // Si ya tenemos información precargada, usarla
-            <?php if (isset($info_contrato_precargada) && $info_contrato_precargada): ?>
-                console.log('Usando información precargada del contrato');
-                $('#amortizacion').attr('max', <?= $info_contrato_precargada['saldo_actual'] ?>);
-                updateResumen();
-            <?php else: ?>
-                // Si no hay información precargada, hacer petición AJAX
-                $('#idcontrato').trigger('change');
-            <?php endif; ?>
-        }, 100);
+        console.log('Cargando información del contrato pre-seleccionado: <?= $contrato_seleccionado ?>');
+        
+        // Si ya tenemos información precargada, usarla
+        <?php if (isset($info_contrato_precargada) && $info_contrato_precargada): ?>
+            console.log('Usando información precargada del contrato');
+            $('#amortizacion').attr('max', <?= $info_contrato_precargada['saldo_actual'] ?>);
+            updateResumen();
+        <?php else: ?>
+            // Si no hay información precargada, hacer petición AJAX
+            $('#idcontrato').trigger('change');
+        <?php endif; ?>
     <?php endif; ?>
 
     // Actualizar nombre del archivo en el input file
@@ -277,40 +290,39 @@ $(document).ready(function() {
     // Cargar información del contrato cuando se selecciona
     $('#idcontrato').on('change', function() {
         var idcontrato = $(this).val();
-        console.log('Contrato seleccionado:', idcontrato);
         
         if (idcontrato) {
-            // Mostrar carga
-            $('#monto_total, #saldo_actual').addClass('loading');
+            $('#monto_total, #saldo_actual').val('Cargando...');
             
-            // Hacer petición AJAX
-            $.get('<?= base_url('/controlpagos/infoContrato/') ?>' + idcontrato, function(data) {
-                console.log('Respuesta del servidor:', data);
-                $('#monto_total').val('S/ ' + parseFloat(data.monto_total).toFixed(2));
-                $('#saldo_actual').val('S/ ' + parseFloat(data.saldo_actual).toFixed(2));
-                
-                // Establecer máximo para amortización
-                $('#amortizacion').attr('max', data.saldo_actual);
-                
-                // Actualizar resumen
-                updateResumen();
-                
-                // Quitar clase de carga
-                $('#monto_total, #saldo_actual').removeClass('loading');
-            }).fail(function(xhr, status, error) {
-                console.error('Error en la petición AJAX:', status, error);
-                console.error('Respuesta del servidor:', xhr.responseText);
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: 'No se pudo cargar la información del contrato'
-                });
-                $('#monto_total, #saldo_actual').removeClass('loading');
+            $.get('<?= base_url('/controlpagos/infoContrato/') ?>' + idcontrato)
+            .done(function(data) {
+                if (data.error) {
+                    $('#monto_total, #saldo_actual').val('Error: ' + data.error);
+                    console.error('Error del servidor:', data.error);
+                } else {
+                    $('#monto_total').val('S/ ' + parseFloat(data.monto_total || 0).toFixed(2));
+                    $('#saldo_actual').val('S/ ' + parseFloat(data.saldo_actual || 0).toFixed(2));
+                    $('#amortizacion').attr('max', data.saldo_actual || 0);
+                    updateResumen();
+                    console.log('Datos cargados:', data);
+                }
+            })
+            .fail(function(xhr, status, error) {
+                $('#monto_total, #saldo_actual').val('Error al cargar');
+                console.error('Error AJAX:', status, error);
+                console.error('Respuesta:', xhr.responseText);
             });
         } else {
             $('#monto_total, #saldo_actual').val('');
             $('#amortizacion').removeAttr('max');
             $('#resumen-pago').hide();
+        }
+    });
+    
+    // Cargar información si ya hay un contrato seleccionado
+    $(document).ready(function() {
+        if ($('#idcontrato').val()) {
+            $('#idcontrato').trigger('change');
         }
     });
 
@@ -381,7 +393,7 @@ $(document).ready(function() {
         var amortizacion = parseFloat($('#amortizacion').val()) || 0;
         var fechaHora = $('#fechahora').val();
         
-        if (!contrato || !tipoPago || !amortizacion || !fechaHora) {
+        if (!contrato || !tipoPago || amortizacion <= 0 || !fechaHora) {
             Swal.fire({
                 icon: 'error',
                 title: 'Campos incompletos',
@@ -389,7 +401,7 @@ $(document).ready(function() {
                       '<ul class="text-left">' +
                       (!contrato ? '<li>Seleccione un contrato</li>' : '') +
                       (!tipoPago ? '<li>Seleccione un tipo de pago</li>' : '') +
-                      (!amortizacion ? '<li>Ingrese el monto de amortización</li>' : '') +
+                      (amortizacion <= 0 ? '<li>Ingrese un monto de amortización válido (mayor a 0)</li>' : '') +
                       (!fechaHora ? '<li>Seleccione fecha y hora</li>' : '') +
                       '</ul>',
                 confirmButtonColor: '#dc3545'

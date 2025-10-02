@@ -67,3 +67,13 @@ database.default.port = 3306
 #--------------------------------------------------------------------
 
 # logger.threshold = 4
+
+#--------------------------------------------------------------------
+# DECOLECTA API CONFIGURATION
+#--------------------------------------------------------------------
+
+# Decolecta API configuration for RENIEC DNI validation
+DECOLECTA_API_URL = https://api.decolecta.com/v1/reniec/dni
+DECOLECTA_API_TOKEN = sk_10069.nuBfTnQrhikrkOdGQ44JvDUJZvJx3NEk
+DECOLECTA_TIMEOUT = 10
+DECOLECTA_MAX_RETRIES = 2
