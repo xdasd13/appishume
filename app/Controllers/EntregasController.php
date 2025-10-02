@@ -242,4 +242,160 @@ class EntregasController extends BaseController
             return redirect()->to('entregas/ver/' . $id)->with('error', 'Error al actualizar el estado de la entrega');
         }
     }
+
+    // Método para generar vista previa del PDF del contrato
+    public function vistaPreviaContrato($idcontrato)
+    {
+        if (!session()->get('usuario_logueado')) {
+            return redirect()->to('/login')->with('error', 'Acceso denegado.');
+        }
+
+        // Obtener información completa del contrato
+        $db = db_connect();
+        
+        // Obtener información básica del contrato
+        $contratoQuery = $db->query("
+            SELECT 
+                c.idcontrato,
+                c.idcotizacion,
+                co.fechacotizacion,
+                co.fechaevento,
+                te.evento as tipo_evento,
+                cl.idcliente,
+                CASE 
+                    WHEN cl.idempresa IS NOT NULL THEN emp.razonsocial
+                    WHEN cl.idpersona IS NOT NULL THEN CONCAT(p.nombres, ' ', p.apellidos)
+                    ELSE 'Cliente no identificado'
+                END as cliente_nombre,
+                CASE 
+                    WHEN cl.idempresa IS NOT NULL THEN emp.ruc
+                    WHEN cl.idpersona IS NOT NULL THEN p.numerodoc
+                    ELSE ''
+                END as cliente_documento,
+                CASE 
+                    WHEN cl.idempresa IS NOT NULL THEN emp.direccion
+                    WHEN cl.idpersona IS NOT NULL THEN p.direccion
+                    ELSE ''
+                END as cliente_direccion,
+                CASE 
+                    WHEN cl.idempresa IS NOT NULL THEN emp.telefono
+                    WHEN cl.idpersona IS NOT NULL THEN p.telprincipal
+                    ELSE ''
+                END as cliente_telefono,
+                CASE 
+                    WHEN cl.idempresa IS NOT NULL THEN emp.email
+                    WHEN cl.idpersona IS NOT NULL THEN p.email
+                    ELSE ''
+                END as cliente_email
+            FROM contratos c
+            JOIN cotizaciones co ON co.idcotizacion = c.idcotizacion
+            JOIN clientes cl ON cl.idcliente = c.idcliente
+            LEFT JOIN personas p ON p.idpersona = cl.idpersona
+            LEFT JOIN empresas emp ON emp.idempresa = cl.idempresa
+            LEFT JOIN tipoeventos te ON te.idtipoevento = co.idtipoevento
+            WHERE c.idcontrato = ?
+        ", [$idcontrato]);
+
+        if ($contratoQuery->getNumRows() == 0) {
+            return redirect()->to('entregas')->with('error', 'Contrato no encontrado');
+        }
+
+        $datos['contrato'] = $contratoQuery->getRowArray();
+
+        // Obtener servicios del contrato
+        $serviciosQuery = $db->query("
+            SELECT 
+                s.servicio,
+                s.descripcion,
+                sc.cantidad,
+                sc.precio,
+                (sc.cantidad * sc.precio) as subtotal,
+                sc.fechahoraservicio,
+                sc.direccion as direccion_servicio
+            FROM servicioscontratados sc
+            JOIN servicios s ON s.idservicio = sc.idservicio
+            WHERE sc.idcotizacion = ?
+            ORDER BY s.servicio
+        ", [$datos['contrato']['idcotizacion']]);
+
+        $datos['servicios'] = $serviciosQuery->getResultArray();
+
+        // Calcular totales
+        $datos['subtotal'] = array_sum(array_column($datos['servicios'], 'subtotal'));
+        $datos['igv'] = $datos['subtotal'] * 0.18; // 18% IGV
+        $datos['total'] = $datos['subtotal'] + $datos['igv'];
+
+        // Obtener información de pagos
+        $pagosQuery = $db->query("
+            SELECT 
+                cp.amortizacion,
+                cp.fechahora,
+                tp.tipopago
+            FROM controlpagos cp
+            LEFT JOIN tipospago tp ON tp.idtipopago = cp.idtipopago
+            WHERE cp.idcontrato = ?
+            ORDER BY cp.fechahora ASC
+        ", [$idcontrato]);
+
+        $datos['pagos'] = $pagosQuery->getResultArray();
+        $datos['total_pagado'] = array_sum(array_column($datos['pagos'], 'amortizacion'));
+        $datos['saldo_pendiente'] = $datos['total'] - $datos['total_pagado'];
+
+        // Información de la empresa
+        $datos['empresa'] = [
+            'nombre' => 'APISHUME EVENTOS',
+            'ruc' => '20123456789',
+            'direccion' => 'Av. Principal 123, Lima, Perú',
+            'telefono' => '+51 1 234 5678',
+            'email' => 'info@apishume.com'
+        ];
+
+        $datos['header'] = view('Layouts/header');
+        $datos['footer'] = view('Layouts/footer');
+
+        return view('entregas/vista_previa_contrato', $datos);
+    }
+
+    public function imprimir($id)
+    {
+        $entrega = $this->entregasModel->obtenerEntregaCompleta($id);
+
+        // Si no se encuentra la entrega, intentamos al menos mostrar datos básicos
+        if (!$entrega) {
+            // Intenta obtener al menos los datos básicos de la entrega
+            $entregaBasica = $this->entregasModel->find($id);
+
+            if (!$entregaBasica) {
+                return redirect()->to('entregas/historial')->with('error', 'Entrega no encontrada');
+            }
+
+            $entrega = $entregaBasica;
+            $entrega['nombre_cliente'] = 'Información no disponible';
+            $entrega['apellido_cliente'] = '';
+            $entrega['servicio'] = 'Información no disponible';
+            $entrega['nombre_entrega'] = 'Información no disponible';
+            $entrega['apellido_entrega'] = '';
+            $entrega['tipodoc'] = '';
+            $entrega['numerodoc'] = '';
+            $entrega['telprincipal'] = '';
+            $entrega['direccion'] = '';
+            $entrega['descripcion_servicio'] = 'Información no disponible';
+            $entrega['tipodoc_entrega'] = '';
+            $entrega['numerodoc_entrega'] = '';
+
+            // Agregar el estado_visual que falta
+            if ($entrega['estado'] == 'completada') {
+                $entrega['estado_visual'] = "✅ ENTREGADO";
+            } else if ($entrega['estado'] == 'pendiente') {
+                $entrega['estado_visual'] = "⏳ EN POSTPRODUCCIÓN";
+            } else {
+                $entrega['estado_visual'] = "❓ DESCONOCIDO";
+            }
+        }
+
+        $datos['entrega'] = $entrega;
+        
+        // Vista especial para impresión (sin header/footer)
+        return view('entregas/imprimir', $datos);
+    }
 }

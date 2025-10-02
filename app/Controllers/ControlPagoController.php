@@ -63,6 +63,49 @@ class ControlPagoController extends BaseController
         $db = db_connect();
         $datos['tipospago'] = $db->table('tipospago')->get()->getResultArray();
 
+        // Verificar si se pasó un contrato específico en la URL
+        $contratoId = $this->request->getGet('contrato');
+        $datos['contrato_seleccionado'] = $contratoId;
+        
+        // Si hay un contrato pre-seleccionado, cargar su información directamente
+        if ($contratoId) {
+            try {
+                // Usar la misma lógica que funciona en el módulo de entregas
+                $db = db_connect();
+                $contratoQuery = $db->query("
+                    SELECT 
+                        (SELECT SUM(sc.cantidad * sc.precio) FROM servicioscontratados sc WHERE sc.idcotizacion = c.idcotizacion) as monto_total,
+                        (SELECT SUM(cp.amortizacion) FROM controlpagos cp WHERE cp.idcontrato = ?) as monto_pagado
+                    FROM contratos c 
+                    WHERE c.idcontrato = ?
+                ", [$contratoId, $contratoId]);
+                
+                if ($contratoQuery->getNumRows() > 0) {
+                    $result = $contratoQuery->getRow();
+                    $montoTotal = $result->monto_total ?? 0;
+                    $montoPagado = $result->monto_pagado ?? 0;
+                    $saldo = $montoTotal - $montoPagado;
+                    
+                    // Pequeña tolerancia para evitar problemas de redondeo
+                    if ($saldo < 0.01) {
+                        $saldo = 0;
+                    }
+                    
+                    $datos['info_contrato_precargada'] = [
+                        'monto_total' => $montoTotal,
+                        'saldo_actual' => $saldo
+                    ];
+                } else {
+                    $datos['info_contrato_precargada'] = null;
+                }
+            } catch (\Exception $e) {
+                log_message('error', 'Error al cargar información del contrato: ' . $e->getMessage());
+                $datos['info_contrato_precargada'] = null;
+            }
+        } else {
+            $datos['info_contrato_precargada'] = null;
+        }
+
         $datos['header'] = view('Layouts/header');
         $datos['footer'] = view('Layouts/footer');
         $datos['titulo'] = 'Registrar Nuevo Pago';
@@ -211,34 +254,42 @@ class ControlPagoController extends BaseController
     // Nuevo método para obtener información del contrato via AJAX
     public function infoContrato($idcontrato)
     {
-        $ultimoPago = $this->controlPagoModel->obtenerUltimoPagoContrato($idcontrato);
-
-        // Obtener monto total del contrato
-        $db = db_connect();
-        $montoQuery = $db->query("
-            SELECT SUM(sc.cantidad * sc.precio) as monto_total 
-            FROM servicioscontratados sc 
-            JOIN cotizaciones co ON co.idcotizacion = sc.idcotizacion 
-            WHERE co.idcotizacion IN (
-                SELECT idcotizacion FROM contratos WHERE idcontrato = ?
-            )
-        ", [$idcontrato]);
-
-        $montoTotal = 0;
-        if ($montoQuery->getNumRows() > 0) {
-            $montoTotal = $montoQuery->getRow()->monto_total ?? 0;
+        if (!session()->get('usuario_logueado')) {
+            return $this->response->setJSON(['error' => 'Acceso denegado'])->setStatusCode(401);
         }
+        
+        try {
+            // Log para debugging
+            log_message('info', 'infoContrato llamado para contrato: ' . $idcontrato);
+            
+            $ultimoPago = $this->controlPagoModel->obtenerUltimoPagoContrato($idcontrato);
 
-        if ($ultimoPago) {
-            $saldo = $ultimoPago['deuda'];
-        } else {
-            $saldo = $montoTotal;
+            // Obtener monto total del contrato usando el mismo método que funciona en entregas
+            $montoTotal = $this->contratoModel->obtenerMontoContrato($idcontrato)['monto_total'] ?? 0;
+
+            if ($ultimoPago) {
+                $saldo = $ultimoPago['deuda'];
+            } else {
+                $saldo = $montoTotal;
+            }
+
+            $response = [
+                'saldo_actual' => $saldo,
+                'monto_total' => $montoTotal
+            ];
+            
+            log_message('info', 'Respuesta infoContrato: ' . json_encode($response));
+            
+            return $this->response->setJSON($response);
+            
+        } catch (\Exception $e) {
+            log_message('error', 'Error en infoContrato: ' . $e->getMessage());
+            return $this->response->setJSON([
+                'error' => 'Error al obtener información del contrato',
+                'saldo_actual' => 0,
+                'monto_total' => 0
+            ])->setStatusCode(500);
         }
-
-        return $this->response->setJSON([
-            'saldo_actual' => $saldo,
-            'monto_total' => $montoTotal
-        ]);
     }
 
     // Método para ver pagos por contrato

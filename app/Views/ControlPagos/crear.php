@@ -23,7 +23,8 @@
                                         <option value="">Seleccione un contrato</option>
                                         <?php if (!empty($contratos)): ?>
                                             <?php foreach ($contratos as $contrato): ?>
-                                                <option value="<?= $contrato['idcontrato'] ?>">
+                                                <option value="<?= $contrato['idcontrato'] ?>" 
+                                                    <?= (isset($contrato_seleccionado) && $contrato_seleccionado == $contrato['idcontrato']) ? 'selected' : '' ?>>
                                                     Contrato #<?= $contrato['idcontrato'] ?> - 
                                                     <?= !empty($contrato['nombres']) ? 
                                                         $contrato['nombres'] . ' ' . $contrato['apellidos'] : 
@@ -54,13 +55,15 @@
                             <div class="col-md-4">
                                 <div class="form-group">
                                     <label for="monto_total">Monto Total del Contrato</label>
-                                    <input type="text" class="form-control" id="monto_total" readonly>
+                                    <input type="text" class="form-control" id="monto_total" readonly 
+                                        value="<?= (isset($info_contrato_precargada) && $info_contrato_precargada) ? 'S/ ' . number_format($info_contrato_precargada['monto_total'], 2) : '' ?>">
                                 </div>
                             </div>
                             <div class="col-md-4">
                                 <div class="form-group">
                                     <label for="saldo_actual">Saldo Actual</label>
-                                    <input type="text" class="form-control" id="saldo_actual" readonly>
+                                    <input type="text" class="form-control" id="saldo_actual" readonly 
+                                        value="<?= (isset($info_contrato_precargada) && $info_contrato_precargada) ? 'S/ ' . number_format($info_contrato_precargada['saldo_actual'], 2) : '' ?>">
                                 </div>
                             </div>
                             <div class="col-md-4">
@@ -190,6 +193,24 @@ $(document).ready(function() {
         theme: "bootstrap"
     });
 
+    // Si hay un contrato pre-seleccionado, cargar su información automáticamente
+    <?php if (isset($contrato_seleccionado) && $contrato_seleccionado): ?>
+        // Usar setTimeout para asegurar que select2 esté completamente inicializado
+        setTimeout(function() {
+            console.log('Cargando información del contrato pre-seleccionado: <?= $contrato_seleccionado ?>');
+            
+            // Si ya tenemos información precargada, usarla
+            <?php if (isset($info_contrato_precargada) && $info_contrato_precargada): ?>
+                console.log('Usando información precargada del contrato');
+                $('#amortizacion').attr('max', <?= $info_contrato_precargada['saldo_actual'] ?>);
+                updateResumen();
+            <?php else: ?>
+                // Si no hay información precargada, hacer petición AJAX
+                $('#idcontrato').trigger('change');
+            <?php endif; ?>
+        }, 100);
+    <?php endif; ?>
+
     // Actualizar nombre del archivo en el input file
     $('#comprobante').on('change', function() {
         var fileName = $(this).val().split('\\').pop();
@@ -256,6 +277,7 @@ $(document).ready(function() {
     // Cargar información del contrato cuando se selecciona
     $('#idcontrato').on('change', function() {
         var idcontrato = $(this).val();
+        console.log('Contrato seleccionado:', idcontrato);
         
         if (idcontrato) {
             // Mostrar carga
@@ -263,6 +285,7 @@ $(document).ready(function() {
             
             // Hacer petición AJAX
             $.get('<?= base_url('/controlpagos/infoContrato/') ?>' + idcontrato, function(data) {
+                console.log('Respuesta del servidor:', data);
                 $('#monto_total').val('S/ ' + parseFloat(data.monto_total).toFixed(2));
                 $('#saldo_actual').val('S/ ' + parseFloat(data.saldo_actual).toFixed(2));
                 
@@ -274,7 +297,9 @@ $(document).ready(function() {
                 
                 // Quitar clase de carga
                 $('#monto_total, #saldo_actual').removeClass('loading');
-            }).fail(function() {
+            }).fail(function(xhr, status, error) {
+                console.error('Error en la petición AJAX:', status, error);
+                console.error('Respuesta del servidor:', xhr.responseText);
                 Swal.fire({
                     icon: 'error',
                     title: 'Error',

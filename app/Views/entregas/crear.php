@@ -139,23 +139,6 @@
                                             <label class="custom-file-label" for="comprobante_entrega">Seleccionar archivo PDF</label>
                                         </div>
                                         <small class="form-text text-muted">Suba el comprobante de entrega en formato PDF (máx. 5MB)</small>
-                                        
-                                        <!-- Contenedor para la vista previa del PDF -->
-                                        <div id="pdf-preview-container" class="mt-3" style="display: none;">
-                                            <div class="card">
-                                                <div class="card-header bg-light py-2">
-                                                    <div class="d-flex justify-content-between align-items-center">
-                                                        <h6 class="mb-0"><i class="fas fa-eye mr-2"></i>Vista previa del PDF</h6>
-                                                        <button type="button" class="btn btn-sm btn-danger" id="remove-pdf">
-                                                            <i class="fas fa-times"></i> Quitar
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                                <div class="card-body p-0" style="height: 400px;">
-                                                    <iframe id="pdf-preview" style="width: 100%; height: 100%; border: none;"></iframe>
-                                                </div>
-                                            </div>
-                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -246,39 +229,13 @@ $(document).ready(function() {
         }
     });
 
-    // Previsualizar PDF cuando se selecciona
-    $('#comprobante_entrega').on('change', function() {
-        var file = this.files[0];
-        var fileName = file ? file.name : '';
-        $(this).next('.custom-file-label').html(fileName);
-        
-        // Mostrar vista previa si es un PDF
-        if (file && file.type === 'application/pdf') {
-            var reader = new FileReader();
-            
-            reader.onload = function(e) {
-                $('#pdf-preview').attr('src', e.target.result);
-                $('#pdf-preview-container').fadeIn();
-            };
-            
-            reader.readAsDataURL(file);
-        } else {
-            $('#pdf-preview-container').hide();
-        }
-    });
-
-    // Botón para quitar el PDF
-    $('#remove-pdf').on('click', function() {
-        $('#comprobante_entrega').val('');
-        $('.custom-file-label').html('Seleccionar archivo PDF');
-        $('#pdf-preview-container').hide();
-    });
 
     // Formatear fecha para mostrar
     function formatDate(dateString) {
         var date = new Date(dateString);
         return date.toLocaleDateString('es-ES');
     }
+    
 
     // Validación del formulario con jQuery Validate
     $('.form-validate').validate({
