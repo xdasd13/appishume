@@ -7,6 +7,7 @@ use App\Models\ServicioModel;
 use App\Models\EquipoModel;
 use App\Models\ProyectoModel;
 use CodeIgniter\Controller;
+use Config\Database;
 
 class Cronograma extends BaseController
 {
@@ -15,6 +16,13 @@ class Cronograma extends BaseController
     protected $equipoModel;
     protected $tecnicoModel;
     protected $proyectoModel;
+    protected $db;
+
+    public function __construct()
+    {
+        // Inicializar conexión a la base de datos
+        $this->db = Database::connect();
+    }
 
     /**
      * Vista principal del cronograma
@@ -316,6 +324,11 @@ class Cronograma extends BaseController
     public function testDatabase()
     {
         try {
+            // Verificar que la conexión DB esté disponible
+            if (!$this->db) {
+                throw new \Exception('Conexión a base de datos no disponible');
+            }
+
             // Inicializar modelos
             if (!isset($this->proyectoModel)) {
                 $this->proyectoModel = new ProyectoModel();
