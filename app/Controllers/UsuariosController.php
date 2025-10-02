@@ -187,10 +187,9 @@ class UsuariosController extends BaseController
                     ]
                 ],
                 'direccion' => [
-                    'rules' => 'required|min_length[10]',
+                    'rules' => 'required',
                     'errors' => [
-                        'required' => 'La dirección es obligatoria',
-                        'min_length' => 'La dirección debe tener al menos 10 caracteres'
+                        'required' => 'La dirección es obligatoria'
                     ]
                 ]
             ]));

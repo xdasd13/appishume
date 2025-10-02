@@ -251,7 +251,7 @@
                         <!-- Formulario para personal existente -->
                         <div class="tab-pane fade <?= ($tipo_creacion === 'existente') ? 'show active' : '' ?>" 
                              id="existente" role="tabpanel">
-                            <form id="formExistente" class="needs-validation" novalidate>
+                            <form id="formExistente" class="needs-validation" novalidate action="<?= base_url('/usuarios/guardar') ?>" method="POST">
                                 <input type="hidden" name="tipo_creacion" value="existente">
                                 <input type="hidden" name="<?= csrf_token() ?>" value="<?= csrf_hash() ?>">
                                 
@@ -383,7 +383,7 @@
                         <!-- Formulario para nuevo personal -->
                         <div class="tab-pane fade <?= ($tipo_creacion === 'nuevo') ? 'show active' : '' ?>" 
                              id="nuevo" role="tabpanel">
-                            <form id="formNuevo" class="needs-validation" novalidate>
+                            <form id="formNuevo" class="needs-validation" novalidate action="<?= base_url('/usuarios/guardar') ?>" method="POST">
                                 <input type="hidden" name="tipo_creacion" value="nuevo">
                                 <input type="hidden" name="<?= csrf_token() ?>" value="<?= csrf_hash() ?>">
                                 
@@ -592,7 +592,7 @@
                                 </div>
                                 
                                 <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
-                                    <button type="submit" class="btn btn-primary">
+                                    <button type="button" class="btn btn-primary" id="btnCrearPersonal">
                                         <i class="fas fa-save me-1"></i> Crear Personal y Credenciales
                                     </button>
                                 </div>
@@ -732,6 +732,8 @@
         const strengthBar = $(this).closest('.row').find('.password-strength');
         const strength = calcularFortalezaPassword(password);
         
+        console.log('Validando contraseña:', password, 'FormType:', formType);
+        
         // Actualizar barra de fortaleza
         strengthBar.css('width', strength.percentage + '%');
         strengthBar.removeClass('bg-danger bg-warning bg-success').addClass(strength.class);
@@ -748,39 +750,51 @@
     });
     
     function updatePasswordRequirements(password, formType) {
+        console.log('Actualizando requisitos para:', formType, 'Contraseña:', password);
+        
         // Longitud
         if (password.length >= 8) {
             $(`#length-${formType}`).removeClass('requirement-unmet').addClass('requirement-met');
+            console.log('✓ Longitud cumplida');
         } else {
             $(`#length-${formType}`).removeClass('requirement-met').addClass('requirement-unmet');
+            console.log('✗ Longitud no cumplida');
         }
         
         // Mayúscula
         if (/[A-Z]/.test(password)) {
             $(`#uppercase-${formType}`).removeClass('requirement-unmet').addClass('requirement-met');
+            console.log('✓ Mayúscula encontrada');
         } else {
             $(`#uppercase-${formType}`).removeClass('requirement-met').addClass('requirement-unmet');
+            console.log('✗ Mayúscula no encontrada');
         }
         
         // Minúscula
         if (/[a-z]/.test(password)) {
             $(`#lowercase-${formType}`).removeClass('requirement-unmet').addClass('requirement-met');
+            console.log('✓ Minúscula encontrada');
         } else {
             $(`#lowercase-${formType}`).removeClass('requirement-met').addClass('requirement-unmet');
+            console.log('✗ Minúscula no encontrada');
         }
         
         // Número
         if (/[0-9]/.test(password)) {
             $(`#number-${formType}`).removeClass('requirement-unmet').addClass('requirement-met');
+            console.log('✓ Número encontrado');
         } else {
             $(`#number-${formType}`).removeClass('requirement-met').addClass('requirement-unmet');
+            console.log('✗ Número no encontrado');
         }
         
         // Símbolo
         if (/[^A-Za-z0-9]/.test(password)) {
             $(`#special-${formType}`).removeClass('requirement-unmet').addClass('requirement-met');
+            console.log('✓ Símbolo encontrado');
         } else {
             $(`#special-${formType}`).removeClass('requirement-met').addClass('requirement-unmet');
+            console.log('✗ Símbolo no encontrado');
         }
     }
     
@@ -1474,6 +1488,12 @@
     </script>
     
     <?= $footer ?>
+    
+    <!-- Script completo del formulario de usuarios -->
+    <script src="<?= base_url('js/user-form-complete.js') ?>"></script>
+    
+    <!-- Script simple para manejar el registro -->
+    <script src="<?= base_url('js/simple-register.js') ?>"></script>
     
     <!-- Script para DNI validation - ejecutado después de jQuery -->
     <script>
