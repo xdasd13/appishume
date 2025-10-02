@@ -636,13 +636,11 @@ async function updateCardStatus(cardId, newStatus) {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'X-Requested-With': 'XMLHttpRequest',
-                'X-CSRF-TOKEN': '<?= csrf_hash() ?>'
+                'X-Requested-With': 'XMLHttpRequest'
             },
             body: JSON.stringify({
                 id: cardId,
-                estado: newStatus,
-                <?= csrf_token() ?>: '<?= csrf_hash() ?>'
+                estado: newStatus
             })
         });
         

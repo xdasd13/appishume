@@ -15,7 +15,6 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@ttskch/select2-bootstrap4-theme@x.x.x/dist/select2-bootstrap4.min.css">
 
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css">
 <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap5.min.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -23,6 +22,7 @@
 
   <!-- En el header -->
   <link rel="stylesheet" href="<?= base_url('assets/css/custom.css') ?>">
+  <link rel="stylesheet" href="<?= base_url('assets/css/sweetalert-custom.css') ?>">
   <link rel="icon" href="<?= base_url() . 'assets/img/kaiadmin/favicon.ico' ?>" type="image/x-icon" />
 
   <!-- Fonts and icons -->
@@ -592,112 +592,6 @@
             </ul>
           </div>
           <div class="page-category">
-            <!-- Aquí iría el contenido específico de cada página -->
-
             <!-- Antes de cerrar el body -->
 
-            <!-- SweetAlert2 para confirmación de logout -->
-            <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
-            <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-            <script>
-              function confirmLogout(event) {
-                event.preventDefault();
-
-                Swal.fire({
-                  title: '¿Cerrar Sesión?',
-                  text: '¿Estás seguro de que deseas cerrar tu sesión?',
-                  icon: 'question',
-                  showCancelButton: true,
-                  confirmButtonColor: '#FF6B00',
-                  cancelButtonColor: '#6c757d',
-                  confirmButtonText: 'Sí, cerrar sesión',
-                  cancelButtonText: 'Cancelar',
-                  reverseButtons: true,
-                  background: '#ffffff',
-                  customClass: {
-                    popup: 'logout-confirm-popup',
-                    title: 'logout-confirm-title',
-                    content: 'logout-confirm-text',
-                    confirmButton: 'logout-confirm-btn',
-                    cancelButton: 'logout-cancel-btn'
-                  }
-                }).then((result) => {
-                  if (result.isConfirmed) {
-                    // Mostrar notificación de cierre exitoso
-                    Swal.fire({
-                      title: 'Sesión Cerrada',
-                      text: 'Has cerrado sesión correctamente',
-                      icon: 'success',
-                      timer: 2000,
-                      showConfirmButton: false,
-                      background: '#ffffff',
-                      customClass: {
-                        popup: 'logout-success-popup',
-                        title: 'logout-success-title',
-                        content: 'logout-success-text'
-                      }
-                    }).then(() => {
-                      window.location.href = '<?= base_url('auth/logout') ?>';
-                    });
-                  }
-                });
-              }
-            </script>
-
-            <style>
-              /* Estilos para SweetAlert de logout */
-              .logout-confirm-popup {
-                font-family: 'Poppins', sans-serif !important;
-                border-radius: 15px !important;
-                padding: 2rem !important;
-                box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15) !important;
-              }
-
-              .logout-confirm-title {
-                font-family: 'Poppins', sans-serif !important;
-                font-weight: 600 !important;
-                font-size: 1.4rem !important;
-                color: #333333 !important;
-              }
-
-              .logout-confirm-text {
-                font-family: 'Poppins', sans-serif !important;
-                font-weight: 400 !important;
-                font-size: 1rem !important;
-                color: #666666 !important;
-              }
-
-              .logout-confirm-btn {
-                font-family: 'Poppins', sans-serif !important;
-                font-weight: 500 !important;
-                border-radius: 8px !important;
-                padding: 0.5rem 1.5rem !important;
-              }
-
-              .logout-cancel-btn {
-                font-family: 'Poppins', sans-serif !important;
-                font-weight: 500 !important;
-                border-radius: 8px !important;
-                padding: 0.5rem 1.5rem !important;
-              }
-
-              .logout-success-popup {
-                font-family: 'Poppins', sans-serif !important;
-                border-radius: 12px !important;
-                box-shadow: 0 8px 25px rgba(76, 175, 80, 0.15) !important;
-              }
-
-              .logout-success-title {
-                font-family: 'Poppins', sans-serif !important;
-                font-weight: 600 !important;
-                font-size: 1.2rem !important;
-                color: #2E7D32 !important;
-              }
-
-              .logout-success-text {
-                font-family: 'Poppins', sans-serif !important;
-                font-weight: 400 !important;
-                font-size: 0.95rem !important;
-                color: #4CAF50 !important;
-              }
-            </style>
+            <!-- Aquí iría el contenido específico de cada página -->

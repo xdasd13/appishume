@@ -22,22 +22,19 @@
               </div>
               <div>
                 Distributed by
-                <a target="_blank" href="<?= base_url() . 'https://themewagon.com/'?>">ThemeWagon</a>.
-              </div>
             </div>
-          </footer> -->
+          </footer> 
         </div>
       </div>
-      <!--   Core JS Files   -->
+      <!--   Core JS Files - Orden correcto   -->
       <script src="<?=base_url() . 'assets/js/core/jquery-3.7.1.min.js'?>"></script>
       <script src="<?= base_url() . 'assets/js/core/popper.min.js'?>"></script>
-      <script src="<?= base_url() . 'assets/js/core/bootstrap.min.js'?>"></script>
+      <!-- Solo una versión de Bootstrap JS -->
       <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
       <!-- jQuery Scrollbar -->
       <script src="<?= base_url() . 'assets/js/plugin/jquery-scrollbar/jquery.scrollbar.min.js'?>"></script>
 
       <!-- Chart JS -->
-      <script src="<?= base_url() . 'assets/js/plugin/chart.js/chart.min.js'?>"></script>
 
       <!-- jQuery Sparkline -->
       <script src=" <?= base_url() . 'assets/js/plugin/jquery.sparkline/jquery.sparkline.min.js'?>"></script>
@@ -60,6 +57,8 @@
 
       <!-- Sweet Alert -->
       <script src="<?= base_url() . 'assets/js/plugin/sweetalert/sweetalert.min.js'?>"></script>
+      <!-- SweetAlert2 -->
+      <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
       <!-- Script para prevenir errores de scrollbar -->
       <script>
@@ -77,6 +76,52 @@
       <script src="<?= base_url() . 'assets/js/kaiadmin.min.js'?>"></script>
       <!-- Custom JS - Cargado después de jQuery -->
       <script src="<?= base_url('assets/js/custom.js') ?>"></script>
+
+      <!-- Script global para logout -->
+      <script>
+        function confirmLogout(event) {
+          event.preventDefault();
+
+          Swal.fire({
+            title: '¿Cerrar Sesión?',
+            text: '¿Estás seguro de que deseas cerrar tu sesión?',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#FF6B00',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Sí, cerrar sesión',
+            cancelButtonText: 'Cancelar',
+            reverseButtons: true,
+            background: '#ffffff',
+            customClass: {
+              popup: 'logout-confirm-popup',
+              title: 'logout-confirm-title',
+              content: 'logout-confirm-text',
+              confirmButton: 'logout-confirm-btn',
+              cancelButton: 'logout-cancel-btn'
+            }
+          }).then((result) => {
+            if (result.isConfirmed) {
+              // Mostrar notificación de cierre exitoso
+              Swal.fire({
+                title: 'Sesión Cerrada',
+                text: 'Has cerrado sesión correctamente',
+                icon: 'success',
+                timer: 2000,
+                showConfirmButton: false,
+                background: '#ffffff',
+                customClass: {
+                  popup: 'logout-success-popup',
+                  title: 'logout-success-title',
+                  content: 'logout-success-text'
+                }
+              }).then(() => {
+                window.location.href = '<?= base_url('auth/logout') ?>';
+              });
+            }
+          });
+        }
+      </script>
 
    
 

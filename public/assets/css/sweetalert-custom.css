@@ -1,0 +1,85 @@
+/* Estilos personalizados para SweetAlert2 */
+
+/* Estilos para SweetAlert de logout */
+.logout-confirm-popup {
+    font-family: 'Poppins', sans-serif !important;
+    border-radius: 15px !important;
+    padding: 2rem !important;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15) !important;
+}
+
+.logout-confirm-title {
+    font-family: 'Poppins', sans-serif !important;
+    font-weight: 600 !important;
+    font-size: 1.4rem !important;
+    color: #333333 !important;
+}
+
+.logout-confirm-text {
+    font-family: 'Poppins', sans-serif !important;
+    font-weight: 400 !important;
+    font-size: 1rem !important;
+    color: #666666 !important;
+}
+
+.logout-confirm-btn {
+    font-family: 'Poppins', sans-serif !important;
+    font-weight: 500 !important;
+    border-radius: 8px !important;
+    padding: 0.5rem 1.5rem !important;
+}
+
+.logout-cancel-btn {
+    font-family: 'Poppins', sans-serif !important;
+    font-weight: 500 !important;
+    border-radius: 8px !important;
+    padding: 0.5rem 1.5rem !important;
+}
+
+.logout-success-popup {
+    font-family: 'Poppins', sans-serif !important;
+    border-radius: 12px !important;
+    box-shadow: 0 8px 25px rgba(76, 175, 80, 0.15) !important;
+}
+
+.logout-success-title {
+    font-family: 'Poppins', sans-serif !important;
+    font-weight: 600 !important;
+    font-size: 1.2rem !important;
+    color: #2E7D32 !important;
+}
+
+.logout-success-text {
+    font-family: 'Poppins', sans-serif !important;
+    font-weight: 400 !important;
+    font-size: 0.95rem !important;
+    color: #4CAF50 !important;
+}
+
+/* Estilos generales para SweetAlert Toast */
+.swal-success-popup {
+    font-family: 'Poppins', sans-serif !important;
+    border-radius: 12px !important;
+    box-shadow: 0 8px 25px rgba(76, 175, 80, 0.15) !important;
+}
+
+.swal-success-title {
+    font-family: 'Poppins', sans-serif !important;
+    font-weight: 600 !important;
+    font-size: 1rem !important;
+    color: #2E7D32 !important;
+}
+
+.swal-success-text {
+    font-family: 'Poppins', sans-serif !important;
+    font-weight: 400 !important;
+    font-size: 0.9rem !important;
+    color: #4CAF50 !important;
+}
+
+/* Detector de sesión expirada */
+.session-expired-popup {
+    border-radius: 15px !important;
+    padding: 2rem !important;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2) !important;
+}

@@ -1,5 +1,5 @@
 <?= $header ?>
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+<!-- Bootstrap CSS ya se carga en el header -->
 <style>
     /* RESET Y ESTILOS BASE */
     .container-fluid.py-4 {
@@ -632,8 +632,8 @@
     </div>
 </div>
 <!--  SCRIPTS -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<!-- Bootstrap JS ya se carga en el footer -->
+<!-- SweetAlert2 ya se carga en el footer -->
 
 <script>
     //  FUNCIONALIDAD DEL DROPDOWN ASEGURADA
