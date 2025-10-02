@@ -10,6 +10,7 @@
                     <form method="post" action="<?= base_url('equipos/saveEquipo') ?>" id="equipoForm">
                         <?= csrf_field() ?>
                         <input type="hidden" name="idequipo" value="<?= $equipo['idequipo'] ?>">
+                        <input type="hidden" name="idserviciocontratado" value="<?= $equipo['idserviciocontratado'] ?>">
                         
                         <div class="mb-3">
                             <label for="idusuario" class="form-label">

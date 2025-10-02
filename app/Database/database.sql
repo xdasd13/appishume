@@ -299,27 +299,34 @@ INSERT INTO contratos (idcotizacion, idcliente, autorizapublicacion) VALUES
 (6, 6, 1),  -- Contrato boda Ana
 (7, 8, 0);  -- Contrato evento Robert
 
--- 8. SERVICIOS CONTRATADOS (Datos que usarás: cantidad, fechahoraservicio, direccion)
 INSERT INTO servicioscontratados (idcotizacion, idservicio, cantidad, precio, fechahoraservicio, direccion) VALUES 
--- Boda Carlos García (Contrato 1)
-(1, 1, 2, 1600.00, '2025-02-14 15:00:00', 'Hacienda Los Olivos - Km 25 Panamericana Sur'),
-(1, 2, 1, 1200.00, '2025-02-14 14:00:00', 'Hacienda Los Olivos - Km 25 Panamericana Sur'),
--- Quinceañero María (Contrato 2)
-(2, 1, 1, 800.00, '2025-03-10 19:00:00', 'Salón de Eventos El Dorado - Av. Principal 890, Chorrillos'),
-(2, 3, 1, 600.00, '2025-03-10 18:30:00', 'Salón de Eventos El Dorado - Av. Principal 890, Chorrillos'),
--- Evento Corporativo (Contrato 3)
-(3, 4, 1, 1500.00, '2025-02-28 09:00:00', 'Hotel Business Center - Jr. Ejecutivo 445, San Isidro'),
-(3, 2, 1, 1000.00, '2025-02-28 08:30:00', 'Hotel Business Center - Jr. Ejecutivo 445, San Isidro'),
--- Boda José (Contrato 4)
-(4, 1, 1, 800.00, '2025-04-15 16:00:00', 'Club Campestre Las Flores - Cieneguilla'),
-(4, 5, 1, 400.00, '2025-04-15 20:00:00', 'Club Campestre Las Flores - Cieneguilla'),
--- Conferencia (Contrato 5)
-(5, 2, 2, 2000.00, '2025-03-20 08:00:00', 'Centro de Convenciones Lima - Av. Javier Prado 2500, San Borja'),
--- Boda Ana (Contrato 6)
-(6, 1, 1, 800.00, '2025-05-18 17:00:00', 'Casa Hacienda San José - Pachacamac'),
-(6, 7, 1, 350.00, '2025-05-18 16:00:00', 'Casa Hacienda San José - Pachacamac'),
--- Evento Robert (Contrato 7)
-(7, 4, 1, 1500.00, '2025-06-22 10:00:00', 'Country Club Lima - La Planicie, La Molina');
+-- Servicios para cotización 7 (Evento Robert Smith) -- ✅ CAMBIO: 8 → 7
+(7, 2, 1, 1000.00, '2025-10-19 10:00:00', 'Salón Empresarial Pacífico - Av. La Marina 150, Miraflores'),
+(7, 1, 1, 850.00, '2025-10-20 16:30:00', 'Club de Campo La Pradera - Km 10 Carretera Central'),
+(7, 6, 1, 400.00, '2025-10-20 15:30:00', 'Club de Campo La Pradera - Km 10 Carretera Central'),
+
+-- Servicios para cotización 1 (Boda Carlos García)
+(1, 1, 2, 1600.00, '2025-11-08 15:00:00', 'Hacienda Los Olivos - Km 25 Panamericana Sur'),
+(1, 2, 1, 1200.00, '2025-11-08 14:00:00', 'Hacienda Los Olivos - Km 25 Panamericana Sur'),
+
+-- Servicios para cotización 2 (Quinceañero María Rodríguez)
+(2, 1, 1, 800.00, '2025-12-05 19:00:00', 'Salón de Eventos El Dorado - Av. Principal 890, Chorrillos'),
+(2, 3, 1, 600.00, '2025-12-05 18:30:00', 'Salón de Eventos El Dorado - Av. Principal 890, Chorrillos'),
+
+-- Servicios para cotización 3 (Evento Corporativo)
+(3, 4, 1, 1500.00, '2025-11-20 09:00:00', 'Hotel Business Center - Jr. Ejecutivo 445, San Isidro'),
+(3, 2, 1, 1000.00, '2025-11-20 08:30:00', 'Hotel Business Center - Jr. Ejecutivo 445, San Isidro'),
+
+-- Servicios para cotización 4 (Boda José Mendoza)
+(4, 1, 1, 800.00, '2026-01-10 16:00:00', 'Club Campestre Las Flores - Cieneguilla'),
+(4, 5, 1, 400.00, '2026-01-10 20:00:00', 'Club Campestre Las Flores - Cieneguilla'),
+
+-- Servicios para cotización 5 (Conferencia)
+(5, 2, 2, 2000.00, '2025-11-28 08:00:00', 'Centro de Convenciones Lima - Av. Javier Prado 2500, San Borja'),
+
+-- Servicios para cotización 6 (Boda Ana Fernández)
+(6, 1, 1, 800.00, '2025-12-14 17:00:00', 'Casa Hacienda San José - Pachacamac'),
+(6, 6, 1, 350.00, '2025-12-14 16:00:00', 'Casa Hacienda San José - Pachacamac');
 
 
 
@@ -344,25 +351,26 @@ INSERT INTO controlpagos (idcontrato, saldo, amortizacion, deuda, idtipopago, nu
 
 -- 10. EQUIPOS (Personal asignado a servicios)
 INSERT INTO equipos (idserviciocontratado, idusuario, descripcion, estadoservicio) VALUES 
--- Boda Carlos García (Completado)
-(1, 3, 'Equipo de sonido: mezcladora Allen & Heath, micrófonos inalámbricos, parlantes JBL', 'Completado'),
-(2, 4, 'Cobertura fotográfica: Canon EOS R5, lentes 24-70mm, flash Godox', 'Completado'),
--- Quinceañero María (En Proceso)
-(3, 3, 'Sistema de audio: consola digital, micrófonos de corbata, parlantes activos', 'En Proceso'),
-(4, 1, 'Luces LED decorativas: panel RGB, controlador DMX, efectos laser', 'Pendiente'),
--- Evento Corporativo (Completado)
-(5, 2, 'Transmisión en vivo: cámaras 4K, encoder, plataforma streaming', 'Completado'),
-(6, 4, 'Fotografía corporativa: retratos ejecutivos, cobertura de presentaciones', 'Completado'),
--- Boda José (Pendiente)
-(7, 3, 'Audio para ceremonia: sistema inalámbrico, altavoces discretos', 'Pendiente'),
-(8, 1, 'DJ profesional: controlador Pioneer, biblioteca musical, micrófonos', 'Pendiente'),
--- Conferencia (En Proceso)
-(9, 4, 'Fotografía de conferencia: cobertura de ponentes y networking', 'En Proceso'),
--- Boda Ana (Programado)
-(10, 3, 'Sistema de sonido integral: ceremonia y recepción', 'Programado'),
-(11, 2, 'Decoración floral: arreglos de mesa, altar, entrada', 'Programado'),
--- Evento Robert (Programado)
-(12, 2, 'Video streaming: transmisión internacional, múltiples cámaras', 'Programado');
+-- Servicios de cotización 7 (Evento Robert Smith) - IDs 1, 2, 3
+(1, 2, 'Fotografía de eventos: cámaras profesionales, iluminación', 'Programado'),
+(2, 3, 'Sistema de sonido: mezcladora, micrófonos, parlantes', 'Programado'),
+(3, 1, 'Servicio de catering: menú premium, personal de servicio', 'Programado'),
+
+-- Servicios de cotización 1 (Boda Carlos García) - IDs 4, 5
+(4, 3, 'Equipo de sonido: mezcladora Allen & Heath, micrófonos inalámbricos, parlantes JBL', 'Completado'),
+(5, 4, 'Cobertura fotográfica: Canon EOS R5, lentes 24-70mm, flash Godox', 'Completado'),
+
+-- Servicios de cotización 2 (Quinceañero María) - IDs 6, 7
+(6, 3, 'Sistema de audio: consola digital, micrófonos de corbata, parlantes activos', 'En Proceso'),
+(7, 1, 'Luces LED decorativas: panel RGB, controlador DMX, efectos laser', 'Pendiente'),
+
+-- Servicios de cotización 3 (Evento Corporativo) - IDs 8, 9
+(8, 2, 'Transmisión en vivo: cámaras 4K, encoder, plataforma streaming', 'Completado'),
+(9, 4, 'Fotografía corporativa: retratos ejecutivos, cobertura de presentaciones', 'Completado'),
+
+-- Servicios de cotización 4 (Boda José) - IDs 10, 11
+(10, 3, 'Audio para ceremonia: sistema inalámbrico, altavoces discretos', 'Pendiente'),
+(11, 1, 'DJ profesional: controlador Pioneer, biblioteca musical, micrófonos', 'Pendiente');
 
 -- Lista de condiciones por tipo de contrato
 INSERT INTO listacondiciones (idcondicion, idtipocontrato) VALUES 

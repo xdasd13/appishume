@@ -46,26 +46,61 @@
                         <div class="col-md-6">
                             <div class="mb-3">
                                 <strong class="text-primary"><i class="fas fa-concierge-bell me-2"></i>Servicio:</strong>
-                                <p class="mb-0"><?= $servicio->servicio ?></p>
+                                <p class="mb-0"><?= is_array($servicio) ? $servicio['servicio'] : $servicio->servicio ?></p>
                             </div>
                             <div class="mb-3">
                                 <strong class="text-primary"><i class="fas fa-user me-2"></i>Cliente:</strong>
-                                <p class="mb-0"><?= !empty($servicio->razonsocial) ? $servicio->razonsocial : $servicio->nombres . ' ' . $servicio->apellidos ?></p>
+                                <p class="mb-0"><?php 
+                                    if (is_array($servicio)) {
+                                        if (!empty($servicio['razonsocial'])) {
+                                            echo $servicio['razonsocial'];
+                                        } elseif (isset($servicio['nombres']) && isset($servicio['apellidos'])) {
+                                            echo $servicio['nombres'] . ' ' . $servicio['apellidos'];
+                                        } elseif (isset($servicio['cliente_nombre'])) {
+                                            echo $servicio['cliente_nombre'];
+                                        } else {
+                                            echo 'Cliente no especificado';
+                                        }
+                                    } else {
+                                        if (!empty($servicio->razonsocial)) {
+                                            echo $servicio->razonsocial;
+                                        } elseif (isset($servicio->nombres) && isset($servicio->apellidos)) {
+                                            echo $servicio->nombres . ' ' . $servicio->apellidos;
+                                        } elseif (isset($servicio->cliente_nombre)) {
+                                            echo $servicio->cliente_nombre;
+                                        } else {
+                                            echo 'Cliente no especificado';
+                                        }
+                                    }
+                                ?></p>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="mb-3">
                                 <strong class="text-primary"><i class="fas fa-calendar-day me-2"></i>Fecha del Evento:</strong>
-                                <p class="mb-0"><?= date('d/m/Y', strtotime($servicio->fechaevento)) ?></p>
+                                <p class="mb-0"><?php 
+                                    if (is_array($servicio)) {
+                                        $fecha = isset($servicio['fechaevento']) ? $servicio['fechaevento'] : (isset($servicio['fechahoraservicio']) ? $servicio['fechahoraservicio'] : null);
+                                    } else {
+                                        $fecha = isset($servicio->fechaevento) ? $servicio->fechaevento : (isset($servicio->fechahoraservicio) ? $servicio->fechahoraservicio : null);
+                                    }
+                                    echo $fecha ? date('d/m/Y', strtotime($fecha)) : 'Fecha no especificada';
+                                ?></p>
                             </div>
                             <div class="mb-3">
                                 <strong class="text-primary"><i class="fas fa-star me-2"></i>Tipo de Evento:</strong>
-                                <p class="mb-0"><?= $servicio->tipo_evento ?></p>
+                                <p class="mb-0"><?php 
+                                    if (is_array($servicio)) {
+                                        echo isset($servicio['tipo_evento']) ? $servicio['tipo_evento'] : 'Tipo no especificado';
+                                    } else {
+                                        echo isset($servicio->tipo_evento) ? $servicio->tipo_evento : 'Tipo no especificado';
+                                    }
+                                ?></p>
                             </div>
                         </div>
                     </div>
                     <div class="text-center mt-3">
-                        <a href="<?= base_url('equipos/asignar/'.$servicio->idserviciocontratado) ?>" class="btn btn-primary">
+                        <a href="<?= base_url('equipos/asignar/'.(is_array($servicio) ? $servicio['idserviciocontratado'] : $servicio->idserviciocontratado)) ?>" class="btn btn-primary">
                             <i class="fas fa-plus-circle me-2"></i>Asignar Nuevo Equipo
                         </a>
                     </div>

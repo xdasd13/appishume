@@ -89,9 +89,11 @@ $routes->get('controlpagos/generarVoucher/(:num)', [ControlPagoController::class
 $routes->get('equipos', 'Equipos::index');
 $routes->get('equipos/asignar/(:num)', 'Equipos::asignar/$1');
 $routes->post('equipos/guardar', 'Equipos::guardar');
+$routes->post('equipos/saveEquipo', 'Equipos::guardar'); // Alias para compatibilidad con vista
 $routes->get('equipos/editar/(:num)', 'Equipos::editar/$1');
 $routes->post('equipos/actualizar', 'Equipos::actualizar');
 $routes->get('equipos/por-servicio/(:num)', 'Equipos::porServicio/$1');
+$routes->get('equipos/porServicio/(:num)', 'Equipos::porServicio/$1'); // Alias para compatibilidad con vista
 $routes->get('equipos/por-usuario/(:num)', 'Equipos::porUsuario/$1');
 $routes->post('equipos/verificar-disponibilidad', 'Equipos::verificarDisponibilidad');
 

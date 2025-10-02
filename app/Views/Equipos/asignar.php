@@ -290,6 +290,7 @@
     </div>
     
     <form method="post" action="<?= base_url('equipos/saveEquipo') ?>" class="mt-4" id="form-asignacion">
+        <?= csrf_field() ?>
         <input type="hidden" name="idserviciocontratado" value="<?= $servicio['idserviciocontratado'] ?>">
         
         <div class="card mb-4">
@@ -346,7 +347,7 @@
                     <label for="estadoservicio" class="form-label">Estado del Servicio</label>
                     <select class="form-select" id="estadoservicio" name="estadoservicio" required>
                         <option value="">Seleccionar estado</option>
-                        <option value="Programado">Programado</option>
+                        <option value="Programado" selected>Programado</option>
                         <option value="En Proceso">En Proceso</option>
                         <option value="Completado">Completado</option>
                         <option value="Pendiente">Pendiente</option>

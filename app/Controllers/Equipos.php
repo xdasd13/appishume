@@ -115,6 +115,14 @@ class Equipos extends BaseController
         $descripcion = $this->request->getPost('descripcion');
         $estado = $this->request->getPost('estadoservicio');
 
+        // Si es edición y no viene servicioId, obtenerlo del equipo existente
+        if ($equipoId && !$servicioId) {
+            $equipoExistente = $this->equipoModel->asArray()->find($equipoId);
+            if ($equipoExistente) {
+                $servicioId = $equipoExistente['idserviciocontratado'];
+            }
+        }
+
         // Obtener información del servicio
         $servicio = $this->equipoModel->getServicioInfo($servicioId);
         if (!$servicio) {
@@ -164,6 +172,10 @@ class Equipos extends BaseController
             session()->setFlashdata('error', 'Error interno del sistema');
         }
 
+        // Regresar al servicio específico si existe, sino a la vista general
+        if ($servicioId) {
+            return redirect()->to('equipos/porServicio/' . $servicioId);
+        }
         return redirect()->to('equipos');
     }
 
