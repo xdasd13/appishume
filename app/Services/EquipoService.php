@@ -194,15 +194,16 @@ class EquipoService
      */
     public function actualizarEstado(int $equipoId, string $nuevoEstado): array
     {
-        // Obtener equipo actual
-        $equipo = $this->equipoModel->find($equipoId);
+        // Obtener equipo actual como array explícitamente
+        $equipo = $this->equipoModel->asArray()->find($equipoId);
         if (!$equipo) {
             return ['success' => false, 'message' => 'Equipo no encontrado'];
         }
 
         // Validar transición usando el helper
         helper('estado');
-        $validacion = validarTransicionEstado($equipo['estadoservicio'], $nuevoEstado);
+        $estadoActual = $equipo['estadoservicio'] ?? '';
+        $validacion = validarTransicionEstado($estadoActual, $nuevoEstado);
         
         if (!$validacion['valido']) {
             return ['success' => false, 'message' => $validacion['mensaje']];
