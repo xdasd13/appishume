@@ -159,13 +159,16 @@ class UsuarioModel extends Model
     public function getEquiposAsignados($usuarioId)
     {
         $builder = $this->db->table('equipos e');
-        $builder->select('e.idequipo, e.equipo, e.estado, s.servicio, 
-                         CONCAT(p.nombres, " ", p.apellidos) as cliente, 
-                         s.fechaservicio');
-        $builder->join('servicios s', 'e.idservicio = s.idservicio');
-        $builder->join('personas p', 's.idpersona = p.idpersona');
+        $builder->select('e.idequipo, e.descripcion as equipo, e.estadoservicio as estado, 
+                         s.servicio, sc.fechahoraservicio as fechaservicio,
+                         CONCAT(p.nombres, " ", p.apellidos) as cliente');
+        $builder->join('servicioscontratados sc', 'e.idserviciocontratado = sc.idserviciocontratado');
+        $builder->join('servicios s', 'sc.idservicio = s.idservicio');
+        $builder->join('cotizaciones co', 'sc.idcotizacion = co.idcotizacion');
+        $builder->join('clientes cl', 'co.idcliente = cl.idcliente');
+        $builder->join('personas p', 'cl.idpersona = p.idpersona');
         $builder->where('e.idusuario', $usuarioId);
-        $builder->orderBy('s.fechaservicio', 'DESC');
+        $builder->orderBy('sc.fechahoraservicio', 'DESC');
         
         return $builder->get()->getResult();
     }
@@ -175,6 +178,6 @@ class UsuarioModel extends Model
     {
         $builder = $this->db->table('equipos');
         $builder->where('idequipo', $equipoId);
-        return $builder->update(['estado' => $nuevoEstado]);
+        return $builder->update(['estadoservicio' => $nuevoEstado]);
     }
 }

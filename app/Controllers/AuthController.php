@@ -88,22 +88,26 @@ class AuthController extends BaseController
             return redirect()->to('/login')->with('error', 'Acceso denegado.');
         }
 
-        $tipoUsuario = session()->get('tipo_usuario');
+        $tipoUsuario = session()->get('tipo_usuario') ?? session()->get('role');
+        $usuarioNombre = session()->get('usuario_nombre') ?? 'Usuario';
         
-        if ($tipoUsuario === 'admin') {
-            $data = [
-                'title' => 'Dashboard Administrador - ISHUME',
-                'usuario' => session()->get('usuario_nombre'),
-                'usuarios' => $this->usuarioModel->getUsuarios(),
-                'trabajadores' => $this->usuarioModel->getTrabajadores(),
-                'header' => view('Layouts/header'),
-                'footer' => view('Layouts/footer')
-            ];
-            return view('welcome', $data);
-        } else {
-            // Redirigir trabajadores a su dashboard específico
-            return redirect()->to('/trabajador/dashboard');
+        // Dashboard unificado para todos los roles
+        $data = [
+            'title' => 'Dashboard - ISHUME',
+            'usuario' => $usuarioNombre,
+            'tipo_usuario' => $tipoUsuario,
+            'header' => view('Layouts/header'),
+            'footer' => view('Layouts/footer')
+        ];
+
+        // Agregar datos específicos según el rol
+        if (in_array($tipoUsuario, ['admin', 'administrador'])) {
+            $data['usuarios'] = $this->usuarioModel->getUsuarios();
+            $data['trabajadores'] = $this->usuarioModel->getTrabajadores();
+            $data['title'] = 'Dashboard Administrador - ISHUME';
         }
+
+        return view('welcome', $data);
     }
 
     // Dashboard para trabajador

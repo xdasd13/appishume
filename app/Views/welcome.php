@@ -22,6 +22,28 @@
     color: #4CAF50 !important;
 }
 
+/* Estilos para mensajes de error */
+.swal2-popup {
+    border-radius: 15px !important;
+    padding: 2rem !important;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15) !important;
+    font-family: 'Poppins', sans-serif !important;
+}
+
+.swal2-title {
+    font-family: 'Poppins', sans-serif !important;
+    font-weight: 600 !important;
+    font-size: 1.3rem !important;
+    color: #E63946 !important;
+}
+
+.swal2-content {
+    font-family: 'Poppins', sans-serif !important;
+    font-weight: 400 !important;
+    font-size: 1rem !important;
+    color: #555555 !important;
+}
+
 /* Detector de sesión expirada */
 .session-expired-popup {
     border-radius: 15px !important;
@@ -73,6 +95,24 @@
             });
         <?php endif; ?>
 
+        // Mostrar notificación de error (acceso denegado, etc.)
+        <?php if (session()->getFlashdata('error')): ?>
+            Swal.fire({
+                icon: 'error',
+                title: 'Acceso Denegado',
+                text: '<?= addslashes(session()->getFlashdata('error')) ?>',
+                confirmButtonText: 'Entendido',
+                confirmButtonColor: '#d33',
+                timer: 5000,
+                timerProgressBar: true,
+                customClass: {
+                    popup: 'swal2-popup',
+                    title: 'swal2-title',
+                    content: 'swal2-content'
+                }
+            });
+        <?php endif; ?>
+
         // Detector de sesión expirada
         let sessionCheckInterval;
         
@@ -117,6 +157,6 @@
         }
 
         // Iniciar verificación de sesión cada 5 minutos
-        sessionCheckInterval = setInterval(checkSessionStatus, 5000);
+        sessionCheckInterval = setInterval(checkSessionStatus, 3600);
     </script>
 <?= $footer ?>

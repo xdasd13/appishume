@@ -196,6 +196,32 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
     <script>
+        // Mostrar mensajes flash de error
+        <?php if (session()->getFlashdata('error')): ?>
+            Swal.fire({
+                icon: 'error',
+                title: 'Acceso Denegado',
+                text: '<?= addslashes(session()->getFlashdata('error')) ?>',
+                confirmButtonText: 'Entendido',
+                confirmButtonColor: '#d33',
+                timer: 5000,
+                timerProgressBar: true
+            });
+        <?php endif; ?>
+
+        // Mostrar mensajes flash de éxito
+        <?php if (session()->getFlashdata('success')): ?>
+            Swal.fire({
+                icon: 'success',
+                title: 'Éxito',
+                text: '<?= addslashes(session()->getFlashdata('success')) ?>',
+                confirmButtonText: 'OK',
+                confirmButtonColor: '#28a745',
+                timer: 3000,
+                timerProgressBar: true
+            });
+        <?php endif; ?>
+
         function actualizarEstado(equipoId, nuevoEstado) {
             Swal.fire({
                 title: '¿Confirmar cambio?',

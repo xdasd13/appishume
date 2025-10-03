@@ -14,6 +14,7 @@ $routes->get('auth/check-session', 'AuthController::checkSession');
 
 // Ruta principal después del login
 $routes->get('welcome', 'Home::index', ['filter' => 'auth']);
+$routes->get('dashboard', 'AuthController::dashboard', ['filter' => 'auth']);
 $routes->get('test-usuarios', 'AuthController::testUsuarios');
 $routes->get('test_debug', 'AuthController::testDebug');
 $routes->get('test_simple', 'AuthController::testSimple');
@@ -26,16 +27,16 @@ $routes->get('usuarios-simple/crear', 'UsuariosControllerSimple::crear');
 $routes->post('usuarios-simple/guardar', 'UsuariosControllerSimple::guardar');
 $routes->delete('usuarios-simple/eliminar/(:num)', 'UsuariosControllerSimple::eliminar/$1');
 
-// Rutas protegidas para administrador
-$routes->group('', ['filter' => 'auth:admin'], function($routes) {
+// ==================== RUTAS ADMINISTRATIVAS (SOLO ADMINISTRADORES) ====================
+$routes->group('', ['filter' => 'admin'], function($routes) {
+    // Gestión de trabajadores
     $routes->get('auth/crear-trabajador', 'AuthController::crearTrabajador');
     $routes->post('auth/crear-trabajador', 'AuthController::crearTrabajador');
     
-    // Rutas para gestión de usuarios
+    // Gestión completa de usuarios (CRUD)
     $routes->get('usuarios', 'UsuariosController::index');
-    // En app/Config/Routes.php
     $routes->get('usuarios/crear/(:any)', 'UsuariosController::crear/$1');
-    $routes->get('usuarios/crear', 'UsuariosController::crear'); // Ruta por defecto
+    $routes->get('usuarios/crear', 'UsuariosController::crear');
     $routes->post('usuarios/guardar', 'UsuariosController::guardar');
     $routes->get('usuarios/editar/(:num)', 'UsuariosController::editar/$1');
     $routes->post('usuarios/actualizar/(:num)', 'UsuariosController::actualizar/$1');
@@ -45,92 +46,99 @@ $routes->group('', ['filter' => 'auth:admin'], function($routes) {
     $routes->delete('usuarios/eliminar-permanente/(:num)', 'UsuariosController::eliminarPermanente/$1');
     $routes->get('usuarios/personas-sin-usuario', 'UsuariosController::getPersonasSinUsuario');
     
-    // Rutas AJAX para validación RENIEC
+    // Validación RENIEC (solo admins pueden validar DNIs)
     $routes->post('usuarios/ajax-check-dni', 'UsuariosController::ajaxCheckDni');
     $routes->get('usuarios/reniec-stats', 'UsuariosController::reniecStats');
+    
+    // Control de Pagos (SOLO ADMINISTRADORES)
+    $routes->get('controlpagos', [ControlPagoController::class, 'index']);
+    $routes->get('controlpagos/crear', [ControlPagoController::class, 'crear']);
+    $routes->post('controlpagos/guardar', [ControlPagoController::class, 'guardar']);
+    $routes->get('controlpagos/ver/(:num)', [ControlPagoController::class, 'ver']);
+    $routes->get('controlpagos/por-contrato/(:num)', [ControlPagoController::class, 'porContrato']);
+    $routes->get('controlpagos/infoContrato/(:num)', [ControlPagoController::class, 'infoContrato']);
+    $routes->get('controlpagos/descargarComprobante/(:num)', [ControlPagoController::class, 'descargarComprobante']);
+    $routes->get('controlpagos/generarVoucher/(:num)', [ControlPagoController::class, 'generarVoucher']);
 });
 
-// Rutas protegidas para trabajador
-$routes->group('', ['filter' => 'auth:trabajador'], function($routes) {
+// ==================== RUTAS PARA TRABAJADORES Y SUPERVISORES ====================
+$routes->group('', ['filter' => 'trabajador'], function($routes) {
+    // Dashboard específico para trabajadores
     $routes->get('trabajador/dashboard', 'AuthController::trabajadorDashboard');
     $routes->post('auth/actualizar-estado', 'AuthController::actualizarEstado');
+    
+    // Gestión de equipos (trabajadores pueden ver y actualizar estados)
+    $routes->get('equipos', 'Equipos::index');
+    $routes->get('equipos/asignar/(:num)', 'Equipos::asignar/$1');
+    $routes->get('equipos/editar/(:num)', 'Equipos::editar/$1');
+    $routes->get('equipos/por-servicio/(:num)', 'Equipos::porServicio/$1');
+    $routes->get('equipos/porServicio/(:num)', 'Equipos::porServicio/$1');
+    $routes->get('equipos/por-usuario/(:num)', 'Equipos::porUsuario/$1');
+    $routes->post('equipos/actualizar-estado', 'Equipos::actualizarEstado');
+    
+    // Cronograma (trabajadores pueden ver sus asignaciones)
+    $routes->get('cronograma', 'Cronograma::index');
+    $routes->get('cronograma/proyectos', 'Cronograma::proyectos');
+    $routes->get('proyectos', 'Cronograma::todosLosProyectos');
+    $routes->get('cronograma/proyecto/(:num)', 'Cronograma::verProyecto/$1');
+    $routes->get('cronograma/eventos', 'Cronograma::getEventos');
+    $routes->get('cronograma/servicios-fecha/(:segment)', 'Cronograma::serviciosPorFecha/$1');
 });
 
-// Ruta original del sistema
-$routes->get('Home', 'Home::index');
+// ==================== RUTAS PÚBLICAS (CON AUTENTICACIÓN BÁSICA) ====================
+$routes->group('', ['filter' => 'auth'], function($routes) {
+    // Ruta principal después del login
+    $routes->get('Home', 'Home::index');
+    
+    // Entregas (requiere autenticación pero no rol específico)
+    $routes->get('entregas', 'EntregasController::index');
+    $routes->get('entregas/crear', 'EntregasController::crear');
+    $routes->post('entregas/guardar', 'EntregasController::guardar');
+    $routes->get('entregas/editar/(:num)', 'EntregasController::editar/$1');
+    $routes->post('entregas/actualizar/(:num)', 'EntregasController::actualizar/$1');
+    $routes->get('entregas/eliminar/(:num)', 'EntregasController::eliminar/$1');
+    $routes->get('entregas/ver/(:num)', 'EntregasController::ver/$1');
+    $routes->get('entregas/pendientes', 'EntregasController::pendientes');
+    $routes->get('entregas/obtenerServiciosPorContrato/(:num)', 'EntregasController::obtenerServiciosPorContrato/$1');
+    $routes->get('entregas/vista-previa-contrato/(:num)', 'EntregasController::vistaPreviaContrato/$1');
+    $routes->get('entregas/historial', 'EntregasController::historial');
+    $routes->get('entregas/imprimir/(:num)', 'EntregasController::imprimir/$1');
+    $routes->get('entregas/marcarCompletada/(:num)', 'EntregasController::marcarCompletada/$1');
+});
 
-// Rutas para el módulo de entregas
-$routes->get('entregas', 'EntregasController::index');
-$routes->get('entregas/crear', 'EntregasController::crear');
-$routes->post('entregas/guardar', 'EntregasController::guardar');
-$routes->get('entregas/editar/(:num)', 'EntregasController::editar/$1');
-$routes->post('entregas/actualizar/(:num)', 'EntregasController::actualizar/$1');
-$routes->get('entregas/eliminar/(:num)', 'EntregasController::eliminar/$1');
-$routes->get('entregas/ver/(:num)', 'EntregasController::ver/$1');
-$routes->get('entregas/pendientes', 'EntregasController::pendientes');
-$routes->get('entregas/obtenerServiciosPorContrato/(:num)', 'EntregasController::obtenerServiciosPorContrato/$1');
-$routes->get('entregas/vista-previa-contrato/(:num)', 'EntregasController::vistaPreviaContrato/$1');
-$routes->get('entregas/historial', 'EntregasController::historial');
-$routes->get('entregas/imprimir/(:num)', 'EntregasController::imprimir/$1');
-$routes->get('entregas/marcarCompletada/(:num)', 'EntregasController::marcarCompletada/$1');
+// ==================== RUTAS ADMINISTRATIVAS ADICIONALES ====================
+$routes->group('', ['filter' => 'admin'], function($routes) {
+    // Gestión avanzada de equipos (solo admins pueden crear/modificar equipos)
+    $routes->post('equipos/guardar', 'Equipos::guardar');
+    $routes->post('equipos/saveEquipo', 'Equipos::guardar'); // Alias para compatibilidad
+    $routes->post('equipos/actualizar', 'Equipos::actualizar');
+    $routes->post('equipos/verificar-disponibilidad', 'Equipos::verificarDisponibilidad');
+    
+    // APIs administrativas de cronograma
+    $routes->post('cronograma/actualizar-estado', 'Cronograma::actualizarEstado');
+    $routes->get('cronograma/resumen-semanal', 'Cronograma::resumenSemanal');
+    $routes->get('cronograma/proyectos-estado/(:segment)', 'Cronograma::proyectosPorEstado/$1');
+    
+    // Inventario (solo administradores)
+    $routes->get('inventario', 'InventarioController::index');
+    $routes->get('inventario/crear', 'InventarioController::create');
+    $routes->post('inventario/guardar', 'InventarioController::store');
+    $routes->get('inventario/editar/(:num)', 'InventarioController::edit/$1');
+    $routes->post('inventario/actualizar/(:num)', 'InventarioController::update/$1');
+    $routes->delete('inventario/eliminar/(:num)', 'InventarioController::delete/$1');
+    $routes->get('inventario/ver/(:num)', 'InventarioController::ver/$1');
+    $routes->get('inventario/buscar', 'InventarioController::buscar');
+    $routes->get('inventario/estadisticas', 'InventarioController::estadisticas');
+});
 
-// Rutas de Control de Pagos: //
-$routes->get('controlpagos', [ControlPagoController::class, 'index']);
-$routes->get('controlpagos/crear', [ControlPagoController::class, 'crear']);
-$routes->post('controlpagos/guardar', [ControlPagoController::class, 'guardar']);
-$routes->get('controlpagos/ver/(:num)', [ControlPagoController::class, 'ver']);
-$routes->get('controlpagos/por-contrato/(:num)', [ControlPagoController::class, 'porContrato']);
-$routes->get('controlpagos/infoContrato/(:num)', [ControlPagoController::class, 'infoContrato']);
-$routes->get('controlpagos/descargarComprobante/(:num)', [ControlPagoController::class, 'descargarComprobante']);
-$routes->get('controlpagos/generarVoucher/(:num)', [ControlPagoController::class, 'generarVoucher']);
+// ==================== RUTAS DE DEBUGGING (SOLO EN DESARROLLO) ====================
+if (ENVIRONMENT === 'development') {
+    $routes->get('test-db', 'Cronograma::testDatabase');
+    $routes->get('debug-eventos', 'Cronograma::debugEventos');
+}
 
-// ==================== RUTAS PARA GESTIÓN DE EQUIPOS ====================
-// Rutas para equipos
-$routes->get('equipos', 'Equipos::index');
-$routes->get('equipos/asignar/(:num)', 'Equipos::asignar/$1');
-$routes->post('equipos/guardar', 'Equipos::guardar');
-$routes->post('equipos/saveEquipo', 'Equipos::guardar'); // Alias para compatibilidad con vista
-$routes->get('equipos/editar/(:num)', 'Equipos::editar/$1');
-$routes->post('equipos/actualizar', 'Equipos::actualizar');
-$routes->get('equipos/por-servicio/(:num)', 'Equipos::porServicio/$1');
-$routes->get('equipos/porServicio/(:num)', 'Equipos::porServicio/$1'); // Alias para compatibilidad con vista
-$routes->get('equipos/por-usuario/(:num)', 'Equipos::porUsuario/$1');
-$routes->post('equipos/verificar-disponibilidad', 'Equipos::verificarDisponibilidad');
-
-// Ruta AJAX para actualizar estado (sin filtros de autenticación)
-$routes->post('equipos/actualizar-estado', 'Equipos::actualizarEstado');
-
-// ==================== RUTAS PARA CRONOGRAMA Y PROYECTOS ====================
-// Rutas principales de cronograma
-$routes->get('cronograma', 'Cronograma::index');
-$routes->get('cronograma/proyectos', 'Cronograma::proyectos');
-$routes->get('proyectos', 'Cronograma::todosLosProyectos');
-$routes->get('cronograma/proyecto/(:num)', 'Cronograma::verProyecto/$1');
-
-// APIs AJAX para cronograma
-$routes->get('cronograma/eventos', 'Cronograma::getEventos');
-$routes->get('cronograma/servicios-fecha/(:segment)', 'Cronograma::serviciosPorFecha/$1');
-$routes->post('cronograma/actualizar-estado', 'Cronograma::actualizarEstado');
-$routes->get('cronograma/resumen-semanal', 'Cronograma::resumenSemanal');
-$routes->get('cronograma/proyectos-estado/(:segment)', 'Cronograma::proyectosPorEstado/$1');
-
-// Ruta de prueba para debugging
-$routes->get('test-db', 'Cronograma::testDatabase');
-$routes->get('debug-eventos', 'Cronograma::debugEventos');
-
-// ==================== RUTAS PARA INVENTARIO DE EQUIPOS ====================
-// Rutas principales del inventario
-$routes->get('inventario', 'InventarioController::index');
-$routes->get('inventario/crear', 'InventarioController::create');
-$routes->post('inventario/guardar', 'InventarioController::store');
-$routes->get('inventario/editar/(:num)', 'InventarioController::edit/$1');
-$routes->post('inventario/actualizar/(:num)', 'InventarioController::update/$1');
-$routes->delete('inventario/eliminar/(:num)', 'InventarioController::delete/$1');
-
-// APIs AJAX para inventario
-$routes->get('inventario/ver/(:num)', 'InventarioController::ver/$1');
-$routes->get('inventario/buscar', 'InventarioController::buscar');
-$routes->get('inventario/estadisticas', 'InventarioController::estadisticas');
-
-// Rutas para servicios
-$routes->get('servicios/(:num)', 'Servicios::detalle/$1');
+// ==================== RUTAS PÚBLICAS DE SERVICIOS ====================
+$routes->group('', ['filter' => 'auth'], function($routes) {
+    // Servicios (requiere autenticación básica)
+    $routes->get('servicios/(:num)', 'Servicios::detalle/$1');
+});

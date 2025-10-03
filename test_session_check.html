@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prueba de Verificación de Sesión</title>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+<body>
+    <h1>Prueba de Verificación de Sesión</h1>
+    <button onclick="testSessionCheck()">Probar Verificación de Sesión</button>
+    <div id="result"></div>
+
+    <script>
+        function testSessionCheck() {
+            console.log('Probando verificación de sesión...');
+            
+            fetch('http://localhost/appishume/auth/check-session', {
+                method: 'GET',
+                credentials: 'same-origin'
+            })
+            .then(response => {
+                console.log('Response status:', response.status);
+                return response.json();
+            })
+            .then(data => {
+                console.log('Response data:', data);
+                document.getElementById('result').innerHTML = `
+                    <h3>Resultado:</h3>
+                    <p><strong>Sesión válida:</strong> ${data.valid ? 'SÍ' : 'NO'}</p>
+                    <p><strong>Timestamp:</strong> ${new Date().toLocaleString()}</p>
+                `;
+                
+                if (!data.valid) {
+                    Swal.fire({
+                        title: 'Sesión Expirada',
+                        text: 'Tu sesión ha expirado por inactividad.',
+                        icon: 'warning',
+                        confirmButtonText: 'OK'
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Error verificando sesión:', error);
+                document.getElementById('result').innerHTML = `
+                    <h3>Error:</h3>
+                    <p style="color: red;">${error.message}</p>
+                `;
+            });
+        }
+
+        // Probar automáticamente al cargar la página
+        window.onload = function() {
+            testSessionCheck();
+        };
+    </script>
+</body>
+</html>
