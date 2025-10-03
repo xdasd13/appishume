@@ -26,7 +26,7 @@ CREATE TABLE equipo (
     sku VARCHAR(50) UNIQUE,         -- Identificador interno único
     numSerie VARCHAR(100) UNIQUE,   -- Número de serie físico (si existe)
     cantDisponible INT UNSIGNED NOT NULL DEFAULT 1,
-    estado ENUM('Nuevo','EnUso','EnMantenimiento','Dañado','Otro') NOT NULL DEFAULT 'Nuevo',
+    estado ENUM('Nuevo','En Uso','En Mantenimiento','Dañado','Otro') NOT NULL DEFAULT 'Nuevo',
     fechaCompra DATE NULL,
     fechaUso DATE NULL,
     imgEquipo VARCHAR(255) NULL,

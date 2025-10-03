@@ -15,9 +15,6 @@ $routes->get('auth/check-session', 'AuthController::checkSession');
 // Ruta principal después del login
 $routes->get('welcome', 'Home::index', ['filter' => 'auth']);
 $routes->get('dashboard', 'AuthController::dashboard', ['filter' => 'auth']);
-$routes->get('test-usuarios', 'AuthController::testUsuarios');
-$routes->get('test_debug', 'AuthController::testDebug');
-$routes->get('test_simple', 'AuthController::testSimple');
 
 
 
@@ -131,11 +128,6 @@ $routes->group('', ['filter' => 'admin'], function($routes) {
     $routes->get('inventario/estadisticas', 'InventarioController::estadisticas');
 });
 
-// ==================== RUTAS DE DEBUGGING (SOLO EN DESARROLLO) ====================
-if (ENVIRONMENT === 'development') {
-    $routes->get('test-db', 'Cronograma::testDatabase');
-    $routes->get('debug-eventos', 'Cronograma::debugEventos');
-}
 
 // ==================== RUTAS PÚBLICAS DE SERVICIOS ====================
 $routes->group('', ['filter' => 'auth'], function($routes) {

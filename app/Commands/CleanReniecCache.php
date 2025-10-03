@@ -125,7 +125,7 @@ class CleanReniecCache extends BaseCommand
     {
         $stats = $reniecService->getStats();
         
-        CLI::write('📊 Estadísticas del Cache RENIEC:', 'cyan');
+        CLI::write('Estadísticas del Cache RENIEC:', 'cyan');
         CLI::write('  • Total de registros: ' . number_format($stats['total_records']), 'white');
         CLI::write('  • Cache válido: ' . number_format($stats['valid_cache']), 'green');
         CLI::write('  • Cache expirado: ' . number_format($stats['expired_cache']), 'red');
@@ -139,7 +139,7 @@ class CleanReniecCache extends BaseCommand
      */
     private function dryRun(ReniecService $reniecService): void
     {
-        CLI::write('🔍 Modo DRY RUN - Solo mostrando qué se eliminaría:', 'yellow');
+        CLI::write(' Modo DRY RUN - Solo mostrando qué se eliminaría:', 'yellow');
         CLI::newLine();
 
         // Obtener estadísticas actuales
