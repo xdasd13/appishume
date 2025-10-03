@@ -154,7 +154,7 @@
                             </div>
                             
                             <div class="form-group mt-4">
-                                <button type="submit" class="btn btn-primary btn-lg">
+                                <button type="submit" id="btn-registrar" class="btn btn-primary btn-lg">
                                     <i class="fas fa-save mr-2"></i>Registrar Entrega
                                 </button>
                                 <a href="<?= base_url('entregas') ?>" class="btn btn-outline-secondary btn-lg ml-2">
@@ -264,8 +264,7 @@ $(document).ready(function() {
                                 $('#idserviciocontratado').append(
                                     $('<option>', {
                                         value: servicio.idserviciocontratado,
-                                        text: servicio.servicio + ' (' + 
-                                              formatDate(servicio.fechahoraservicio) + ')'
+                                        text: servicio.servicio + ' (' + formatDate(servicio.fechahoraservicio) + ')'
                                     })
                                 );
                             });
@@ -294,7 +293,13 @@ $(document).ready(function() {
 
     // Formatear fecha para mostrar
     function formatDate(dateString) {
+        if (!dateString) {
+            return 'Fecha no disponible';
+        }
         var date = new Date(dateString);
+        if (isNaN(date.getTime())) {
+            return 'Fecha inválida';
+        }
         return date.toLocaleDateString('es-ES');
     }
     
@@ -336,12 +341,27 @@ $(document).ready(function() {
             error.addClass('invalid-feedback');
             element.closest('.form-group').append(error);
         },
-        highlight: function (element, errorClass, validClass) {
+        highlight: function (element) {
             $(element).addClass('is-invalid');
         },
-        unhighlight: function (element, errorClass, validClass) {
+        unhighlight: function (element) {
             $(element).removeClass('is-invalid');
+        },
+        submitHandler: function(form) {
+            // Prevenir múltiples envíos
+            var $submitBtn = $('#btn-registrar');
+            if ($submitBtn.hasClass('btn-processing')) {
+                return false;
+            }
+            
+            $submitBtn.addClass('btn-processing').html('<i class="fas fa-spinner fa-spin mr-2"></i>Procesando...');
+            
+            // Enviar formulario
+            form.submit();
+            
+            return false;
         }
     });
+    
 });
 </script>
