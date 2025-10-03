@@ -562,4 +562,3 @@ $(document).ready(function() {
     box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.1);
 }
 </style>
-[file content end]

@@ -300,7 +300,7 @@ INSERT INTO contratos (idcotizacion, idcliente, autorizapublicacion) VALUES
 (7, 8, 0);  -- Contrato evento Robert
 
 INSERT INTO servicioscontratados (idcotizacion, idservicio, cantidad, precio, fechahoraservicio, direccion) VALUES 
--- Servicios para cotización 7 (Evento Robert Smith) -- ✅ CAMBIO: 8 → 7
+-- Servicios para cotización 7 (Evento Robert Smith) --  CAMBIO: 8 → 7
 (7, 2, 1, 1000.00, '2025-10-19 10:00:00', 'Salón Empresarial Pacífico - Av. La Marina 150, Miraflores'),
 (7, 1, 1, 850.00, '2025-10-20 16:30:00', 'Club de Campo La Pradera - Km 10 Carretera Central'),
 (7, 6, 1, 400.00, '2025-10-20 15:30:00', 'Club de Campo La Pradera - Km 10 Carretera Central'),
