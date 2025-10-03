@@ -187,11 +187,19 @@ class EntregasModel extends Model
 
         // Calcular deuda manualmente para mayor precisión
         foreach ($contratos as &$contrato) {
-            $contrato['deuda_actual'] = $contrato['monto_total'] - $contrato['monto_pagado'];
-            // Pequeña tolerancia para evitar problemas de redondeo
-            if ($contrato['deuda_actual'] < 0.01) {
+            // Asegurar que los valores sean numéricos
+            $montoTotal = floatval($contrato['monto_total'] ?? 0);
+            $montoPagado = floatval($contrato['monto_pagado'] ?? 0);
+            
+            $contrato['deuda_actual'] = $montoTotal - $montoPagado;
+            
+            // Tolerancia más amplia para evitar problemas de redondeo
+            if ($contrato['deuda_actual'] < 0.1) {
                 $contrato['deuda_actual'] = 0;
             }
+            
+            // Debug: Log para verificar cálculos
+            log_message('debug', "Contrato {$contrato['idcontrato']}: Total={$montoTotal}, Pagado={$montoPagado}, Deuda={$contrato['deuda_actual']}");
         }
 
         return $contratos;
@@ -256,9 +264,14 @@ class EntregasModel extends Model
         $contrato = $builder->get()->getRowArray();
 
         if ($contrato) {
-            $contrato['deuda_actual'] = $contrato['monto_total'] - $contrato['monto_pagado'];
-            // Pequeña tolerancia para evitar problemas de redondeo
-            if ($contrato['deuda_actual'] < 0.01) {
+            // Asegurar que los valores sean numéricos
+            $montoTotal = floatval($contrato['monto_total'] ?? 0);
+            $montoPagado = floatval($contrato['monto_pagado'] ?? 0);
+            
+            $contrato['deuda_actual'] = $montoTotal - $montoPagado;
+            
+            // Tolerancia más amplia para evitar problemas de redondeo
+            if ($contrato['deuda_actual'] < 0.1) {
                 $contrato['deuda_actual'] = 0;
                 return $contrato;
             }
@@ -302,6 +315,12 @@ class EntregasModel extends Model
                        sc.fechahoraservicio, sc.cantidad, sc.precio,
                        s.servicio, s.descripcion as descripcion_servicio,
                        contr.idcontrato, c.idcotizacion,
+                       DATEDIFF(e.fechahoraentrega, sc.fechahoraservicio) as dias_postproduccion,
+                       CASE 
+                           WHEN e.estado = 'completada' THEN '✅ Entregada'
+                           WHEN e.estado = 'pendiente' THEN '⏳ Pendiente'
+                           ELSE '❓ Desconocido'
+                       END as estado_visual,
                        
                        /* Cliente info - puede ser persona o empresa */
                        CASE 
@@ -318,31 +337,26 @@ class EntregasModel extends Model
                        
                        /* Responsable info - siempre es una persona */
                        CASE 
-                           WHEN p_entrega.idpersona IS NOT NULL THEN p_entrega.nombres
+                           WHEN p_entrega.nombres IS NOT NULL AND p_entrega.nombres != '' THEN p_entrega.nombres
+                           WHEN e.idpersona IS NULL THEN 'Usuario del Sistema'
                            ELSE 'Sin nombre'
                        END as nombre_entrega,
                        
                        CASE 
-                           WHEN p_entrega.idpersona IS NOT NULL THEN p_entrega.apellidos
+                           WHEN p_entrega.apellidos IS NOT NULL AND p_entrega.apellidos != '' THEN p_entrega.apellidos
+                           WHEN e.idpersona IS NULL THEN ''
                            ELSE ''
                        END as apellido_entrega,
                        
                        CASE
-                           WHEN p_entrega.idpersona IS NOT NULL THEN p_entrega.tipodoc
+                           WHEN p_entrega.tipodoc IS NOT NULL AND p_entrega.tipodoc != '' THEN p_entrega.tipodoc
                            ELSE ''
                        END as tipodoc_entrega,
                        
                        CASE
-                           WHEN p_entrega.idpersona IS NOT NULL THEN p_entrega.numerodoc
+                           WHEN p_entrega.numerodoc IS NOT NULL AND p_entrega.numerodoc != '' THEN p_entrega.numerodoc
                            ELSE ''
-                       END as numerodoc_entrega,
-                       
-                       CASE 
-                           WHEN e.estado = 'completada' THEN '✅ ENTREGADO'
-                           WHEN e.estado = 'pendiente' AND e.fechahoraentrega < NOW() THEN '⚠️ VENCIDA'
-                           WHEN e.estado = 'pendiente' THEN '⏳ EN POSTPRODUCCIÓN'
-                           ELSE '❓ DESCONOCIDO'
-                       END as estado_visual
+                       END as numerodoc_entrega
                        
                 FROM entregables e
                 LEFT JOIN servicioscontratados sc ON sc.idserviciocontratado = e.idserviciocontratado
@@ -358,38 +372,31 @@ class EntregasModel extends Model
         $query = $this->db->query($sql);
         $entregas = $query->getResultArray();
         
-        // Si hay entregas sin información del responsable, usamos la sesión actual
-        $session = \Config\Services::session();
-        $usuarioActual = $session->get('usuario_nombre');
-        $usuarioId = $session->get('usuario_id');
-        
-        // Si tenemos el ID del usuario, intentamos obtener sus datos completos
-        $personaInfo = null;
-        if ($usuarioId) {
-            $personaInfo = $this->db->table('usuarios u')
-                ->select('p.nombres, p.apellidos, p.tipodoc, p.numerodoc')
-                ->join('personas p', 'p.idpersona = u.idpersona')
-                ->where('u.idusuario', $usuarioId)
-                ->get()
-                ->getRowArray();
-        }
-        
-        foreach ($entregas as &$entrega) {
-            if (empty($entrega['nombre_entrega']) || $entrega['nombre_entrega'] == 'Sin nombre') {
-                if ($personaInfo) {
-                    // Si tenemos datos completos del usuario actual, los usamos
-                    $entrega['nombre_entrega'] = $personaInfo['nombres'];
-                    $entrega['apellido_entrega'] = $personaInfo['apellidos'];
-                    $entrega['tipodoc_entrega'] = $personaInfo['tipodoc'];
-                    $entrega['numerodoc_entrega'] = $personaInfo['numerodoc'];
-                } else {
-                    // Si no, usamos al menos el nombre de usuario
-                    $entrega['nombre_entrega'] = $usuarioActual ?? 'Usuario actual';
-                    $entrega['apellido_entrega'] = '';
-                }
-            }
-        }
-        
         return $entregas;
+    }
+
+    // Método para actualizar entregas existentes sin responsable
+    public function actualizarEntregasSinResponsable()
+    {
+        // Buscar entregas que no tienen idpersona asignado
+        $entregasSinResponsable = $this->db->query("
+            SELECT e.identregable, e.idpersona 
+            FROM entregables e 
+            WHERE e.idpersona IS NULL
+        ")->getResultArray();
+
+        $actualizadas = 0;
+        foreach ($entregasSinResponsable as $entrega) {
+            // Por ahora, asignar un valor por defecto o dejarlo como está
+            // En el futuro se podría asignar al usuario administrador
+            $this->db->query("
+                UPDATE entregables 
+                SET idpersona = 1 
+                WHERE identregable = ?
+            ", [$entrega['identregable']]);
+            $actualizadas++;
+        }
+
+        return $actualizadas;
     }
 }

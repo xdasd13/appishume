@@ -38,6 +38,15 @@
                                 </button>
                             </div>
                         <?php endif; ?>
+                        <?php if (session('info')): ?>
+                            <div class="alert alert-info alert-dismissible fade show" role="alert">
+                                <i class="fas fa-info-circle mr-2"></i>
+                                <?= session('info') ?>
+                                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                        <?php endif; ?>
 
                         <div class="table-responsive">
                             <table class="table table-striped table-hover" id="contratos-table">
@@ -104,14 +113,54 @@
         </div>
     </div>
 </div>
+<?= $footer; ?>
+
 <script>
     $(document).ready(function () {
         $('#contratos-table').DataTable({
             "language": {
-                "url": "//cdn.datatables.net/plug-ins/1.10.21/i18n/Spanish.json"
+                "sProcessing": "Procesando...",
+                "sLengthMenu": "Mostrar _MENU_ registros",
+                "sZeroRecords": "No se encontraron resultados",
+                "sEmptyTable": "Ningún dato disponible en esta tabla",
+                "sInfo": "Mostrando registros del _START_ al _END_ de un total de _TOTAL_ registros",
+                "sInfoEmpty": "Mostrando registros del 0 al 0 de un total de 0 registros",
+                "sInfoFiltered": "(filtrado de un total de _MAX_ registros)",
+                "sInfoPostFix": "",
+                "sSearch": "Buscar:",
+                "sUrl": "",
+                "sInfoThousands": ",",
+                "sLoadingRecords": "Cargando...",
+                "oPaginate": {
+                    "sFirst": "Primero",
+                    "sLast": "Último",
+                    "sNext": "Siguiente",
+                    "sPrevious": "Anterior"
+                },
+                "oAria": {
+                    "sSortAscending": ": Activar para ordenar la columna de manera ascendente",
+                    "sSortDescending": ": Activar para ordenar la columna de manera descendente"
+                }
             },
             "responsive": true
         });
+
+        // Sweet Alert para cuando todas las entregas ya fueron registradas
+        <?php if (session('info')): ?>
+            Swal.fire({
+                title: '¡Todas las entregas completadas!',
+                text: '<?= session('info') ?>',
+                icon: 'success',
+                confirmButtonText: 'Entendido',
+                confirmButtonColor: '#28a745',
+                background: '#ffffff',
+                customClass: {
+                    popup: 'swal2-popup-custom',
+                    title: 'swal2-title-custom',
+                    content: 'swal2-content-custom',
+                    confirmButton: 'swal2-confirm-custom'
+                }
+            });
+        <?php endif; ?>
     });
 </script>
-<?= $footer; ?>

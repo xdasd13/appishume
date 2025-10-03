@@ -37,7 +37,14 @@ class EntregasController extends BaseController
             }
 
             // Obtener servicios disponibles para este contrato
-            $datos['servicios'] = $this->entregasModel->obtenerServiciosPorContratoPagado($contratoId);
+            $servicios = $this->entregasModel->obtenerServiciosPorContratoPagado($contratoId);
+            
+            // Si no hay servicios disponibles, significa que todas las entregas ya fueron registradas
+            if (empty($servicios)) {
+                return redirect()->to('entregas')->with('info', 'Todas las entregas de este contrato ya han sido registradas.');
+            }
+            
+            $datos['servicios'] = $servicios;
             $datos['contrato'] = $contrato;
             $datos['usuario_actual'] = session()->get('usuario_nombre');
             $datos['usuario_id'] = session()->get('usuario_id');
@@ -67,7 +74,15 @@ class EntregasController extends BaseController
     {
         // Importante: Asegúrate de que obtienes el ID de persona, no el ID de usuario
         $usuarioId = session()->get('usuario_id');
-        $personaId = session()->get('persona_id'); // Añade esto a tu sesión al iniciar sesión
+        
+        // Obtener el persona_id desde la tabla usuarios
+        $personaId = null;
+        if ($usuarioId) {
+            $db = db_connect();
+            $query = $db->query("SELECT idpersona FROM usuarios WHERE idusuario = ?", [$usuarioId]);
+            $result = $query->getRowArray();
+            $personaId = $result['idpersona'] ?? null;
+        }
 
         $validation = \Config\Services::validation();
         $validation->setRules([
@@ -98,8 +113,9 @@ class EntregasController extends BaseController
             'idserviciocontratado' => $this->request->getPost('idserviciocontratado'),
             'idpersona' => $personaId, // Usa persona_id en lugar de usuario_id
             'fechahoraentrega' => $fechaActual,
+            'fecha_real_entrega' => $fechaActual, // Marcar como entregada al momento de registro
             'observaciones' => $this->request->getPost('observaciones'),
-            'estado' => 'pendiente',
+            'estado' => 'completada', // Cambiar a completada al registrar
             'comprobante_entrega' => $nombreComprobante
         ];
 
@@ -216,6 +232,9 @@ class EntregasController extends BaseController
 
     public function historial()
     {
+        // Actualizar entregas existentes sin responsable (solo la primera vez)
+        $this->entregasModel->actualizarEntregasSinResponsable();
+        
         // Usa el método del modelo en lugar de intentar crear la consulta directamente
         $datos['entregas'] = $this->entregasModel->obtenerTodasLasEntregas();
 

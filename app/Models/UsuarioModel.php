@@ -30,13 +30,14 @@ class UsuarioModel extends Model
         $usuario = $builder->get()->getRow();
         
         if ($usuario) {
-            // Verificar contraseña hasheada primero, luego texto plano (compatibilidad)
+            // Verificar contraseña hasheada
             if (!empty($usuario->password_hash) && password_verify($password, $usuario->password_hash)) {
                 return $usuario;
-            } elseif ($usuario->claveacceso === $password) {
-                // Actualizar a hash si aún usa texto plano
+            } elseif (!empty($usuario->claveacceso) && $usuario->claveacceso === $password) {
+                // Migrar contraseña de texto plano a hash y eliminar el texto plano
                 $this->update($usuario->idusuario, [
-                    'password_hash' => password_hash($password, PASSWORD_BCRYPT)
+                    'password_hash' => password_hash($password, PASSWORD_DEFAULT),
+                    'claveacceso' => null
                 ]);
                 return $usuario;
             }
@@ -145,9 +146,8 @@ class UsuarioModel extends Model
             'idpersona' => $data['idpersona'],
             'idcargo' => $data['idcargo'],
             'nombreusuario' => $data['nombreusuario'],
-            'claveacceso' => $data['password'],
             'email' => $data['email'],
-            'password_hash' => password_hash($data['password'], PASSWORD_BCRYPT),
+            'password_hash' => password_hash($data['password'], PASSWORD_DEFAULT),
             'tipo_usuario' => 'trabajador',
             'estado' => 1
         ];

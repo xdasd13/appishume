@@ -95,9 +95,9 @@
                     </td>
                     <td>
                       <?php if($e['estado'] == 'completada'): ?>
-                      <span class="badge badge-success">Completada</span>
+                      <span class="badge badge-success"><?= isset($e['estado_visual']) ? $e['estado_visual'] : '✅ Entregada' ?></span>
                       <?php else: ?>
-                      <span class="badge badge-warning">Pendiente</span>
+                      <span class="badge badge-warning"><?= isset($e['estado_visual']) ? $e['estado_visual'] : '⏳ Pendiente' ?></span>
                       <?php endif; ?>
                     </td>
                     <td>
@@ -120,22 +120,6 @@
 </div>
 
 
-<script>
-$(document).ready(function() {
-  // Inicializar DataTable
-  $('#entregas-table').DataTable({
-    "language": {
-      "url": "//cdn.datatables.net/plug-ins/1.10.21/i18n/Spanish.json"
-    },
-    "order": [
-      [0, "desc"]
-    ], // Ordenar por ID de entregable (descendente)
-    "responsive": true
-  });
-
-});
-</script>
-
 <style>
 .avatar {
   width: 30px;
@@ -152,3 +136,40 @@ $(document).ready(function() {
 </style>
 
 <?= $footer; ?>
+
+<script>
+$(document).ready(function() {
+  // Inicializar DataTable
+  $('#entregas-table').DataTable({
+    "language": {
+      "sProcessing": "Procesando...",
+      "sLengthMenu": "Mostrar _MENU_ registros",
+      "sZeroRecords": "No se encontraron resultados",
+      "sEmptyTable": "Ningún dato disponible en esta tabla",
+      "sInfo": "Mostrando registros del _START_ al _END_ de un total de _TOTAL_ registros",
+      "sInfoEmpty": "Mostrando registros del 0 al 0 de un total de 0 registros",
+      "sInfoFiltered": "(filtrado de un total de _MAX_ registros)",
+      "sInfoPostFix": "",
+      "sSearch": "Buscar:",
+      "sUrl": "",
+      "sInfoThousands": ",",
+      "sLoadingRecords": "Cargando...",
+      "oPaginate": {
+        "sFirst": "Primero",
+        "sLast": "Último",
+        "sNext": "Siguiente",
+        "sPrevious": "Anterior"
+      },
+      "oAria": {
+        "sSortAscending": ": Activar para ordenar la columna de manera ascendente",
+        "sSortDescending": ": Activar para ordenar la columna de manera descendente"
+      }
+    },
+    "order": [
+      [0, "desc"]
+    ], // Ordenar por ID de entregable (descendente)
+    "responsive": true
+  });
+
+});
+</script>

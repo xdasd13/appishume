@@ -187,11 +187,6 @@
                                 <button type="button" class="btn btn-info" onclick="imprimirEntrega()">
                                     <i class="fas fa-print mr-2"></i>Imprimir
                                 </button>
-                                <?php if(isset($entrega['estado']) && $entrega['estado'] != 'completada'): ?>
-                                <a href="<?= base_url('entregas/marcarCompletada/' . $entrega['identregable']) ?>" class="btn btn-success">
-                                    <i class="fas fa-check-circle mr-2"></i>Marcar como Completada
-                                </a>
-                                <?php endif; ?>
                             </div>
                         </div>
                     </div>
@@ -242,12 +237,10 @@
                                 Cotización
                                 <span class="badge badge-info">#<?= isset($entrega['idcotizacion']) && !empty($entrega['idcotizacion']) ? $entrega['idcotizacion'] : 'N/A' ?></span>
                             </li>
-                            <?php if(isset($entrega['dias_postproduccion'])): ?>
                             <li class="list-group-item d-flex justify-content-between align-items-center">
                                 Días de Postproducción
-                                <span class="badge badge-dark"><?= $entrega['dias_postproduccion'] ?> días</span>
+                                <span class="badge badge-info"><?= isset($entrega['dias_postproduccion']) ? abs($entrega['dias_postproduccion']) : '0' ?> días</span>
                             </li>
-                            <?php endif; ?>
                         </ul>
 
                         <?php if(isset($entrega['estado']) && $entrega['estado'] == 'completada'): ?>
@@ -399,11 +392,9 @@
                                 <div style="flex: 1;">
                                     <div style="margin-bottom: 8px;"><strong>Cotización:</strong> #<?= isset($entrega['idcotizacion']) && !empty($entrega['idcotizacion']) ? $entrega['idcotizacion'] : 'N/A' ?></div>
                                 </div>
-                                <?php if(isset($entrega['dias_postproduccion'])): ?>
                                 <div style="flex: 1;">
-                                    <div style="margin-bottom: 8px;"><strong>Días Postproducción:</strong> <?= $entrega['dias_postproduccion'] ?> días</div>
+                                    <div style="margin-bottom: 8px;"><strong>Días Postproducción:</strong> <?= isset($entrega['dias_postproduccion']) ? $entrega['dias_postproduccion'] : '0' ?> días</div>
                                 </div>
-                                <?php endif; ?>
                             </div>
                         </div>
                     </div>

@@ -449,17 +449,19 @@ class UsuariosController extends BaseController
         ];
 
         // Si se proporciona nueva contraseña, validarla
-        $password = $this->request->getPost('password');
+        $password = $this->request->getPost('nueva_password');
+        $confirmPassword = $this->request->getPost('confirmar_password');
+        
         if (!empty($password)) {
-            $rules['password'] = [
+            $rules['nueva_password'] = [
                 'rules' => 'required|min_length[8]',
                 'errors' => [
                     'required' => 'La contraseña es obligatoria',
                     'min_length' => 'La contraseña debe tener al menos 8 caracteres'
                 ]
             ];
-            $rules['confirm_password'] = [
-                'rules' => 'required|matches[password]',
+            $rules['confirmar_password'] = [
+                'rules' => 'required|matches[nueva_password]',
                 'errors' => [
                     'required' => 'Debe confirmar la contraseña',
                     'matches' => 'Las contraseñas no coinciden'
@@ -499,8 +501,8 @@ class UsuariosController extends BaseController
                     ]);
                 }
 
-                $userData['claveacceso'] = $password;
-                $userData['password_hash'] = password_hash($password, PASSWORD_BCRYPT);
+                // Solo guardar el hash, no el texto plano
+                $userData['password_hash'] = password_hash($password, PASSWORD_DEFAULT);
             }
 
             // Actualizar usuario
