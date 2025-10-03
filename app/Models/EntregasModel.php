@@ -213,7 +213,11 @@ class EntregasModel extends Model
                          CONCAT(COALESCE(p.nombres, emp.razonsocial), " ", COALESCE(p.apellidos, "")) as cliente_nombre,
                          co.fechaevento,
                          (SELECT SUM(sc.cantidad * sc.precio) FROM servicioscontratados sc WHERE sc.idcotizacion = c.idcotizacion) as monto_total,
-                         (SELECT SUM(cp.amortizacion) FROM controlpagos cp WHERE cp.idcontrato = c.idcontrato) as monto_pagado');
+                         (SELECT SUM(cp.amortizacion) FROM controlpagos cp WHERE cp.idcontrato = c.idcontrato) as monto_pagado,
+                         (SELECT COUNT(*) FROM servicioscontratados sc WHERE sc.idcotizacion = c.idcotizacion) as total_servicios,
+                         (SELECT COUNT(*) FROM entregables e 
+                          JOIN servicioscontratados sc ON sc.idserviciocontratado = e.idserviciocontratado 
+                          WHERE sc.idcotizacion = c.idcotizacion) as total_entregas');
         $builder->join('clientes cl', 'cl.idcliente = c.idcliente');
         $builder->join('personas p', 'p.idpersona = cl.idpersona', 'left');
         $builder->join('empresas emp', 'emp.idempresa = cl.idempresa', 'left');
@@ -221,12 +225,17 @@ class EntregasModel extends Model
 
         $contratos = $builder->get()->getResultArray();
 
-        // Filtrar manualmente solo los contratos pagados
+        // Filtrar manualmente solo los contratos pagados Y con entregas pendientes
         $contratosPagados = [];
         foreach ($contratos as $contrato) {
             $deuda = $contrato['monto_total'] - $contrato['monto_pagado'];
-            if ($deuda < 0.01) { // Tolerancia para redondeo
+            $totalServicios = intval($contrato['total_servicios']);
+            $totalEntregas = intval($contrato['total_entregas']);
+            
+            // Solo incluir si está pagado Y tiene entregas pendientes
+            if ($deuda < 0.1 && $totalServicios > $totalEntregas) { // Tolerancia para redondeo
                 $contrato['deuda_actual'] = 0;
+                $contrato['entregas_pendientes'] = $totalServicios - $totalEntregas;
                 $contratosPagados[] = $contrato;
             }
         }

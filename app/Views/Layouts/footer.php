@@ -55,6 +55,12 @@
       <!-- Google Maps Plugin -->
       <script src="<?= base_url() . 'assets/js/plugin/gmaps/gmaps.js'?>"></script>
 
+      <!-- Select2 -->
+      <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+      
+      <!-- jQuery Validate -->
+      <script src="https://cdn.jsdelivr.net/npm/jquery-validation@1.19.5/dist/jquery.validate.min.js"></script>
+      
       <!-- Sweet Alert -->
       <script src="<?= base_url() . 'assets/js/plugin/sweetalert/sweetalert.min.js'?>"></script>
       <!-- SweetAlert2 -->
