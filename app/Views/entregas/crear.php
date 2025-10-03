@@ -313,8 +313,7 @@ $(document).ready(function() {
                 minlength: 10
             },
             comprobante_entrega: {
-                required: true,
-                extension: "pdf"
+                required: true
             }
         },
         messages: {
@@ -329,8 +328,7 @@ $(document).ready(function() {
                 minlength: "Debe describir mínimo 10 caracteres"
             },
             comprobante_entrega: {
-                required: "Por favor seleccione un comprobante PDF",
-                extension: "Solo se permiten archivos PDF"
+                required: "Por favor seleccione un comprobante PDF"
             }
         },
         errorElement: 'span',
