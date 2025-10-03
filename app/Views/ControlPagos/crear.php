@@ -1,3 +1,5 @@
+[file name]: crear.php
+[file content begin]
 <?php
 // Función helper para obtener fecha y hora de Perú
 function getPeruDateTime() {
@@ -95,29 +97,18 @@ function getPeruDateTimeFormatted() {
                             </div>
                         </div>
 
-                        <div class="row">
+                        <!-- Campos condicionales para tipo de pago -->
+                        <div class="row" id="campos-transferencia">
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label for="numtransaccion">Número de Transacción/Referencia</label>
+                                    <label for="numtransaccion">Número de Transacción/Referencia *</label>
                                     <input type="text" class="form-control" id="numtransaccion" name="numtransaccion">
                                     <small class="form-text text-muted">Ingrese el número de transacción bancaria o referencia de pago</small>
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label for="fechahora">Fecha y Hora del Pago *</label>
-                                    <input type="text" class="form-control" id="fechahora" name="fechahora" 
-                                           value="<?= getPeruDateTimeFormatted() ?>" readonly style="background-color: #f8f9fa;">
-                                    <input type="hidden" name="fechahora_hidden" value="<?= getPeruDateTime() ?>">
-                                    <small class="form-text text-muted">Hora de Perú (UTC-5)</small>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="row">
-                            <div class="col-md-12">
-                                <div class="form-group">
-                                    <label for="comprobante">Comprobante de Pago</label>
+                                    <label for="comprobante">Comprobante de Pago *</label>
                                     <div class="custom-file">
                                         <input type="file" class="custom-file-input" id="comprobante" name="comprobante" 
                                                accept=".png,.jpg,.jpeg,.pdf">
@@ -132,6 +123,18 @@ function getPeruDateTimeFormatted() {
                                             <!-- Aquí se mostrará la previsualización -->
                                         </div>
                                     </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <label for="fechahora">Fecha y Hora del Pago *</label>
+                                    <input type="text" class="form-control" id="fechahora" name="fechahora" 
+                                           value="<?= getPeruDateTimeFormatted() ?>" readonly style="background-color: #f8f9fa;">
+                                    <input type="hidden" name="fechahora_hidden" value="<?= getPeruDateTime() ?>">
+                                    <small class="form-text text-muted">Hora de Perú (UTC-5)</small>
                                 </div>
                             </div>
                         </div>
@@ -186,14 +189,11 @@ function getPeruDateTimeFormatted() {
 
                         <div class="row mt-4">
                             <div class="col-md-12 text-center">
-                                <button type="submit" class="btn btn-primary btn-lg btn-animate mr-3">
-                                    <span class="btn-label">
-                                        <i class="fas fa-check-circle"></i>
-                                    </span>
-                                    Registrar Pago
+                                <button type="submit" class="btn btn-success btn-lg btn-modern mr-3">
+                                    <i class="fas fa-check-circle mr-2"></i> Registrar Pago
                                 </button>
-                                <a href="<?= base_url('/controlpagos') ?>" class="btn btn-secondary btn-lg">
-                                    <i class="fas fa-times-circle mr-2"></i> Cancelar
+                                <a href="<?= base_url('/controlpagos') ?>" class="btn btn-outline-secondary btn-lg">
+                                    <i class="fas fa-times mr-2"></i> Cancelar
                                 </a>
                             </div>
                         </div>
@@ -209,6 +209,30 @@ function getPeruDateTimeFormatted() {
 <!-- Scripts para la funcionalidad del formulario -->
 <script>
 $(document).ready(function() {
+    // Función para mostrar/ocultar campos según tipo de pago
+    function toggleCamposTipoPago() {
+        var tipoPago = $('#idtipopago option:selected').text().toLowerCase();
+        var camposTransferencia = $('#campos-transferencia');
+        
+        if (tipoPago.includes('efectivo')) {
+            camposTransferencia.hide();
+            $('#numtransaccion').removeAttr('required');
+            $('#comprobante').removeAttr('required');
+        } else {
+            camposTransferencia.show();
+            $('#numtransaccion').attr('required', 'required');
+            $('#comprobante').attr('required', 'required');
+        }
+    }
+
+    // Inicializar estado de campos
+    toggleCamposTipoPago();
+
+    // Escuchar cambios en el tipo de pago
+    $('#idtipopago').on('change', function() {
+        toggleCamposTipoPago();
+    });
+
     // Si hay un contrato pre-seleccionado, cargar su información automáticamente
     <?php if (isset($contrato_seleccionado) && $contrato_seleccionado): ?>
         console.log('Cargando información del contrato pre-seleccionado: <?= $contrato_seleccionado ?>');
@@ -232,23 +256,6 @@ $(document).ready(function() {
         // Mostrar previsualización
         previewFile(this);
     });
-
-    // Establecer fecha y hora actual automáticamente
-    function setCurrentDateTime() {
-        var now = new Date();
-        var year = now.getFullYear();
-        var month = String(now.getMonth() + 1).padStart(2, '0');
-        var day = String(now.getDate()).padStart(2, '0');
-        var hours = String(now.getHours()).padStart(2, '0');
-        var minutes = String(now.getMinutes()).padStart(2, '0');
-        
-        var currentDateTime = year + '-' + month + '-' + day + 'T' + hours + ':' + minutes;
-        $('#fechahora').val(currentDateTime);
-    }
-
-    // Actualizar la hora cada minuto
-    setCurrentDateTime();
-    setInterval(setCurrentDateTime, 60000);
 
     // Previsualización de archivos
     function previewFile(input) {
@@ -392,17 +399,32 @@ $(document).ready(function() {
         var tipoPago = $('#idtipopago').val();
         var amortizacion = parseFloat($('#amortizacion').val()) || 0;
         var fechaHora = $('#fechahora').val();
+        var tipoPagoTexto = $('#idtipopago option:selected').text().toLowerCase();
         
-        if (!contrato || !tipoPago || amortizacion <= 0 || !fechaHora) {
+        // Validar campos condicionales
+        var numTransaccion = $('#numtransaccion').val();
+        var comprobante = $('#comprobante')[0].files[0];
+        
+        var errores = [];
+        
+        if (!contrato) errores.push('Seleccione un contrato');
+        if (!tipoPago) errores.push('Seleccione un tipo de pago');
+        if (amortizacion <= 0) errores.push('Ingrese un monto de amortización válido (mayor a 0)');
+        if (!fechaHora) errores.push('Seleccione fecha y hora');
+        
+        // Validar campos específicos según tipo de pago
+        if (!tipoPagoTexto.includes('efectivo')) {
+            if (!numTransaccion) errores.push('Ingrese el número de transacción/referencia');
+            if (!comprobante) errores.push('Seleccione un comprobante de pago');
+        }
+        
+        if (errores.length > 0) {
             Swal.fire({
                 icon: 'error',
                 title: 'Campos incompletos',
                 html: 'Por favor, complete todos los campos obligatorios:<br><br>' +
                       '<ul class="text-left">' +
-                      (!contrato ? '<li>Seleccione un contrato</li>' : '') +
-                      (!tipoPago ? '<li>Seleccione un tipo de pago</li>' : '') +
-                      (amortizacion <= 0 ? '<li>Ingrese un monto de amortización válido (mayor a 0)</li>' : '') +
-                      (!fechaHora ? '<li>Seleccione fecha y hora</li>' : '') +
+                      errores.map(error => '<li>' + error + '</li>').join('') +
                       '</ul>',
                 confirmButtonColor: '#dc3545'
             });
@@ -437,7 +459,8 @@ $(document).ready(function() {
                   '<p><strong>Tipo de Pago:</strong> ' + $('#idtipopago option:selected').text() + '</p>' +
                   '<p><strong>Amortización:</strong> S/ ' + amortizacion.toFixed(2) + '</p>' +
                   '<p><strong>Nuevo Saldo:</strong> S/ ' + (saldoActual - amortizacion).toFixed(2) + '</p>' +
-                  '<p><strong>Fecha/Hora:</strong> ' + new Date(fechaHora).toLocaleString() + '</p>' +
+                  '<p><strong>Fecha/Hora:</strong> ' + fechaHora + '</p>' +
+                  (!tipoPagoTexto.includes('efectivo') ? '<p><strong>Transacción:</strong> ' + numTransaccion + '</p>' : '') +
                   '</div>',
             icon: 'question',
             showCancelButton: true,
@@ -477,15 +500,39 @@ $(document).ready(function() {
     background-size: 20px 20px;
 }
 
-.btn-animate {
+.btn-modern {
     transition: all 0.3s ease;
     position: relative;
     overflow: hidden;
+    border: none;
+    padding: 12px 30px;
+    font-weight: 600;
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
 }
 
-.btn-animate:hover {
+.btn-modern:hover {
     transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    box-shadow: 0 6px 20px rgba(40, 167, 69, 0.4);
+}
+
+.btn-modern:active {
+    transform: translateY(0);
+}
+
+.btn-outline-secondary {
+    border: 2px solid #6c757d;
+    padding: 10px 28px;
+    font-weight: 600;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.btn-outline-secondary:hover {
+    background-color: #6c757d;
+    color: white;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 10px rgba(108, 117, 125, 0.3);
 }
 
 #preview-content img {
@@ -493,4 +540,26 @@ $(document).ready(function() {
     height: auto;
     border-radius: 5px;
 }
+
+#campos-transferencia {
+    transition: all 0.3s ease;
+}
+
+.card-3d {
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    border: none;
+    border-radius: 12px;
+}
+
+.form-control {
+    border-radius: 6px;
+    border: 1px solid #e1e5e9;
+    transition: all 0.3s ease;
+}
+
+.form-control:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.1);
+}
 </style>
+[file content end]
