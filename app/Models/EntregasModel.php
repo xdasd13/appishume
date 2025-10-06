@@ -174,7 +174,10 @@ class EntregasModel extends Model
             (SELECT SUM(sc.cantidad * sc.precio) FROM servicioscontratados sc WHERE sc.idcotizacion = c.idcotizacion) as monto_total,
             (SELECT SUM(cp.amortizacion) FROM controlpagos cp WHERE cp.idcontrato = c.idcontrato) as monto_pagado,
             (SELECT COUNT(*) FROM entregables e JOIN servicioscontratados sc ON sc.idserviciocontratado = e.idserviciocontratado 
-             WHERE sc.idcotizacion = c.idcotizacion) as total_entregas
+             WHERE sc.idcotizacion = c.idcotizacion) as total_entregas,
+            (SELECT COUNT(*) FROM entregables e JOIN servicioscontratados sc ON sc.idserviciocontratado = e.idserviciocontratado 
+             WHERE sc.idcotizacion = c.idcotizacion AND e.estado = "completada") as entregas_completadas,
+            (SELECT COUNT(*) FROM servicioscontratados sc WHERE sc.idcotizacion = c.idcotizacion) as total_servicios
         ');
         $builder->join('clientes cl', 'cl.idcliente = c.idcliente');
         $builder->join('personas p', 'p.idpersona = cl.idpersona', 'left');
@@ -196,6 +199,23 @@ class EntregasModel extends Model
             // Tolerancia más amplia para evitar problemas de redondeo
             if ($contrato['deuda_actual'] < 0.1) {
                 $contrato['deuda_actual'] = 0;
+            }
+            
+            // Determinar si todas las entregas están completadas
+            $totalEntregas = intval($contrato['total_entregas'] ?? 0);
+            $entregasCompletadas = intval($contrato['entregas_completadas'] ?? 0);
+            $totalServicios = intval($contrato['total_servicios'] ?? 0);
+            
+            // Si hay entregas registradas y todas están completadas
+            if ($totalEntregas > 0 && $totalEntregas == $entregasCompletadas) {
+                $contrato['todas_entregas_completadas'] = true;
+                $contrato['estado_entregas'] = 'Entregas completadas';
+            } else if ($totalEntregas > 0) {
+                $contrato['todas_entregas_completadas'] = false;
+                $contrato['estado_entregas'] = $entregasCompletadas . ' de ' . $totalEntregas . ' entregas';
+            } else {
+                $contrato['todas_entregas_completadas'] = false;
+                $contrato['estado_entregas'] = 'Sin entregas';
             }
             
             // Debug: Log para verificar cálculos

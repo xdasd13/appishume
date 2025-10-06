@@ -77,14 +77,20 @@
                                                 <?php endif; ?>
                                             </td>
                                             <td>
-                                                <?php if ($c['total_entregas'] > 0): ?>
-                                                    <span class="badge badge-info"><?= $c['total_entregas'] ?> entregas</span>
+                                                <?php if (isset($c['todas_entregas_completadas']) && $c['todas_entregas_completadas']): ?>
+                                                    <span class="badge badge-success">✅ <?= $c['estado_entregas'] ?></span>
+                                                <?php elseif ($c['total_entregas'] > 0): ?>
+                                                    <span class="badge badge-warning">⏳ <?= $c['estado_entregas'] ?></span>
                                                 <?php else: ?>
                                                     <span class="badge badge-secondary">Sin entregas</span>
                                                 <?php endif; ?>
                                             </td>
                                             <td>
-                                                <?php if ($c['deuda_actual'] == 0): ?>
+                                                <?php if (isset($c['todas_entregas_completadas']) && $c['todas_entregas_completadas']): ?>
+                                                    <span class="btn btn-success btn-sm disabled">
+                                                        <i class="fas fa-check-circle"></i> Completado
+                                                    </span>
+                                                <?php elseif ($c['deuda_actual'] == 0): ?>
                                                     <a href="<?= base_url('entregas/crear?contrato=' . $c['idcontrato']) ?>"
                                                         class="btn btn-success btn-sm">
                                                         <i class="fas fa-truck"></i> Registrar entrega

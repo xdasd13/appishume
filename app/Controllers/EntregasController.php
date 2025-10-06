@@ -230,6 +230,47 @@ class EntregasController extends BaseController
         return view('entregas/ver', $datos);
     }
 
+    public function imprimir($id)
+    {
+        $entrega = $this->entregasModel->obtenerEntregaCompleta($id);
+
+        // Si no se encuentra la entrega, intentamos al menos mostrar datos básicos
+        if (!$entrega) {
+            // Intenta obtener al menos los datos básicos de la entrega
+            $entregaBasica = $this->entregasModel->find($id);
+
+            if (!$entregaBasica) {
+                return redirect()->to('entregas/historial')->with('error', 'Entrega no encontrada');
+            }
+
+            $entrega = $entregaBasica;
+            $entrega['nombre_cliente'] = 'Información no disponible';
+            $entrega['apellido_cliente'] = '';
+            $entrega['servicio'] = 'Información no disponible';
+            $entrega['nombre_entrega'] = 'Información no disponible';
+            $entrega['apellido_entrega'] = '';
+            $entrega['tipodoc'] = '';
+            $entrega['numerodoc'] = '';
+            $entrega['telprincipal'] = '';
+            $entrega['direccion'] = '';
+            $entrega['descripcion_servicio'] = 'Información no disponible';
+            $entrega['tipodoc_entrega'] = '';
+            $entrega['numerodoc_entrega'] = '';
+
+            // Agregar el estado_visual que falta
+            if ($entrega['estado'] == 'completada') {
+                $entrega['estado_visual'] = "✅ ENTREGADO";
+            } else if ($entrega['estado'] == 'pendiente') {
+                $entrega['estado_visual'] = "⏳ EN POSTPRODUCCIÓN";
+            } else {
+                $entrega['estado_visual'] = "❓ DESCONOCIDO";
+            }
+        }
+
+        $datos['entrega'] = $entrega;
+        return view('entregas/imprimir', $datos);
+    }
+
     public function historial()
     {
         // Actualizar entregas existentes sin responsable (solo la primera vez)
@@ -373,48 +414,5 @@ class EntregasController extends BaseController
         $datos['footer'] = view('Layouts/footer');
 
         return view('entregas/vista_previa_contrato', $datos);
-    }
-
-    public function imprimir($id)
-    {
-        $entrega = $this->entregasModel->obtenerEntregaCompleta($id);
-
-        // Si no se encuentra la entrega, intentamos al menos mostrar datos básicos
-        if (!$entrega) {
-            // Intenta obtener al menos los datos básicos de la entrega
-            $entregaBasica = $this->entregasModel->find($id);
-
-            if (!$entregaBasica) {
-                return redirect()->to('entregas/historial')->with('error', 'Entrega no encontrada');
-            }
-
-            $entrega = $entregaBasica;
-            $entrega['nombre_cliente'] = 'Información no disponible';
-            $entrega['apellido_cliente'] = '';
-            $entrega['servicio'] = 'Información no disponible';
-            $entrega['nombre_entrega'] = 'Información no disponible';
-            $entrega['apellido_entrega'] = '';
-            $entrega['tipodoc'] = '';
-            $entrega['numerodoc'] = '';
-            $entrega['telprincipal'] = '';
-            $entrega['direccion'] = '';
-            $entrega['descripcion_servicio'] = 'Información no disponible';
-            $entrega['tipodoc_entrega'] = '';
-            $entrega['numerodoc_entrega'] = '';
-
-            // Agregar el estado_visual que falta
-            if ($entrega['estado'] == 'completada') {
-                $entrega['estado_visual'] = "✅ ENTREGADO";
-            } else if ($entrega['estado'] == 'pendiente') {
-                $entrega['estado_visual'] = "⏳ EN POSTPRODUCCIÓN";
-            } else {
-                $entrega['estado_visual'] = "❓ DESCONOCIDO";
-            }
-        }
-
-        $datos['entrega'] = $entrega;
-        
-        // Vista especial para impresión (sin header/footer)
-        return view('entregas/imprimir', $datos);
     }
 }
