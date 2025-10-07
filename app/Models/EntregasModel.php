@@ -286,9 +286,16 @@ class EntregasModel extends Model
         $builder = $this->db->table('contratos c');
         $builder->select('
             c.idcontrato, c.idcotizacion,
+            CONCAT(COALESCE(p.nombres, emp.razonsocial), " ", COALESCE(p.apellidos, "")) as cliente_nombre,
+            co.fechaevento, te.evento as tipo_evento,
             (SELECT SUM(sc.cantidad * sc.precio) FROM servicioscontratados sc WHERE sc.idcotizacion = c.idcotizacion) as monto_total,
             (SELECT SUM(cp.amortizacion) FROM controlpagos cp WHERE cp.idcontrato = c.idcontrato) as monto_pagado
         ');
+        $builder->join('cotizaciones co', 'co.idcotizacion = c.idcotizacion');
+        $builder->join('clientes cl', 'cl.idcliente = c.idcliente');
+        $builder->join('personas p', 'p.idpersona = cl.idpersona', 'left');
+        $builder->join('empresas emp', 'emp.idempresa = cl.idempresa', 'left');
+        $builder->join('tipoeventos te', 'te.idtipoevento = co.idtipoevento');
         $builder->where('c.idcontrato', $idcontrato);
         $contrato = $builder->get()->getRowArray();
 

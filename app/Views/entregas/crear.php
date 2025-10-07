@@ -65,17 +65,17 @@
                                         </label>
                                         <?php if (isset($contrato)): ?>
                                             <input type="hidden" name="idcontrato" value="<?= $contrato['idcontrato'] ?>">
-                                            <input type="text" class="form-control" value="Contrato #<?= $contrato['idcontrato'] ?>" readonly>
+                                            <input type="text" class="form-control" value="Contrato #<?= $contrato['idcontrato'] ?> - <?= $contrato['cliente_nombre'] ?> (<?= date('d/m/Y', strtotime($contrato['fechaevento'])) ?>)" readonly>
                                             <small class="form-text text-success">Este contrato está pagado al 100%</small>
                                         <?php else: ?>
                                             <select class="form-control select2" id="idcontrato" name="idcontrato" required>
-                                                <option value="">Seleccione un contrato</option>
+                                                <option value="">Seleccione una opción</option>
                                                 <?php foreach ($contratos as $contrato): ?>
                                                     <option value="<?= $contrato['idcontrato'] ?>" 
                                                         <?= old('idcontrato') == $contrato['idcontrato'] ? 'selected' : '' ?>>
                                                         Contrato #<?= $contrato['idcontrato'] ?> - 
                                                         <?= $contrato['cliente_nombre'] ?> 
-                                                        (<?= date('d/m/Y', strtotime($contrato['fechaevento'])) ?>)
+                                                        (<?= date('d/m/Y', strtotime($contrato['fechaevento'])) ?>) 
                                                         - <?= $contrato['entregas_pendientes'] ?> entrega(s) pendiente(s)
                                                     </option>
                                                 <?php endforeach; ?>
@@ -92,7 +92,7 @@
                                         </label>
                                         <select class="form-control select2" id="idserviciocontratado" name="idserviciocontratado" required <?= isset($servicios) ? '' : 'disabled' ?>>
                                             <?php if (isset($servicios) && !empty($servicios)): ?>
-                                                <option value="">Seleccione un servicio</option>
+                                                <option value="">Seleccione una opción</option>
                                                 <?php foreach ($servicios as $servicio): ?>
                                                     <option value="<?= $servicio['idserviciocontratado'] ?>">
                                                         <?= $servicio['servicio'] ?> (<?= date('d/m/Y', strtotime($servicio['fechahoraservicio'])) ?>)
@@ -123,8 +123,8 @@
                                         <label for="observaciones" class="form-label">
                                             <i class="fas fa-sticky-note mr-2 text-info"></i>Formato de Entrega *
                                         </label>
-                                        <textarea class="form-control" id="observaciones" name="observaciones" rows="2" placeholder="Ej: USB físico, link digital, cuadros 30x40, etc." required><?= old('observaciones') ?></textarea>
-                                        <small class="form-text text-muted">Describa el formato de entrega (físico/digital) y especificaciones</small>
+                                        <textarea class="form-control" id="observaciones" name="observaciones" rows="3" placeholder="Ej: USB físico, link digital, cuadros 30x40, etc." required><?= old('observaciones') ?></textarea>
+                                        <small class="form-text text-muted mt-2">Describa el formato de entrega (físico/digital) y especificaciones</small>
                                     </div>
                                 </div>
                             </div>
@@ -135,9 +135,9 @@
                                         <label for="comprobante_entrega" class="form-label">
                                             <i class="fas fa-file-pdf mr-2 text-danger"></i>Comprobante de Entrega (PDF) *
                                         </label>
-                                        <div class="custom-file mb-2">
+                                        <div class="custom-file">
                                             <input type="file" class="custom-file-input" id="comprobante_entrega" name="comprobante_entrega" accept=".pdf" required>
-                                            <label class="custom-file-label" for="comprobante_entrega">Seleccionar archivo PDF</label>
+                                            <label class="custom-file-label" for="comprobante_entrega">Seleccionar archivo</label>
                                         </div>
                                         <small class="form-text text-muted">Suba el comprobante de entrega en formato PDF (máx. 5MB)</small>
                                     </div>
@@ -155,7 +155,7 @@
                             
                             <div class="form-group mt-4">
                                 <button type="submit" id="btn-registrar" class="btn btn-primary btn-lg">
-                                    <i class="fas fa-save mr-2"></i>Registrar Entrega
+                                    <i class="fas fa-truck mr-2"></i>Registrar Entrega
                                 </button>
                                 <a href="<?= base_url('entregas') ?>" class="btn btn-outline-secondary btn-lg ml-2">
                                     <i class="fas fa-times mr-2"></i>Cancelar
@@ -237,6 +237,16 @@ $(document).ready(function() {
         theme: 'bootstrap',
         placeholder: 'Seleccione una opción',
         allowClear: true
+    });
+    
+    // Actualizar el label del archivo cuando se selecciona
+    $('#comprobante_entrega').on('change', function() {
+        var fileName = $(this).val().split('\\').pop();
+        if (fileName) {
+            $(this).next('.custom-file-label').html(fileName);
+        } else {
+            $(this).next('.custom-file-label').html('Seleccionar archivo');
+        }
     });
 
     // Cargar servicios cuando se selecciona un contrato
