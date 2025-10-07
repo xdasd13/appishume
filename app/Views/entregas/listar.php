@@ -77,7 +77,7 @@
                                                 <?php endif; ?>
                                             </td>
                                             <td>
-                                                <?php if (isset($c['todas_entregas_completadas']) && $c['todas_entregas_completadas']): ?>
+                                                <?php if (isset($c['todos_servicios_completados']) && $c['todos_servicios_completados']): ?>
                                                     <span class="badge badge-success">✅ <?= $c['estado_entregas'] ?></span>
                                                 <?php elseif ($c['total_entregas'] > 0): ?>
                                                     <span class="badge badge-warning">⏳ <?= $c['estado_entregas'] ?></span>
@@ -86,7 +86,7 @@
                                                 <?php endif; ?>
                                             </td>
                                             <td>
-                                                <?php if (isset($c['todas_entregas_completadas']) && $c['todas_entregas_completadas']): ?>
+                                                <?php if (isset($c['todos_servicios_completados']) && $c['todos_servicios_completados']): ?>
                                                     <span class="btn btn-success btn-sm disabled">
                                                         <i class="fas fa-check-circle"></i> Completado
                                                     </span>
