@@ -201,20 +201,21 @@ class EntregasModel extends Model
                 $contrato['deuda_actual'] = 0;
             }
             
-            // Determinar si todas las entregas están completadas
+            // Determinar si todos los servicios están completados
             $totalEntregas = intval($contrato['total_entregas'] ?? 0);
             $entregasCompletadas = intval($contrato['entregas_completadas'] ?? 0);
             $totalServicios = intval($contrato['total_servicios'] ?? 0);
             
-            // Si hay entregas registradas y todas están completadas
-            if ($totalEntregas > 0 && $totalEntregas == $entregasCompletadas) {
-                $contrato['todas_entregas_completadas'] = true;
+            // Verificar si todos los servicios están completados
+            // Un servicio está completado cuando tiene una entrega registrada y completada
+            if ($totalServicios > 0 && $totalServicios == $entregasCompletadas) {
+                $contrato['todos_servicios_completados'] = true;
                 $contrato['estado_entregas'] = 'Entregas completadas';
             } else if ($totalEntregas > 0) {
-                $contrato['todas_entregas_completadas'] = false;
-                $contrato['estado_entregas'] = $entregasCompletadas . ' de ' . $totalEntregas . ' entregas';
+                $contrato['todos_servicios_completados'] = false;
+                $contrato['estado_entregas'] = $entregasCompletadas . ' de ' . $totalServicios . ' servicios';
             } else {
-                $contrato['todas_entregas_completadas'] = false;
+                $contrato['todos_servicios_completados'] = false;
                 $contrato['estado_entregas'] = 'Sin entregas';
             }
             
