@@ -29,10 +29,10 @@
         </script>
     <?php endif; ?>
 
-    <!-- Tarjetas de resumen con animaciones -->
+    <!-- Tarjetas de resumen con mejoras visuales -->
     <div class="row">
         <div class="col-md-3">
-            <div class="card card-stats card-round card-3d animate__animated animate__fadeInLeft">
+            <div class="card card-stats card-round card-3d animate__animated animate__fadeInLeft card-hover">
                 <div class="card-body">
                     <div class="row align-items-center">
                         <div class="col-5">
@@ -51,7 +51,7 @@
             </div>
         </div>
         <div class="col-md-3">
-            <div class="card card-stats card-round card-3d animate__animated animate__fadeInLeft animate__delay-1s">
+            <div class="card card-stats card-round card-3d animate__animated animate__fadeInLeft animate__delay-1s card-hover">
                 <div class="card-body">
                     <div class="row align-items-center">
                         <div class="col-5">
@@ -70,7 +70,7 @@
             </div>
         </div>
         <div class="col-md-3">
-            <div class="card card-stats card-round card-3d animate__animated animate__fadeInRight animate__delay-1s">
+            <div class="card card-stats card-round card-3d animate__animated animate__fadeInRight animate__delay-1s card-hover">
                 <div class="card-body">
                     <div class="row align-items-center">
                         <div class="col-5">
@@ -89,7 +89,7 @@
             </div>
         </div>
         <div class="col-md-3">
-            <div class="card card-stats card-round card-3d animate__animated animate__fadeInRight">
+            <div class="card card-stats card-round card-3d animate__animated animate__fadeInRight card-hover">
                 <div class="card-body">
                     <div class="row align-items-center">
                         <div class="col-5">
@@ -116,7 +116,7 @@
                 <div class="card-header">
                     <div class="d-flex align-items-center">
                         <h4 class="card-title">Registros de Pagos</h4>
-                        <a href="<?= base_url('/controlpagos/crear') ?>" class="btn btn-primary btn-round ml-auto btn-animate">
+                        <a href="<?= base_url('/controlpagos/crear') ?>" class="btn btn-primary btn-round ml-auto btn-hover">
                             <span class="btn-label">
                                 <i class="fa fa-plus"></i>
                             </span>
@@ -125,7 +125,7 @@
                     </div>
                 </div>
                 <div class="card-body">
-                    <!-- Filtros -->
+                    <!-- Filtros originales funcionando -->
                     <form method="get" action="<?= base_url('/controlpagos') ?>" class="mb-4">
                         <div class="row">
                             <div class="col-md-3">
@@ -166,8 +166,8 @@
                                 <div class="form-group">
                                     <label style="opacity: 0;">Aplicar Filtros</label>
                                     <div>
-                                        <button type="submit" class="btn btn-primary btn-sm">Aplicar Filtros</button>
-                                        <a href="<?= base_url('/controlpagos') ?>" class="btn btn-secondary btn-sm">Limpiar</a>
+                                        <button type="submit" class="btn btn-primary btn-sm btn-hover">Aplicar Filtros</button>
+                                        <a href="<?= base_url('/controlpagos') ?>" class="btn btn-secondary btn-sm btn-hover">Limpiar</a>
                                     </div>
                                 </div>
                             </div>
@@ -194,11 +194,15 @@
                             <tbody>
                                 <?php if (!empty($pagos) && is_array($pagos)): ?>
                                     <?php foreach ($pagos as $pago): ?>
-                                        <tr class="animate__animated animate__fadeIn">
-                                            <td><?= $pago['idpagos'] ?></td>
+                                        <tr class="animate__animated animate__fadeIn row-hover">
+                                            <td>
+                                                <span class="badge badge-dark badge-3d" style="background-color: #2c3e50 !important; color: white !important;">
+                                                    #<?= $pago['idpagos'] ?>
+                                                </span>
+                                            </td>
                                             <td>
                                                 <a href="<?= base_url('/controlpagos/por-contrato/' . $pago['idcontrato']) ?>" 
-                                                   class="btn btn-sm btn-outline-primary">
+                                                   class="btn btn-sm btn-outline-primary btn-hover">
                                                     Contrato #<?= $pago['idcontrato'] ?>
                                                 </a>
                                             </td>
@@ -230,7 +234,7 @@
                                             <td>
                                                 <?php if (!empty($pago['comprobante'])): ?>
                                                     <a href="<?= base_url('/controlpagos/descargarComprobante/' . $pago['idpagos']) ?>" 
-                                                       class="btn btn-sm btn-outline-info" title="Descargar comprobante">
+                                                       class="btn btn-sm btn-outline-info btn-hover" title="Descargar comprobante">
                                                         <i class="fas fa-download"></i>
                                                     </a>
                                                 <?php else: ?>
@@ -240,13 +244,13 @@
                                             <td>
                                                 <div class="form-button-action">
                                                     <a href="<?= base_url('/controlpagos/ver/' . $pago['idpagos']) ?>" 
-                                                       class="btn btn-link btn-primary btn-lg btn-action" 
+                                                       class="btn btn-link btn-primary btn-lg btn-action btn-hover" 
                                                        data-toggle="tooltip" 
                                                        title="Ver detalles">
                                                         <i class="fa fa-eye"></i>
                                                     </a>
                                                     <a href="<?= base_url('/controlpagos/generarVoucher/' . $pago['idpagos']) ?>" 
-                                                       class="btn btn-link btn-info btn-lg btn-action" 
+                                                       class="btn btn-link btn-info btn-lg btn-action btn-hover" 
                                                        data-toggle="tooltip" 
                                                        title="Generar voucher"
                                                        target="_blank">
@@ -271,6 +275,53 @@
 </div>
 
 <?= $footer ?>
+
+<!-- Estilos CSS para mejoras visuales -->
+<style>
+.card-hover {
+    transition: all 0.3s ease;
+    border: 1px solid #e3e6f0;
+}
+.card-hover:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+.btn-hover {
+    transition: all 0.3s ease;
+}
+.btn-hover:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+.row-hover:hover {
+    background-color: #f8f9fa !important;
+}
+.btn-action {
+    transition: all 0.3s ease;
+    border-radius: 50%;
+    width: 35px;
+    height: 35px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 2px;
+}
+.btn-action:hover {
+    transform: scale(1.1);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+.badge-3d {
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+.table-hover-3d tbody tr:hover {
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+}
+.card-header {
+    background: linear-gradient(135deg, #f8f9fc 0%, #e3e6f0 100%);
+    border-bottom: 1px solid #e3e6f0;
+}
+</style>
 
 <!-- Scripts para la funcionalidad de la página -->
 <script>

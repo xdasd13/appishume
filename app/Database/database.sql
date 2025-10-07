@@ -306,7 +306,7 @@ INSERT INTO servicioscontratados (idcotizacion, idservicio, cantidad, precio, fe
 (7, 6, 1, 400.00, '2025-10-20 15:30:00', 'Club de Campo La Pradera - Km 10 Carretera Central'),
 
 -- Servicios para cotización 1 (Boda Carlos García)
-(1, 1, 2, 1600.00, '2025-11-08 15:00:00', 'Hacienda Los Olivos - Km 25 Panamericana Sur'),
+(1, 1, 1, 1600.00, '2025-11-08 15:00:00', 'Hacienda Los Olivos - Km 25 Panamericana Sur'),
 (1, 2, 1, 1200.00, '2025-11-08 14:00:00', 'Hacienda Los Olivos - Km 25 Panamericana Sur'),
 
 -- Servicios para cotización 2 (Quinceañero María Rodríguez)
