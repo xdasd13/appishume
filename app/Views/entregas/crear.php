@@ -75,12 +75,11 @@
                                                         <?= old('idcontrato') == $contrato['idcontrato'] ? 'selected' : '' ?>>
                                                         Contrato #<?= $contrato['idcontrato'] ?> - 
                                                         <?= $contrato['cliente_nombre'] ?> 
-                                                        (<?= date('d/m/Y', strtotime($contrato['fechaevento'])) ?>) 
-                                                        - <?= $contrato['entregas_pendientes'] ?> entrega(s) pendiente(s)
+                                                        (<?= date('d/m/Y', strtotime($contrato['fechaevento'])) ?>)
                                                     </option>
                                                 <?php endforeach; ?>
                                             </select>
-                                            <small class="form-text text-muted">Solo se muestran contratos pagados al 100% con entregas pendientes</small>
+                                            <small class="form-text text-muted">Solo se muestran contratos pagados al 100% con fecha de evento hasta hoy</small>
                                         <?php endif; ?>
                                     </div>
                                 </div>

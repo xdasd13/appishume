@@ -243,6 +243,9 @@ class EntregasModel extends Model
         $builder->join('personas p', 'p.idpersona = cl.idpersona', 'left');
         $builder->join('empresas emp', 'emp.idempresa = cl.idempresa', 'left');
         $builder->join('cotizaciones co', 'co.idcotizacion = c.idcotizacion');
+        
+        // Filtrar solo contratos con fecha de evento hasta hoy
+        $builder->where('co.fechaevento <=', date('Y-m-d'));
 
         $contratos = $builder->get()->getResultArray();
 
