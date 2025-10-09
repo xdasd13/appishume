@@ -115,12 +115,9 @@
             <div class="card card-3d animate__animated animate__fadeInUp">
                 <div class="card-header">
                     <div class="d-flex align-items-center">
-                        <h4 class="card-title">Registros de Pagos</h4>
-                        <a href="<?= base_url('/controlpagos/crear') ?>" class="btn btn-primary btn-round ml-auto btn-hover">
-                            <span class="btn-label">
-                                <i class="fa fa-plus"></i>
-                            </span>
-                            Nuevo Pago
+                        <h4 class="card-title">Contratos y Entregas</h4>
+                        <a href="<?= base_url('controlpagos/crear') ?>" class="btn btn-primary btn-round ml-auto">
+                            <i class="fas fa-plus mr-2"></i>Nuevo Pago
                         </a>
                     </div>
                 </div>
