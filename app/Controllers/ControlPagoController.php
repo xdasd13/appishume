@@ -70,30 +70,14 @@ class ControlPagoController extends BaseController
         // Si hay un contrato pre-seleccionado, cargar su información directamente
         if ($contratoId) {
             try {
-                // Usar la misma lógica que funciona en el módulo de entregas
-                $db = db_connect();
-                $contratoQuery = $db->query("
-                    SELECT 
-                        (SELECT SUM(sc.cantidad * sc.precio) FROM servicioscontratados sc WHERE sc.idcotizacion = c.idcotizacion) as monto_total,
-                        (SELECT SUM(cp.amortizacion) FROM controlpagos cp WHERE cp.idcontrato = ?) as monto_pagado
-                    FROM contratos c 
-                    WHERE c.idcontrato = ?
-                ", [$contratoId, $contratoId]);
+                // Obtener información del contrato
+                $infoContrato = $this->infoContratoCalculo($contratoId);
                 
-                if ($contratoQuery->getNumRows() > 0) {
-                    $result = $contratoQuery->getRow();
-                    $montoTotal = $result->monto_total ?? 0;
-                    $montoPagado = $result->monto_pagado ?? 0;
-                    $saldo = $montoTotal - $montoPagado;
-                    
-                    // Pequeña tolerancia para evitar problemas de redondeo
-                    if ($saldo < 0.01) {
-                        $saldo = 0;
-                    }
-                    
+                if ($infoContrato) {
                     $datos['info_contrato_precargada'] = [
-                        'monto_total' => $montoTotal,
-                        'saldo_actual' => $saldo
+                        'monto_total' => $infoContrato['monto_total'],
+                        'saldo_actual' => $infoContrato['saldo_actual'],
+                        'total_pagado' => $infoContrato['total_pagado']
                     ];
                 } else {
                     $datos['info_contrato_precargada'] = null;
@@ -146,18 +130,15 @@ class ControlPagoController extends BaseController
         // Log para debugging
         log_message('info', 'Guardando pago - Contrato: ' . $idcontrato . ', Amortización: ' . $amortizacion);
 
-        // Obtener el último pago del contrato para calcular saldos
-        $ultimoPago = $this->controlPagoModel->obtenerUltimoPagoContrato($idcontrato);
-
-        if ($ultimoPago) {
-            $saldo = $ultimoPago['deuda'];
-            $deuda = $saldo - $amortizacion;
-        } else {
-            // Si es el primer pago, obtener el monto total del contrato
-            $contratoInfo = $this->contratoModel->obtenerMontoContrato($idcontrato);
-            $saldo = $contratoInfo['monto_total'] ?? 0;
-            $deuda = $saldo - $amortizacion;
+        // Obtener información actual del contrato
+        $infoContrato = $this->infoContratoCalculo($idcontrato);
+        
+        if (!$infoContrato) {
+            return redirect()->back()->withInput()->with('error', 'Error al obtener información del contrato.');
         }
+
+        $saldo = $infoContrato['saldo_actual'];
+        $deuda = $saldo - $amortizacion;
 
         // Validar que la amortización no sea mayor al saldo
         if ($amortizacion > $saldo) {
@@ -194,7 +175,7 @@ class ControlPagoController extends BaseController
             'idtipopago' => $this->request->getPost('idtipopago'),
             'numtransaccion' => $this->request->getPost('numtransaccion'),
             'fechahora' => $this->request->getPost('fechahora_hidden') ?: $this->getPeruDateTime(),
-            'idusuario' => session()->get('usuario_id'), // ID del usuario que inició sesión
+            'idusuario' => session()->get('usuario_id'),
             'comprobante' => $nombreComprobante
         ];
 
@@ -203,7 +184,7 @@ class ControlPagoController extends BaseController
             $mensaje = '✅ Pago registrado correctamente';
             
             // Verificar si el contrato quedó completamente pagado
-            if ($deuda <= 0.01) { // Tolerancia para redondeo
+            if ($deuda <= 0.01) {
                 $mensaje .= '. ¡Felicidades! El contrato ha sido completamente pagado.';
             } else {
                 $mensaje .= '. Saldo restante: S/ ' . number_format($deuda, 2);
@@ -221,6 +202,10 @@ class ControlPagoController extends BaseController
 
     public function ver($id)
     {
+        if (!session()->get('usuario_logueado')) {
+            return redirect()->to('/login')->with('error', 'Acceso denegado.');
+        }
+
         $datos['pago'] = $this->controlPagoModel->obtenerPago($id);
 
         if (!$datos['pago']) {
@@ -239,20 +224,8 @@ class ControlPagoController extends BaseController
             ->get()->getRowArray();
 
         // Obtener monto total del contrato
-        $montoQuery = $db->query("
-        SELECT SUM(sc.cantidad * sc.precio) as monto_total 
-        FROM servicioscontratados sc 
-        JOIN cotizaciones co ON co.idcotizacion = sc.idcotizacion 
-        WHERE co.idcotizacion IN (
-            SELECT idcotizacion FROM contratos WHERE idcontrato = ?
-        )
-    ", [$datos['pago']['idcontrato']]);
-
-        if ($montoQuery->getNumRows() > 0) {
-            $datos['info_contrato']['monto_total'] = $montoQuery->getRow()->monto_total ?? 0;
-        } else {
-            $datos['info_contrato']['monto_total'] = 0;
-        }
+        $montoInfo = $this->contratoModel->obtenerMontoContrato($datos['pago']['idcontrato']);
+        $datos['info_contrato']['monto_total'] = $montoInfo['monto_total'] ?? 0;
 
         $datos['tipo_pago'] = $db->table('tipospago')
             ->where('idtipopago', $datos['pago']['idtipopago'])
@@ -289,47 +262,68 @@ class ControlPagoController extends BaseController
         }
         
         try {
-            // Verificar que el contrato existe
-            $contrato = $this->contratoModel->find($idcontrato);
-            if (!$contrato) {
+            $infoContrato = $this->infoContratoCalculo($idcontrato);
+            
+            if (!$infoContrato) {
                 return $this->response->setJSON([
                     'error' => 'Contrato no encontrado',
                     'saldo_actual' => 0,
-                    'monto_total' => 0
+                    'monto_total' => 0,
+                    'total_pagado' => 0
                 ]);
-            }
-            
-            // Obtener monto total del contrato
-            $montoInfo = $this->contratoModel->obtenerMontoContrato($idcontrato);
-            $montoTotal = $montoInfo['monto_total'] ?? 0;
-            
-            // Obtener último pago del contrato
-            $ultimoPago = $this->controlPagoModel->obtenerUltimoPagoContrato($idcontrato);
-            
-            if ($ultimoPago) {
-                $saldo = $ultimoPago['deuda'];
-            } else {
-                $saldo = $montoTotal;
             }
 
             return $this->response->setJSON([
-                'saldo_actual' => $saldo,
-                'monto_total' => $montoTotal,
+                'saldo_actual' => $infoContrato['saldo_actual'],
+                'monto_total' => $infoContrato['monto_total'],
+                'total_pagado' => $infoContrato['total_pagado'],
                 'contrato_id' => $idcontrato
             ]);
             
         } catch (\Exception $e) {
+            log_message('error', 'Error en infoContrato: ' . $e->getMessage());
             return $this->response->setJSON([
                 'error' => 'Error: ' . $e->getMessage(),
                 'saldo_actual' => 0,
-                'monto_total' => 0
+                'monto_total' => 0,
+                'total_pagado' => 0
             ]);
         }
+    }
+
+    // Método interno para calcular información del contrato
+    private function infoContratoCalculo($idcontrato)
+    {
+        // Verificar que el contrato existe
+        $contrato = $this->contratoModel->find($idcontrato);
+        if (!$contrato) {
+            return null;
+        }
+        
+        // Obtener monto total del contrato
+        $montoInfo = $this->contratoModel->obtenerMontoContrato($idcontrato);
+        $montoTotal = $montoInfo['monto_total'] ?? 0;
+        
+        // Obtener total pagado
+        $totalPagado = $this->controlPagoModel->calcularTotalPagado($idcontrato);
+        
+        // Calcular saldo actual
+        $saldoActual = $montoTotal - $totalPagado;
+        
+        return [
+            'monto_total' => $montoTotal,
+            'total_pagado' => $totalPagado,
+            'saldo_actual' => $saldoActual
+        ];
     }
 
     // Método para ver pagos por contrato
     public function porContrato($idcontrato)
     {
+        if (!session()->get('usuario_logueado')) {
+            return redirect()->to('/login')->with('error', 'Acceso denegado.');
+        }
+
         // Obtener información del contrato
         $db = db_connect();
         $datos['contrato'] = $db->table('contratos')
@@ -339,21 +333,13 @@ class ControlPagoController extends BaseController
             ->where('contratos.idcontrato', $idcontrato)
             ->get()->getRowArray();
 
-        // Obtener monto total del contrato
-        $montoQuery = $db->query("
-            SELECT SUM(sc.cantidad * sc.precio) as monto_total 
-            FROM servicioscontratados sc 
-            JOIN cotizaciones co ON co.idcotizacion = sc.idcotizacion 
-            WHERE co.idcotizacion IN (
-                SELECT idcotizacion FROM contratos WHERE idcontrato = ?
-            )
-        ", [$idcontrato]);
-
-        if ($montoQuery->getNumRows() > 0) {
-            $datos['contrato']['monto_total'] = $montoQuery->getRow()->monto_total ?? 0;
-        } else {
-            $datos['contrato']['monto_total'] = 0;
+        if (!$datos['contrato']) {
+            return redirect()->to('/controlpagos')->with('error', 'Contrato no encontrado');
         }
+
+        // Obtener monto total del contrato
+        $montoInfo = $this->contratoModel->obtenerMontoContrato($idcontrato);
+        $datos['contrato']['monto_total'] = $montoInfo['monto_total'] ?? 0;
 
         // Obtener pagos del contrato
         $datos['pagos'] = $this->controlPagoModel->obtenerPagosPorContrato($idcontrato);
@@ -361,6 +347,9 @@ class ControlPagoController extends BaseController
         // Calcular total pagado
         $datos['total_pagado'] = $this->controlPagoModel->calcularTotalPagado($idcontrato);
         $datos['deuda_actual'] = $datos['contrato']['monto_total'] - $datos['total_pagado'];
+
+        // Verificar si el contrato está completamente pagado
+        $datos['completamente_pagado'] = ($datos['deuda_actual'] <= 0.01);
 
         $datos['header'] = view('Layouts/header');
         $datos['footer'] = view('Layouts/footer');
@@ -372,6 +361,10 @@ class ControlPagoController extends BaseController
     // Método para descargar comprobante
     public function descargarComprobante($id)
     {
+        if (!session()->get('usuario_logueado')) {
+            return redirect()->to('/login')->with('error', 'Acceso denegado.');
+        }
+
         $pago = $this->controlPagoModel->find($id);
         
         if (!$pago || empty($pago['comprobante'])) {
@@ -390,6 +383,10 @@ class ControlPagoController extends BaseController
     // Método para generar voucher
     public function generarVoucher($id)
     {
+        if (!session()->get('usuario_logueado')) {
+            return redirect()->to('/login')->with('error', 'Acceso denegado.');
+        }
+
         $datos['pago'] = $this->controlPagoModel->obtenerPago($id);
 
         if (!$datos['pago']) {
@@ -408,20 +405,8 @@ class ControlPagoController extends BaseController
             ->get()->getRowArray();
 
         // Obtener monto total del contrato
-        $montoQuery = $db->query("
-            SELECT SUM(sc.cantidad * sc.precio) as monto_total 
-            FROM servicioscontratados sc 
-            JOIN cotizaciones co ON co.idcotizacion = sc.idcotizacion 
-            WHERE co.idcotizacion IN (
-                SELECT idcotizacion FROM contratos WHERE idcontrato = ?
-            )
-        ", [$datos['pago']['idcontrato']]);
-
-        if ($montoQuery->getNumRows() > 0) {
-            $datos['info_contrato']['monto_total'] = $montoQuery->getRow()->monto_total ?? 0;
-        } else {
-            $datos['info_contrato']['monto_total'] = 0;
-        }
+        $montoInfo = $this->contratoModel->obtenerMontoContrato($datos['pago']['idcontrato']);
+        $datos['info_contrato']['monto_total'] = $montoInfo['monto_total'] ?? 0;
 
         $datos['tipo_pago'] = $db->table('tipospago')
             ->where('idtipopago', $datos['pago']['idtipopago'])
@@ -460,7 +445,7 @@ class ControlPagoController extends BaseController
             // Contar contratos con deuda y pagados
             if (!in_array($pago['idcontrato'], $contratosProcesados)) {
                 $ultimoPago = $this->controlPagoModel->obtenerUltimoPagoContrato($pago['idcontrato']);
-                if ($ultimoPago && $ultimoPago['deuda'] == 0) {
+                if ($ultimoPago && $ultimoPago['deuda'] <= 0.01) {
                     $estadisticas['contratos_pagados']++;
                 } else {
                     $estadisticas['contratos_con_deuda']++;
@@ -474,10 +459,13 @@ class ControlPagoController extends BaseController
             $ultimoPago = $this->controlPagoModel->obtenerUltimoPagoContrato($idcontrato);
             if ($ultimoPago) {
                 $estadisticas['deuda_total'] += $ultimoPago['deuda'];
+            } else {
+                // Si no hay pagos, la deuda es el monto total
+                $montoInfo = $this->contratoModel->obtenerMontoContrato($idcontrato);
+                $estadisticas['deuda_total'] += $montoInfo['monto_total'] ?? 0;
             }
         }
 
         return $estadisticas;
     }
-    
 }

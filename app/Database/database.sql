@@ -107,17 +107,11 @@ CREATE TABLE controlpagos (
     numtransaccion VARCHAR(50),
     fechahora DATETIME,
     idusuario INT,
+    comprobante VARCHAR(255) NULL,
     CONSTRAINT fk_pago_contrato FOREIGN KEY (idcontrato) REFERENCES contratos(idcontrato),
     CONSTRAINT fk_pago_tipopago FOREIGN KEY (idtipopago) REFERENCES tipospago(idtipopago),
     CONSTRAINT fk_pago_usuario FOREIGN KEY (idusuario) REFERENCES usuarios(idusuario)
 );
-
-ALTER TABLE controlpagos 
-ADD COLUMN comprobante VARCHAR(255) NULL AFTER idusuario;
-
-
--- Control de pagos Fin --
-
 
 CREATE TABLE listacondiciones (
     idlista INT AUTO_INCREMENT PRIMARY KEY,
@@ -156,11 +150,10 @@ CREATE TABLE entregables (
     fecha_real_entrega DATETIME NULL,
     observaciones VARCHAR(200),
     estado ENUM('pendiente', 'completada') DEFAULT 'pendiente',
+    comprobante_entrega VARCHAR(255) NULL,
     CONSTRAINT fk_entregable_servicio FOREIGN KEY (idserviciocontratado) REFERENCES servicioscontratados(idserviciocontratado),
     CONSTRAINT fk_entregable_persona FOREIGN KEY (idpersona) REFERENCES personas(idpersona)
 );
-
-ALTER TABLE entregables ADD COLUMN comprobante_entrega VARCHAR(255) NULL AFTER estado;
 
 CREATE TABLE equipos (
     idequipo INT AUTO_INCREMENT PRIMARY KEY,
@@ -168,14 +161,14 @@ CREATE TABLE equipos (
     idusuario INT,
     descripcion VARCHAR(200),
     estadoservicio ENUM('Pendiente','En Proceso','Completado','Programado') DEFAULT 'Pendiente',
+    fecha_asignacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_equipo_servicio FOREIGN KEY (idserviciocontratado) REFERENCES servicioscontratados(idserviciocontratado),
     CONSTRAINT fk_equipo_usuario FOREIGN KEY (idusuario) REFERENCES usuarios(idusuario)
 );
 
--- DATOS DE PRUEBA
+-- DATOS DE PRUEBA CORREGIDOS Y CONSISTENTES
 
 -- 1. DATOS BÁSICOS (Catálogos)
--- Cargos
 INSERT INTO cargos (cargo) VALUES 
 ('Gerente de Proyectos'),
 ('Coordinador de Eventos'),
@@ -183,8 +176,6 @@ INSERT INTO cargos (cargo) VALUES
 ('Fotógrafo'),
 ('Operador de Equipos');
 
-
--- Categorías de servicios
 INSERT INTO categorias (categoria) VALUES 
 ('Audio y Sonido'),
 ('Fotografía y Video'),
@@ -192,8 +183,6 @@ INSERT INTO categorias (categoria) VALUES
 ('Decoración'),
 ('Catering');
 
-
--- Condiciones
 INSERT INTO condiciones (condicion) VALUES 
 ('Pago 50% adelanto'),
 ('Entrega de equipos 2 horas antes'),
@@ -201,16 +190,12 @@ INSERT INTO condiciones (condicion) VALUES
 ('Acceso vehicular requerido'),
 ('Cancelación con 48h anticipación');
 
-
--- Tipos de contrato
 INSERT INTO tipocontrato (tipocontrato, vigenciadias) VALUES 
 ('Evento Único', 1),
 ('Paquete Mensual', 30),
 ('Contrato Anual', 365),
 ('Servicio Corporativo', 90);
 
-
--- Tipos de eventos
 INSERT INTO tipoeventos (evento) VALUES 
 ('Boda'),
 ('Quinceañero'),
@@ -218,8 +203,6 @@ INSERT INTO tipoeventos (evento) VALUES
 ('Conferencia'),
 ('Concierto');
 
-
--- Tipos de pago
 INSERT INTO tipospago (tipopago) VALUES 
 ('Efectivo'),
 ('Transferencia Bancaria'),
@@ -227,9 +210,7 @@ INSERT INTO tipospago (tipopago) VALUES
 ('Cheque'),
 ('Yape/Plin');
 
-
 -- 2. PERSONAS Y EMPRESAS
--- Personas (DNI 8 dígitos, teléfonos 9 dígitos, campos obligatorios)
 INSERT INTO personas (apellidos, nombres, tipodoc, numerodoc, telprincipal, telalternativo, direccion, referencia) VALUES 
 ('García López', 'Carlos Eduardo', 'DNI', '12345678', '987654321', '945123456', 'Av. Los Álamos 123, San Isidro', 'Cerca al parque central'),
 ('Rodríguez Silva', 'María Carmen', 'DNI', '87654321', '976543210', NULL, 'Jr. Las Flores 456, Miraflores', 'Frente a la iglesia San Antonio'),
@@ -241,30 +222,29 @@ INSERT INTO personas (apellidos, nombres, tipodoc, numerodoc, telprincipal, tela
 ('Smith Johnson', 'Robert William', 'Pasaporte', 'AB1234567', '998877665', NULL, 'Calle Extranjeros 555, San Borja', 'Condominio Las Torres, Dpto 301'),
 ('González Pérez', 'Carmen Rosa', 'DNI', '77889900', '987123789', '945678123', 'Av. Primavera 888, Surco', 'Cerca al centro comercial');
 
--- Empresas (RUC 11 dígitos, teléfonos 9 dígitos)
 INSERT INTO empresas (ruc, razonsocial, direccion, telefono) VALUES 
 ('20123456789', 'Eventos Premium SAC', 'Av. Empresarial 1001, San Isidro', '014567890'),
 ('20987654321', 'Corporativo Los Andes EIRL', 'Jr. Negocios 202, Miraflores', '014445556'),
 ('20111222333', 'Celebraciones Especiales SRL', 'Calle Eventos 303, Surco', '013334445'),
 ('20555666777', 'Hoteles & Convenciones SA', 'Av. Javier Prado 2500, San Borja', '012223334');
 
--- 3. CLIENTES (Algunos personas, algunos empresas)
+-- 3. CLIENTES
 INSERT INTO clientes (idpersona, idempresa) VALUES 
 (1, NULL),  -- Carlos García (persona)
 (2, NULL),  -- María Rodríguez (persona)
 (NULL, 1),  -- Eventos Premium SAC
 (3, NULL),  -- José Mendoza (persona)
-(NULL, 2),  -- Corporativo Los Andes
+(NULL, 2),  -- Corporativo Los Andes EIRL
 (4, NULL),  -- Ana Fernández (persona)
 (NULL, 3),  -- Celebraciones Especiales
 (8, NULL);  -- Robert Smith (extranjero)
 
--- 4. USUARIOS (Personal de la empresa)
+-- 4. USUARIOS
 INSERT INTO usuarios (idpersona, idcargo, nombreusuario, claveacceso, estado) VALUES 
-(5, 1, 'lvasquez', '1Vasque3', 1),    -- Luis Vásquez - Gerente
-(6, 2, 'pmorales', 'pM0rales', 1),    -- Patricia Morales - Coordinadora
-(7, 3, 'rjimenez', '4J1menez', 1),    -- Ricardo Jiménez - Técnico
-(9, 4, 'cgonzalez', '3Gon3ale3z', 1);   -- Carmen González - Fotógrafa
+(5, 1, 'lvasquez', '1Vasque3', 1),
+(6, 2, 'pmorales', 'pM0rales', 1),
+(7, 3, 'rjimenez', '4J1menez', 1),
+(9, 4, 'cgonzalez', '3Gon3ale3z', 1);
 
 INSERT INTO usuarios (idpersona, idcargo, nombreusuario, claveacceso, tipo_usuario, email, password_hash, estado) VALUES 
 (1, 1, 'admin', 'admin123', 'admin', 'admin@ishume.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 1);
@@ -299,85 +279,98 @@ INSERT INTO contratos (idcotizacion, idcliente, autorizapublicacion) VALUES
 (6, 6, 1),  -- Contrato boda Ana
 (7, 8, 0);  -- Contrato evento Robert
 
+-- 8. SERVICIOS CONTRATADOS - DATOS CONSISTENTES
 INSERT INTO servicioscontratados (idcotizacion, idservicio, cantidad, precio, fechahoraservicio, direccion) VALUES 
--- Servicios para cotización 7 (Evento Robert Smith) --  CAMBIO: 8 → 7
-(7, 2, 1, 1000.00, '2025-10-19 10:00:00', 'Salón Empresarial Pacífico - Av. La Marina 150, Miraflores'),
-(7, 1, 1, 850.00, '2025-10-20 16:30:00', 'Club de Campo La Pradera - Km 10 Carretera Central'),
-(7, 6, 1, 400.00, '2025-10-20 15:30:00', 'Club de Campo La Pradera - Km 10 Carretera Central'),
-
--- Servicios para cotización 1 (Boda Carlos García)
+-- Contrato 1 (Boda Carlos García) - TOTAL: 2800
 (1, 1, 1, 1600.00, '2025-11-08 15:00:00', 'Hacienda Los Olivos - Km 25 Panamericana Sur'),
 (1, 2, 1, 1200.00, '2025-11-08 14:00:00', 'Hacienda Los Olivos - Km 25 Panamericana Sur'),
 
--- Servicios para cotización 2 (Quinceañero María Rodríguez)
+-- Contrato 2 (Quinceañero María Rodríguez) - TOTAL: 1400
 (2, 1, 1, 800.00, '2025-12-05 19:00:00', 'Salón de Eventos El Dorado - Av. Principal 890, Chorrillos'),
 (2, 3, 1, 600.00, '2025-12-05 18:30:00', 'Salón de Eventos El Dorado - Av. Principal 890, Chorrillos'),
 
--- Servicios para cotización 3 (Evento Corporativo)
+-- Contrato 3 (Evento Corporativo) - TOTAL: 2500
 (3, 4, 1, 1500.00, '2025-11-20 09:00:00', 'Hotel Business Center - Jr. Ejecutivo 445, San Isidro'),
 (3, 2, 1, 1000.00, '2025-11-20 08:30:00', 'Hotel Business Center - Jr. Ejecutivo 445, San Isidro'),
 
--- Servicios para cotización 4 (Boda José Mendoza)
+-- Contrato 4 (Boda José Mendoza) - TOTAL: 1200
 (4, 1, 1, 800.00, '2026-01-10 16:00:00', 'Club Campestre Las Flores - Cieneguilla'),
 (4, 5, 1, 400.00, '2026-01-10 20:00:00', 'Club Campestre Las Flores - Cieneguilla'),
 
--- Servicios para cotización 5 (Conferencia)
+-- Contrato 5 (Conferencia) - TOTAL: 4000
 (5, 2, 2, 2000.00, '2025-11-28 08:00:00', 'Centro de Convenciones Lima - Av. Javier Prado 2500, San Borja'),
 
--- Servicios para cotización 6 (Boda Ana Fernández)
+-- Contrato 6 (Boda Ana Fernández) - TOTAL: 1150
 (6, 1, 1, 800.00, '2025-12-14 17:00:00', 'Casa Hacienda San José - Pachacamac'),
-(6, 6, 1, 350.00, '2025-12-14 16:00:00', 'Casa Hacienda San José - Pachacamac');
+(6, 6, 1, 350.00, '2025-12-14 16:00:00', 'Casa Hacienda San José - Pachacamac'),
 
+-- Contrato 7 (Evento Robert Smith) - TOTAL: 2250
+(7, 2, 1, 1000.00, '2025-10-19 10:00:00', 'Salón Empresarial Pacífico - Av. La Marina 150, Miraflores'),
+(7, 1, 1, 850.00, '2025-10-20 16:30:00', 'Club de Campo La Pradera - Km 10 Carretera Central'),
+(7, 6, 1, 400.00, '2025-10-20 15:30:00', 'Club de Campo La Pradera - Km 10 Carretera Central');
 
-
--- 9. CONTROL DE PAGOS
+-- 9. CONTROL DE PAGOS - DATOS CONSISTENTES
 INSERT INTO controlpagos (idcontrato, saldo, amortizacion, deuda, idtipopago, numtransaccion, fechahora, idusuario) VALUES 
--- Contrato 1 (Boda Carlos - Total: 2800)
+-- Contrato 1 (Boda Carlos - Total: 2800) - COMPLETAMENTE PAGADO
 (1, 2800.00, 1400.00, 1400.00, 2, 'TXN20240120001', '2025-01-20 10:30:00', 1),
-(1, 1400.00, 700.00, 700.00, 2, 'TXN20240210001', '2025-02-10 14:15:00', 1),
--- Contrato 2 (Quinceañero María - Total: 1400)
+(1, 1400.00, 1400.00, 0.00, 2, 'TXN20240210001', '2025-02-10 14:15:00', 1),
+
+-- Contrato 2 (Quinceañero María - Total: 1400) - COMPLETAMENTE PAGADO
 (2, 1400.00, 700.00, 700.00, 1, 'EFE20240125001', '2025-01-25 16:45:00', 2),
--- Contrato 3 (Evento Corporativo - Total: 2500)
+(2, 700.00, 700.00, 0.00, 2, 'TXN20240215001', '2025-02-15 11:20:00', 2),
+
+-- Contrato 3 (Evento Corporativo - Total: 2500) - COMPLETAMENTE PAGADO
 (3, 2500.00, 1250.00, 1250.00, 2, 'TXN20240201001', '2025-02-01 09:20:00', 1),
 (3, 1250.00, 1250.00, 0.00, 2, 'TXN20240225001', '2025-02-25 11:10:00', 1),
--- Contrato 4 (Boda José - Total: 1200)
+
+-- Contrato 4 (Boda José - Total: 1200) - PAGADO PARCIALMENTE
 (4, 1200.00, 600.00, 600.00, 5, 'YAPE20240205001', '2025-02-05 13:25:00', 2),
--- Contrato 5 (Conferencia - Total: 2000)
-(5, 2000.00, 1000.00, 1000.00, 3, 'TC20240208001', '2025-02-08 15:40:00', 1),
--- Contrato 6 (Boda Ana - Total: 1150)
+
+-- Contrato 5 (Conferencia - Total: 4000) - PAGADO PARCIALMENTE (DEBE 3000)
+(5, 4000.00, 1000.00, 3000.00, 3, 'TC20240208001', '2025-02-08 15:40:00', 1),
+
+-- Contrato 6 (Boda Ana - Total: 1150) - PAGADO PARCIALMENTE
 (6, 1150.00, 575.00, 575.00, 2, 'TXN20240212001', '2025-02-12 11:20:00', 3),
--- Contrato 7 (Evento Robert - Total: 1500)
-(7, 1500.00, 750.00, 750.00, 3, 'TC20240214001', '2025-02-14 16:30:00', 4);
 
--- 10. EQUIPOS (Personal asignado a servicios)
+-- Contrato 7 (Evento Robert - Total: 2250) - PAGADO PARCIALMENTE
+(7, 2250.00, 1125.00, 1125.00, 3, 'TC20240214001', '2025-02-14 16:30:00', 4);
+
+-- 10. EQUIPOS
 INSERT INTO equipos (idserviciocontratado, idusuario, descripcion, estadoservicio) VALUES 
--- Servicios de cotización 7 (Evento Robert Smith) - IDs 1, 2, 3
-(1, 2, 'Fotografía de eventos: cámaras profesionales, iluminación', 'Programado'),
-(2, 3, 'Sistema de sonido: mezcladora, micrófonos, parlantes', 'Programado'),
-(3, 1, 'Servicio de catering: menú premium, personal de servicio', 'Programado'),
+-- Servicios de cotización 1 (Boda Carlos García)
+(1, 3, 'Equipo de sonido: mezcladora Allen & Heath, micrófonos inalámbricos, parlantes JBL', 'Completado'),
+(2, 4, 'Cobertura fotográfica: Canon EOS R5, lentes 24-70mm, flash Godox', 'Completado'),
 
--- Servicios de cotización 1 (Boda Carlos García) - IDs 4, 5
-(4, 3, 'Equipo de sonido: mezcladora Allen & Heath, micrófonos inalámbricos, parlantes JBL', 'Completado'),
-(5, 4, 'Cobertura fotográfica: Canon EOS R5, lentes 24-70mm, flash Godox', 'Completado'),
+-- Servicios de cotización 2 (Quinceañero María)
+(3, 3, 'Sistema de audio: consola digital, micrófonos de corbata, parlantes activos', 'En Proceso'),
+(4, 1, 'Luces LED decorativas: panel RGB, controlador DMX, efectos laser', 'Pendiente'),
 
--- Servicios de cotización 2 (Quinceañero María) - IDs 6, 7
-(6, 3, 'Sistema de audio: consola digital, micrófonos de corbata, parlantes activos', 'En Proceso'),
-(7, 1, 'Luces LED decorativas: panel RGB, controlador DMX, efectos laser', 'Pendiente'),
+-- Servicios de cotización 3 (Evento Corporativo)
+(5, 2, 'Transmisión en vivo: cámaras 4K, encoder, plataforma streaming', 'Completado'),
+(6, 4, 'Fotografía corporativa: retratos ejecutivos, cobertura de presentaciones', 'Completado'),
 
--- Servicios de cotización 3 (Evento Corporativo) - IDs 8, 9
-(8, 2, 'Transmisión en vivo: cámaras 4K, encoder, plataforma streaming', 'Completado'),
-(9, 4, 'Fotografía corporativa: retratos ejecutivos, cobertura de presentaciones', 'Completado'),
+-- Servicios de cotización 4 (Boda José)
+(7, 3, 'Audio para ceremonia: sistema inalámbrico, altavoces discretos', 'Pendiente'),
+(8, 1, 'DJ profesional: controlador Pioneer, biblioteca musical, micrófonos', 'Pendiente'),
 
--- Servicios de cotización 4 (Boda José) - IDs 10, 11
-(10, 3, 'Audio para ceremonia: sistema inalámbrico, altavoces discretos', 'Pendiente'),
-(11, 1, 'DJ profesional: controlador Pioneer, biblioteca musical, micrófonos', 'Pendiente');
+-- Servicios de cotización 5 (Conferencia)
+(9, 4, 'Fotografía corporativa para conferencia', 'Programado'),
 
--- Lista de condiciones por tipo de contrato
+-- Servicios de cotización 6 (Boda Ana)
+(10, 3, 'Sistema de sonido para ceremonia exterior', 'Pendiente'),
+(11, 2, 'Servicio de catering premium', 'Pendiente'),
+
+-- Servicios de cotización 7 (Evento Robert Smith)
+(12, 4, 'Fotografía de eventos internacionales', 'Programado'),
+(13, 3, 'Sistema de sonido para evento empresarial', 'Programado'),
+(14, 1, 'Servicio de catering para ejecutivos', 'Programado');
+
+-- 11. LISTA DE CONDICIONES
 INSERT INTO listacondiciones (idcondicion, idtipocontrato) VALUES 
-(1, 1), (2, 1), (3, 1),  -- Evento único
-(1, 4), (4, 4),          -- Servicio corporativo
-(1, 3), (5, 3),          -- Contrato anual
-(2, 2), (3, 2);          -- Paquete mensual
+(1, 1), (2, 1), (3, 1),
+(1, 4), (4, 4),
+(1, 3), (5, 3),
+(2, 2), (3, 2);
 
 -- Pruebas
 -- Ver los miembros del equipo y su cargo
@@ -409,8 +402,6 @@ INNER JOIN personas p ON us.idpersona = p.idpersona
 WHERE us.idusuario = 4
 AND sc.fechahoraservicio BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL 7 DAY);
 
-
-ALTER TABLE equipos ADD COLUMN fecha_asignacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
 
 SELECT 
     u.nombreusuario,

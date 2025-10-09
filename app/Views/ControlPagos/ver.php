@@ -130,12 +130,12 @@
                                         </tr>
                                         <tr>
                                             <th>Total Pagado:</th>
-                                            <td class="text-success">S/ <?= number_format($info_contrato['monto_total'] - ($pago['deuda'] ?? 0), 2) ?></td>
+                                            <td class="text-success">S/ <?= number_format($info_contrato['monto_total'] - $pago['deuda'], 2) ?></td>
                                         </tr>
                                         <tr>
                                             <th>Estado Actual:</th>
                                             <td>
-                                                <?php if (($pago['deuda'] ?? 0) == 0): ?>
+                                                <?php if ($pago['deuda'] == 0): ?>
                                                     <span class="badge badge-success badge-3d">PAGADO COMPLETO</span>
                                                 <?php else: ?>
                                                     <span class="badge badge-warning badge-3d">PENDIENTE: S/ <?= number_format($pago['deuda'], 2) ?></span>

@@ -2,63 +2,84 @@
 <div class="page-inner">
     <div class="row">
         <div class="col-md-12">
-            <div class="card">
+            <div class="card card-3d animate__animated animate__fadeIn">
                 <div class="card-header">
-                    <div class="d-flex align-items-center">
-                        <h4 class="card-title">Pagos del Contrato #<?= $contrato['idcontrato'] ?></h4>
-                        <a href="<?= base_url('/controlpagos') ?>" class="btn btn-secondary btn-round ml-auto">
-                            <i class="fas fa-arrow-left mr-2"></i> Volver al Listado
-                        </a>
+                    <div class="d-flex align-items-center flex-column flex-md-row">
+                        <h4 class="card-title mb-2 mb-md-0">Pagos del Contrato #<?= $contrato['idcontrato'] ?></h4>
+                        <div class="ml-md-auto d-flex flex-wrap gap-2">
+                            <a href="<?= base_url('/controlpagos/crear?contrato=' . $contrato['idcontrato']) ?>" 
+                               class="btn btn-primary btn-sm">
+                                <i class="fas fa-plus mr-1"></i> Registrar Pago
+                            </a>
+                            <a href="<?= base_url('/controlpagos') ?>" class="btn btn-secondary btn-sm">
+                                <i class="fas fa-arrow-left mr-1"></i> Volver al Listado
+                            </a>
+                        </div>
                     </div>
                 </div>
                 <div class="card-body">
-                    <!-- Resumen del contrato -->
+                    <!-- Resumen del contrato mejorado -->
                     <div class="row mb-4">
-                        <div class="col-md-12">
-                            <div class="card card-info bg-info-gradient">
-                                <div class="card-body">
-                                    <h4 class="mb-3">Resumen del Contrato</h4>
-                                    <div class="row">
-                                        <div class="col-md-4">
-                                            <p><strong>Contrato #:</strong> <?= $contrato['idcontrato'] ?></p>
-                                            <p><strong>Cliente:</strong> 
-                                                <?= !empty($contrato['nombres']) ? 
-                                                    $contrato['nombres'] . ' ' . $contrato['apellidos'] : 
-                                                    $contrato['razonsocial'] ?>
-                                            </p>
+                        <div class="col-12">
+                            <div class="card card-info bg-gradient-info text-white">
+                                <div class="card-body p-3">
+                                    <div class="row align-items-center">
+                                        <div class="col-md-8">
+                                            <h4 class="mb-2">Resumen del Contrato #<?= $contrato['idcontrato'] ?></h4>
+                                            <div class="row">
+                                                <div class="col-sm-6 col-md-3 mb-2">
+                                                    <strong>Cliente:</strong><br>
+                                                    <?= !empty($contrato['nombres']) ? 
+                                                        $contrato['nombres'] . ' ' . $contrato['apellidos'] : 
+                                                        $contrato['razonsocial'] ?>
+                                                </div>
+                                                <div class="col-sm-6 col-md-3 mb-2">
+                                                    <strong>Monto Total:</strong><br>
+                                                    S/ <?= number_format($contrato['monto_total'], 2) ?>
+                                                </div>
+                                                <div class="col-sm-6 col-md-3 mb-2">
+                                                    <strong>Total Pagado:</strong><br>
+                                                    S/ <?= number_format($total_pagado, 2) ?>
+                                                </div>
+                                                <div class="col-sm-6 col-md-3 mb-2">
+                                                    <strong>Deuda Actual:</strong><br>
+                                                    <span class="badge badge-<?= $deuda_actual > 0 ? 'warning' : 'success' ?>">
+                                                        S/ <?= number_format($deuda_actual, 2) ?>
+                                                    </span>
+                                                </div>
+                                            </div>
                                         </div>
-                                        <div class="col-md-4">
-                                            <p><strong>Monto Total:</strong> S/ <?= number_format($contrato['monto_total'], 2) ?></p>
-                                            <p><strong>Total Pagado:</strong> S/ <?= number_format($total_pagado, 2) ?></p>
-                                        </div>
-                                        <div class="col-md-4">
-                                            <p><strong>Deuda Actual:</strong> 
-                                                <span class="badge badge-<?= $deuda_actual > 0 ? 'warning' : 'success' ?>">
-                                                    S/ <?= number_format($deuda_actual, 2) ?>
-                                                </span>
-                                            </p>
-                                            <p><strong>Estado:</strong> 
-                                                <span class="badge badge-<?= $deuda_actual > 0 ? 'warning' : 'success' ?>">
+                                        <div class="col-md-4 text-center">
+                                            <div class="status-indicator">
+                                                <h5 class="mb-1">Estado</h5>
+                                                <span class="badge badge-<?= $deuda_actual > 0 ? 'warning' : 'success' ?> badge-lg p-2">
                                                     <?= $deuda_actual > 0 ? 'PENDIENTE' : 'PAGADO COMPLETO' ?>
                                                 </span>
-                                            </p>
+                                            </div>
                                         </div>
                                     </div>
                                     
-                                    <!-- Barra de progreso -->
-                                    <div class="progress" style="height: 20px; margin-top: 15px;">
+                                    <!-- Barra de progreso mejorada -->
+                                    <div class="mt-3">
                                         <?php 
                                             $porcentaje = $contrato['monto_total'] > 0 ? 
                                                 (($total_pagado / $contrato['monto_total']) * 100) : 0;
+                                            $porcentaje = min($porcentaje, 100);
                                         ?>
-                                        <div class="progress-bar progress-bar-striped 
-                                                    <?= $porcentaje == 100 ? 'bg-success' : 'bg-info' ?>" 
-                                             role="progressbar" 
-                                             style="width: <?= $porcentaje ?>%;" 
-                                             aria-valuenow="<?= $porcentaje ?>" 
-                                             aria-valuemin="0" 
-                                             aria-valuemax="100">
-                                            <?= number_format($porcentaje, 2) ?>%
+                                        <div class="d-flex justify-content-between mb-1">
+                                            <small>Progreso de pago</small>
+                                            <small><?= number_format($porcentaje, 1) ?>%</small>
+                                        </div>
+                                        <div class="progress" style="height: 20px;">
+                                            <div class="progress-bar progress-bar-striped progress-bar-animated 
+                                                        <?= $porcentaje == 100 ? 'bg-success' : 'bg-info' ?>" 
+                                                 role="progressbar" 
+                                                 style="width: <?= $porcentaje ?>%;" 
+                                                 aria-valuenow="<?= $porcentaje ?>" 
+                                                 aria-valuemin="0" 
+                                                 aria-valuemax="100">
+                                                <?= number_format($porcentaje, 1) ?>%
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -66,18 +87,19 @@
                         </div>
                     </div>
 
-                    <!-- Lista de pagos -->
+                    <!-- Lista de pagos responsive -->
                     <div class="row">
-                        <div class="col-md-12">
+                        <div class="col-12">
                             <div class="card">
-                                <div class="card-header">
-                                    <h4 class="card-title">Historial de Pagos</h4>
+                                <div class="card-header d-flex justify-content-between align-items-center">
+                                    <h4 class="card-title mb-0">Historial de Pagos</h4>
+                                    <span class="badge badge-primary"><?= count($pagos) ?> pagos</span>
                                 </div>
                                 <div class="card-body">
                                     <?php if (!empty($pagos) && is_array($pagos)): ?>
                                         <div class="table-responsive">
-                                            <table class="table table-striped">
-                                                <thead>
+                                            <table class="table table-striped table-hover">
+                                                <thead class="thead-dark">
                                                     <tr>
                                                         <th>ID Pago</th>
                                                         <th>Fecha/Hora</th>
@@ -92,20 +114,30 @@
                                                 </thead>
                                                 <tbody>
                                                     <?php foreach ($pagos as $pago): ?>
-                                                        <tr>
-                                                            <td><?= $pago['idpagos'] ?></td>
-                                                            <td><?= date('d/m/Y H:i', strtotime($pago['fechahora'])) ?></td>
-                                                            <td><?= number_format($pago['saldo'], 2) ?></td>
-                                                            <td class="text-success"><?= number_format($pago['amortizacion'], 2) ?></td>
-                                                            <td class="<?= $pago['deuda'] > 0 ? 'text-warning' : 'text-success' ?>">
-                                                                <?= number_format($pago['deuda'], 2) ?>
+                                                        <tr class="<?= $pago['deuda'] == 0 ? 'table-success' : '' ?>">
+                                                            <td>
+                                                                <strong>#<?= $pago['idpagos'] ?></strong>
                                                             </td>
-                                                            <td><?= $pago['tipopago'] ?></td>
+                                                            <td><?= date('d/m/Y H:i', strtotime($pago['fechahora'])) ?></td>
+                                                            <td class="text-danger font-weight-bold">
+                                                                S/ <?= number_format($pago['saldo'], 2) ?>
+                                                            </td>
+                                                            <td class="text-success font-weight-bold">
+                                                                S/ <?= number_format($pago['amortizacion'], 2) ?>
+                                                            </td>
+                                                            <td class="<?= $pago['deuda'] > 0 ? 'text-warning' : 'text-success' ?> font-weight-bold">
+                                                                S/ <?= number_format($pago['deuda'], 2) ?>
+                                                            </td>
+                                                            <td>
+                                                                <span class="badge badge-info"><?= $pago['tipopago'] ?></span>
+                                                            </td>
                                                             <td><?= $pago['nombreusuario'] ?? 'N/A' ?></td>
                                                             <td>
                                                                 <?php if (!empty($pago['comprobante'])): ?>
                                                                     <a href="<?= base_url('/controlpagos/descargarComprobante/' . $pago['idpagos']) ?>" 
-                                                                       class="btn btn-sm btn-outline-info" title="Descargar comprobante">
+                                                                       class="btn btn-sm btn-outline-info" 
+                                                                       title="Descargar comprobante"
+                                                                       data-toggle="tooltip">
                                                                         <i class="fas fa-download"></i>
                                                                     </a>
                                                                 <?php else: ?>
@@ -113,15 +145,15 @@
                                                                 <?php endif; ?>
                                                             </td>
                                                             <td>
-                                                                <div class="form-button-action">
+                                                                <div class="btn-group btn-group-sm" role="group">
                                                                     <a href="<?= base_url('/controlpagos/ver/' . $pago['idpagos']) ?>" 
-                                                                       class="btn btn-link btn-primary btn-lg" 
+                                                                       class="btn btn-primary" 
                                                                        data-toggle="tooltip" 
                                                                        title="Ver detalles">
                                                                         <i class="fa fa-eye"></i>
                                                                     </a>
                                                                     <a href="<?= base_url('/controlpagos/generarVoucher/' . $pago['idpagos']) ?>" 
-                                                                       class="btn btn-link btn-info btn-lg" 
+                                                                       class="btn btn-info" 
                                                                        data-toggle="tooltip" 
                                                                        title="Generar voucher"
                                                                        target="_blank">
@@ -135,11 +167,12 @@
                                             </table>
                                         </div>
                                     <?php else: ?>
-                                        <div class="alert alert-info text-center">
-                                            <i class="fas fa-info-circle fa-2x mb-3"></i>
-                                            <h5>No se han registrado pagos para este contrato</h5>
-                                            <p>Puede registrar el primer pago haciendo clic en el botón "Registrar Pago"</p>
-                                            <a href="<?= base_url('/controlpagos/crear') ?>" class="btn btn-primary mt-3">
+                                        <div class="text-center py-5">
+                                            <i class="fas fa-receipt fa-4x text-muted mb-3"></i>
+                                            <h5 class="text-muted">No se han registrado pagos para este contrato</h5>
+                                            <p class="text-muted mb-4">Puede registrar el primer pago haciendo clic en el botón "Registrar Pago"</p>
+                                            <a href="<?= base_url('/controlpagos/crear?contrato=' . $contrato['idcontrato']) ?>" 
+                                               class="btn btn-primary btn-lg">
                                                 <i class="fas fa-plus mr-2"></i> Registrar Primer Pago
                                             </a>
                                         </div>
@@ -149,26 +182,26 @@
                         </div>
                     </div>
 
-                    <!-- Estadísticas de pagos -->
+                    <!-- Estadísticas de pagos (solo si hay pagos) -->
                     <?php if (!empty($pagos)): ?>
                     <div class="row mt-4">
-                        <div class="col-md-6">
-                            <div class="card">
+                        <div class="col-md-6 mb-3 mb-md-0">
+                            <div class="card card-3d">
                                 <div class="card-header">
-                                    <h4 class="card-title">Resumen de Pagos</h4>
+                                    <h4 class="card-title">Evolución de Pagos</h4>
                                 </div>
                                 <div class="card-body">
-                                    <canvas id="pagosChart" width="400" height="200"></canvas>
+                                    <canvas id="pagosChart" width="400" height="250"></canvas>
                                 </div>
                             </div>
                         </div>
                         <div class="col-md-6">
-                            <div class="card">
+                            <div class="card card-3d">
                                 <div class="card-header">
                                     <h4 class="card-title">Distribución por Tipo de Pago</h4>
                                 </div>
                                 <div class="card-body">
-                                    <canvas id="tipoPagoChart" width="400" height="200"></canvas>
+                                    <canvas id="tipoPagoChart" width="400" height="250"></canvas>
                                 </div>
                             </div>
                         </div>
@@ -186,6 +219,9 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
 $(document).ready(function() {
+    // Inicializar tooltips
+    $('[data-toggle="tooltip"]').tooltip();
+
     // Datos para los gráficos
     var fechas = <?= json_encode(array_map(function($pago) {
         return date('d/m/Y', strtotime($pago['fechahora']));
@@ -220,30 +256,44 @@ $(document).ready(function() {
                     data: amortizaciones,
                     borderColor: 'rgb(75, 192, 192)',
                     backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                    borderWidth: 2,
                     fill: true,
-                    tension: 0.1
+                    tension: 0.4
                 },
                 {
                     label: 'Deuda (S/)',
                     data: deudas,
                     borderColor: 'rgb(255, 99, 132)',
                     backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                    borderWidth: 2,
                     fill: true,
-                    tension: 0.1
+                    tension: 0.4
                 }
             ]
         },
         options: {
             responsive: true,
+            maintainAspectRatio: false,
             plugins: {
                 title: {
                     display: true,
-                    text: 'Evolución de Pagos y Deuda'
+                    text: 'Evolución de Pagos y Deuda',
+                    font: {
+                        size: 16
+                    }
+                },
+                legend: {
+                    position: 'top',
                 }
             },
             scales: {
                 y: {
-                    beginAtZero: true
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value) {
+                            return 'S/ ' + value.toLocaleString('es-PE');
+                        }
+                    }
                 }
             }
         }
@@ -252,7 +302,7 @@ $(document).ready(function() {
     // Gráfico de tipos de pago
     var ctxTipoPago = document.getElementById('tipoPagoChart').getContext('2d');
     var tipoPagoChart = new Chart(ctxTipoPago, {
-        type: 'pie',
+        type: 'doughnut',
         data: {
             labels: Object.keys(tiposPago),
             datasets: [{
@@ -262,19 +312,36 @@ $(document).ready(function() {
                     'rgb(54, 162, 235)',
                     'rgb(255, 205, 86)',
                     'rgb(75, 192, 192)',
-                    'rgb(153, 102, 255)'
-                ]
+                    'rgb(153, 102, 255)',
+                    'rgb(201, 203, 207)'
+                ],
+                borderWidth: 2
             }]
         },
         options: {
             responsive: true,
+            maintainAspectRatio: false,
             plugins: {
                 legend: {
                     position: 'right',
                 },
                 title: {
                     display: true,
-                    text: 'Distribución por Tipo de Pago'
+                    text: 'Distribución por Tipo de Pago',
+                    font: {
+                        size: 16
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            var label = context.label || '';
+                            var value = context.raw || 0;
+                            var total = context.dataset.data.reduce((a, b) => a + b, 0);
+                            var percentage = Math.round((value / total) * 100);
+                            return label + ': S/ ' + value.toLocaleString('es-PE') + ' (' + percentage + '%)';
+                        }
+                    }
                 }
             }
         }
@@ -282,3 +349,54 @@ $(document).ready(function() {
 });
 </script>
 <?php endif; ?>
+
+<style>
+.card-3d {
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    border: 1px solid #e3e6f0;
+    border-radius: 10px;
+}
+.status-indicator {
+    background: rgba(255,255,255,0.2);
+    padding: 15px;
+    border-radius: 8px;
+    backdrop-filter: blur(10px);
+}
+.badge-lg {
+    font-size: 1rem;
+    padding: 8px 16px;
+}
+.progress {
+    border-radius: 10px;
+    overflow: hidden;
+}
+.progress-bar {
+    font-weight: bold;
+}
+.table-responsive {
+    border-radius: 8px;
+    overflow: hidden;
+}
+.btn-group .btn {
+    border-radius: 4px;
+}
+@media (max-width: 768px) {
+    .card-header .d-flex {
+        flex-direction: column;
+        align-items: flex-start !important;
+    }
+    .card-header .ml-md-auto {
+        margin-left: 0 !important;
+        margin-top: 10px;
+        width: 100%;
+    }
+    .btn-group {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
+    .btn-group .btn {
+        margin-bottom: 2px;
+    }
+}
+</style>

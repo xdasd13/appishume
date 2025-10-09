@@ -165,7 +165,7 @@ class EntregasModel extends Model
 
     public function obtenerContratosConEstadoPago()
     {
-        // Esta consulta es más directa para verificar el estado de pago
+        // Consulta mejorada y consistente
         $builder = $this->db->table('contratos c');
         $builder->select('
             c.idcontrato, c.idcotizacion,
@@ -196,8 +196,8 @@ class EntregasModel extends Model
             
             $contrato['deuda_actual'] = $montoTotal - $montoPagado;
             
-            // Tolerancia más amplia para evitar problemas de redondeo
-            if ($contrato['deuda_actual'] < 0.1) {
+            // Tolerancia para evitar problemas de redondeo
+            if ($contrato['deuda_actual'] < 0.01) {
                 $contrato['deuda_actual'] = 0;
             }
             
@@ -207,7 +207,6 @@ class EntregasModel extends Model
             $totalServicios = intval($contrato['total_servicios'] ?? 0);
             
             // Verificar si todos los servicios están completados
-            // Un servicio está completado cuando tiene una entrega registrada y completada
             if ($totalServicios > 0 && $totalServicios == $entregasCompletadas) {
                 $contrato['todos_servicios_completados'] = true;
                 $contrato['estado_entregas'] = 'Entregas completadas';
@@ -219,8 +218,12 @@ class EntregasModel extends Model
                 $contrato['estado_entregas'] = 'Sin entregas';
             }
             
-            // Debug: Log para verificar cálculos
-            log_message('debug', "Contrato {$contrato['idcontrato']}: Total={$montoTotal}, Pagado={$montoPagado}, Deuda={$contrato['deuda_actual']}");
+            // Estado del pago para mostrar en la interfaz
+            if ($contrato['deuda_actual'] <= 0.01) {
+                $contrato['estado_pago'] = 'pagado';
+            } else {
+                $contrato['estado_pago'] = 'pendiente';
+            }
         }
 
         return $contratos;
@@ -257,7 +260,7 @@ class EntregasModel extends Model
             $totalEntregas = intval($contrato['total_entregas']);
             
             // Solo incluir si está pagado Y tiene entregas pendientes
-            if ($deuda < 0.1 && $totalServicios > $totalEntregas) { // Tolerancia para redondeo
+            if ($deuda < 0.01 && $totalServicios > $totalEntregas) {
                 $contrato['deuda_actual'] = 0;
                 $contrato['entregas_pendientes'] = $totalServicios - $totalEntregas;
                 $contratosPagados[] = $contrato;

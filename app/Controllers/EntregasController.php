@@ -13,13 +13,57 @@ class EntregasController extends BaseController
         $this->entregasModel = new EntregasModel();
     }
 
-    // Listado principal de contratos y entregas
+    // Listado principal de contratos y entregas - CORREGIDO
     public function index()
     {
         $datos['contratos'] = $this->entregasModel->obtenerContratosConEstadoPago();
+        
+        // Calcular estadísticas para las tarjetas
+        $datos['estadisticas'] = $this->calcularEstadisticasEntregas($datos['contratos']);
+        
         $datos['header'] = view('Layouts/header');
         $datos['footer'] = view('Layouts/footer');
         return view('entregas/listar', $datos);
+    }
+
+    // Método para calcular estadísticas de entregas
+    private function calcularEstadisticasEntregas($contratos)
+    {
+        $estadisticas = [
+            'total_contratos' => count($contratos),
+            'contratos_pagados' => 0,
+            'pendientes_entrega' => 0,
+            'entregas_completadas' => 0,
+            'total_servicios' => 0,
+            'servicios_entregados' => 0
+        ];
+
+        foreach ($contratos as $contrato) {
+            // Contar contratos pagados
+            if (($contrato['deuda_actual'] ?? 0) <= 0.01) {
+                $estadisticas['contratos_pagados']++;
+            }
+            
+            // Contar entregas pendientes
+            $totalServicios = intval($contrato['total_servicios'] ?? 0);
+            $entregasCompletadas = intval($contrato['entregas_completadas'] ?? 0);
+            $entregasPendientes = $totalServicios - $entregasCompletadas;
+            
+            if ($entregasPendientes > 0) {
+                $estadisticas['pendientes_entrega']++;
+            }
+            
+            // Acumular totales
+            $estadisticas['total_servicios'] += $totalServicios;
+            $estadisticas['servicios_entregados'] += $entregasCompletadas;
+            
+            // Si todos los servicios están entregados
+            if ($totalServicios > 0 && $totalServicios == $entregasCompletadas) {
+                $estadisticas['entregas_completadas']++;
+            }
+        }
+
+        return $estadisticas;
     }
 
     // Página para crear nueva entrega (solo contratos pagados)
