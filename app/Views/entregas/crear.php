@@ -50,7 +50,7 @@
                                     <?= substr($usuario_actual, 0, 1) ?>
                                 </div>
                                 <div>
-                                    <h6 class="mb-0">Usuario que realizará la entrega: <strong><?= $usuario_actual ?></strong></h6>
+                                    <h6 class="mb-0">Usuario que realizará la Entrega: <strong><?= $usuario_actual ?></strong></h6>
                                     <small>La entrega quedará registrada a nombre del usuario actualmente conectado</small>
                                 </div>
                             </div>
