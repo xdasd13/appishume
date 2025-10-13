@@ -238,19 +238,19 @@
               </a>
               <div class="collapse" id="entregas">
                 <ul class="nav nav-collapse">
-                <li>
-                    <a href="<?= base_url('/entregas/crear') ?>">
-                      <span class="sub-item">Crear Entrega</span>
-                    </a>
-                  </li>
                   <li>
                     <a href="<?= base_url('/entregas') ?>">
                       <span class="sub-item">Lista de Entregas</span>
                     </a>
                   </li>
                   <li>
+                    <a href="<?= base_url('/entregas/crear') ?>">
+                      <span class="sub-item">Crear Entrega</span>
+                    </a>
+                  </li>
+                  <li>
                     <a href="<?= base_url('/entregas/historial') ?>">
-                      <span class="sub-item">Entregas completadas</span>
+                      <span class="sub-item">Entregas Completadas</span>
                     </a>
                   </li>
                 </ul>
