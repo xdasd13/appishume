@@ -95,12 +95,9 @@ $routes->group('', ['filter' => 'auth'], function($routes) {
     $routes->post('entregas/actualizar/(:num)', 'EntregasController::actualizar/$1');
     $routes->get('entregas/eliminar/(:num)', 'EntregasController::eliminar/$1');
     $routes->get('entregas/ver/(:num)', 'EntregasController::ver/$1');
-    $routes->get('entregas/pendientes', 'EntregasController::pendientes');
     $routes->get('entregas/obtenerServiciosPorContrato/(:num)', 'EntregasController::obtenerServiciosPorContrato/$1');
-    $routes->get('entregas/vista-previa-contrato/(:num)', 'EntregasController::vistaPreviaContrato/$1');
     $routes->get('entregas/historial', 'EntregasController::historial');
     $routes->get('entregas/imprimir/(:num)', 'EntregasController::imprimir/$1');
-    $routes->get('entregas/marcarCompletada/(:num)', 'EntregasController::marcarCompletada/$1');
 });
 
 // ==================== RUTAS ADMINISTRATIVAS ADICIONALES ====================
@@ -126,6 +123,12 @@ $routes->group('', ['filter' => 'admin'], function($routes) {
     $routes->get('inventario/ver/(:num)', 'InventarioController::ver/$1');
     $routes->get('inventario/buscar', 'InventarioController::buscar');
     $routes->get('inventario/estadisticas', 'InventarioController::estadisticas');
+    
+    // Sistema de Reportes Dinámicos (solo administradores)
+    $routes->get('reportes', 'ReportesController::index');
+    $routes->post('reportes/generar', 'ReportesController::generar');
+    $routes->post('reportes/exportarPDF', 'ReportesController::exportarPDF');
+    $routes->post('reportes/exportarExcel', 'ReportesController::exportarExcel');
 });
 
 

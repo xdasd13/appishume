@@ -50,6 +50,10 @@
   <link rel="stylesheet" href="<?= base_url() . '/assets/css/plugins.min.css' ?>" />
   <link rel="stylesheet" href="<?= base_url() . '/assets/css/kaiadmin.min.css' ?>" />
   <link rel="stylesheet" href="<?= base_url() . 'assets/css/demo.css' ?>" />
+  
+  <!-- jQuery -->
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 
 <body>
@@ -234,14 +238,19 @@
               </a>
               <div class="collapse" id="entregas">
                 <ul class="nav nav-collapse">
+                <li>
+                    <a href="<?= base_url('/entregas/crear') ?>">
+                      <span class="sub-item">Crear Entrega</span>
+                    </a>
+                  </li>
                   <li>
                     <a href="<?= base_url('/entregas') ?>">
                       <span class="sub-item">Lista de Entregas</span>
                     </a>
                   </li>
                   <li>
-                    <a href="<?= base_url('/entregas/pendientes') ?>">
-                      <span class="sub-item">Entrega Pendientes</span>
+                    <a href="<?= base_url('/entregas/historial') ?>">
+                      <span class="sub-item">Entregas completadas</span>
                     </a>
                   </li>
                 </ul>
@@ -280,14 +289,10 @@
                       <span class="sub-item">Pagos Pendientes</span>
                     </a>
                   </li>
-                  <li>
-                    <a href="<?= base_url('/reportes/financieros') ?>">
-                      <span class="sub-item">Reportes Financieros</span>
-                    </a>
-                  </li>
                 </ul>
               </div>
             </li>
+
 
             <!-- Separador -->
             <li class="nav-section">
@@ -350,24 +355,9 @@
               <div class="collapse" id="reportes">
                 <ul class="nav nav-collapse">
                   <li>
-                    <a href="<?= base_url('/reportes/proyectos') ?>">
-                      <span class="sub-item">Reporte de Proyectos</span>
-                    </a>
-                  </li>
-                  <li>
-                    <a href="<?= base_url('/reportes/clientes') ?>">
-                      <span class="sub-item">Reporte de Clientes</span>
-                    </a>
-                  </li>
-                  <li>
-                    <a href="<?= base_url('/reportes/servicios') ?>">
-                      <span class="sub-item">Reporte de Servicios</span>
-                    </a>
-                  </li>
-                  <li>
-                    <a href="<?= base_url('/reportes/financiero') ?>">
-                      <span class="sub-item">Reporte Financiero</span>
-                    </a>
+                    <a href="<?= base_url('/reportes') ?>">
+                      <span class="sub-item">Reportes Dinámicos</span>
+                    </a>  
                   </li>
                 </ul>
               </div>
@@ -492,23 +482,7 @@
                             <span class="text">Cotización</span>
                           </div>
                         </a>
-                        <a class="col-6 col-md-4 p-0" href="<?= base_url('/clientes/nuevo') ?>">
-                          <div class="quick-actions-item">
-                            <div class="avatar-item bg-success rounded-circle">
-                              <i class="fas fa-user-plus"></i>
-                            </div>
-                            <span class="text">Cliente</span>
-                          </div>
-                        </a>
-                        <a class="col-6 col-md-4 p-0" href="<?= base_url('/servicios/nuevo') ?>">
-                          <div class="quick-actions-item">
-                            <div class="avatar-item bg-info rounded-circle">
-                              <i class="fas fa-briefcase"></i>
-                            </div>
-                            <span class="text">Servicio</span>
-                          </div>
-                        </a>
-                        <a class="col-6 col-md-4 p-0" href="<?= base_url('/controlpagos') ?>">
+                        <a class="col-6 col-md-4 p-0" href="<?= base_url('/controlpagos/crear') ?>">
                           <div class="quick-actions-item">
                             <div class="avatar-item bg-warning rounded-circle">
                               <i class="fas fa-dollar-sign"></i>
@@ -516,20 +490,12 @@
                             <span class="text">Pago</span>
                           </div>
                         </a>
-                        <a class="col-6 col-md-4 p-0" href="<?= base_url('/entregas') ?>">
+                        <a class="col-6 col-md-4 p-0" href="<?= base_url('/entregas/crear') ?>">
                           <div class="quick-actions-item">
                             <div class="avatar-item bg-danger rounded-circle">
                               <i class="fas fa-truck"></i>
                             </div>
                             <span class="text">Entrega</span>
-                          </div>
-                        </a>
-                        <a class="col-6 col-md-4 p-0" href="<?= base_url('/reportes') ?>">
-                          <div class="quick-actions-item">
-                            <div class="avatar-item bg-secondary rounded-circle">
-                              <i class="fas fa-chart-bar"></i>
-                            </div>
-                            <span class="text">Reporte</span>
                           </div>
                         </a>
                       </div>

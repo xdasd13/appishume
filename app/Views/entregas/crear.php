@@ -14,29 +14,33 @@
                         </div>
                     </div>
                     <div class="card-body">
-                        <?php if (session('errors')): ?>
-                            <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                                <i class="fas fa-exclamation-triangle mr-2"></i>
-                                <strong>Error de validación:</strong>
-                                <ul class="mb-0 mt-2">
-                                    <?php foreach (session('errors') as $error): ?>
-                                        <li><?= $error ?></li>
-                                    <?php endforeach; ?>
-                                </ul>
-                                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                                    <span aria-hidden="true">&times;</span>
-                                </button>
-                            </div>
+                        <!-- Notificaciones con SweetAlert2 -->
+                        <?php if (session()->getFlashdata('success')): ?>
+                            <script>
+                                document.addEventListener('DOMContentLoaded', function() {
+                                    Swal.fire({
+                                        icon: 'success',
+                                        title: '¡Éxito!',
+                                        text: '<?= addslashes(session()->getFlashdata('success')) ?>',
+                                        confirmButtonColor: '#28a745',
+                                        timer: 4000,
+                                        timerProgressBar: true
+                                    });
+                                });
+                            </script>
                         <?php endif; ?>
                         
-                        <?php if (session('error')): ?>
-                            <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                                <i class="fas fa-exclamation-circle mr-2"></i>
-                                <?= session('error') ?>
-                                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                                    <span aria-hidden="true">&times;</span>
-                                </button>
-                            </div>
+                        <?php if (session()->getFlashdata('error')): ?>
+                            <script>
+                                document.addEventListener('DOMContentLoaded', function() {
+                                    Swal.fire({
+                                        icon: 'error',
+                                        title: 'Error',
+                                        text: '<?= addslashes(session()->getFlashdata('error')) ?>',
+                                        confirmButtonColor: '#dc3545'
+                                    });
+                                });
+                            </script>
                         <?php endif; ?>
 
                         <!-- Tarjeta con información del usuario actual que realizará la entrega -->
@@ -342,7 +346,7 @@ $(document).ready(function() {
                 minlength: "Debe describir mínimo 10 caracteres"
             },
             comprobante_entrega: {
-                required: "Por favor seleccione un comprobante PDF"
+                required: "El comprobante de entrega es obligatorio"
             }
         },
         errorElement: 'span',
@@ -361,6 +365,22 @@ $(document).ready(function() {
             var $submitBtn = $('#btn-registrar');
             if ($submitBtn.hasClass('btn-processing')) {
                 return false;
+            }
+            
+            // Verificar si hay comprobante antes de enviar
+            var comprobante = $('#comprobante_entrega').val();
+            if (!comprobante || comprobante === '') {
+                // Mostrar SweetAlert de advertencia
+                Swal.fire({
+                    title: 'Comprobante Obligatorio',
+                    text: 'Debe seleccionar un archivo PDF como comprobante de entrega.',
+                    icon: 'warning',
+                    confirmButtonText: 'Entendido',
+                    confirmButtonColor: '#dc3545',
+                    allowOutsideClick: false
+                });
+                
+                return false; // Prevenir envío del formulario
             }
             
             $submitBtn.addClass('btn-processing').html('<i class="fas fa-spinner fa-spin mr-2"></i>Procesando...');

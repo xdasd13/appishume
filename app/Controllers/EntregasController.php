@@ -128,16 +128,22 @@ class EntregasController extends BaseController
             $personaId = $result['idpersona'] ?? null;
         }
 
-        $validation = \Config\Services::validation();
-        $validation->setRules([
+        // Validar los datos del formulario
+        $reglas = [
             'idcontrato' => 'required|numeric',
             'idserviciocontratado' => 'required|numeric|is_not_unique[servicioscontratados.idserviciocontratado]',
             'observaciones' => 'required|min_length[10]',
             'comprobante_entrega' => 'uploaded[comprobante_entrega]|max_size[comprobante_entrega,5120]|ext_in[comprobante_entrega,pdf]'
-        ]);
+        ];
 
-        if (!$validation->withRequest($this->request)->run()) {
-            return redirect()->back()->withInput()->with('errors', $validation->getErrors());
+        if (!$this->validate($reglas)) {
+            $errors = $this->validator->getErrors();
+            $errorMessage = 'Por favor, corrija los siguientes errores:<br><ul>';
+            foreach ($errors as $field => $error) {
+                $errorMessage .= '<li>' . $error . '</li>';
+            }
+            $errorMessage .= '</ul>';
+            return redirect()->back()->withInput()->with('error', $errorMessage);
         }
 
         $comprobante = $this->request->getFile('comprobante_entrega');
@@ -223,13 +229,6 @@ class EntregasController extends BaseController
         }
     }
 
-    public function pendientes()
-    {
-        $datos['entregas'] = $this->entregasModel->obtenerEntregasPendientes();
-        $datos['header'] = view('Layouts/header');
-        $datos['footer'] = view('Layouts/footer');
-        return view('entregas/pendientes', $datos);
-    }
 
     public function ver($id)
     {
@@ -328,135 +327,5 @@ class EntregasController extends BaseController
         return view('entregas/completadas', $datos);
     }
 
-    public function marcarCompletada($id)
-    {
-        $entrega = $this->entregasModel->find($id);
-        if (!$entrega) {
-            return redirect()->to('entregas/completadas')->with('error', 'Entrega no encontrada');
-        }
 
-        $data = [
-            'estado' => 'completada',
-            'fecha_real_entrega' => date('Y-m-d H:i:s')
-        ];
-
-        if ($this->entregasModel->update($id, $data)) {
-            return redirect()->to('entregas/ver/' . $id)->with('success', 'Entrega marcada como completada');
-        } else {
-            return redirect()->to('entregas/ver/' . $id)->with('error', 'Error al actualizar el estado de la entrega');
-        }
-    }
-
-    // Método para generar vista previa del PDF del contrato
-    public function vistaPreviaContrato($idcontrato)
-    {
-        if (!session()->get('usuario_logueado')) {
-            return redirect()->to('/login')->with('error', 'Acceso denegado.');
-        }
-
-        // Obtener información completa del contrato
-        $db = db_connect();
-        
-        // Obtener información básica del contrato
-        $contratoQuery = $db->query("
-            SELECT 
-                c.idcontrato,
-                c.idcotizacion,
-                co.fechacotizacion,
-                co.fechaevento,
-                te.evento as tipo_evento,
-                cl.idcliente,
-                CASE 
-                    WHEN cl.idempresa IS NOT NULL THEN emp.razonsocial
-                    WHEN cl.idpersona IS NOT NULL THEN CONCAT(p.nombres, ' ', p.apellidos)
-                    ELSE 'Cliente no identificado'
-                END as cliente_nombre,
-                CASE 
-                    WHEN cl.idempresa IS NOT NULL THEN emp.ruc
-                    WHEN cl.idpersona IS NOT NULL THEN p.numerodoc
-                    ELSE ''
-                END as cliente_documento,
-                CASE 
-                    WHEN cl.idempresa IS NOT NULL THEN emp.direccion
-                    WHEN cl.idpersona IS NOT NULL THEN p.direccion
-                    ELSE ''
-                END as cliente_direccion,
-                CASE 
-                    WHEN cl.idempresa IS NOT NULL THEN emp.telefono
-                    WHEN cl.idpersona IS NOT NULL THEN p.telprincipal
-                    ELSE ''
-                END as cliente_telefono,
-                CASE 
-                    WHEN cl.idempresa IS NOT NULL THEN emp.email
-                    WHEN cl.idpersona IS NOT NULL THEN p.email
-                    ELSE ''
-                END as cliente_email
-            FROM contratos c
-            JOIN cotizaciones co ON co.idcotizacion = c.idcotizacion
-            JOIN clientes cl ON cl.idcliente = c.idcliente
-            LEFT JOIN personas p ON p.idpersona = cl.idpersona
-            LEFT JOIN empresas emp ON emp.idempresa = cl.idempresa
-            LEFT JOIN tipoeventos te ON te.idtipoevento = co.idtipoevento
-            WHERE c.idcontrato = ?
-        ", [$idcontrato]);
-
-        if ($contratoQuery->getNumRows() == 0) {
-            return redirect()->to('entregas')->with('error', 'Contrato no encontrado');
-        }
-
-        $datos['contrato'] = $contratoQuery->getRowArray();
-
-        // Obtener servicios del contrato
-        $serviciosQuery = $db->query("
-            SELECT 
-                s.servicio,
-                s.descripcion,
-                sc.cantidad,
-                sc.precio,
-                (sc.cantidad * sc.precio) as subtotal,
-                sc.fechahoraservicio,
-                sc.direccion as direccion_servicio
-            FROM servicioscontratados sc
-            JOIN servicios s ON s.idservicio = sc.idservicio
-            WHERE sc.idcotizacion = ?
-            ORDER BY s.servicio
-        ", [$datos['contrato']['idcotizacion']]);
-
-        $datos['servicios'] = $serviciosQuery->getResultArray();
-
-        // Calcular totales
-        $datos['subtotal'] = array_sum(array_column($datos['servicios'], 'subtotal'));
-        $datos['igv'] = $datos['subtotal'] * 0.18; // 18% IGV
-        $datos['total'] = $datos['subtotal'] + $datos['igv'];
-
-        // Obtener información de pagos
-        $pagosQuery = $db->query("
-            SELECT 
-                cp.amortizacion,
-                cp.fechahora,
-                tp.tipopago
-            FROM controlpagos cp
-            LEFT JOIN tipospago tp ON tp.idtipopago = cp.idtipopago
-            WHERE cp.idcontrato = ?
-            ORDER BY cp.fechahora ASC
-        ", [$idcontrato]);
-
-        $datos['pagos'] = $pagosQuery->getResultArray();
-        $datos['total_pagado'] = array_sum(array_column($datos['pagos'], 'amortizacion'));
-        $datos['saldo_pendiente'] = $datos['total'] - $datos['total_pagado'];
-
-        // Información de la empresa
-        $datos['empresa'] = [
-            'nombre' => 'APISHUME EVENTOS',
-            'ruc' => '20123456789',
-            'direccion' => 'Av. Principal 123, Lima, Perú',
-            'telefono' => '+51 1 234 5678',
-            'email' => 'info@apishume.com'
-        ];
-
-        $datos['header'] = view('Layouts/header');
-        $datos['footer'] = view('Layouts/footer');
-
-        return view('entregas/vista_previa_contrato', $datos);
-    }
 }
