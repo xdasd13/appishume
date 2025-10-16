@@ -6,18 +6,21 @@ use App\Models\UsuarioModel;
 use App\Models\PersonaModel;
 use App\Models\CargoModel;
 use App\Libraries\ReniecService;
+use App\Services\PhoneValidationService;
 
 class UsuariosController extends BaseController
 {
     protected $usuarioModel;
     protected $personaModel;
     protected $cargoModel;
+    protected $phoneValidationService;
     
     public function __construct()
     {
         $this->usuarioModel = new UsuarioModel();
         $this->personaModel = new PersonaModel();
         $this->cargoModel = new CargoModel();
+        $this->phoneValidationService = new PhoneValidationService();
     }
         
     // Listar usuarios
@@ -882,6 +885,141 @@ class UsuariosController extends BaseController
             return $this->response->setJSON([
                 'success' => false,
                 'message' => 'Error interno del servidor: ' . $e->getMessage()
+            ]);
+        }
+    }
+
+    /**
+     * Validar número de teléfono via AJAX
+     */
+    public function validarTelefono()
+    {
+        // Verificar que sea una petición AJAX
+        if (!$this->request->isAJAX()) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'Solicitud no válida'
+            ]);
+        }
+
+        $phoneNumber = $this->request->getPost('telefono');
+        $countryCode = $this->request->getPost('pais') ?: 'PE'; // Por defecto Perú
+
+        if (empty($phoneNumber)) {
+            return $this->response->setJSON([
+                'success' => false,
+                'valid' => false,
+                'message' => 'Número de teléfono requerido'
+            ]);
+        }
+
+        try {
+            // Validar el número usando el servicio
+            $result = $this->phoneValidationService->validatePhoneNumber($phoneNumber, $countryCode);
+
+            // Log para debug
+            log_message('info', 'Resultado de validación de teléfono: ' . json_encode($result));
+
+            if ($result['success']) {
+                if ($result['valid']) {
+                    return $this->response->setJSON([
+                        'success' => true,
+                        'valid' => true,
+                        'message' => 'Número de teléfono válido',
+                        'data' => [
+                            'formatted_number' => $result['international_format'],
+                            'country' => $result['country_name'],
+                            'carrier' => $result['carrier'],
+                            'line_type' => $result['line_type'],
+                            'location' => $result['location']
+                        ],
+                        'debug' => $result // Agregar debug info
+                    ]);
+                } else {
+                    return $this->response->setJSON([
+                        'success' => true,
+                        'valid' => false,
+                        'message' => 'Número de teléfono no válido',
+                        'debug' => $result // Agregar debug info
+                    ]);
+                }
+            } else {
+                return $this->response->setJSON([
+                    'success' => false,
+                    'valid' => false,
+                    'message' => 'Error al validar: ' . ($result['error'] ?? 'Error desconocido'),
+                    'debug' => $result // Agregar debug info
+                ]);
+            }
+
+        } catch (\Exception $e) {
+            return $this->response->setJSON([
+                'success' => false,
+                'valid' => false,
+                'message' => 'Error del servidor: ' . $e->getMessage()
+            ]);
+        }
+    }
+
+    /**
+     * Obtener información de un número de teléfono
+     */
+    public function infoTelefono()
+    {
+        if (!$this->request->isAJAX()) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'Solicitud no válida'
+            ]);
+        }
+
+        $phoneNumber = $this->request->getPost('telefono');
+        
+        if (empty($phoneNumber)) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'Número de teléfono requerido'
+            ]);
+        }
+
+        $result = $this->phoneValidationService->validatePhoneNumber($phoneNumber, 'PE');
+
+        if ($result['success'] && $result['valid']) {
+            return $this->response->setJSON([
+                'success' => true,
+                'data' => $this->phoneValidationService->getPhoneInfo($phoneNumber, 'PE')
+            ]);
+        } else {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'No se pudo obtener información del número'
+            ]);
+        }
+    }
+
+    /**
+     * Método de prueba para debuggear la validación
+     */
+    public function testValidacion()
+    {
+        // Test directo con el número que sabemos que funciona
+        $testNumber = '902301692';
+        
+        try {
+            $result = $this->phoneValidationService->validatePhoneNumber($testNumber, 'PE');
+            
+            return $this->response->setJSON([
+                'test_number' => $testNumber,
+                'result' => $result,
+                'is_valid' => $result['valid'] ?? false,
+                'valid_type' => gettype($result['valid'] ?? null),
+                'success' => $result['success'] ?? false
+            ]);
+            
+        } catch (\Exception $e) {
+            return $this->response->setJSON([
+                'error' => $e->getMessage(),
+                'test_number' => $testNumber
             ]);
         }
     }
