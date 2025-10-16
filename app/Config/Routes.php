@@ -4,6 +4,7 @@ use App\Controllers\ControlPagoController;
 use App\Controllers\Equipos;
 use App\Controllers\EntregasController;
 use App\Controllers\Servicios;
+use App\Controllers\InventarioController;
 
 // Rutas de autenticación
 $routes->get('/', 'AuthController::login');
@@ -115,15 +116,20 @@ $routes->group('', ['filter' => 'admin'], function($routes) {
     $routes->get('cronograma/proyectos-estado/(:segment)', 'Cronograma::proyectosPorEstado/$1');
     
     // Inventario (solo administradores)
-    $routes->get('inventario', 'InventarioController::index');
-    $routes->get('inventario/crear', 'InventarioController::create');
-    $routes->post('inventario/guardar', 'InventarioController::store');
-    $routes->get('inventario/editar/(:num)', 'InventarioController::edit/$1');
-    $routes->post('inventario/actualizar/(:num)', 'InventarioController::update/$1');
-    $routes->delete('inventario/eliminar/(:num)', 'InventarioController::delete/$1');
-    $routes->get('inventario/ver/(:num)', 'InventarioController::ver/$1');
-    $routes->get('inventario/buscar', 'InventarioController::buscar');
-    $routes->get('inventario/estadisticas', 'InventarioController::estadisticas');
+
+
+// Rutas del Inventario
+$routes->group('inventario', function($routes) {
+    $routes->get('/', [InventarioController::class, 'index']);
+    $routes->get('crear', [InventarioController::class, 'create']);
+    $routes->post('guardar', [InventarioController::class, 'store']);
+    $routes->get('editar/(:num)', [InventarioController::class, 'edit']);
+    $routes->post('actualizar/(:num)', [InventarioController::class, 'update']);
+    $routes->delete('eliminar/(:num)', [InventarioController::class, 'delete']);
+    $routes->get('buscar', [InventarioController::class, 'buscar']);
+    $routes->get('ver/(:num)', [InventarioController::class, 'ver']);
+    $routes->get('estadisticas', [InventarioController::class, 'estadisticas']);
+});
     
 });
 
