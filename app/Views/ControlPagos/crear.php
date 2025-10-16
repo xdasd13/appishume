@@ -16,6 +16,7 @@ function getPeruDateTimeFormatted() {
     $peruDateTime = date('d/m/Y H:i');
     date_default_timezone_set($originalTimezone);
     return $peruDateTime;
+    
 }
 ?>
 
