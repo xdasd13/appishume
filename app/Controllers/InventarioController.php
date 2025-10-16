@@ -8,9 +8,6 @@ use App\Models\CateEquipoModel;
 use App\Models\MarcaEquipoModel;
 use App\Models\UbicacionModel;
 
-/**
- * Controlador para la gestión del inventario de equipos audiovisuales
- */
 class InventarioController extends BaseController
 {
     protected $equipoModel;
@@ -27,18 +24,13 @@ class InventarioController extends BaseController
     }
 
     /**
-     * Mostrar listado de equipos en formato de cards
+     * Mostrar listado de equipos
      */
     public function index()
     {
         try {
-            // Obtener todos los equipos con detalles
             $equipos = $this->equipoModel->getEquiposConDetalles();
-            
-            // Obtener estadísticas para el dashboard
             $estadisticas = $this->equipoModel->getEstadisticas();
-            
-            // Obtener categorías y marcas para filtros
             $categorias = $this->categoriaModel->getCategorias();
             $marcas = $this->marcaModel->getMarcas();
 
@@ -56,7 +48,7 @@ class InventarioController extends BaseController
 
         } catch (\Exception $e) {
             log_message('error', 'Error en InventarioController::index: ' . $e->getMessage());
-            session()->setFlashdata('error', 'Error al cargar el inventario: ' . $e->getMessage());
+            session()->setFlashdata('error', 'Error al cargar el inventario');
             return redirect()->back();
         }
     }
@@ -67,7 +59,6 @@ class InventarioController extends BaseController
     public function create()
     {
         try {
-            // Obtener datos para los selects
             $categorias = $this->categoriaModel->getCategorias();
             $marcas = $this->marcaModel->getMarcas();
             $ubicaciones = $this->ubicacionModel->getUbicaciones();
@@ -86,52 +77,36 @@ class InventarioController extends BaseController
 
         } catch (\Exception $e) {
             log_message('error', 'Error en InventarioController::create: ' . $e->getMessage());
-            session()->setFlashdata('error', 'Error al cargar el formulario: ' . $e->getMessage());
+            session()->setFlashdata('error', 'Error al cargar el formulario');
             return redirect()->to('/inventario');
         }
     }
 
     /**
-     * Guardar nuevo equipo en la base de datos
+     * Guardar nuevo equipo
      */
     public function store()
     {
         try {
-            // Validar datos del formulario
-            $rules = $this->equipoModel->getValidationRules();
-            
-            if (!$this->validate($rules)) {
-                session()->setFlashdata('validation_errors', $this->validator->getErrors());
-                return redirect()->back()->withInput();
+            // Validar datos
+            if (!$this->validate($this->equipoModel->getValidationRules())) {
+                return redirect()->back()->withInput()->with('validation_errors', $this->validator->getErrors());
             }
 
-            // Preparar datos para insertar
-            $data = [
-                'idCateEquipo' => $this->request->getPost('idCateEquipo'),
-                'idMarca' => $this->request->getPost('idMarca'),
-                'modelo' => trim($this->request->getPost('modelo')),
-                'descripcion' => trim($this->request->getPost('descripcion')),
-                'caracteristica' => trim($this->request->getPost('caracteristica')),
-                'sku' => trim($this->request->getPost('sku')),
-                'numSerie' => trim($this->request->getPost('numSerie')),
-                'cantDisponible' => (int)$this->request->getPost('cantDisponible'),
-                'estado' => $this->request->getPost('estado'),
-                'fechaCompra' => $this->request->getPost('fechaCompra') ?: null,
-                'imgEquipo' => $this->request->getPost('imgEquipo')
-            ];
-
-            // Manejar subida de imagen si existe
+            // Preparar datos
+            $data = $this->request->getPost();
+            $data['cantDisponible'] = (int)$data['cantDisponible'];
+            
+            // Manejar imagen
             $imagen = $this->request->getFile('imagen_file');
             if ($imagen && $imagen->isValid() && !$imagen->hasMoved()) {
-                $nombreImagen = $imagen->getRandomName();
-                $imagen->move(ROOTPATH . 'public/uploads/equipos/', $nombreImagen);
-                $data['imgEquipo'] = 'uploads/equipos/' . $nombreImagen;
+                $newName = $imagen->getRandomName();
+                $imagen->move(ROOTPATH . 'public/uploads/equipos/', $newName);
+                $data['imgEquipo'] = 'uploads/equipos/' . $newName;
             }
 
-            // Insertar en la base de datos
-            $equipoId = $this->equipoModel->insert($data);
-
-            if ($equipoId) {
+            // Guardar en base de datos
+            if ($this->equipoModel->save($data)) {
                 session()->setFlashdata('success', 'Equipo agregado exitosamente al inventario.');
                 return redirect()->to('/inventario');
             } else {
@@ -147,7 +122,7 @@ class InventarioController extends BaseController
     }
 
     /**
-     * Mostrar formulario para editar equipo existente
+     * Mostrar formulario para editar equipo
      */
     public function edit($id = null)
     {
@@ -157,7 +132,6 @@ class InventarioController extends BaseController
                 return redirect()->to('/inventario');
             }
 
-            // Obtener datos del equipo
             $equipo = $this->equipoModel->getEquipoConDetalles($id);
             
             if (!$equipo) {
@@ -165,7 +139,6 @@ class InventarioController extends BaseController
                 return redirect()->to('/inventario');
             }
 
-            // Obtener datos para los selects
             $categorias = $this->categoriaModel->getCategorias();
             $marcas = $this->marcaModel->getMarcas();
             $ubicaciones = $this->ubicacionModel->getUbicaciones();
@@ -185,13 +158,13 @@ class InventarioController extends BaseController
 
         } catch (\Exception $e) {
             log_message('error', 'Error en InventarioController::edit: ' . $e->getMessage());
-            session()->setFlashdata('error', 'Error al cargar el equipo: ' . $e->getMessage());
+            session()->setFlashdata('error', 'Error al cargar el equipo');
             return redirect()->to('/inventario');
         }
     }
 
     /**
-     * Actualizar equipo en la base de datos
+     * Actualizar equipo
      */
     public function update($id = null)
     {
@@ -201,37 +174,22 @@ class InventarioController extends BaseController
                 return redirect()->to('/inventario');
             }
 
-            // Verificar que el equipo existe
             $equipoExistente = $this->equipoModel->find($id);
             if (!$equipoExistente) {
                 session()->setFlashdata('error', 'Equipo no encontrado.');
                 return redirect()->to('/inventario');
             }
 
-            // Validar datos del formulario
-            $rules = $this->equipoModel->getValidationRules();
-            
-            if (!$this->validate($rules)) {
-                session()->setFlashdata('validation_errors', $this->validator->getErrors());
-                return redirect()->back()->withInput();
+            // Validar datos
+            if (!$this->validate($this->equipoModel->getValidationRules())) {
+                return redirect()->back()->withInput()->with('validation_errors', $this->validator->getErrors());
             }
 
-            // Preparar datos para actualizar
-            $data = [
-                'idCateEquipo' => $this->request->getPost('idCateEquipo'),
-                'idMarca' => $this->request->getPost('idMarca'),
-                'modelo' => trim($this->request->getPost('modelo')),
-                'descripcion' => trim($this->request->getPost('descripcion')),
-                'caracteristica' => trim($this->request->getPost('caracteristica')),
-                'sku' => trim($this->request->getPost('sku')),
-                'numSerie' => trim($this->request->getPost('numSerie')),
-                'cantDisponible' => (int)$this->request->getPost('cantDisponible'),
-                'estado' => $this->request->getPost('estado'),
-                'fechaCompra' => $this->request->getPost('fechaCompra') ?: null,
-                'fechaUso' => $this->request->getPost('fechaUso') ?: null
-            ];
+            // Preparar datos
+            $data = $this->request->getPost();
+            $data['cantDisponible'] = (int)$data['cantDisponible'];
 
-            // Manejar subida de nueva imagen si existe
+            // Manejar imagen
             $imagen = $this->request->getFile('imagen_file');
             if ($imagen && $imagen->isValid() && !$imagen->hasMoved()) {
                 // Eliminar imagen anterior si existe
@@ -239,14 +197,12 @@ class InventarioController extends BaseController
                     unlink(ROOTPATH . 'public/' . $equipoExistente['imgEquipo']);
                 }
                 
-                $nombreImagen = $imagen->getRandomName();
-                $imagen->move(ROOTPATH . 'public/uploads/equipos/', $nombreImagen);
-                $data['imgEquipo'] = 'uploads/equipos/' . $nombreImagen;
-            } elseif ($this->request->getPost('imgEquipo')) {
-                $data['imgEquipo'] = $this->request->getPost('imgEquipo');
+                $newName = $imagen->getRandomName();
+                $imagen->move(ROOTPATH . 'public/uploads/equipos/', $newName);
+                $data['imgEquipo'] = 'uploads/equipos/' . $newName;
             }
 
-            // Actualizar en la base de datos
+            // Actualizar en base de datos
             if ($this->equipoModel->update($id, $data)) {
                 session()->setFlashdata('success', 'Equipo actualizado exitosamente.');
                 return redirect()->to('/inventario');
@@ -263,11 +219,18 @@ class InventarioController extends BaseController
     }
 
     /**
-     * Eliminar equipo del inventario
+     * Eliminar equipo
      */
     public function delete($id = null)
     {
         try {
+            if (!$this->request->isAJAX()) {
+                return $this->response->setStatusCode(400)->setJSON([
+                    'success' => false,
+                    'message' => 'Solicitud no válida.'
+                ]);
+            }
+
             if (!$id) {
                 return $this->response->setJSON([
                     'success' => false,
@@ -275,7 +238,6 @@ class InventarioController extends BaseController
                 ]);
             }
 
-            // Verificar que el equipo existe
             $equipo = $this->equipoModel->find($id);
             if (!$equipo) {
                 return $this->response->setJSON([
@@ -284,7 +246,7 @@ class InventarioController extends BaseController
                 ]);
             }
 
-            // Eliminar imagen asociada si existe
+            // Eliminar imagen si existe
             if (!empty($equipo['imgEquipo']) && file_exists(ROOTPATH . 'public/' . $equipo['imgEquipo'])) {
                 unlink(ROOTPATH . 'public/' . $equipo['imgEquipo']);
             }
@@ -293,12 +255,12 @@ class InventarioController extends BaseController
             if ($this->equipoModel->delete($id)) {
                 return $this->response->setJSON([
                     'success' => true,
-                    'message' => 'Equipo eliminado exitosamente del inventario.'
+                    'message' => 'Equipo eliminado exitosamente.'
                 ]);
             } else {
                 return $this->response->setJSON([
                     'success' => false,
-                    'message' => 'Error al eliminar el equipo. Intente nuevamente.'
+                    'message' => 'Error al eliminar el equipo.'
                 ]);
             }
 
@@ -312,7 +274,7 @@ class InventarioController extends BaseController
     }
 
     /**
-     * Buscar equipos con filtros (AJAX)
+     * Buscar equipos
      */
     public function buscar()
     {
@@ -335,13 +297,13 @@ class InventarioController extends BaseController
             log_message('error', 'Error en InventarioController::buscar: ' . $e->getMessage());
             return $this->response->setJSON([
                 'success' => false,
-                'message' => 'Error en la búsqueda: ' . $e->getMessage()
+                'message' => 'Error en la búsqueda'
             ]);
         }
     }
 
     /**
-     * Ver detalles de un equipo específico (AJAX)
+     * Ver detalles de equipo
      */
     public function ver($id = null)
     {
@@ -371,13 +333,13 @@ class InventarioController extends BaseController
             log_message('error', 'Error en InventarioController::ver: ' . $e->getMessage());
             return $this->response->setJSON([
                 'success' => false,
-                'message' => 'Error al obtener los detalles: ' . $e->getMessage()
+                'message' => 'Error al obtener los detalles'
             ]);
         }
     }
 
     /**
-     * Obtener estadísticas del inventario (AJAX)
+     * Obtener estadísticas
      */
     public function estadisticas()
     {
@@ -393,7 +355,7 @@ class InventarioController extends BaseController
             log_message('error', 'Error en InventarioController::estadisticas: ' . $e->getMessage());
             return $this->response->setJSON([
                 'success' => false,
-                'message' => 'Error al obtener estadísticas: ' . $e->getMessage()
+                'message' => 'Error al obtener estadísticas'
             ]);
         }
     }
