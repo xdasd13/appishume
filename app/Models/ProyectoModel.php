@@ -56,6 +56,109 @@ class ProyectoModel extends Model
     }
 
     /**
+     * Obtiene proyectos agrupados por cliente con todos sus servicios
+     * Retorna un array donde cada elemento es un cliente con sus servicios
+     */
+    public function getProyectosAgrupadosPorCliente()
+    {
+        $query = "
+            SELECT 
+                c.idcliente,
+                CASE 
+                    WHEN c.idempresa IS NOT NULL THEN e.razonsocial
+                    ELSE CONCAT(p.nombres, ' ', p.apellidos)
+                END as cliente,
+                CASE 
+                    WHEN c.idempresa IS NOT NULL THEN e.telefono
+                    ELSE p.telprincipal
+                END as telefono_cliente,
+                sc.idserviciocontratado,
+                s.servicio,
+                sc.fechahoraservicio,
+                sc.direccion,
+                COALESCE(eq.estadoservicio, 'Pendiente') as estado,
+                CASE 
+                    WHEN COALESCE(eq.estadoservicio, 'Pendiente') = 'Completado' THEN 100
+                    WHEN COALESCE(eq.estadoservicio, 'Pendiente') = 'En Proceso' THEN 65
+                    WHEN COALESCE(eq.estadoservicio, 'Pendiente') = 'Programado' THEN 35
+                    ELSE 10
+                END as progreso,
+                cot.fechaevento,
+                te.evento as tipoevento
+            FROM servicioscontratados sc
+            INNER JOIN cotizaciones cot ON sc.idcotizacion = cot.idcotizacion
+            INNER JOIN clientes c ON cot.idcliente = c.idcliente
+            LEFT JOIN personas p ON c.idpersona = p.idpersona
+            LEFT JOIN empresas e ON c.idempresa = e.idempresa
+            INNER JOIN servicios s ON sc.idservicio = s.idservicio
+            LEFT JOIN equipos eq ON sc.idserviciocontratado = eq.idserviciocontratado
+            LEFT JOIN tipoeventos te ON cot.idtipoevento = te.idtipoevento
+            ORDER BY c.idcliente, sc.fechahoraservicio ASC
+        ";
+        
+        try {
+            $result = $this->db->query($query)->getResult();
+            
+            // Debug: Verificar resultados de la consulta
+            log_message('info', 'getProyectosAgrupadosPorCliente - Total registros: ' . count($result));
+            
+            // Agrupar servicios por cliente
+            $proyectosAgrupados = [];
+            foreach ($result as $row) {
+                $idCliente = $row->idcliente;
+                log_message('info', 'Procesando cliente: ' . $idCliente . ' - ' . $row->cliente);
+                
+                // Si el cliente no existe en el array, crearlo
+                if (!isset($proyectosAgrupados[$idCliente])) {
+                    $proyectosAgrupados[$idCliente] = [
+                        'idcliente' => $idCliente,
+                        'cliente' => $row->cliente,
+                        'telefono_cliente' => $row->telefono_cliente,
+                        'servicios' => [],
+                        'total_servicios' => 0,
+                        'progreso_promedio' => 0,
+                        'fecha_mas_proxima' => $row->fechahoraservicio,
+                        'direccion_principal' => $row->direccion
+                    ];
+                }
+                
+                // Agregar servicio al cliente
+                $proyectosAgrupados[$idCliente]['servicios'][] = [
+                    'idserviciocontratado' => $row->idserviciocontratado,
+                    'servicio' => $row->servicio,
+                    'fechahoraservicio' => $row->fechahoraservicio,
+                    'direccion' => $row->direccion,
+                    'estado' => $row->estado,
+                    'progreso' => $row->progreso,
+                    'fechaevento' => $row->fechaevento,
+                    'tipoevento' => $row->tipoevento
+                ];
+                
+                $proyectosAgrupados[$idCliente]['total_servicios']++;
+            }
+            
+            // Calcular progreso promedio para cada cliente
+            foreach ($proyectosAgrupados as &$proyecto) {
+                $sumaProgreso = 0;
+                foreach ($proyecto['servicios'] as $servicio) {
+                    $sumaProgreso += $servicio['progreso'];
+                }
+                $proyecto['progreso_promedio'] = round($sumaProgreso / $proyecto['total_servicios']);
+            }
+            
+            // Convertir a array indexado
+            $proyectosAgrupados = array_values($proyectosAgrupados);
+            
+            log_message('info', 'Proyectos agrupados por cliente: ' . count($proyectosAgrupados));
+            return $proyectosAgrupados;
+            
+        } catch (\Exception $e) {
+            log_message('error', 'Error en getProyectosAgrupadosPorCliente: ' . $e->getMessage());
+            return [];
+        }
+    }
+
+    /**
      * Función de prueba para verificar datos básicos
      */
     public function testConexion()
