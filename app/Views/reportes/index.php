@@ -130,7 +130,7 @@
                     </div>
 
                     <!-- Descripción del reporte seleccionado -->
-                    <div id="descripcion-reporte" class="alert alert-info" style="display: none;">
+                    <div id="descripcion-reporte" class="alert alert-info animate-fade-in" style="display: none;">
                         <i class="fas fa-info-circle mr-2"></i>
                         <span id="texto-descripcion"></span>
                     </div>
@@ -324,6 +324,41 @@
     margin-bottom: 0;
 }
 
+/* Estilos para la descripción del reporte */
+#descripcion-reporte {
+    border-radius: 8px;
+    border: none;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    margin-bottom: 1rem;
+    background: linear-gradient(135deg, #d1ecf1 0%, #bee5eb 100%);
+    border-left: 4px solid #17a2b8;
+    transition: all 0.3s ease;
+}
+
+#descripcion-reporte:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+#descripcion-reporte i {
+    color: #17a2b8;
+}
+
+.animate-fade-in {
+    animation: fadeIn 0.5s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
 #area-errores .alert-heading {
     font-weight: 600;
     margin-bottom: 0.5rem;
@@ -396,22 +431,45 @@ $(document).ready(function() {
     const filtrosBase = <?= json_encode($filtros_base) ?>;
     const reportesDisponibles = <?= json_encode($reportes_disponibles) ?>;
 
+    // Debug: mostrar los reportes disponibles en consola
+    console.log('Reportes disponibles:', reportesDisponibles);
+
     // Manejar selección de reporte
     $('#tipo-reporte').on('change', function() {
         const tipoReporte = $(this).val();
+        
+        console.log('Tipo de reporte seleccionado:', tipoReporte);
         
         if (tipoReporte) {
             reporteActual = tipoReporte;
             const reporte = reportesDisponibles[tipoReporte];
             
-            // Mostrar descripción
-            $('#texto-descripcion').text(reporte.descripcion);
-            $('#descripcion-reporte').show();
+            console.log('Reporte encontrado:', reporte);
+            
+            // Verificar que el reporte existe y tiene descripción
+            if (reporte && reporte.descripcion) {
+                // Mostrar descripción
+                $('#texto-descripcion').text(reporte.descripcion);
+                $('#descripcion-reporte').show();
+                
+                // Agregar animación a la descripción
+                setTimeout(() => {
+                    $('#descripcion-reporte').removeClass('animate-fade-in').addClass('animate-fade-in');
+                }, 50);
+                
+                console.log('Descripción mostrada:', reporte.descripcion);
+            } else {
+                console.error('Reporte no encontrado o sin descripción:', tipoReporte, reporte);
+                $('#descripcion-reporte').hide();
+            }
             
             // Generar filtros dinámicos
-            generarFiltrosDinamicos(reporte.filtros);
-            $('#panel-filtros').show();
-            $('#panel-exportacion').show();
+            if (reporte && reporte.filtros) {
+                generarFiltrosDinamicos(reporte.filtros);
+                $('#panel-filtros').show();
+                $('#panel-exportacion').show();
+                console.log('Filtros generados:', reporte.filtros);
+            }
             
             // Limpiar resultados anteriores
             limpiarResultados();
@@ -694,8 +752,10 @@ $(document).ready(function() {
         $('#contenido-reporte').hide();
         $('#estado-inicial').show();
         $('#filtros-activos').text('0');
+        $('#texto-descripcion').text('');
         reporteActual = null;
         filtrosActuales = {};
+        console.log('Todo limpiado');
     }
 
     // Inicializar tooltips
