@@ -76,6 +76,7 @@ $routes->group('', ['filter' => 'trabajador'], function($routes) {
     // Cronograma (trabajadores pueden ver sus asignaciones)
     $routes->get('cronograma', 'Cronograma::index');
     $routes->get('cronograma/proyectos', 'Cronograma::proyectos');
+    $routes->get('cronograma/debug-proyectos', 'Cronograma::debugProyectos'); // Ruta temporal de debug
     $routes->get('proyectos', 'Cronograma::todosLosProyectos');
     $routes->get('cronograma/proyecto/(:num)', 'Cronograma::verProyecto/$1');
     $routes->get('cronograma/eventos', 'Cronograma::getEventos');

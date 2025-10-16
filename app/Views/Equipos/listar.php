@@ -199,9 +199,17 @@
                                  data-estado="<?= $estado ?>">
                                 
                                 <?php if (!empty($equiposKanban[$estado])): ?>
-                                    <?php foreach ($equiposKanban[$estado] as $equipo): ?>
-                                        <?= renderEquipoCard($equipo, $estado) ?>
-                                    <?php endforeach; ?>
+                                    <?php if (isset($agrupar_por_cliente) && $agrupar_por_cliente): ?>
+                                        <!-- Modo agrupado por cliente -->
+                                        <?php foreach ($equiposKanban[$estado] as $clienteData): ?>
+                                            <?= renderClienteCard($clienteData, $estado) ?>
+                                        <?php endforeach; ?>
+                                    <?php else: ?>
+                                        <!-- Modo individual (sin agrupar) -->
+                                        <?php foreach ($equiposKanban[$estado] as $equipo): ?>
+                                            <?= renderEquipoCard($equipo, $estado) ?>
+                                        <?php endforeach; ?>
+                                    <?php endif; ?>
                                 <?php else: ?>
                                     <div class="kanban-empty-state">
                                         <i class="fas fa-inbox fa-2x mb-2 text-muted"></i>
@@ -319,6 +327,129 @@ function renderEquipoCard(array $equipo, string $estado): string {
     <?php
     return ob_get_clean();
 }
+
+/**
+ * Función para renderizar tarjeta de cliente con múltiples servicios
+ */
+function renderClienteCard(array $clienteData, string $estado): string {
+    // Mapeo local de colores e iconos
+    $colores = [
+        'Pendiente' => 'warning',
+        'En Proceso' => 'info', 
+        'Completado' => 'success'
+    ];
+    
+    $iconos = [
+        'Pendiente' => 'fas fa-clock',
+        'En Proceso' => 'fas fa-spinner',
+        'Completado' => 'fas fa-check-circle'
+    ];
+    
+    $colorEstado = $colores[$estado] ?? 'secondary';
+    $iconoEstado = $iconos[$estado] ?? 'fas fa-question-circle';
+    
+    ob_start();
+    ?>
+    <div class="kanban-card kanban-card-cliente" data-cliente-id="<?= $clienteData['idcliente'] ?>" data-status="<?= $estado ?>">
+        <!-- Header de tarjeta de cliente -->
+        <div class="card-header-kanban" style="background: linear-gradient(135deg, #FF9900, #F57C00); color: white; padding: 12px;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <strong style="font-size: 1.1rem; display: block;">
+                        <i class="fas fa-user-circle me-2"></i><?= esc($clienteData['cliente_nombre']) ?>
+                    </strong>
+                    <small style="opacity: 0.9;">
+                        <i class="fas fa-phone me-1"></i><?= esc($clienteData['cliente_telefono'] ?? 'Sin teléfono') ?>
+                    </small>
+                </div>
+                <span class="badge bg-light text-dark" style="font-size: 0.85rem;">
+                    <?= $clienteData['total_equipos'] ?> Servicio<?= $clienteData['total_equipos'] > 1 ? 's' : '' ?>
+                </span>
+            </div>
+        </div>
+        
+        <!-- Cuerpo con lista de servicios -->
+        <div class="card-body-kanban" style="padding: 10px;">
+            <?php foreach ($clienteData['equipos'] as $index => $equipo): ?>
+                <?php
+                // Nombre corto del técnico
+                $nombreCorto = !empty($equipo['nombre_completo']) 
+                    ? explode(' ', $equipo['nombre_completo'])[0] . ' ' . substr(explode(' ', $equipo['nombre_completo'])[1] ?? '', 0, 1) . '.'
+                    : $equipo['nombreusuario'];
+                ?>
+                <div class="servicio-item-kanban" style="
+                    margin-bottom: 8px; 
+                    padding: 10px; 
+                    background: #f8f9fa; 
+                    border-radius: 8px; 
+                    border-left: 4px solid 
+                    <?php 
+                        if ($estado == 'Completado') echo '#27AE60';
+                        elseif ($estado == 'En Proceso') echo '#E67E22';
+                        else echo '#FF9900';
+                    ?>;
+                    transition: all 0.2s ease;
+                " 
+                onmouseover="this.style.background='#e9ecef'; this.style.transform='translateX(3px)';"
+                onmouseout="this.style.background='#f8f9fa'; this.style.transform='translateX(0)';">
+                    
+                    <!-- Servicio y técnico -->
+                    <div style="margin-bottom: 6px;">
+                        <strong style="color: #2c3e50; font-size: 0.95rem; display: block;">
+                            <i class="fas fa-briefcase me-1" style="color: #FF9900;"></i>
+                            <?= esc($equipo['servicio']) ?>
+                        </strong>
+                        <small style="color: #7f8c8d; display: block; margin-top: 3px;">
+                            <i class="fas fa-user me-1"></i><?= esc($nombreCorto) ?>
+                            <span style="margin-left: 8px;">
+                                <i class="fas fa-id-badge me-1"></i><?= esc($equipo['cargo']) ?>
+                            </span>
+                        </small>
+                    </div>
+                    
+                    <!-- Fecha y ubicación -->
+                    <div style="font-size: 0.85rem; color: #6c757d;">
+                        <div style="margin-bottom: 3px;">
+                            <i class="fas fa-calendar me-1"></i>
+                            <?= date('d/m/Y H:i', strtotime($equipo['fechahoraservicio'])) ?>
+                        </div>
+                        <div style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                            <i class="fas fa-map-marker-alt me-1"></i>
+                            <?= esc($equipo['direccion']) ?>
+                        </div>
+                    </div>
+                    
+                    <!-- Acciones rápidas -->
+                    <div style="margin-top: 8px; display: flex; gap: 6px;">
+                        <a href="<?= base_url('equipos/editar/'.$equipo['idequipo']) ?>" 
+                           class="btn btn-sm btn-outline-primary" 
+                           style="font-size: 0.75rem; padding: 3px 8px;"
+                           title="Editar asignación">
+                            <i class="fas fa-edit"></i>
+                        </a>
+                        <a href="<?= base_url('servicios/'.$equipo['idserviciocontratado']) ?>" 
+                           class="btn btn-sm btn-outline-info" 
+                           style="font-size: 0.75rem; padding: 3px 8px;"
+                           title="Ver servicio">
+                            <i class="fas fa-eye"></i>
+                        </a>
+                    </div>
+                </div>
+            <?php endforeach; ?>
+        </div>
+        
+        <!-- Footer con acción para ver cliente -->
+        <div style="padding: 10px; border-top: 1px solid #e9ecef; background: #f8f9fa;">
+            <a href="<?= base_url('clientes/ver/' . $clienteData['idcliente']) ?>" 
+               class="btn btn-sm btn-outline-primary w-100" 
+               style="font-size: 0.85rem;">
+                <i class="fas fa-user-circle me-1"></i>Ver Detalles del Cliente
+            </a>
+        </div>
+    </div>
+    <?php
+    return ob_get_clean();
+}
 ?>
 
 <!-- CSS Personalizado para Kanban -->
@@ -422,6 +553,25 @@ function renderEquipoCard(array $equipo, string $estado): string {
     border-left-color: #198754;
 }
 
+/* Estilos para tarjetas de cliente agrupadas */
+.kanban-card-cliente {
+    border-left-color: #FF9900 !important;
+    border-left-width: 5px !important;
+}
+
+.kanban-card-cliente .card-header-kanban {
+    margin-bottom: 0;
+    border-radius: 8px 8px 0 0;
+}
+
+.servicio-item-kanban {
+    cursor: pointer;
+}
+
+.servicio-item-kanban:last-child {
+    margin-bottom: 0 !important;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
     .kanban-column-body {
@@ -430,6 +580,14 @@ function renderEquipoCard(array $equipo, string $estado): string {
     
     .kanban-card {
         padding: 0.75rem;
+    }
+    
+    .kanban-card-cliente .card-header-kanban {
+        padding: 10px !important;
+    }
+    
+    .servicio-item-kanban {
+        padding: 8px !important;
     }
 }
 </style>
