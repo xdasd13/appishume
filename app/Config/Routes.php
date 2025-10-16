@@ -48,6 +48,11 @@ $routes->group('', ['filter' => 'admin'], function($routes) {
     $routes->post('usuarios/ajax-check-dni', 'UsuariosController::ajaxCheckDni');
     $routes->get('usuarios/reniec-stats', 'UsuariosController::reniecStats');
     
+    // Validación de teléfonos (solo admins pueden validar teléfonos)
+    $routes->post('usuarios/validarTelefono', 'UsuariosController::validarTelefono');
+    $routes->post('usuarios/infoTelefono', 'UsuariosController::infoTelefono');
+    $routes->get('usuarios/testValidacion', 'UsuariosController::testValidacion');
+    
     // Control de Pagos (SOLO ADMINISTRADORES)
     $routes->get('controlpagos', [ControlPagoController::class, 'index']);
     $routes->get('controlpagos/crear', [ControlPagoController::class, 'crear']);

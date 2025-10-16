@@ -99,6 +99,147 @@
         color: #4e73df;
     }
     
+    /* Estilos para validación de teléfonos */
+    .input-group-append .btn {
+        border-color: #ced4da;
+        z-index: 3;
+    }
+    
+    .input-group-append .btn:hover {
+        border-color: #adb5bd;
+        background-color: #f8f9fa;
+    }
+    
+    .alert-sm {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.875rem;
+        margin-top: 0.5rem;
+    }
+    
+    .is-valid {
+        border-color: #28a745 !important;
+    }
+    
+    .is-invalid {
+        border-color: #dc3545 !important;
+    }
+    
+    .form-control.is-valid:focus {
+        border-color: #28a745;
+        box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25);
+    }
+    
+    .form-control.is-invalid:focus {
+        border-color: #dc3545;
+        box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+    }
+    
+    .btn:disabled {
+        opacity: 0.65;
+        cursor: not-allowed;
+    }
+    
+    /* Estilos para información de teléfono */
+    .phone-info-container {
+        font-size: 0.875rem;
+    }
+    
+    .phone-number-display {
+        background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+        padding: 0.75rem;
+        border-radius: 0.5rem;
+        border-left: 4px solid #28a745;
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+    }
+    
+    .phone-details-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 0.5rem;
+    }
+    
+    .phone-detail-item {
+        display: flex;
+        align-items: center;
+        padding: 0.25rem 0;
+        font-size: 0.8rem;
+    }
+    
+    .phone-detail-item .detail-label {
+        font-weight: 600;
+        margin-right: 0.5rem;
+        color: #495057;
+    }
+    
+    .phone-detail-item .detail-value {
+        color: #6c757d;
+    }
+    
+    /* Mejorar las alertas de teléfono */
+    .alert-sm {
+        border-radius: 0.5rem;
+        border: none;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .alert-success.alert-sm {
+        background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+        color: #155724;
+    }
+    
+    .alert-danger.alert-sm {
+        background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+        color: #721c24;
+    }
+    
+    /* Estilos para subsecciones del formulario */
+    .form-subsection {
+        background: #f8f9fa;
+        border-radius: 0.75rem;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        border: 1px solid #e9ecef;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+    
+    .subsection-title {
+        font-size: 1rem;
+        font-weight: 600;
+        color: #495057;
+        margin-bottom: 1rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 2px solid #dee2e6;
+        display: flex;
+        align-items: center;
+    }
+    
+    .subsection-title i {
+        margin-right: 0.5rem;
+        font-size: 1.1rem;
+    }
+    
+    .form-section {
+        margin-bottom: 2rem;
+    }
+    
+    .section-title {
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: #2c3e50;
+        margin-bottom: 1.5rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 3px solid #4e73df;
+        display: flex;
+        align-items: center;
+    }
+    
+    .section-title i {
+        margin-right: 0.75rem;
+        font-size: 1.3rem;
+        color: #4e73df;
+    }
+    
     .password-strength {
         height: 5px;
         margin-top: 5px;
@@ -393,81 +534,178 @@
                                         <i class="fas fa-user-circle"></i>
                                         Datos Personales
                                     </h6>
-                                    <div class="row">
-                                        <div class="col-md-4 mb-3">
-                                            <div class="form-floating">
-                                                <input type="text" class="form-control" id="tipodoc" 
-                                                       name="tipodoc" value="DNI" readonly required>
-                                                <label for="tipodoc">Tipo de Documento *</label>
+                                    
+                                    <!-- Información de Documento -->
+                                    <div class="form-subsection mb-4">
+                                        <h6 class="subsection-title">
+                                            <i class="fas fa-id-card text-primary"></i>
+                                            Documento de Identidad
+                                        </h6>
+                                        <div class="row">
+                                            <div class="col-md-4 mb-3">
+                                                <div class="form-floating">
+                                                    <input type="text" class="form-control" id="tipodoc" 
+                                                           name="tipodoc" value="DNI" readonly required>
+                                                    <label for="tipodoc">Tipo de Documento *</label>
+                                                </div>
+                                                <span class="example-text">Solo se acepta DNI</span>
                                             </div>
-                                            <span class="example-text">Solo se acepta DNI</span>
-                                        </div>
-                                        <div class="col-md-4 mb-3">
-                                            <div class="form-floating">
-                                                <input type="text" class="form-control" id="numerodoc" 
-                                                       name="numerodoc" required placeholder=" " maxlength="8" pattern="[0-9]{8}">
-                                                <label for="numerodoc">Número de Documento *</label>
-                                            </div>
-                                            <span class="example-text" id="example-numerodoc">Ejemplo: 12345678 (8 dígitos)</span>
-                                            <div class="valid-feedback" id="success-numerodoc" style="display: none;">
-                                                ✓ DNI válido encontrado en RENIEC
-                                            </div>
-                                            <div class="invalid-feedback" id="error-numerodoc">
-                                                Por favor ingrese un número de documento válido.
-                                            </div>
-                                            <div class="text-info small" id="loading-numerodoc" style="display: none;">
-                                                <i class="fas fa-spinner fa-spin"></i> Validando DNI con RENIEC...
-                                            </div>
-                                        </div>
-                                        <div class="col-md-6 mb-3">
-                                            <div class="form-floating">
-                                                <input type="text" class="form-control" id="nombres" 
-                                                       name="nombres" required placeholder=" " 
-                                                       minlength="2" maxlength="50" readonly required>
-                                                <label for="nombres">Nombres *</label>
-                                            </div>
-                                            <span class="example-text">Ejemplo: Juan Carlos (solo letras y espacios, 2-50 caracteres)</span>
-                                            <div class="invalid-feedback">
-                                                Por favor ingrese nombres válidos (solo letras y espacios, 2-50 caracteres).
-                                            </div>
-                                        </div>
-                                        <div class="col-md-6 mb-3">
-                                            <div class="form-floating">
-                                                <input type="text" class="form-control" id="apellidos" 
-                                                       name="apellidos" required placeholder=" " 
-                                                       minlength="2" maxlength="50" readonly required>
-                                                <label for="apellidos">Apellidos *</label>
-                                            </div>
-                                            <span class="example-text">Ejemplo: Pérez García (solo letras y espacios, 2-50 caracteres)</span>
-                                            <div class="invalid-feedback">
-                                                Por favor ingrese apellidos válidos (solo letras y espacios, 2-50 caracteres).
+                                            <div class="col-md-8 mb-3">
+                                                <div class="form-floating">
+                                                    <input type="text" class="form-control" id="numerodoc" 
+                                                           name="numerodoc" required placeholder=" " maxlength="8" pattern="[0-9]{8}">
+                                                    <label for="numerodoc">Número de Documento *</label>
+                                                </div>
+                                                <span class="example-text" id="example-numerodoc">Ejemplo: 12345678 (8 dígitos)</span>
+                                                <div class="valid-feedback" id="success-numerodoc" style="display: none;">
+                                                    <i class="fas fa-check-circle text-success"></i> DNI válido encontrado en RENIEC
+                                                </div>
+                                                <div class="invalid-feedback" id="error-numerodoc">
+                                                    Por favor ingrese un número de documento válido.
+                                                </div>
+                                                <div class="text-info small" id="loading-numerodoc" style="display: none;">
+                                                    <i class="fas fa-spinner fa-spin"></i> Validando DNI con RENIEC...
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
                                     
-                                    <div class="row">
-                                        <div class="col-md-6 mb-3">
-                                            <div class="form-floating">
-                                                <input type="text" class="form-control" id="telprincipal" 
-                                                       name="telprincipal" required placeholder=" " 
-                                                       pattern="[0-9]{9}" maxlength="9">
-                                                <label for="telprincipal">Teléfono Principal *</label>
+                                    <!-- Información Personal -->
+                                    <div class="form-subsection mb-4">
+                                        <h6 class="subsection-title">
+                                            <i class="fas fa-user text-success"></i>
+                                            Información Personal
+                                        </h6>
+                                        <div class="row">
+                                            <div class="col-md-6 mb-3">
+                                                <div class="form-floating">
+                                                    <input type="text" class="form-control" id="nombres" 
+                                                           name="nombres" required placeholder=" " 
+                                                           minlength="2" maxlength="50" readonly required>
+                                                    <label for="nombres">Nombres *</label>
+                                                </div>
+                                                <span class="example-text">Ejemplo: Juan Carlos (solo letras y espacios, 2-50 caracteres)</span>
+                                                <div class="invalid-feedback">
+                                                    Por favor ingrese nombres válidos (solo letras y espacios, 2-50 caracteres).
+                                                </div>
                                             </div>
-                                            <span class="example-text">Ejemplo: 987654321 (exactamente 9 dígitos)</span>
-                                            <div class="invalid-feedback">
-                                                Por favor ingrese un teléfono válido (exactamente 9 dígitos).
+                                            <div class="col-md-6 mb-3">
+                                                <div class="form-floating">
+                                                    <input type="text" class="form-control" id="apellidos" 
+                                                           name="apellidos" required placeholder=" " 
+                                                           minlength="2" maxlength="50" readonly required>
+                                                    <label for="apellidos">Apellidos *</label>
+                                                </div>
+                                                <span class="example-text">Ejemplo: Pérez García (solo letras y espacios, 2-50 caracteres)</span>
+                                                <div class="invalid-feedback">
+                                                    Por favor ingrese apellidos válidos (solo letras y espacios, 2-50 caracteres).
+                                                </div>
                                             </div>
                                         </div>
-                                        <div class="col-md-6 mb-3">
-                                            <div class="form-floating">
-                                                <input type="text" class="form-control" id="telalternativo" 
-                                                       name="telalternativo" placeholder=" " 
-                                                       pattern="[0-9]{9}" maxlength="9">
-                                                <label for="telalternativo">Teléfono Alternativo</label>
+                                    </div>
+                                    
+                                    <!-- Información de Contacto -->
+                                    <div class="form-subsection mb-4">
+                                        <h6 class="subsection-title">
+                                            <i class="fas fa-phone text-info"></i>
+                                            Información de Contacto
+                                        </h6>
+                                        <div class="row">
+                                            <div class="col-md-6 mb-3">
+                                                <label for="telprincipal">Teléfono Principal *</label>
+                                                <div class="input-group">
+                                                    <div class="input-group-prepend">
+                                                        <span class="input-group-text">+51</span>
+                                                    </div>
+                                                    <input type="tel" class="form-control" id="telprincipal" 
+                                                           name="telprincipal" required placeholder="987654321" 
+                                                           pattern="[0-9]{9}" maxlength="9">
+                                                    <div class="input-group-append">
+                                                        <button class="btn btn-outline-primary" 
+                                                                type="button" 
+                                                                id="validar-telefono-principal">
+                                                            <i class="fas fa-check-circle"></i>
+                                                            Validar
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                                <span class="example-text">Ejemplo: 987654321 (9 dígitos)</span>
+                                                <div class="invalid-feedback">
+                                                    Por favor ingrese un teléfono válido.
+                                                </div>
+                                                
+                                                <!-- Información del teléfono validado -->
+                                                <div id="info-telefono-principal" class="mt-2" style="display: none;">
+                                                    <div class="alert alert-success alert-sm">
+                                                        <div class="d-flex align-items-center">
+                                                            <i class="fas fa-check-circle mr-2"></i>
+                                                            <div>
+                                                                <strong>Teléfono Válido</strong>
+                                                                <div id="telefono-principal-info-details" class="small"></div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                
+                                                <div id="error-telefono-principal" class="mt-2" style="display: none;">
+                                                    <div class="alert alert-danger alert-sm">
+                                                        <div class="d-flex align-items-center">
+                                                            <i class="fas fa-exclamation-triangle mr-2"></i>
+                                                            <div>
+                                                                <strong>Teléfono Inválido</strong>
+                                                                <div id="telefono-principal-error-details" class="small"></div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
                                             </div>
-                                            <span class="example-text">Ejemplo: 912345678 (exactamente 9 dígitos, opcional)</span>
-                                            <div class="invalid-feedback">
-                                                Por favor ingrese un teléfono válido (exactamente 9 dígitos).
+                                            <div class="col-md-6 mb-3">
+                                                <label for="telalternativo">Teléfono Alternativo</label>
+                                                <div class="input-group">
+                                                    <div class="input-group-prepend">
+                                                        <span class="input-group-text">+51</span>
+                                                    </div>
+                                                    <input type="tel" class="form-control" id="telalternativo" 
+                                                           name="telalternativo" placeholder="912345678" 
+                                                           pattern="[0-9]{9}" maxlength="9">
+                                                    <div class="input-group-append">
+                                                        <button class="btn btn-outline-secondary" 
+                                                                type="button" 
+                                                                id="validar-telefono-alternativo">
+                                                            <i class="fas fa-check-circle"></i>
+                                                            Validar
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                                <span class="example-text">Ejemplo: 912345678 (9 dígitos, opcional)</span>
+                                                <div class="invalid-feedback">
+                                                    Por favor ingrese un teléfono válido.
+                                                </div>
+                                                
+                                                <!-- Información del teléfono alternativo validado -->
+                                                <div id="info-telefono-alternativo" class="mt-2" style="display: none;">
+                                                    <div class="alert alert-success alert-sm">
+                                                        <div class="d-flex align-items-center">
+                                                            <i class="fas fa-check-circle mr-2"></i>
+                                                            <div>
+                                                                <strong>Teléfono Válido</strong>
+                                                                <div id="telefono-alternativo-info-details" class="small"></div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                
+                                                <div id="error-telefono-alternativo" class="mt-2" style="display: none;">
+                                                    <div class="alert alert-danger alert-sm">
+                                                        <div class="d-flex align-items-center">
+                                                            <i class="fas fa-exclamation-triangle mr-2"></i>
+                                                            <div>
+                                                                <strong>Teléfono Inválido</strong>
+                                                                <div id="telefono-alternativo-error-details" class="small"></div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -666,30 +904,254 @@
         }
     }
     
-    // Validar teléfonos (exactamente 9 dígitos)
-    function validarTelefono() {
-        const telPrincipal = $('#telprincipal').val();
-        const telAlternativo = $('#telalternativo').val();
+    // Variables para controlar validación de teléfonos
+    let telefonoPrincipalValidado = false;
+    let telefonoAlternativoValidado = false;
+    let validacionEnProceso = false;
+
+    // Validar teléfono principal via AJAX
+    $('#validar-telefono-principal').on('click', function() {
+        const telefono = $('#telprincipal').val().trim();
         
-        // Validar teléfono principal (obligatorio)
-        if (telPrincipal && !/^\d{9}$/.test(telPrincipal)) {
-            $('#telprincipal').get(0).setCustomValidity('El teléfono debe tener exactamente 9 dígitos.');
-        } else {
-            $('#telprincipal').get(0).setCustomValidity('');
+        if (!telefono) {
+            mostrarErrorTelefono('principal', 'Por favor ingrese un número de teléfono');
+            return;
+        }
+
+        // Construir el número completo con +51
+        const telefonoCompleto = '+51' + telefono;
+        console.log('Número a validar:', telefonoCompleto);
+
+        if (validacionEnProceso) return;
+        
+        validacionEnProceso = true;
+        $(this).prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Validando...');
+
+        $.ajax({
+            url: '<?= base_url("usuarios/validarTelefono") ?>',
+            method: 'POST',
+            data: {
+                telefono: telefonoCompleto,
+                pais: 'PE',
+                <?= $csrf_token_name ?>: '<?= $csrf_token ?>'
+            },
+            success: function(response) {
+                console.log('Respuesta de validación principal:', response);
+                console.log('response.success:', response.success);
+                console.log('response.valid:', response.valid);
+                console.log('response.data:', response.data);
+                
+                // Verificar si la respuesta es exitosa y el teléfono es válido
+                if (response.success === true && response.valid === true) {
+                    telefonoPrincipalValidado = true;
+                    mostrarInfoTelefono('principal', response.data);
+                    $('#telprincipal').removeClass('is-invalid').addClass('is-valid');
+                    $('#telprincipal').get(0).setCustomValidity('');
+                    console.log('Teléfono marcado como VÁLIDO');
+                } else {
+                    telefonoPrincipalValidado = false;
+                    const mensaje = response.message || 'Número de teléfono no válido';
+                    mostrarErrorTelefono('principal', mensaje);
+                    $('#telprincipal').removeClass('is-valid').addClass('is-invalid');
+                    $('#telprincipal').get(0).setCustomValidity('Teléfono no válido');
+                    console.log('Teléfono marcado como INVÁLIDO');
+                    
+                    // Mostrar información de debug si está disponible
+                    if (response.debug) {
+                        console.log('Debug info:', response.debug);
+                        console.log('Debug valid field:', response.debug.valid);
+                    }
+                }
+            },
+            error: function() {
+                telefonoPrincipalValidado = false;
+                mostrarErrorTelefono('principal', 'Error al validar el teléfono. Intente nuevamente.');
+                $('#telprincipal').removeClass('is-valid').addClass('is-invalid');
+                $('#telprincipal').get(0).setCustomValidity('Error de validación');
+            },
+            complete: function() {
+                validacionEnProceso = false;
+                $('#validar-telefono-principal').prop('disabled', false).html('<i class="fas fa-check-circle"></i> Validar');
+            }
+        });
+    });
+
+    // Validar teléfono alternativo via AJAX
+    $('#validar-telefono-alternativo').on('click', function() {
+        const telefono = $('#telalternativo').val().trim();
+        
+        if (!telefono) {
+            mostrarErrorTelefono('alternativo', 'Por favor ingrese un número de teléfono');
+            return;
+        }
+
+        // Construir el número completo con +51
+        const telefonoCompleto = '+51' + telefono;
+        console.log('Número alternativo a validar:', telefonoCompleto);
+
+        if (validacionEnProceso) return;
+        
+        validacionEnProceso = true;
+        $(this).prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Validando...');
+
+        $.ajax({
+            url: '<?= base_url("usuarios/validarTelefono") ?>',
+            method: 'POST',
+            data: {
+                telefono: telefonoCompleto,
+                pais: 'PE',
+                <?= $csrf_token_name ?>: '<?= $csrf_token ?>'
+            },
+            success: function(response) {
+                console.log('Respuesta de validación alternativo:', response);
+                console.log('response.success:', response.success);
+                console.log('response.valid:', response.valid);
+                console.log('response.data:', response.data);
+                
+                // Verificar si la respuesta es exitosa y el teléfono es válido
+                if (response.success === true && response.valid === true) {
+                    telefonoAlternativoValidado = true;
+                    mostrarInfoTelefono('alternativo', response.data);
+                    $('#telalternativo').removeClass('is-invalid').addClass('is-valid');
+                    $('#telalternativo').get(0).setCustomValidity('');
+                    console.log('Teléfono alternativo marcado como VÁLIDO');
+                } else {
+                    telefonoAlternativoValidado = false;
+                    const mensaje = response.message || 'Número de teléfono no válido';
+                    mostrarErrorTelefono('alternativo', mensaje);
+                    $('#telalternativo').removeClass('is-valid').addClass('is-invalid');
+                    $('#telalternativo').get(0).setCustomValidity('Teléfono no válido');
+                    console.log('Teléfono alternativo marcado como INVÁLIDO');
+                    
+                    // Mostrar información de debug si está disponible
+                    if (response.debug) {
+                        console.log('Debug info alternativo:', response.debug);
+                        console.log('Debug valid field:', response.debug.valid);
+                    }
+                }
+            },
+            error: function() {
+                telefonoAlternativoValidado = false;
+                mostrarErrorTelefono('alternativo', 'Error al validar el teléfono. Intente nuevamente.');
+                $('#telalternativo').removeClass('is-valid').addClass('is-invalid');
+                $('#telalternativo').get(0).setCustomValidity('Error de validación');
+            },
+            complete: function() {
+                validacionEnProceso = false;
+                $('#validar-telefono-alternativo').prop('disabled', false).html('<i class="fas fa-check-circle"></i> Validar');
+            }
+        });
+    });
+
+    // Auto-validar cuando el usuario termine de escribir
+    let timeoutPrincipal, timeoutAlternativo;
+    
+    $('#telprincipal').on('input', function() {
+        clearTimeout(timeoutPrincipal);
+        const telefono = $(this).val().trim();
+        
+        // Limpiar estados anteriores
+        $('#info-telefono-principal, #error-telefono-principal').hide();
+        $('#telprincipal').removeClass('is-valid is-invalid');
+        telefonoPrincipalValidado = false;
+        
+        // Auto-validar después de 2 segundos de inactividad
+        if (telefono.length === 9) {
+            timeoutPrincipal = setTimeout(() => {
+                $('#validar-telefono-principal').click();
+            }, 2000);
+        }
+    });
+
+    $('#telalternativo').on('input', function() {
+        clearTimeout(timeoutAlternativo);
+        const telefono = $(this).val().trim();
+        
+        // Limpiar estados anteriores
+        $('#info-telefono-alternativo, #error-telefono-alternativo').hide();
+        $('#telalternativo').removeClass('is-valid is-invalid');
+        telefonoAlternativoValidado = false;
+        
+        // Auto-validar después de 2 segundos de inactividad
+        if (telefono.length === 9) {
+            timeoutAlternativo = setTimeout(() => {
+                $('#validar-telefono-alternativo').click();
+            }, 2000);
+        }
+    });
+
+    // Funciones para mostrar información del teléfono válido
+    function mostrarInfoTelefono(tipo, data) {
+        let html = `<div class="phone-info-container">`;
+        
+        // Información principal del número
+        if (data.formatted_number) {
+            html += `<div class="phone-number-display">
+                        <i class="fas fa-phone text-success mr-2"></i>
+                        <strong>Número:</strong> ${data.formatted_number}
+                     </div>`;
         }
         
-        // Validar teléfono alternativo (opcional)
-        if (telAlternativo && !/^\d{9}$/.test(telAlternativo)) {
-            $('#telalternativo').get(0).setCustomValidity('El teléfono debe tener exactamente 9 dígitos.');
+        // Información adicional en grid
+        html += `<div class="phone-details-grid mt-2">`;
+        
+        if (data.country) {
+            html += `<div class="phone-detail-item">
+                        <i class="fas fa-flag text-info mr-1"></i>
+                        <span class="detail-label">País:</span>
+                        <span class="detail-value">${data.country}</span>
+                     </div>`;
+        }
+        
+        if (data.carrier) {
+            html += `<div class="phone-detail-item">
+                        <i class="fas fa-broadcast-tower text-warning mr-1"></i>
+                        <span class="detail-label">Operador:</span>
+                        <span class="detail-value">${data.carrier}</span>
+                     </div>`;
+        }
+        
+        if (data.line_type) {
+            html += `<div class="phone-detail-item">
+                        <i class="fas fa-mobile-alt text-primary mr-1"></i>
+                        <span class="detail-label">Tipo:</span>
+                        <span class="detail-value">${data.line_type}</span>
+                     </div>`;
+        }
+        
+        if (data.location) {
+            html += `<div class="phone-detail-item">
+                        <i class="fas fa-map-marker-alt text-danger mr-1"></i>
+                        <span class="detail-label">Ubicación:</span>
+                        <span class="detail-value">${data.location}</span>
+                     </div>`;
+        }
+        
+        html += `</div></div>`;
+        
+        if (tipo === 'principal') {
+            $('#telefono-principal-info-details').html(html);
+            $('#info-telefono-principal').show();
+            $('#error-telefono-principal').hide();
         } else {
-            $('#telalternativo').get(0).setCustomValidity('');
+            $('#telefono-alternativo-info-details').html(html);
+            $('#info-telefono-alternativo').show();
+            $('#error-telefono-alternativo').hide();
         }
     }
-    
-    // Validar teléfonos en tiempo real
-    $('#telprincipal, #telalternativo').on('input', function() {
-        validarTelefono();
-    });
+
+    // Función para mostrar error del teléfono
+    function mostrarErrorTelefono(tipo, mensaje) {
+        if (tipo === 'principal') {
+            $('#telefono-principal-error-details').text(mensaje);
+            $('#error-telefono-principal').show();
+            $('#info-telefono-principal').hide();
+        } else {
+            $('#telefono-alternativo-error-details').text(mensaje);
+            $('#error-telefono-alternativo').show();
+            $('#info-telefono-alternativo').hide();
+        }
+    }
     
     // Funciones para manejar el estado del botón
     function setButtonLoading($button, originalText) {
@@ -899,6 +1361,13 @@
             $(passwordField).get(0).reportValidity();
             resetButton($submitButton, originalButtonText);
             showAlert('error', 'Contraseña débil', 'La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula, un número y un símbolo.');
+            return;
+        }
+
+        // Validar que el teléfono principal esté validado (solo para formulario nuevo)
+        if ($(this).attr('id') === 'formNuevo' && !telefonoPrincipalValidado) {
+            resetButton($submitButton, originalButtonText);
+            showAlert('warning', 'Teléfono no validado', 'Por favor valide el número de teléfono principal antes de continuar.');
             return;
         }
 
