@@ -620,43 +620,10 @@
                                                     <input type="tel" class="form-control" id="telprincipal" 
                                                            name="telprincipal" required placeholder="987654321" 
                                                            pattern="[0-9]{9}" maxlength="9">
-                                                    <div class="input-group-append">
-                                                        <button class="btn btn-outline-primary" 
-                                                                type="button" 
-                                                                id="validar-telefono-principal">
-                                                            <i class="fas fa-check-circle"></i>
-                                                            Validar
-                                                        </button>
-                                                    </div>
                                                 </div>
                                                 <span class="example-text">Ejemplo: 987654321 (9 dígitos)</span>
                                                 <div class="invalid-feedback">
                                                     Por favor ingrese un teléfono válido.
-                                                </div>
-                                                
-                                                <!-- Información del teléfono validado -->
-                                                <div id="info-telefono-principal" class="mt-2" style="display: none;">
-                                                    <div class="alert alert-success alert-sm">
-                                                        <div class="d-flex align-items-center">
-                                                            <i class="fas fa-check-circle mr-2"></i>
-                                                            <div>
-                                                                <strong>Teléfono Válido</strong>
-                                                                <div id="telefono-principal-info-details" class="small"></div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                
-                                                <div id="error-telefono-principal" class="mt-2" style="display: none;">
-                                                    <div class="alert alert-danger alert-sm">
-                                                        <div class="d-flex align-items-center">
-                                                            <i class="fas fa-exclamation-triangle mr-2"></i>
-                                                            <div>
-                                                                <strong>Teléfono Inválido</strong>
-                                                                <div id="telefono-principal-error-details" class="small"></div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
                                                 </div>
                                             </div>
                                             <div class="col-md-6 mb-3">
@@ -668,43 +635,10 @@
                                                     <input type="tel" class="form-control" id="telalternativo" 
                                                            name="telalternativo" placeholder="912345678" 
                                                            pattern="[0-9]{9}" maxlength="9">
-                                                    <div class="input-group-append">
-                                                        <button class="btn btn-outline-secondary" 
-                                                                type="button" 
-                                                                id="validar-telefono-alternativo">
-                                                            <i class="fas fa-check-circle"></i>
-                                                            Validar
-                                                        </button>
-                                                    </div>
                                                 </div>
                                                 <span class="example-text">Ejemplo: 912345678 (9 dígitos, opcional)</span>
                                                 <div class="invalid-feedback">
                                                     Por favor ingrese un teléfono válido.
-                                                </div>
-                                                
-                                                <!-- Información del teléfono alternativo validado -->
-                                                <div id="info-telefono-alternativo" class="mt-2" style="display: none;">
-                                                    <div class="alert alert-success alert-sm">
-                                                        <div class="d-flex align-items-center">
-                                                            <i class="fas fa-check-circle mr-2"></i>
-                                                            <div>
-                                                                <strong>Teléfono Válido</strong>
-                                                                <div id="telefono-alternativo-info-details" class="small"></div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                
-                                                <div id="error-telefono-alternativo" class="mt-2" style="display: none;">
-                                                    <div class="alert alert-danger alert-sm">
-                                                        <div class="d-flex align-items-center">
-                                                            <i class="fas fa-exclamation-triangle mr-2"></i>
-                                                            <div>
-                                                                <strong>Teléfono Inválido</strong>
-                                                                <div id="telefono-alternativo-error-details" class="small"></div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
@@ -868,22 +802,65 @@
         const passwordInput = document.getElementById(passwordId);
         const toggleButton = document.getElementById(toggleId);
         
-        toggleButton.addEventListener('click', function() {
+        if (!passwordInput || !toggleButton) {
+            console.warn(`No se encontraron elementos: ${passwordId} o ${toggleId}`);
+            return;
+        }
+        
+        toggleButton.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
             const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
             passwordInput.setAttribute('type', type);
             
             // Cambiar icono
             const icon = this.querySelector('i');
-            icon.classList.toggle('fa-eye');
-            icon.classList.toggle('fa-eye-slash');
+            if (icon) {
+                if (type === 'text') {
+                    icon.classList.remove('fa-eye');
+                    icon.classList.add('fa-eye-slash');
+                } else {
+                    icon.classList.remove('fa-eye-slash');
+                    icon.classList.add('fa-eye');
+                }
+            }
         });
     }
     
-    // Configurar toggles para todas las contraseñas
-    setupPasswordToggle('password_existente', 'togglePasswordExistente');
-    setupPasswordToggle('confirm_password_existente', 'toggleConfirmPasswordExistente');
-    setupPasswordToggle('password_nuevo', 'togglePasswordNuevo');
-    setupPasswordToggle('confirm_password_nuevo', 'toggleConfirmPasswordNuevo');
+    // Configurar toggles para todas las contraseñas cuando el DOM esté listo
+    $(document).ready(function() {
+        // Configurar toggles para todas las contraseñas
+        setupPasswordToggle('password_existente', 'togglePasswordExistente');
+        setupPasswordToggle('confirm_password_existente', 'toggleConfirmPasswordExistente');
+        setupPasswordToggle('password_nuevo', 'togglePasswordNuevo');
+        setupPasswordToggle('confirm_password_nuevo', 'toggleConfirmPasswordNuevo');
+        
+        // Alternativa con jQuery para asegurar funcionamiento
+        $('.password-toggle').on('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const $button = $(this);
+            const $input = $button.siblings('input[type="password"], input[type="text"]');
+            const $icon = $button.find('i');
+            
+            if ($input.length > 0) {
+                const currentType = $input.attr('type');
+                const newType = currentType === 'password' ? 'text' : 'password';
+                
+                $input.attr('type', newType);
+                
+                if (newType === 'text') {
+                    $icon.removeClass('fa-eye').addClass('fa-eye-slash');
+                } else {
+                    $icon.removeClass('fa-eye-slash').addClass('fa-eye');
+                }
+            }
+        });
+        
+        console.log('Password toggles configurados');
+    });
     
     // Validación de número de documento (tipodoc ahora es readonly)
     
@@ -901,255 +878,6 @@
             $('#error-numerodoc').text(mensajeError);
         } else {
             $('#numerodoc').get(0).setCustomValidity('');
-        }
-    }
-    
-    // Variables para controlar validación de teléfonos
-    let telefonoPrincipalValidado = false;
-    let telefonoAlternativoValidado = false;
-    let validacionEnProceso = false;
-
-    // Validar teléfono principal via AJAX
-    $('#validar-telefono-principal').on('click', function() {
-        const telefono = $('#telprincipal').val().trim();
-        
-        if (!telefono) {
-            mostrarErrorTelefono('principal', 'Por favor ingrese un número de teléfono');
-            return;
-        }
-
-        // Construir el número completo con +51
-        const telefonoCompleto = '+51' + telefono;
-        console.log('Número a validar:', telefonoCompleto);
-
-        if (validacionEnProceso) return;
-        
-        validacionEnProceso = true;
-        $(this).prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Validando...');
-
-        $.ajax({
-            url: '<?= base_url("usuarios/validarTelefono") ?>',
-            method: 'POST',
-            data: {
-                telefono: telefonoCompleto,
-                pais: 'PE',
-                <?= $csrf_token_name ?>: '<?= $csrf_token ?>'
-            },
-            success: function(response) {
-                console.log('Respuesta de validación principal:', response);
-                console.log('response.success:', response.success);
-                console.log('response.valid:', response.valid);
-                console.log('response.data:', response.data);
-                
-                // Verificar si la respuesta es exitosa y el teléfono es válido
-                if (response.success === true && response.valid === true) {
-                    telefonoPrincipalValidado = true;
-                    mostrarInfoTelefono('principal', response.data);
-                    $('#telprincipal').removeClass('is-invalid').addClass('is-valid');
-                    $('#telprincipal').get(0).setCustomValidity('');
-                    console.log('Teléfono marcado como VÁLIDO');
-                } else {
-                    telefonoPrincipalValidado = false;
-                    const mensaje = response.message || 'Número de teléfono no válido';
-                    mostrarErrorTelefono('principal', mensaje);
-                    $('#telprincipal').removeClass('is-valid').addClass('is-invalid');
-                    $('#telprincipal').get(0).setCustomValidity('Teléfono no válido');
-                    console.log('Teléfono marcado como INVÁLIDO');
-                    
-                    // Mostrar información de debug si está disponible
-                    if (response.debug) {
-                        console.log('Debug info:', response.debug);
-                        console.log('Debug valid field:', response.debug.valid);
-                    }
-                }
-            },
-            error: function() {
-                telefonoPrincipalValidado = false;
-                mostrarErrorTelefono('principal', 'Error al validar el teléfono. Intente nuevamente.');
-                $('#telprincipal').removeClass('is-valid').addClass('is-invalid');
-                $('#telprincipal').get(0).setCustomValidity('Error de validación');
-            },
-            complete: function() {
-                validacionEnProceso = false;
-                $('#validar-telefono-principal').prop('disabled', false).html('<i class="fas fa-check-circle"></i> Validar');
-            }
-        });
-    });
-
-    // Validar teléfono alternativo via AJAX
-    $('#validar-telefono-alternativo').on('click', function() {
-        const telefono = $('#telalternativo').val().trim();
-        
-        if (!telefono) {
-            mostrarErrorTelefono('alternativo', 'Por favor ingrese un número de teléfono');
-            return;
-        }
-
-        // Construir el número completo con +51
-        const telefonoCompleto = '+51' + telefono;
-        console.log('Número alternativo a validar:', telefonoCompleto);
-
-        if (validacionEnProceso) return;
-        
-        validacionEnProceso = true;
-        $(this).prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Validando...');
-
-        $.ajax({
-            url: '<?= base_url("usuarios/validarTelefono") ?>',
-            method: 'POST',
-            data: {
-                telefono: telefonoCompleto,
-                pais: 'PE',
-                <?= $csrf_token_name ?>: '<?= $csrf_token ?>'
-            },
-            success: function(response) {
-                console.log('Respuesta de validación alternativo:', response);
-                console.log('response.success:', response.success);
-                console.log('response.valid:', response.valid);
-                console.log('response.data:', response.data);
-                
-                // Verificar si la respuesta es exitosa y el teléfono es válido
-                if (response.success === true && response.valid === true) {
-                    telefonoAlternativoValidado = true;
-                    mostrarInfoTelefono('alternativo', response.data);
-                    $('#telalternativo').removeClass('is-invalid').addClass('is-valid');
-                    $('#telalternativo').get(0).setCustomValidity('');
-                    console.log('Teléfono alternativo marcado como VÁLIDO');
-                } else {
-                    telefonoAlternativoValidado = false;
-                    const mensaje = response.message || 'Número de teléfono no válido';
-                    mostrarErrorTelefono('alternativo', mensaje);
-                    $('#telalternativo').removeClass('is-valid').addClass('is-invalid');
-                    $('#telalternativo').get(0).setCustomValidity('Teléfono no válido');
-                    console.log('Teléfono alternativo marcado como INVÁLIDO');
-                    
-                    // Mostrar información de debug si está disponible
-                    if (response.debug) {
-                        console.log('Debug info alternativo:', response.debug);
-                        console.log('Debug valid field:', response.debug.valid);
-                    }
-                }
-            },
-            error: function() {
-                telefonoAlternativoValidado = false;
-                mostrarErrorTelefono('alternativo', 'Error al validar el teléfono. Intente nuevamente.');
-                $('#telalternativo').removeClass('is-valid').addClass('is-invalid');
-                $('#telalternativo').get(0).setCustomValidity('Error de validación');
-            },
-            complete: function() {
-                validacionEnProceso = false;
-                $('#validar-telefono-alternativo').prop('disabled', false).html('<i class="fas fa-check-circle"></i> Validar');
-            }
-        });
-    });
-
-    // Auto-validar cuando el usuario termine de escribir
-    let timeoutPrincipal, timeoutAlternativo;
-    
-    $('#telprincipal').on('input', function() {
-        clearTimeout(timeoutPrincipal);
-        const telefono = $(this).val().trim();
-        
-        // Limpiar estados anteriores
-        $('#info-telefono-principal, #error-telefono-principal').hide();
-        $('#telprincipal').removeClass('is-valid is-invalid');
-        telefonoPrincipalValidado = false;
-        
-        // Auto-validar después de 2 segundos de inactividad
-        if (telefono.length === 9) {
-            timeoutPrincipal = setTimeout(() => {
-                $('#validar-telefono-principal').click();
-            }, 2000);
-        }
-    });
-
-    $('#telalternativo').on('input', function() {
-        clearTimeout(timeoutAlternativo);
-        const telefono = $(this).val().trim();
-        
-        // Limpiar estados anteriores
-        $('#info-telefono-alternativo, #error-telefono-alternativo').hide();
-        $('#telalternativo').removeClass('is-valid is-invalid');
-        telefonoAlternativoValidado = false;
-        
-        // Auto-validar después de 2 segundos de inactividad
-        if (telefono.length === 9) {
-            timeoutAlternativo = setTimeout(() => {
-                $('#validar-telefono-alternativo').click();
-            }, 2000);
-        }
-    });
-
-    // Funciones para mostrar información del teléfono válido
-    function mostrarInfoTelefono(tipo, data) {
-        let html = `<div class="phone-info-container">`;
-        
-        // Información principal del número
-        if (data.formatted_number) {
-            html += `<div class="phone-number-display">
-                        <i class="fas fa-phone text-success mr-2"></i>
-                        <strong>Número:</strong> ${data.formatted_number}
-                     </div>`;
-        }
-        
-        // Información adicional en grid
-        html += `<div class="phone-details-grid mt-2">`;
-        
-        if (data.country) {
-            html += `<div class="phone-detail-item">
-                        <i class="fas fa-flag text-info mr-1"></i>
-                        <span class="detail-label">País:</span>
-                        <span class="detail-value">${data.country}</span>
-                     </div>`;
-        }
-        
-        if (data.carrier) {
-            html += `<div class="phone-detail-item">
-                        <i class="fas fa-broadcast-tower text-warning mr-1"></i>
-                        <span class="detail-label">Operador:</span>
-                        <span class="detail-value">${data.carrier}</span>
-                     </div>`;
-        }
-        
-        if (data.line_type) {
-            html += `<div class="phone-detail-item">
-                        <i class="fas fa-mobile-alt text-primary mr-1"></i>
-                        <span class="detail-label">Tipo:</span>
-                        <span class="detail-value">${data.line_type}</span>
-                     </div>`;
-        }
-        
-        if (data.location) {
-            html += `<div class="phone-detail-item">
-                        <i class="fas fa-map-marker-alt text-danger mr-1"></i>
-                        <span class="detail-label">Ubicación:</span>
-                        <span class="detail-value">${data.location}</span>
-                     </div>`;
-        }
-        
-        html += `</div></div>`;
-        
-        if (tipo === 'principal') {
-            $('#telefono-principal-info-details').html(html);
-            $('#info-telefono-principal').show();
-            $('#error-telefono-principal').hide();
-        } else {
-            $('#telefono-alternativo-info-details').html(html);
-            $('#info-telefono-alternativo').show();
-            $('#error-telefono-alternativo').hide();
-        }
-    }
-
-    // Función para mostrar error del teléfono
-    function mostrarErrorTelefono(tipo, mensaje) {
-        if (tipo === 'principal') {
-            $('#telefono-principal-error-details').text(mensaje);
-            $('#error-telefono-principal').show();
-            $('#info-telefono-principal').hide();
-        } else {
-            $('#telefono-alternativo-error-details').text(mensaje);
-            $('#error-telefono-alternativo').show();
-            $('#info-telefono-alternativo').hide();
         }
     }
     
@@ -1324,7 +1052,6 @@
         // Validar número de documento para formulario nuevo
         if ($(this).attr('id') === 'formNuevo') {
             validarNumeroDocumento();
-            validarTelefono();
         }
 
         if (!this.checkValidity()) {
@@ -1361,13 +1088,6 @@
             $(passwordField).get(0).reportValidity();
             resetButton($submitButton, originalButtonText);
             showAlert('error', 'Contraseña débil', 'La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula, un número y un símbolo.');
-            return;
-        }
-
-        // Validar que el teléfono principal esté validado (solo para formulario nuevo)
-        if ($(this).attr('id') === 'formNuevo' && !telefonoPrincipalValidado) {
-            resetButton($submitButton, originalButtonText);
-            showAlert('warning', 'Teléfono no validado', 'Por favor valide el número de teléfono principal antes de continuar.');
             return;
         }
 
