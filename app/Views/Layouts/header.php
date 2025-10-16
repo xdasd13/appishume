@@ -4,9 +4,10 @@
 <head>
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   <title>Ishume - Sistema de Gestión de Proyectos</title>
+  <meta content="width=device-width, initial-scale=1.0, shrink-to-fit=no" name="viewport" />
+  <meta name="csrf-token" content="<?= csrf_hash() ?>">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
 <style></style>
-  <meta content="width=device-width, initial-scale=1.0, shrink-to-fit=no" name="viewport" />
 
   <!-- CONTROL DE PAGOS -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
@@ -22,6 +23,10 @@
 
   <!-- En el header -->
   <link rel="stylesheet" href="<?= base_url('assets/css/custom.css') ?>">
+  <!-- Responsive Fixes -->
+  <link rel="stylesheet" href="<?= base_url('assets/css/responsive-fixes.css') ?>">
+  <!-- Overflow Fixes -->
+  <link rel="stylesheet" href="<?= base_url('assets/css/overflow-fixes.css') ?>">
   <link rel="stylesheet" href="<?= base_url('assets/css/sweetalert-custom.css') ?>">
   <link rel="icon" href="<?= base_url() . 'assets/img/kaiadmin/favicon.ico' ?>" type="image/x-icon" />
 
@@ -54,6 +59,117 @@
   <!-- jQuery -->
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  
+  <!-- Sistema de Notificaciones -->
+  <script src="<?= base_url('js/notificaciones.js') ?>"></script>
+  
+  <!-- Estilos para notificaciones -->
+  <style>
+    .notification-item {
+      padding: 10px 15px;
+      border-bottom: 1px solid #f0f0f0;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+
+    .notification-item:hover {
+      background-color: #f8f9fa;
+    }
+
+    .notification-item:last-child {
+      border-bottom: none;
+    }
+
+    .notification-item.unread {
+      background-color: #e3f2fd;
+      border-left: 3px solid #2196f3;
+    }
+
+    .notification-icon {
+      width: 35px;
+      height: 35px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-right: 10px;
+      font-size: 0.9em;
+    }
+
+    .notification-icon.mensaje {
+      background-color: #4e73df;
+      color: white;
+    }
+
+    .notification-icon.mensaje_importante {
+      background-color: #ffc107;
+      color: #333;
+    }
+
+    .notification-icon.mensaje_urgente {
+      background-color: #dc3545;
+      color: white;
+    }
+
+    .notification-icon.sistema {
+      background-color: #6c757d;
+      color: white;
+    }
+
+    .notification-content {
+      flex: 1;
+    }
+
+    .notification-title {
+      font-weight: bold;
+      margin-bottom: 2px;
+      font-size: 0.9em;
+    }
+
+    .notification-message {
+      font-size: 0.8em;
+      color: #666;
+      margin-bottom: 2px;
+    }
+
+    .notification-time {
+      font-size: 0.7em;
+      color: #999;
+    }
+
+    .badge {
+      animation: pulse 1s ease-in-out;
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.2); }
+      100% { transform: scale(1); }
+    }
+
+    /* Toast container */
+    .toast-container {
+      z-index: 9999;
+    }
+
+    /* Scrollbar personalizado para dropdowns */
+    .dropdown-menu::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .dropdown-menu::-webkit-scrollbar-track {
+      background: #f1f1f1;
+    }
+
+    .dropdown-menu::-webkit-scrollbar-thumb {
+      background: #c1c1c1;
+      border-radius: 3px;
+    }
+
+    .dropdown-menu::-webkit-scrollbar-thumb:hover {
+      background: #a8a8a8;
+    }
+  </style>
 </head>
 
 <body>
@@ -89,6 +205,15 @@
               <a href="<?= base_url('welcome') ?>">
                 <i class="fas fa-home"></i>
                 <p>Dashboard</p>
+              </a>
+            </li>
+
+            <!-- Mensajería -->
+            <li class="nav-item">
+              <a href="<?= base_url('mensajeria') ?>">
+                <i class="fas fa-comments"></i>
+                <p>Mensajería</p>
+                <span id="badge-mensajes-sidebar" class="badge bg-danger ms-1" style="display: none; font-size: 0.7em;">0</span>
               </a>
             </li>
 
@@ -431,56 +556,65 @@
 
             <ul class="navbar-nav topbar-nav ms-md-auto align-items-center">
 
-              <!-- Notificaciones de Proyectos -->
+              <!-- Notificaciones de Mensajes -->
               <li class="nav-item topbar-icon dropdown hidden-caret">
-                <a class="nav-link dropdown-toggle" href="#" id="projectNotif" role="button" data-bs-toggle="dropdown"
+                <a class="nav-link dropdown-toggle" href="#" id="dropdown-mensajes" role="button" data-bs-toggle="dropdown"
                   aria-haspopup="true" aria-expanded="false">
-                  <i class="fas fa-tasks"></i>
-                  <span class="notification">3</span>
+                  <i class="fas fa-envelope"></i>
+                  <span id="badge-mensajes" class="notification" style="display: none;">0</span>
                 </a>
-                <ul class="dropdown-menu notif-box animated fadeIn" aria-labelledby="projectNotif">
+                <ul class="dropdown-menu notif-box animated fadeIn" aria-labelledby="dropdown-mensajes" style="min-width: 300px;">
                   <li>
                     <div class="dropdown-title">
-                      Notificaciones de Proyectos
+                      Mensajes
                     </div>
                   </li>
                   <li>
-                    <div class="notif-scroll scrollbar-outer">
-                      <div class="notif-center">
-                        <a href="#">
-                          <div class="notif-icon notif-warning">
-                            <i class="fas fa-exclamation-triangle"></i>
-                          </div>
-                          <div class="notif-content">
-                            <span class="block">Proyecto próximo a vencer</span>
-                            <span class="time">2 días restantes</span>
-                          </div>
-                        </a>
-                        <a href="#">
-                          <div class="notif-icon notif-success">
-                            <i class="fas fa-check-circle"></i>
-                          </div>
-                          <div class="notif-content">
-                            <span class="block">Entrega completada</span>
-                            <span class="time">1 hora</span>
-                          </div>
-                        </a>
-                        <a href="#">
-                          <div class="notif-icon notif-primary">
-                            <i class="fas fa-plus"></i>
-                          </div>
-                          <div class="notif-content">
-                            <span class="block">Nuevo proyecto asignado</span>
-                            <span class="time">3 horas</span>
-                          </div>
-                        </a>
+                    <div id="mensajes-dropdown-content">
+                      <div class="text-center p-3">
+                        <i class="fas fa-spinner fa-spin"></i>
+                        <p class="mb-0 text-muted">Cargando mensajes...</p>
                       </div>
                     </div>
                   </li>
                   <li>
-                    <a class="see-all" href="<?= base_url('/notificaciones') ?>">Ver todas<i
+                    <a class="see-all" href="<?= base_url('mensajeria') ?>">Ver todos los mensajes<i
                         class="fa fa-angle-right"></i>
                     </a>
+                  </li>
+                </ul>
+              </li>
+
+              <!-- Notificaciones del Sistema -->
+              <li class="nav-item topbar-icon dropdown hidden-caret">
+                <a class="nav-link dropdown-toggle" href="#" id="dropdown-notificaciones" role="button" data-bs-toggle="dropdown"
+                  aria-haspopup="true" aria-expanded="false">
+                  <i class="fas fa-bell"></i>
+                  <span id="badge-notificaciones" class="notification" style="display: none;">0</span>
+                </a>
+                <ul class="dropdown-menu notif-box animated fadeIn" aria-labelledby="dropdown-notificaciones" style="min-width: 350px;">
+                  <li>
+                    <div class="dropdown-title">
+                      Notificaciones
+                    </div>
+                  </li>
+                  <li>
+                    <div id="notificaciones-dropdown-content">
+                      <div class="text-center p-3">
+                        <i class="fas fa-spinner fa-spin"></i>
+                        <p class="mb-0 text-muted">Cargando notificaciones...</p>
+                      </div>
+                    </div>
+                  </li>
+                  <li>
+                    <div class="d-flex justify-content-between px-3 py-2">
+                      <a href="#" class="btn btn-sm btn-outline-primary" onclick="marcarTodasNotificacionesLeidas()">
+                        <i class="fas fa-check-double me-1"></i> Marcar todas como leídas
+                      </a>
+                      <a href="<?= base_url('mensajeria/configuracion') ?>" class="btn btn-sm btn-outline-secondary">
+                        <i class="fas fa-cog me-1"></i> Configurar
+                      </a>
+                    </div>
                   </li>
                 </ul>
               </li>
@@ -585,3 +719,196 @@
             <!-- Antes de cerrar el body -->
 
             <!-- Aquí iría el contenido específico de cada página -->
+            
+            <!-- JavaScript para manejar notificaciones -->
+            <script>
+            // Funciones para manejar el dropdown de notificaciones
+            $(document).ready(function() {
+                // Cargar notificaciones cuando se abre el dropdown
+                $('#dropdown-notificaciones').on('show.bs.dropdown', function() {
+                    cargarNotificacionesRecientes();
+                });
+                
+                // Cargar mensajes cuando se abre el dropdown
+                $('#dropdown-mensajes').on('show.bs.dropdown', function() {
+                    cargarMensajesRecientes();
+                });
+            });
+
+            function cargarNotificacionesRecientes() {
+                $.get('<?= base_url('mensajeria/getNotificacionesRecientes') ?>', { limit: 5 })
+                    .done(function(response) {
+                        if (response.success) {
+                            mostrarNotificaciones(response.data);
+                        } else {
+                            mostrarErrorNotificaciones('Error al cargar notificaciones');
+                        }
+                    })
+                    .fail(function() {
+                        mostrarErrorNotificaciones('Error de conexión');
+                    });
+            }
+
+            function cargarMensajesRecientes() {
+                // Esta función se implementaría para cargar mensajes recientes
+                // Por ahora mostramos un mensaje de placeholder
+                $('#mensajes-dropdown-content').html(`
+                    <div class="text-center p-3">
+                        <i class="fas fa-envelope fa-2x text-muted mb-2"></i>
+                        <p class="mb-0 text-muted">No hay mensajes recientes</p>
+                        <a href="<?= base_url('mensajeria') ?>" class="btn btn-sm btn-primary mt-2">
+                            <i class="fas fa-comments me-1"></i> Ir a Mensajería
+                        </a>
+                    </div>
+                `);
+            }
+
+            function mostrarNotificaciones(notificaciones) {
+                const container = $('#notificaciones-dropdown-content');
+                
+                if (notificaciones.length === 0) {
+                    container.html(`
+                        <div class="text-center p-3">
+                            <i class="fas fa-bell-slash fa-2x text-muted mb-2"></i>
+                            <p class="mb-0 text-muted">No hay notificaciones</p>
+                        </div>
+                    `);
+                    return;
+                }
+                
+                let html = '';
+                notificaciones.forEach(function(notificacion) {
+                    const iconClass = getIconClass(notificacion.tipo);
+                    const isUnread = !notificacion.leida;
+                    const unreadClass = isUnread ? 'unread' : '';
+                    
+                    html += `
+                        <div class="notification-item ${unreadClass}" onclick="marcarNotificacionLeida(${notificacion.id})">
+                            <div class="d-flex align-items-start">
+                                <div class="notification-icon ${notificacion.tipo}">
+                                    <i class="${iconClass}"></i>
+                                </div>
+                                <div class="notification-content">
+                                    <div class="notification-title">${notificacion.titulo}</div>
+                                    <div class="notification-message">${notificacion.mensaje}</div>
+                                    <div class="notification-time">${notificacion.tiempo_transcurrido}</div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                container.html(html);
+            }
+
+            function mostrarErrorNotificaciones(mensaje) {
+                $('#notificaciones-dropdown-content').html(`
+                    <div class="text-center p-3">
+                        <i class="fas fa-exclamation-triangle fa-2x text-warning mb-2"></i>
+                        <p class="mb-0 text-muted">${mensaje}</p>
+                    </div>
+                `);
+            }
+
+            function getIconClass(tipo) {
+                switch(tipo) {
+                    case 'mensaje':
+                        return 'fas fa-envelope';
+                    case 'mensaje_importante':
+                        return 'fas fa-exclamation-triangle';
+                    case 'mensaje_urgente':
+                        return 'fas fa-exclamation-circle';
+                    case 'sistema':
+                        return 'fas fa-cog';
+                    default:
+                        return 'fas fa-bell';
+                }
+            }
+
+            function marcarNotificacionLeida(notificacionId) {
+                // Obtener el token CSRF del meta tag
+                const csrfToken = $('meta[name="csrf-token"]').attr('content');
+                
+                $.ajax({
+                    url: '<?= base_url('mensajeria/marcarNotificacionLeida') ?>',
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': csrfToken
+                    },
+                    data: {
+                        notificacion_id: notificacionId
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            // Remover la clase unread
+                            $(`[onclick="marcarNotificacionLeida(${notificacionId})"]`).removeClass('unread');
+                            
+                            // Actualizar contador
+                            if (window.notificacionesManager) {
+                                window.notificacionesManager.forceCheck();
+                            }
+                        }
+                    }
+                });
+            }
+
+            function marcarTodasNotificacionesLeidas() {
+                // Obtener el token CSRF del meta tag
+                const csrfToken = $('meta[name="csrf-token"]').attr('content');
+                
+                $.ajax({
+                    url: '<?= base_url('mensajeria/marcarTodasNotificacionesLeidas') ?>',
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': csrfToken
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            // Remover todas las clases unread
+                            $('.notification-item').removeClass('unread');
+                            
+                            // Actualizar contador
+                            if (window.notificacionesManager) {
+                                window.notificacionesManager.forceCheck();
+                            }
+                            
+                            // Mostrar mensaje de éxito
+                            Swal.fire({
+                                title: 'Éxito',
+                                text: 'Todas las notificaciones han sido marcadas como leídas',
+                                icon: 'success',
+                                timer: 2000,
+                                showConfirmButton: false
+                            });
+                        }
+                    }
+                });
+            }
+
+            // Función para actualizar contadores desde el sistema de notificaciones
+            function actualizarContadoresHeader(notificaciones, mensajes) {
+                // Actualizar badge de notificaciones
+                const badgeNotificaciones = $('#badge-notificaciones');
+                if (notificaciones.total > 0) {
+                    badgeNotificaciones.text(notificaciones.total).show();
+                } else {
+                    badgeNotificaciones.hide();
+                }
+                
+                // Actualizar badge de mensajes
+                const badgeMensajes = $('#badge-mensajes');
+                if (mensajes.total > 0) {
+                    badgeMensajes.text(mensajes.total).show();
+                } else {
+                    badgeMensajes.hide();
+                }
+                
+                // Actualizar badge del sidebar
+                const badgeMensajesSidebar = $('#badge-mensajes-sidebar');
+                if (mensajes.total > 0) {
+                    badgeMensajesSidebar.text(mensajes.total).show();
+                } else {
+                    badgeMensajesSidebar.hide();
+                }
+            }
+            </script>

@@ -1,0 +1,166 @@
+/* ========================================
+   OVERFLOW FIXES ESPECÍFICOS - ISHUME
+   ======================================== */
+
+/* Prevenir overflow horizontal global */
+html, body {
+    overflow-x: hidden !important;
+    max-width: 100vw !important;
+    width: 100% !important;
+}
+
+/* Contenedores principales */
+.container-fluid,
+.page-inner,
+.main-panel,
+.wrapper {
+    max-width: 100% !important;
+    overflow-x: hidden !important;
+    width: 100% !important;
+}
+
+/* Sidebar fijo */
+.sidebar {
+    max-width: 280px !important;
+    overflow-x: hidden !important;
+}
+
+/* Contenido principal */
+.main-panel {
+    width: calc(100% - 280px) !important;
+    max-width: calc(100vw - 280px) !important;
+    overflow-x: hidden !important;
+}
+
+/* Responsive para móviles */
+@media (max-width: 768px) {
+    .main-panel {
+        width: 100% !important;
+        max-width: 100vw !important;
+    }
+    
+    .sidebar {
+        max-width: 100vw !important;
+    }
+}
+
+/* Cards y contenedores */
+.card,
+.card-body,
+.card-header {
+    max-width: 100% !important;
+    overflow-x: hidden !important;
+}
+
+/* Tablas */
+.table-responsive {
+    overflow-x: auto !important;
+    max-width: 100% !important;
+}
+
+.table {
+    min-width: 100% !important;
+    max-width: 100% !important;
+}
+
+/* Formularios */
+.form-control,
+.input-group {
+    max-width: 100% !important;
+}
+
+/* Botones */
+.btn {
+    max-width: 100% !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+}
+
+/* Modales */
+.modal-dialog {
+    max-width: 95vw !important;
+    margin: 1rem auto !important;
+}
+
+.modal-content {
+    max-width: 100% !important;
+    overflow-x: hidden !important;
+}
+
+/* Dropdowns */
+.dropdown-menu {
+    max-width: 100vw !important;
+    overflow-x: hidden !important;
+}
+
+/* Elementos flotantes */
+.floating-element,
+.position-fixed,
+.position-absolute {
+    max-width: calc(100vw - 20px) !important;
+}
+
+/* Scrollbars personalizados */
+::-webkit-scrollbar {
+    width: 6px !important;
+    height: 6px !important;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1 !important;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #c1c1c1 !important;
+    border-radius: 3px !important;
+}
+
+/* Prevenir elementos que se salen */
+* {
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+}
+
+/* Fix específico para mensajería */
+.mensajeria-container {
+    height: 100vh !important;
+    max-height: 100vh !important;
+    overflow: hidden !important;
+    width: 100% !important;
+    max-width: 100vw !important;
+}
+
+/* Fix para reportes */
+.reportes-container {
+    max-width: 100% !important;
+    overflow-x: hidden !important;
+}
+
+/* Fix para elementos con width fijo */
+[style*="width:"] {
+    max-width: 100% !important;
+}
+
+/* Fix para elementos con min-width */
+[style*="min-width:"] {
+    max-width: 100% !important;
+}
+
+/* Prevenir zoom horizontal */
+body {
+    zoom: 1 !important;
+    transform: scale(1) !important;
+}
+
+/* Fix para elementos que se salen en móviles */
+@media (max-width: 576px) {
+    * {
+        max-width: 100vw !important;
+    }
+    
+    .container-fluid {
+        padding-left: 10px !important;
+        padding-right: 10px !important;
+    }
+}
