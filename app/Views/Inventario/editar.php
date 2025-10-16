@@ -1,72 +1,124 @@
 <?= $header ?>
 
 <!-- Contenido Principal - Editar Equipo -->
-<div class="container-fluid py-4">
-    <div class="row justify-content-center">
-        <div class="col-xl-8 col-lg-10">
-            <!-- Header -->
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h2 class="mb-0">
-                    <i class="fas fa-edit text-warning me-2"></i>
-                    Editar Equipo
-                </h2>
-                <a href="/inventario" class="btn btn-secondary">
-                    <i class="fas fa-arrow-left me-2"></i>Volver al Inventario
-                </a>
+<div class="container-fluid px-4">
+    <!-- Header Mejorado -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <div class="d-flex align-items-center">
+            <div class="header-icon-container bg-warning-gradient rounded-circle me-3">
+                <i class="fas fa-edit text-white"></i>
             </div>
+            <div>
+                <h1 class="h3 mb-1 text-gray-900 fw-bold">Editar Equipo</h1>
+                <p class="text-muted mb-0">Actualiza la información del equipo existente</p>
+            </div>
+        </div>
+        <a href="/inventario" class="btn btn-outline-secondary btn-lg">
+            <i class="fas fa-arrow-left me-2"></i>
+            Volver al Inventario
+        </a>
+    </div>
 
-            <!-- Información actual del equipo -->
-            <div class="card shadow mb-4">
-                <div class="card-header py-3">
-                    <h6 class="m-0 font-weight-bold text-info">
-                        <i class="fas fa-info-circle me-2"></i>Información Actual
-                    </h6>
+    <!-- Información Actual -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-light py-3">
+                    <h5 class="mb-0 fw-semibold">
+                        <i class="fas fa-info-circle text-info me-2"></i>
+                        Información Actual del Equipo
+                    </h5>
                 </div>
                 <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-3">
+                    <div class="row align-items-center">
+                        <div class="col-md-3 text-center">
                             <?php if (!empty($equipo['imgEquipo'])): ?>
                                 <img src="/<?= esc($equipo['imgEquipo']) ?>" 
-                                     class="img-fluid rounded mb-3" 
-                                     alt="<?= esc($equipo['modelo']) ?>"
-                                     style="max-height: 150px;">
+                                     class="img-fluid rounded shadow-sm mb-3 current-equipment-image" 
+                                     alt="<?= esc($equipo['modelo']) ?>">
                             <?php else: ?>
-                                <div class="bg-light rounded d-flex align-items-center justify-content-center mb-3" style="height: 150px;">
-                                    <i class="fas fa-camera fa-2x text-muted"></i>
+                                <div class="current-equipment-placeholder rounded mb-3">
+                                    <i class="fas fa-camera fa-2x"></i>
+                                    <p class="small mt-2 mb-0">Sin imagen</p>
                                 </div>
                             <?php endif; ?>
                         </div>
                         <div class="col-md-9">
-                            <h5><?= esc($equipo['modelo']) ?></h5>
-                            <p class="mb-1"><strong>Categoría:</strong> <?= esc($equipo['nomCate']) ?></p>
-                            <p class="mb-1"><strong>Marca:</strong> <?= esc($equipo['nomMarca']) ?></p>
-                            <p class="mb-1"><strong>Estado:</strong> 
-                                <span class="badge bg-primary"><?= esc($equipo['estado']) ?></span>
-                            </p>
-                            <p class="mb-1"><strong>Cantidad:</strong> <?= $equipo['cantDisponible'] ?></p>
-                            <?php if (!empty($equipo['sku'])): ?>
-                                <p class="mb-1"><strong>SKU:</strong> <?= esc($equipo['sku']) ?></p>
-                            <?php endif; ?>
+                            <div class="row g-3">
+                                <div class="col-sm-6">
+                                    <label class="small text-muted fw-semibold">Modelo</label>
+                                    <p class="fw-bold text-gray-800 mb-0"><?= esc($equipo['modelo']) ?></p>
+                                </div>
+                                <div class="col-sm-6">
+                                    <label class="small text-muted fw-semibold">Categoría</label>
+                                    <p class="fw-bold text-gray-800 mb-0"><?= esc($equipo['nomCate']) ?></p>
+                                </div>
+                                <div class="col-sm-6">
+                                    <label class="small text-muted fw-semibold">Marca</label>
+                                    <p class="fw-bold text-gray-800 mb-0"><?= esc($equipo['nomMarca']) ?></p>
+                                </div>
+                                <div class="col-sm-6">
+                                    <label class="small text-muted fw-semibold">Estado</label>
+                                    <div>
+                                        <?php
+                                        $badgeConfig = [
+                                            'Nuevo' => 'badge-new',
+                                            'EnUso' => 'badge-in-use',
+                                            'EnMantenimiento' => 'badge-maintenance',
+                                            'Dañado' => 'badge-damaged',
+                                            'Otro' => 'badge-other'
+                                        ];
+                                        $badgeClass = $badgeConfig[$equipo['estado']] ?? 'badge-other';
+                                        ?>
+                                        <span class="status-badge <?= $badgeClass ?>">
+                                            <?= $equipo['estado'] ?>
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <label class="small text-muted fw-semibold">Cantidad</label>
+                                    <p class="fw-bold text-gray-800 mb-0"><?= $equipo['cantDisponible'] ?> unidades</p>
+                                </div>
+                                <?php if (!empty($equipo['sku'])): ?>
+                                <div class="col-sm-6">
+                                    <label class="small text-muted fw-semibold">SKU</label>
+                                    <p class="fw-bold text-gray-800 mb-0"><?= esc($equipo['sku']) ?></p>
+                                </div>
+                                <?php endif; ?>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
+        </div>
+    </div>
 
-            <!-- Formulario de edición -->
-            <div class="card shadow">
-                <div class="card-header py-3">
-                    <h6 class="m-0 font-weight-bold text-primary">
-                        <i class="fas fa-edit me-2"></i>Editar Información del Equipo
-                    </h6>
+    <!-- Formulario de Edición -->
+    <div class="row justify-content-center">
+        <div class="col-xl-8">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-light py-3">
+                    <h5 class="mb-0 fw-semibold">
+                        <i class="fas fa-edit text-primary me-2"></i>
+                        Editar Información del Equipo
+                    </h5>
                 </div>
-                <div class="card-body">
+                <div class="card-body p-4">
                     <form id="formEditarEquipo" action="/inventario/actualizar/<?= $equipo['idEquipo'] ?>" method="POST" enctype="multipart/form-data" novalidate>
                         <?= csrf_field() ?>
                         
-                        <div class="row">
+                        <!-- Información Básica -->
+                        <div class="section-header mb-4">
+                            <h6 class="text-primary fw-semibold mb-3">
+                                <i class="fas fa-info-circle me-2"></i>
+                                Información Básica
+                            </h6>
+                        </div>
+                        
+                        <div class="row g-3">
                             <!-- Categoría -->
-                            <div class="col-md-6 mb-3">
-                                <label for="idCateEquipo" class="form-label">
+                            <div class="col-md-6">
+                                <label for="idCateEquipo" class="form-label fw-semibold">
                                     Categoría <span class="text-danger">*</span>
                                 </label>
                                 <select class="form-select" id="idCateEquipo" name="idCateEquipo" required>
@@ -78,12 +130,11 @@
                                         </option>
                                     <?php endforeach; ?>
                                 </select>
-                                <div class="invalid-feedback"></div>
                             </div>
 
                             <!-- Marca -->
-                            <div class="col-md-6 mb-3">
-                                <label for="idMarca" class="form-label">
+                            <div class="col-md-6">
+                                <label for="idMarca" class="form-label fw-semibold">
                                     Marca <span class="text-danger">*</span>
                                 </label>
                                 <select class="form-select" id="idMarca" name="idMarca" required>
@@ -95,14 +146,13 @@
                                         </option>
                                     <?php endforeach; ?>
                                 </select>
-                                <div class="invalid-feedback"></div>
                             </div>
                         </div>
 
-                        <div class="row">
+                        <div class="row g-3 mt-2">
                             <!-- Modelo -->
-                            <div class="col-md-8 mb-3">
-                                <label for="modelo" class="form-label">
+                            <div class="col-md-8">
+                                <label for="modelo" class="form-label fw-semibold">
                                     Modelo <span class="text-danger">*</span>
                                 </label>
                                 <input type="text" 
@@ -114,12 +164,11 @@
                                        required
                                        minlength="2"
                                        maxlength="70">
-                                <div class="invalid-feedback"></div>
                             </div>
 
                             <!-- Cantidad Disponible -->
-                            <div class="col-md-4 mb-3">
-                                <label for="cantDisponible" class="form-label">
+                            <div class="col-md-4">
+                                <label for="cantDisponible" class="form-label fw-semibold">
                                     Cantidad <span class="text-danger">*</span>
                                 </label>
                                 <input type="number" 
@@ -129,30 +178,36 @@
                                        value="<?= old('cantDisponible', $equipo['cantDisponible']) ?>"
                                        min="0"
                                        required>
-                                <div class="invalid-feedback"></div>
                             </div>
                         </div>
 
-                        <div class="row">
+                        <!-- Información Técnica -->
+                        <div class="section-header mb-4 mt-5">
+                            <h6 class="text-primary fw-semibold mb-3">
+                                <i class="fas fa-cogs me-2"></i>
+                                Información Técnica
+                            </h6>
+                        </div>
+
+                        <div class="row g-3">
                             <!-- SKU -->
-                            <div class="col-md-6 mb-3">
-                                <label for="sku" class="form-label">
-                                    SKU <small class="text-muted">(Opcional)</small>
+                            <div class="col-md-6">
+                                <label for="sku" class="form-label fw-semibold">
+                                    SKU
                                 </label>
                                 <input type="text" 
                                        class="form-control" 
                                        id="sku" 
                                        name="sku" 
                                        value="<?= old('sku', $equipo['sku']) ?>"
-                                       placeholder="Ej: CAM001"
+                                       placeholder="Ej: CAM-SONY-001"
                                        maxlength="50">
-                                <div class="invalid-feedback"></div>
                             </div>
 
                             <!-- Número de Serie -->
-                            <div class="col-md-6 mb-3">
-                                <label for="numSerie" class="form-label">
-                                    Número de Serie <small class="text-muted">(Opcional)</small>
+                            <div class="col-md-6">
+                                <label for="numSerie" class="form-label fw-semibold">
+                                    Número de Serie
                                 </label>
                                 <input type="text" 
                                        class="form-control" 
@@ -161,14 +216,13 @@
                                        value="<?= old('numSerie', $equipo['numSerie']) ?>"
                                        placeholder="Ej: SN123456789"
                                        maxlength="100">
-                                <div class="invalid-feedback"></div>
                             </div>
                         </div>
 
-                        <div class="row">
+                        <div class="row g-3 mt-2">
                             <!-- Estado -->
-                            <div class="col-md-6 mb-3">
-                                <label for="estado" class="form-label">
+                            <div class="col-md-6">
+                                <label for="estado" class="form-label fw-semibold">
                                     Estado <span class="text-danger">*</span>
                                 </label>
                                 <select class="form-select" id="estado" name="estado" required>
@@ -179,42 +233,47 @@
                                     <option value="Dañado" <?= (old('estado', $equipo['estado']) == 'Dañado') ? 'selected' : '' ?>>Dañado</option>
                                     <option value="Otro" <?= (old('estado', $equipo['estado']) == 'Otro') ? 'selected' : '' ?>>Otro</option>
                                 </select>
-                                <div class="invalid-feedback"></div>
                             </div>
 
                             <!-- Fecha de Compra -->
-                            <div class="col-md-6 mb-3">
-                                <label for="fechaCompra" class="form-label">
-                                    Fecha de Compra <small class="text-muted">(Opcional)</small>
+                            <div class="col-md-6">
+                                <label for="fechaCompra" class="form-label fw-semibold">
+                                    Fecha de Compra
                                 </label>
                                 <input type="date" 
                                        class="form-control" 
                                        id="fechaCompra" 
                                        name="fechaCompra" 
                                        value="<?= old('fechaCompra', $equipo['fechaCompra']) ?>">
-                                <div class="invalid-feedback"></div>
                             </div>
                         </div>
 
                         <!-- Fecha de Uso -->
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="fechaUso" class="form-label">
-                                    Fecha de Primer Uso <small class="text-muted">(Opcional)</small>
+                        <div class="row g-3 mt-2">
+                            <div class="col-md-6">
+                                <label for="fechaUso" class="form-label fw-semibold">
+                                    Fecha de Primer Uso
                                 </label>
                                 <input type="date" 
                                        class="form-control" 
                                        id="fechaUso" 
                                        name="fechaUso" 
                                        value="<?= old('fechaUso', $equipo['fechaUso']) ?>">
-                                <div class="invalid-feedback"></div>
                             </div>
                         </div>
 
+                        <!-- Descripciones -->
+                        <div class="section-header mb-4 mt-5">
+                            <h6 class="text-primary fw-semibold mb-3">
+                                <i class="fas fa-align-left me-2"></i>
+                                Descripciones
+                            </h6>
+                        </div>
+
                         <!-- Descripción -->
-                        <div class="mb-3">
-                            <label for="descripcion" class="form-label">
-                                Descripción <small class="text-muted">(Opcional)</small>
+                        <div class="mb-4">
+                            <label for="descripcion" class="form-label fw-semibold">
+                                Descripción
                             </label>
                             <textarea class="form-control" 
                                       id="descripcion" 
@@ -222,101 +281,115 @@
                                       rows="3"
                                       placeholder="Descripción general del equipo..."
                                       maxlength="255"><?= old('descripcion', $equipo['descripcion']) ?></textarea>
-                            <div class="invalid-feedback"></div>
-                            <small class="form-text text-muted">
-                                <span id="descripcionCount">0</span>/255 caracteres
-                            </small>
+                            <div class="d-flex justify-content-between align-items-center mt-1">
+                                <small class="text-muted">Descripción breve del equipo</small>
+                                <small class="text-muted">
+                                    <span id="descripcionCount"><?= strlen($equipo['descripcion'] ?? '') ?></span>/255 caracteres
+                                </small>
+                            </div>
                         </div>
 
                         <!-- Características -->
-                        <div class="mb-3">
-                            <label for="caracteristica" class="form-label">
-                                Características Técnicas <small class="text-muted">(Opcional)</small>
+                        <div class="mb-4">
+                            <label for="caracteristica" class="form-label fw-semibold">
+                                Características Técnicas
                             </label>
                             <textarea class="form-control" 
                                       id="caracteristica" 
                                       name="caracteristica" 
                                       rows="4"
                                       placeholder="Especificaciones técnicas detalladas..."><?= old('caracteristica', $equipo['caracteristica']) ?></textarea>
-                            <div class="invalid-feedback"></div>
                         </div>
 
-                        <!-- Imagen actual -->
+                        <!-- Imagen -->
+                        <div class="section-header mb-4 mt-5">
+                            <h6 class="text-primary fw-semibold mb-3">
+                                <i class="fas fa-image me-2"></i>
+                                Imagen del Equipo
+                            </h6>
+                        </div>
+
+                        <!-- Imagen Actual -->
                         <?php if (!empty($equipo['imgEquipo'])): ?>
-                        <div class="mb-3">
-                            <label class="form-label">Imagen Actual</label>
-                            <div class="d-flex align-items-center">
-                                <img src="/<?= esc($equipo['imgEquipo']) ?>" 
-                                     class="img-thumbnail me-3" 
-                                     alt="Imagen actual" 
-                                     style="max-width: 150px; max-height: 150px;">
-                                <div>
-                                    <p class="mb-1"><strong>Archivo:</strong> <?= basename($equipo['imgEquipo']) ?></p>
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold">Imagen Actual</label>
+                            <div class="d-flex align-items-start gap-3">
+                                <div class="current-image-container">
+                                    <img src="/<?= esc($equipo['imgEquipo']) ?>" 
+                                         class="current-image-preview"
+                                         alt="Imagen actual">
+                                </div>
+                                <div class="flex-grow-1">
+                                    <p class="mb-2">
+                                        <strong>Archivo:</strong> 
+                                        <span class="text-muted"><?= basename($equipo['imgEquipo']) ?></span>
+                                    </p>
                                     <button type="button" class="btn btn-sm btn-outline-danger" onclick="eliminarImagenActual()">
                                         <i class="fas fa-trash me-1"></i>Eliminar imagen actual
                                     </button>
+                                    <div class="form-text text-muted small mt-1">
+                                        Al eliminar la imagen actual, se quitará la asociación con este equipo.
+                                    </div>
                                 </div>
                             </div>
                         </div>
                         <?php endif; ?>
 
-                        <!-- Nueva imagen -->
-                        <div class="mb-4">
-                            <label for="imagen_file" class="form-label">
-                                <?= !empty($equipo['imgEquipo']) ? 'Cambiar Imagen' : 'Imagen del Equipo' ?> 
-                                <small class="text-muted">(Opcional)</small>
-                            </label>
-                            <input type="file" 
-                                   class="form-control" 
-                                   id="imagen_file" 
-                                   name="imagen_file" 
-                                   accept="image/*">
-                            <div class="invalid-feedback"></div>
-                            <small class="form-text text-muted">
-                                Formatos permitidos: JPG, PNG, GIF. Tamaño máximo: 5MB
-                                <?= !empty($equipo['imgEquipo']) ? '. Si selecciona una nueva imagen, reemplazará la actual.' : '' ?>
-                            </small>
-                            
-                            <!-- Preview de nueva imagen -->
-                            <div id="imagePreview" class="mt-3" style="display: none;">
-                                <img id="previewImg" src="" alt="Preview" class="img-thumbnail" style="max-width: 200px; max-height: 200px;">
-                                <button type="button" class="btn btn-sm btn-outline-danger ms-2" onclick="removeImagePreview()">
-                                    <i class="fas fa-times"></i> Quitar
-                                </button>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label for="imagen_file" class="form-label fw-semibold">
+                                    <?= !empty($equipo['imgEquipo']) ? 'Cambiar Imagen' : 'Subir Imagen' ?>
+                                </label>
+                                <input type="file" 
+                                       class="form-control" 
+                                       id="imagen_file" 
+                                       name="imagen_file" 
+                                       accept="image/*">
+                                <div class="form-text text-muted small">
+                                    Formatos: JPG, PNG, GIF. Tamaño máximo: 5MB
+                                    <?= !empty($equipo['imgEquipo']) ? '. Reemplazará la imagen actual.' : '' ?>
+                                </div>
+                                
+                                <!-- Preview de nueva imagen -->
+                                <div id="imagePreview" class="mt-3" style="display: none;">
+                                    <div class="image-preview-container">
+                                        <img id="previewImg" src="" alt="Preview" class="image-preview">
+                                        <button type="button" class="btn-remove-preview" onclick="removeImagePreview()">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="imgEquipo" class="form-label fw-semibold">
+                                    O URL de Imagen
+                                </label>
+                                <input type="url" 
+                                       class="form-control" 
+                                       id="imgEquipo" 
+                                       name="imgEquipo" 
+                                       value="<?= old('imgEquipo', $equipo['imgEquipo']) ?>"
+                                       placeholder="https://ejemplo.com/imagen-equipo.jpg">
+                                <div class="form-text text-muted small">
+                                    Enlace a imagen externa (tiene prioridad sobre archivo subido)
+                                </div>
                             </div>
                         </div>
 
-                        <!-- URL de imagen alternativa -->
-                        <div class="mb-4">
-                            <label for="imgEquipo" class="form-label">
-                                O URL de Imagen <small class="text-muted">(Alternativo)</small>
-                            </label>
-                            <input type="url" 
-                                   class="form-control" 
-                                   id="imgEquipo" 
-                                   name="imgEquipo" 
-                                   value="<?= old('imgEquipo', $equipo['imgEquipo']) ?>"
-                                   placeholder="https://ejemplo.com/imagen.jpg">
-                            <div class="invalid-feedback"></div>
-                            <small class="form-text text-muted">
-                                Si especifica una URL, tendrá prioridad sobre el archivo subido
-                            </small>
-                        </div>
-
-                        <!-- Botones -->
-                        <div class="row">
+                        <!-- Botones de Acción -->
+                        <div class="row mt-5 pt-4 border-top">
                             <div class="col-12">
-                                <hr>
                                 <div class="d-flex justify-content-between">
-                                    <a href="/inventario" class="btn btn-secondary">
+                                    <a href="/inventario" class="btn btn-outline-secondary btn-lg px-4">
                                         <i class="fas fa-times me-2"></i>Cancelar
                                     </a>
                                     <div>
-                                        <button type="button" class="btn btn-outline-danger me-2" onclick="confirmarEliminacion()">
-                                            <i class="fas fa-trash me-2"></i>Eliminar Equipo
+                                        <button type="button" class="btn btn-outline-danger btn-lg px-4 me-3" onclick="confirmarEliminacion()">
+                                            <i class="fas fa-trash me-2"></i>Eliminar
                                         </button>
-                                        <button type="submit" class="btn btn-primary" id="btnActualizar">
-                                            <i class="fas fa-save me-2"></i>Actualizar Equipo
+                                        <button type="submit" class="btn btn-primary btn-lg px-4" id="btnActualizar">
+                                            <i class="fas fa-save me-2"></i>Actualizar
                                         </button>
                                     </div>
                                 </div>
@@ -329,7 +402,143 @@
     </div>
 </div>
 
-<!-- Scripts JavaScript -->
+<?= $footer ?>
+
+<!-- Estilos CSS para Editar -->
+<style>
+.bg-warning-gradient {
+    background: linear-gradient(135deg, #f59e0b, #fbbf24);
+}
+
+.current-equipment-image {
+    max-height: 150px;
+    width: auto;
+    border: 3px solid #f3f4f6;
+}
+
+.current-equipment-placeholder {
+    width: 150px;
+    height: 150px;
+    background: #f8f9fa;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: #9ca3af;
+    border: 2px dashed #d1d5db;
+    margin: 0 auto;
+}
+
+.current-image-container {
+    position: relative;
+    flex-shrink: 0;
+}
+
+.current-image-preview {
+    width: 150px;
+    height: 150px;
+    object-fit: cover;
+    border-radius: 8px;
+    border: 2px solid #e5e7eb;
+}
+
+/* Los demás estilos son los mismos que en crear.php */
+.section-header {
+    border-bottom: 2px solid #e8f0fe;
+    padding-bottom: 0.5rem;
+}
+
+.form-control, .form-select {
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+    padding: 0.75rem 1rem;
+    transition: all 0.3s ease;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: #2c5aa0;
+    box-shadow: 0 0 0 0.2rem rgba(44, 90, 160, 0.1);
+    transform: translateY(-1px);
+}
+
+.image-preview-container {
+    position: relative;
+    display: inline-block;
+}
+
+.image-preview {
+    width: 150px;
+    height: 150px;
+    object-fit: cover;
+    border-radius: 8px;
+    border: 2px solid #e2e8f0;
+}
+
+.btn-remove-preview {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    width: 24px;
+    height: 24px;
+    border: none;
+    border-radius: 50%;
+    background: #ef4444;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-remove-preview:hover {
+    background: #dc2626;
+    transform: scale(1.1);
+}
+
+/* Status badges (igual que en listar.php) */
+.status-badge {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.badge-new {
+    background: #d1fae5;
+    color: #065f46;
+    border: 1px solid #10b981;
+}
+
+.badge-in-use {
+    background: #dbeafe;
+    color: #1e40af;
+    border: 1px solid #3b82f6;
+}
+
+.badge-maintenance {
+    background: #fef3c7;
+    color: #92400e;
+    border: 1px solid #f59e0b;
+}
+
+.badge-damaged {
+    background: #fee2e2;
+    color: #991b1b;
+    border: 1px solid #ef4444;
+}
+
+.badge-other {
+    background: #f3f4f6;
+    color: #374151;
+    border: 1px solid #9ca3af;
+}
+</style>
+
+<!-- JavaScript para Editar -->
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const form = document.getElementById('formEditarEquipo');
@@ -338,6 +547,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const imagenInput = document.getElementById('imagen_file');
     const imagePreview = document.getElementById('imagePreview');
     const previewImg = document.getElementById('previewImg');
+    const btnActualizar = document.getElementById('btnActualizar');
 
     // Contador de caracteres para descripción
     function updateDescripcionCount() {
@@ -346,15 +556,17 @@ document.addEventListener('DOMContentLoaded', function() {
         
         if (count > 255) {
             descripcionCount.classList.add('text-danger');
+            descripcionTextarea.classList.add('is-invalid');
         } else {
             descripcionCount.classList.remove('text-danger');
+            descripcionTextarea.classList.remove('is-invalid');
         }
     }
 
     descripcionTextarea.addEventListener('input', updateDescripcionCount);
-    updateDescripcionCount(); // Inicializar contador
+    updateDescripcionCount();
 
-    // Preview de imagen
+    // Preview de nueva imagen
     imagenInput.addEventListener('change', function(e) {
         const file = e.target.files[0];
         if (file) {
@@ -363,7 +575,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 Swal.fire({
                     icon: 'error',
                     title: 'Archivo no válido',
-                    text: 'Por favor seleccione un archivo de imagen válido.'
+                    text: 'Por favor seleccione un archivo de imagen válido (JPG, PNG, GIF).'
                 });
                 this.value = '';
                 return;
@@ -390,7 +602,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // Validación en tiempo real
+    // Validación en tiempo real (igual que en crear.php)
     const inputs = form.querySelectorAll('input, select, textarea');
     inputs.forEach(input => {
         input.addEventListener('blur', function() {
@@ -404,20 +616,18 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // Función de validación individual
     function validateField(field) {
         const value = field.value.trim();
         let isValid = true;
         let message = '';
 
-        // Limpiar estados anteriores
         field.classList.remove('is-valid', 'is-invalid');
-        const feedback = field.nextElementSibling;
-        if (feedback && feedback.classList.contains('invalid-feedback')) {
-            feedback.textContent = '';
+        
+        const existingError = field.parentNode.querySelector('.invalid-feedback');
+        if (existingError) {
+            existingError.remove();
         }
 
-        // Validaciones específicas
         switch (field.name) {
             case 'idCateEquipo':
                 if (!value) {
@@ -462,39 +672,18 @@ document.addEventListener('DOMContentLoaded', function() {
                     message = 'Debe seleccionar un estado.';
                 }
                 break;
-
-            case 'sku':
-                if (value && value.length > 50) {
-                    isValid = false;
-                    message = 'El SKU no puede exceder 50 caracteres.';
-                }
-                break;
-
-            case 'numSerie':
-                if (value && value.length > 100) {
-                    isValid = false;
-                    message = 'El número de serie no puede exceder 100 caracteres.';
-                }
-                break;
-
-            case 'descripcion':
-                if (value && value.length > 255) {
-                    isValid = false;
-                    message = 'La descripción no puede exceder 255 caracteres.';
-                }
-                break;
         }
 
-        // Aplicar clase y mensaje
         if (isValid) {
             if (value || field.hasAttribute('required')) {
                 field.classList.add('is-valid');
             }
         } else {
             field.classList.add('is-invalid');
-            if (feedback && feedback.classList.contains('invalid-feedback')) {
-                feedback.textContent = message;
-            }
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'invalid-feedback';
+            errorDiv.textContent = message;
+            field.parentNode.appendChild(errorDiv);
         }
 
         return isValid;
@@ -504,7 +693,6 @@ document.addEventListener('DOMContentLoaded', function() {
     form.addEventListener('submit', function(e) {
         e.preventDefault();
 
-        // Validar todos los campos
         let isFormValid = true;
         inputs.forEach(input => {
             if (!validateField(input)) {
@@ -516,59 +704,61 @@ document.addEventListener('DOMContentLoaded', function() {
             Swal.fire({
                 icon: 'error',
                 title: 'Formulario incompleto',
-                text: 'Por favor corrija los errores antes de continuar.'
+                text: 'Por favor corrija los errores marcados antes de continuar.',
+                confirmButtonColor: '#2c5aa0'
             });
+            
+            const firstError = form.querySelector('.is-invalid');
+            if (firstError) {
+                firstError.scrollIntoView({ 
+                    behavior: 'smooth', 
+                    block: 'center' 
+                });
+            }
             return;
         }
 
-        // Mostrar confirmación
         Swal.fire({
-            title: '¿Confirmar actualización?',
-            text: '¿Desea guardar los cambios realizados al equipo?',
+            title: '¿Actualizar equipo?',
+            text: '¿Desea guardar los cambios realizados en este equipo?',
             icon: 'question',
             showCancelButton: true,
-            confirmButtonColor: '#3085d6',
+            confirmButtonColor: '#2c5aa0',
             cancelButtonColor: '#6c757d',
             confirmButtonText: 'Sí, actualizar',
-            cancelButtonText: 'Cancelar'
+            cancelButtonText: 'Cancelar',
+            reverseButtons: true
         }).then((result) => {
             if (result.isConfirmed) {
-                // Deshabilitar botón y mostrar loading
-                const btnActualizar = document.getElementById('btnActualizar');
                 btnActualizar.disabled = true;
                 btnActualizar.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Actualizando...';
-
-                // Enviar formulario
                 this.submit();
             }
         });
     });
 });
 
-// Función para quitar preview de imagen
 function removeImagePreview() {
     document.getElementById('imagen_file').value = '';
     document.getElementById('imagePreview').style.display = 'none';
 }
 
-// Función para eliminar imagen actual
 function eliminarImagenActual() {
     Swal.fire({
         title: '¿Eliminar imagen actual?',
-        text: 'Esta acción no se puede deshacer.',
+        text: 'La imagen se eliminará permanentemente. Esta acción no se puede deshacer.',
         icon: 'warning',
         showCancelButton: true,
-        confirmButtonColor: '#d33',
+        confirmButtonColor: '#ef4444',
         cancelButtonColor: '#6c757d',
         confirmButtonText: 'Sí, eliminar',
-        cancelButtonText: 'Cancelar'
+        cancelButtonText: 'Cancelar',
+        reverseButtons: true
     }).then((result) => {
         if (result.isConfirmed) {
-            // Limpiar el campo de URL de imagen
             document.getElementById('imgEquipo').value = '';
-            
             Swal.fire({
-                icon: 'info',
+                icon: 'success',
                 title: 'Imagen marcada para eliminar',
                 text: 'La imagen se eliminará al guardar los cambios.',
                 toast: true,
@@ -580,17 +770,17 @@ function eliminarImagenActual() {
     });
 }
 
-// Función para confirmar eliminación del equipo
 function confirmarEliminacion() {
     Swal.fire({
-        title: '¿Estás seguro?',
-        text: '¿Deseas eliminar este equipo del inventario? Esta acción no se puede deshacer.',
+        title: '¿Eliminar equipo?',
+        text: "Esta acción no se puede deshacer. El equipo será eliminado permanentemente del inventario.",
         icon: 'warning',
         showCancelButton: true,
-        confirmButtonColor: '#d33',
+        confirmButtonColor: '#ef4444',
         cancelButtonColor: '#6c757d',
         confirmButtonText: 'Sí, eliminar',
-        cancelButtonText: 'Cancelar'
+        cancelButtonText: 'Cancelar',
+        reverseButtons: true
     }).then((result) => {
         if (result.isConfirmed) {
             eliminarEquipo();
@@ -598,14 +788,12 @@ function confirmarEliminacion() {
     });
 }
 
-// Función para eliminar equipo
 function eliminarEquipo() {
     const equipoId = <?= $equipo['idEquipo'] ?>;
     
     fetch(`/inventario/eliminar/${equipoId}`, {
         method: 'DELETE',
         headers: {
-            'Content-Type': 'application/json',
             'X-Requested-With': 'XMLHttpRequest'
         }
     })
@@ -616,16 +804,11 @@ function eliminarEquipo() {
                 icon: 'success',
                 title: 'Eliminado',
                 text: data.message,
-                toast: true,
-                position: 'top-end',
-                showConfirmButton: false,
-                timer: 3000
-            });
-            
-            // Redirigir al inventario
-            setTimeout(() => {
+                timer: 2000,
+                showConfirmButton: false
+            }).then(() => {
                 window.location.href = '/inventario';
-            }, 1500);
+            });
         } else {
             Swal.fire({
                 icon: 'error',
@@ -646,51 +829,50 @@ function eliminarEquipo() {
 
 // Mostrar errores de validación del servidor
 <?php if (session()->getFlashdata('validation_errors')): ?>
+document.addEventListener('DOMContentLoaded', function() {
     const validationErrors = <?= json_encode(session()->getFlashdata('validation_errors')) ?>;
-    let errorMessage = 'Se encontraron los siguientes errores:\n\n';
     
     Object.keys(validationErrors).forEach(field => {
-        errorMessage += '• ' + validationErrors[field] + '\n';
-        
-        // Marcar campo con error
         const fieldElement = document.querySelector(`[name="${field}"]`);
         if (fieldElement) {
             fieldElement.classList.add('is-invalid');
-            const feedback = fieldElement.nextElementSibling;
-            if (feedback && feedback.classList.contains('invalid-feedback')) {
-                feedback.textContent = validationErrors[field];
-            }
+            
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'invalid-feedback';
+            errorDiv.textContent = validationErrors[field];
+            fieldElement.parentNode.appendChild(errorDiv);
         }
     });
 
     Swal.fire({
         icon: 'error',
         title: 'Errores de validación',
-        text: errorMessage,
-        confirmButtonText: 'Entendido'
+        text: 'Por favor revise los campos marcados en rojo.',
+        confirmButtonColor: '#2c5aa0'
     });
+});
 <?php endif; ?>
 
 // Mostrar mensajes flash
 <?php if (session()->getFlashdata('success')): ?>
+document.addEventListener('DOMContentLoaded', function() {
     Swal.fire({
         icon: 'success',
         title: 'Éxito',
         text: '<?= session()->getFlashdata('success') ?>',
-        toast: true,
-        position: 'top-end',
-        showConfirmButton: false,
-        timer: 4000
+        confirmButtonColor: '#2c5aa0'
     });
+});
 <?php endif; ?>
 
 <?php if (session()->getFlashdata('error')): ?>
+document.addEventListener('DOMContentLoaded', function() {
     Swal.fire({
         icon: 'error',
         title: 'Error',
-        text: '<?= session()->getFlashdata('error') ?>'
+        text: '<?= session()->getFlashdata('error') ?>',
+        confirmButtonColor: '#2c5aa0'
     });
+});
 <?php endif; ?>
 </script>
-
-<?= $footer ?>

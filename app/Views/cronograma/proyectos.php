@@ -1,8 +1,25 @@
 <?= $header ?>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" />
-<script src="https://cdn.jsdelivr.net/npm/@motionone/dom@latest/dist/motionone.min.js"></script>
 
 <style>
+    /* Animaciones CSS nativas */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px) scale(0.98);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+    }
+    
+    @keyframes progressFill {
+        from {
+            width: 0;
+        }
+    }
+    
     :root {
         --color-bg: #f8f9fa;
         --color-primary: #FF9900;
@@ -141,7 +158,16 @@
         height: 100%;
         display: flex;
         flex-direction: column;
+        opacity: 0;
+        animation: fadeInUp 0.6s ease-out forwards;
     }
+    
+    .project-card:nth-child(1) { animation-delay: 0s; }
+    .project-card:nth-child(2) { animation-delay: 0.1s; }
+    .project-card:nth-child(3) { animation-delay: 0.2s; }
+    .project-card:nth-child(4) { animation-delay: 0.3s; }
+    .project-card:nth-child(5) { animation-delay: 0.4s; }
+    .project-card:nth-child(6) { animation-delay: 0.5s; }
     
     .project-card:hover {
         transform: translateY(-5px);
@@ -300,8 +326,8 @@
         height: 100%;
         background: linear-gradient(90deg, var(--color-primary), var(--color-primary-light));
         border-radius: 10px;
-        transition: width 0.8s ease;
         box-shadow: 0 0 10px rgba(255, 153, 0, 0.3);
+        animation: progressFill 1.2s ease-out 0.5s forwards;
     }
     
     .project-actions {
@@ -593,70 +619,9 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    const animateElements = () => {
-        const projectCards = document.querySelectorAll('.project-card');
-        
-        projectCards.forEach((card, index) => {
-            card.style.opacity = '1';
-            card.style.transform = 'none';
-            
-            motion.animate(card, 
-                { 
-                    transform: ['translateY(20px) scale(0.98)', 'translateY(0) scale(1)'] 
-                },
-                { 
-                    delay: index * 100, 
-                    duration: 600, 
-                    easing: 'ease-out' 
-                }
-            );
-        });
-        
-        setTimeout(() => {
-            const progressBars = document.querySelectorAll('.progress-fill');
-            progressBars.forEach(bar => {
-                const finalWidth = bar.style.width;
-                bar.style.width = '0';
-                
-                motion.animate(bar,
-                    { width: finalWidth },
-                    { duration: 1200, easing: 'ease-out' }
-                );
-            });
-        }, 300);
-    };
-    
-    const setupHoverEffects = () => {
-        const projectCards = document.querySelectorAll('.project-card');
-        projectCards.forEach(card => {
-            card.addEventListener('mouseenter', () => {
-                motion.animate(card, 
-                    { 
-                        y: -8, 
-                        scale: 1.02,
-                        boxShadow: '0 20px 40px rgba(255, 152, 0, 0.15)' 
-                    },
-                    { duration: 300, easing: 'ease-out' }
-                );
-            });
-            
-            card.addEventListener('mouseleave', () => {
-                motion.animate(card, 
-                    { 
-                        y: 0, 
-                        scale: 1,
-                        boxShadow: '0 8px 25px rgba(0, 0, 0, 0.08)' 
-                    },
-                    { duration: 300, easing: 'ease-out' }
-                );
-            });
-        });
-    };
-    
-    setTimeout(() => {
-        animateElements();
-        setupHoverEffects();
-    }, 50);
+    // Las animaciones ahora se manejan completamente con CSS
+    // Este script solo es para funcionalidades adicionales si se necesitan en el futuro
+    console.log('Proyectos cargados correctamente');
 });
 </script>
 

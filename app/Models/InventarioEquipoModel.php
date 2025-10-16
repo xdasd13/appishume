@@ -4,10 +4,6 @@ namespace App\Models;
 
 use CodeIgniter\Model;
 
-/**
- * Modelo para la gestión del inventario de equipos audiovisuales
- * Tabla: equipo
- */
 class InventarioEquipoModel extends Model
 {
     protected $table = 'equipo';
@@ -32,14 +28,11 @@ class InventarioEquipoModel extends Model
         'imgEquipo'
     ];
 
-    // Fechas
-    protected $useTimestamps = false;
+    protected $useTimestamps = true;
     protected $dateFormat = 'datetime';
     protected $createdField = 'created_at';
     protected $updatedField = 'updated_at';
-    protected $deletedField = 'deleted_at';
 
-    // Validaciones
     protected $validationRules = [
         'idCateEquipo' => 'required|integer|greater_than[0]',
         'idMarca' => 'required|integer|greater_than[0]',
@@ -71,9 +64,6 @@ class InventarioEquipoModel extends Model
             'min_length' => 'El modelo debe tener al menos 2 caracteres.',
             'max_length' => 'El modelo no puede exceder 70 caracteres.'
         ],
-        'descripcion' => [
-            'max_length' => 'La descripción no puede exceder 255 caracteres.'
-        ],
         'sku' => [
             'max_length' => 'El SKU no puede exceder 50 caracteres.',
             'is_unique' => 'Este SKU ya existe en el sistema.'
@@ -90,28 +80,15 @@ class InventarioEquipoModel extends Model
         'estado' => [
             'required' => 'El estado es obligatorio.',
             'in_list' => 'Debe seleccionar un estado válido.'
-        ],
-        'fechaCompra' => [
-            'valid_date' => 'La fecha de compra debe tener formato válido (YYYY-MM-DD).'
-        ],
-        'fechaUso' => [
-            'valid_date' => 'La fecha de uso debe tener formato válido (YYYY-MM-DD).'
         ]
     ];
 
     protected $skipValidation = false;
     protected $cleanValidationRules = true;
 
-    // Callbacks
     protected $allowCallbacks = true;
-    protected $beforeInsert = [];
-    protected $afterInsert = [];
+    protected $beforeInsert = ['generarSKU'];
     protected $beforeUpdate = [];
-    protected $afterUpdate = [];
-    protected $beforeFind = [];
-    protected $afterFind = [];
-    protected $beforeDelete = [];
-    protected $afterDelete = [];
 
     /**
      * Obtener todos los equipos con información de categoría y marca
@@ -200,37 +177,28 @@ class InventarioEquipoModel extends Model
     /**
      * Generar SKU automático si no se proporciona
      */
-    protected function generateSKU($data)
+    protected function generarSKU(array $data)
     {
-        if (empty($data['sku'])) {
+        if (empty($data['data']['sku'])) {
             // Generar SKU basado en categoría + marca + timestamp
             $categoria = $this->db->table('cateEquipo')
                                  ->select('nomCate')
-                                 ->where('idCateEquipo', $data['idCateEquipo'])
+                                 ->where('idCateEquipo', $data['data']['idCateEquipo'])
                                  ->get()->getRow();
             
             $marca = $this->db->table('marcaEquipo')
                              ->select('nomMarca')
-                             ->where('idMarca', $data['idMarca'])
+                             ->where('idMarca', $data['data']['idMarca'])
                              ->get()->getRow();
             
             $catPrefix = $categoria ? strtoupper(substr($categoria->nomCate, 0, 3)) : 'EQP';
             $marcaPrefix = $marca ? strtoupper(substr($marca->nomMarca, 0, 3)) : 'GEN';
-            $timestamp = date('ymd');
+            $timestamp = date('ymdHis');
             $random = str_pad(mt_rand(1, 999), 3, '0', STR_PAD_LEFT);
             
-            $data['sku'] = $catPrefix . $marcaPrefix . $timestamp . $random;
+            $data['data']['sku'] = $catPrefix . '-' . $marcaPrefix . '-' . $timestamp . $random;
         }
         
-        return $data;
-    }
-
-    /**
-     * Callback antes de insertar
-     */
-    protected function beforeInsertCallback(array $data)
-    {
-        $data['data'] = $this->generateSKU($data['data']);
         return $data;
     }
 }

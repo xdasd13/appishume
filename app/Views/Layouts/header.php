@@ -155,6 +155,30 @@
                 </ul>
               </div>
             </li>
+
+            <!-- Inventario -->
+            <li class="nav-item">
+              <a data-bs-toggle="collapse" href="#inventario">
+                <i class="fa-solid fa-boxes-stacked"></i>
+                <p>Inventario</p>
+                <span class="caret"></span>
+              </a>
+              <div class="collapse" id="inventario">
+                <ul class="nav nav-collapse">
+                  <li>
+                    <a href="<?= base_url('/inventario') ?>">
+                      <span class="sub-item">Lista Inventario</span>
+                    </a>
+                  </li>
+                  <li>
+                    <a href="<?= base_url('/inventario/crear') ?>">
+                      <span class="sub-item">Agregar equipo</span>
+                    </a>
+                  </li>
+                </ul>
+              </div>
+            </li>
+
             <!-- Separador -->
             <li class="nav-section">
               <span class="sidebar-mini-icon">
