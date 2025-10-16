@@ -191,7 +191,102 @@ class Cronograma extends BaseController
     }
 
     /**
-     * Vista de proyectos activos
+     * Debug: Verificar consulta SQL directamente
+     */
+    public function debugProyectos()
+    {
+        if (!isset($this->proyectoModel)) {
+            $this->proyectoModel = new ProyectoModel();
+        }
+
+        // Probar consulta directa
+        $db = \Config\Database::connect();
+        $query = "
+            SELECT 
+                c.idcliente,
+                CASE 
+                    WHEN c.idempresa IS NOT NULL THEN e.razonsocial
+                    ELSE CONCAT(p.nombres, ' ', p.apellidos)
+                END as cliente,
+                sc.idserviciocontratado,
+                s.servicio,
+                sc.fechahoraservicio
+            FROM servicioscontratados sc
+            INNER JOIN cotizaciones cot ON sc.idcotizacion = cot.idcotizacion
+            INNER JOIN contratos con ON cot.idcotizacion = con.idcotizacion
+            INNER JOIN clientes c ON cot.idcliente = c.idcliente
+            LEFT JOIN personas p ON c.idpersona = p.idpersona
+            LEFT JOIN empresas e ON c.idempresa = e.idempresa
+            INNER JOIN servicios s ON sc.idservicio = s.idservicio
+            LIMIT 10
+        ";
+        
+        $result = $db->query($query)->getResult();
+        
+        echo "<h2>Debug de Proyectos</h2>";
+        echo "<h3>Total registros encontrados: " . count($result) . "</h3>";
+        echo "<pre>";
+        print_r($result);
+        echo "</pre>";
+        
+        echo "<hr>";
+        echo "<h3>Ejecutando consulta completa directamente:</h3>";
+        
+        // Ejecutar la consulta completa manualmente
+        $queryCompleta = "
+            SELECT 
+                c.idcliente,
+                CASE 
+                    WHEN c.idempresa IS NOT NULL THEN e.razonsocial
+                    ELSE CONCAT(p.nombres, ' ', p.apellidos)
+                END as cliente,
+                CASE 
+                    WHEN c.idempresa IS NOT NULL THEN e.telefono
+                    ELSE p.telprincipal
+                END as telefono_cliente,
+                sc.idserviciocontratado,
+                s.servicio,
+                sc.fechahoraservicio,
+                sc.direccion,
+                COALESCE(eq.estadoservicio, 'Pendiente') as estado,
+                CASE 
+                    WHEN COALESCE(eq.estadoservicio, 'Pendiente') = 'Completado' THEN 100
+                    WHEN COALESCE(eq.estadoservicio, 'Pendiente') = 'En Proceso' THEN 65
+                    WHEN COALESCE(eq.estadoservicio, 'Pendiente') = 'Programado' THEN 35
+                    ELSE 10
+                END as progreso,
+                cot.fechaevento,
+                te.evento as tipoevento
+            FROM servicioscontratados sc
+            INNER JOIN cotizaciones cot ON sc.idcotizacion = cot.idcotizacion
+            INNER JOIN clientes c ON cot.idcliente = c.idcliente
+            LEFT JOIN personas p ON c.idpersona = p.idpersona
+            LEFT JOIN empresas e ON c.idempresa = e.idempresa
+            INNER JOIN servicios s ON sc.idservicio = s.idservicio
+            LEFT JOIN equipos eq ON sc.idserviciocontratado = eq.idserviciocontratado
+            LEFT JOIN tipoeventos te ON cot.idtipoevento = te.idtipoevento
+            ORDER BY c.idcliente, sc.fechahoraservicio ASC
+        ";
+        
+        $resultCompleto = $db->query($queryCompleta)->getResult();
+        echo "<h4>Total registros consulta completa: " . count($resultCompleto) . "</h4>";
+        echo "<pre>";
+        print_r($resultCompleto);
+        echo "</pre>";
+        
+        echo "<hr>";
+        echo "<h3>Resultado del método getProyectosAgrupadosPorCliente():</h3>";
+        $proyectos = $this->proyectoModel->getProyectosAgrupadosPorCliente();
+        echo "<h4>Total clientes agrupados: " . count($proyectos) . "</h4>";
+        echo "<pre>";
+        print_r($proyectos);
+        echo "</pre>";
+        
+        die();
+    }
+
+    /**
+     * Vista de proyectos activos agrupados por cliente
      */
     public function proyectos()
     {
@@ -201,15 +296,21 @@ class Cronograma extends BaseController
                 $this->proyectoModel = new ProyectoModel();
             }
 
-            // Primero verificar la conexión y datos básicos
-            $testConexion = $this->proyectoModel->testConexion();
-            log_message('info', 'Test conexión: ' . json_encode($testConexion));
-            
-            // Obtener proyectos activos
-            $proyectos = $this->proyectoModel->getProyectosActivos();
+            // Obtener proyectos agrupados por cliente
+            $proyectos = $this->proyectoModel->getProyectosAgrupadosPorCliente();
             
             // Debug: Verificar si hay proyectos
-            log_message('info', 'Número de proyectos encontrados: ' . count($proyectos));
+            log_message('info', 'Número de clientes con proyectos: ' . count($proyectos));
+            
+            // Debug adicional: Mostrar estructura de datos
+            if (!empty($proyectos)) {
+                log_message('info', 'Primer proyecto: ' . json_encode($proyectos[0]));
+            } else {
+                log_message('warning', 'No se encontraron proyectos agrupados');
+                // Intentar con método antiguo para verificar si hay datos
+                $proyectosAntiguos = $this->proyectoModel->getProyectosActivos();
+                log_message('info', 'Proyectos método antiguo: ' . count($proyectosAntiguos));
+            }
 
             $data = [
                 'proyectos' => $proyectos,
