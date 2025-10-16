@@ -55,7 +55,7 @@ class ReportesController extends BaseController
     {
         $tipo_reporte = $this->request->getPost('tipo_reporte');
         $filtros = $this->request->getPost('filtros');
-        $formato = $this->request->getPost('formato', 'html');
+        $formato = $this->request->getPost('formato') ?? 'html';
 
         if (!$tipo_reporte) {
             return $this->response->setJSON(['error' => 'Tipo de reporte requerido']);
@@ -63,6 +63,27 @@ class ReportesController extends BaseController
 
         try {
             $datos = $this->generarDatosReporte($tipo_reporte, $filtros ?? []);
+            
+            // Verificar si hay datos en el reporte
+            if (empty($datos['datos']) || count($datos['datos']) === 0) {
+                $mensajeSinDatos = $this->generarMensajeSinDatos($tipo_reporte, $filtros ?? []);
+                
+                if ($formato === 'json') {
+                    return $this->response->setJSON([
+                        'success' => false,
+                        'sin_datos' => true,
+                        'mensaje' => $mensajeSinDatos,
+                        'filtros_aplicados' => $filtros ?? []
+                    ]);
+                }
+
+                return view('reportes/sin_datos', [
+                    'mensaje' => $mensajeSinDatos,
+                    'tipo_reporte' => $tipo_reporte,
+                    'filtros' => $filtros ?? [],
+                    'metadata' => $this->obtenerMetadataReporte($tipo_reporte)
+                ]);
+            }
             
             if ($formato === 'json') {
                 return $this->response->setJSON([
@@ -81,7 +102,7 @@ class ReportesController extends BaseController
 
         } catch (\Exception $e) {
             log_message('error', 'Error generando reporte: ' . $e->getMessage());
-            return $this->response->setJSON(['error' => 'Error generando el reporte']);
+            return $this->response->setJSON(['error' => 'Error generando el reporte: ' . $e->getMessage()]);
         }
     }
 
@@ -285,7 +306,7 @@ class ReportesController extends BaseController
         $subquery->select('cp2.idcontrato, cp2.deuda, cp2.amortizacion');
         $subquery->where('cp2.fechahora = (SELECT MAX(fechahora) FROM controlpagos cp3 WHERE cp3.idcontrato = cp2.idcontrato)');
         
-        $builder->join("({$subquery->getCompiledSelect()}) as ultimo_pago", 'ultimo_pago.idcontrato = c.idcontrato', 'left');
+        $builder->join("({$subquery->getCompiledSelect(false)}) as ultimo_pago", 'ultimo_pago.idcontrato = c.idcontrato', 'left');
         
         $builder->groupBy('c.idcontrato');
         
@@ -327,12 +348,7 @@ class ReportesController extends BaseController
             s.servicio,
             sc.direccion,
             te.evento as tipo_evento,
-            cot.fechaevento,
-            CASE 
-                WHEN en.estado = "completada" THEN "Entregado"
-                WHEN en.fecha_real_entrega IS NOT NULL THEN "Entregado"
-                ELSE "Pendiente"
-            END as estado_visual
+            cot.fechaevento
         ');
         
         $builder->join('servicioscontratados sc', 'sc.idserviciocontratado = en.idserviciocontratado');
@@ -351,6 +367,15 @@ class ReportesController extends BaseController
         $builder->orderBy('cot.fechaevento', 'DESC');
         
         $datos = $builder->get()->getResultArray();
+        
+        // Agregar estado_visual calculado en PHP
+        foreach ($datos as &$dato) {
+            if ($dato['estado'] === 'completada' || $dato['fecha_real_entrega'] !== null) {
+                $dato['estado_visual'] = 'Entregado';
+            } else {
+                $dato['estado_visual'] = 'Pendiente';
+            }
+        }
         
         // Calcular estadísticas
         $estadisticas = [
@@ -480,7 +505,7 @@ class ReportesController extends BaseController
         $subquery->select('cp2.idcontrato, cp2.deuda');
         $subquery->where('cp2.fechahora = (SELECT MAX(fechahora) FROM controlpagos cp3 WHERE cp3.idcontrato = cp2.idcontrato)');
         
-        $builder->join("({$subquery->getCompiledSelect()}) as ultimo_pago", 'ultimo_pago.idcontrato = c.idcontrato', 'left');
+        $builder->join("({$subquery->getCompiledSelect(false)}) as ultimo_pago", 'ultimo_pago.idcontrato = c.idcontrato', 'left');
         
         $builder->groupBy('cl.idcliente');
         
@@ -748,24 +773,87 @@ class ReportesController extends BaseController
     }
 
     /**
+     * Generar mensaje personalizado cuando no hay datos
+     */
+    private function generarMensajeSinDatos($tipo_reporte, $filtros)
+    {
+        $reportes = $this->obtenerReportesDisponibles();
+        $nombreReporte = $reportes[$tipo_reporte]['nombre'] ?? 'Reporte';
+        
+        $mensaje = "No se encontraron datos para el {$nombreReporte}";
+        
+        // Agregar información sobre los filtros aplicados
+        if (!empty($filtros)) {
+            $filtrosTexto = [];
+            
+            if (!empty($filtros['fecha_desde']) && !empty($filtros['fecha_hasta'])) {
+                $filtrosTexto[] = "período del " . date('d/m/Y', strtotime($filtros['fecha_desde'])) . " al " . date('d/m/Y', strtotime($filtros['fecha_hasta']));
+            } elseif (!empty($filtros['fecha_desde'])) {
+                $filtrosTexto[] = "desde el " . date('d/m/Y', strtotime($filtros['fecha_desde']));
+            } elseif (!empty($filtros['fecha_hasta'])) {
+                $filtrosTexto[] = "hasta el " . date('d/m/Y', strtotime($filtros['fecha_hasta']));
+            }
+            
+            if (!empty($filtros['estado_entrega']) && $filtros['estado_entrega'] !== 'todos') {
+                $filtrosTexto[] = "estado: " . ucfirst($filtros['estado_entrega']);
+            }
+            
+            if (!empty($filtros['tipo_evento']) && $filtros['tipo_evento'] !== 'todos') {
+                $filtrosTexto[] = "tipo de evento: " . $filtros['tipo_evento'];
+            }
+            
+            if (!empty($filtros['estado_pago']) && $filtros['estado_pago'] !== 'todos') {
+                $filtrosTexto[] = "estado de pago: " . ucfirst($filtros['estado_pago']);
+            }
+            
+            if (!empty($filtrosTexto)) {
+                $mensaje .= " con los filtros aplicados: " . implode(', ', $filtrosTexto);
+            }
+        }
+        
+        $mensaje .= ".\n\nSugerencias:\n";
+        $mensaje .= "• Verifique que el rango de fechas sea correcto\n";
+        $mensaje .= "• Intente ampliar el período de búsqueda\n";
+        $mensaje .= "• Revise los filtros aplicados\n";
+        $mensaje .= "• Asegúrese de que existan registros en el sistema para el tipo de reporte seleccionado";
+        
+        return $mensaje;
+    }
+
+    /**
      * Exportar reporte a PDF
      */
     public function exportarPDF()
     {
-        // Implementar exportación a PDF
-        $tipo_reporte = $this->request->getPost('tipo_reporte');
-        $filtros = $this->request->getPost('filtros');
-        
-        $datos = $this->generarDatosReporte($tipo_reporte, $filtros ?? []);
-        $metadata = $this->obtenerMetadataReporte($tipo_reporte);
-        
-        // Aquí implementarías la generación del PDF
-        return $this->response->setJSON([
-            'success' => true,
-            'message' => 'Funcionalidad de exportación PDF en desarrollo',
-            'datos' => $datos,
-            'metadata' => $metadata
-        ]);
+        try {
+            $tipo_reporte = $this->request->getPost('tipo_reporte');
+            $filtros = $this->request->getPost('filtros');
+            
+            if (!$tipo_reporte) {
+                return $this->response->setJSON(['error' => 'Tipo de reporte requerido']);
+            }
+            
+            $datos = $this->generarDatosReporte($tipo_reporte, $filtros ?? []);
+            $metadata = $this->obtenerMetadataReporte($tipo_reporte);
+            
+            // Verificar si hay datos
+            if (empty($datos['datos'])) {
+                return $this->response->setJSON([
+                    'error' => 'No hay datos para exportar en el rango de fechas seleccionado'
+                ]);
+            }
+            
+            // Generar contenido HTML para el PDF
+            $html = $this->generarHTMLParaPDF($datos, $metadata, $filtros ?? []);
+            
+            // Por ahora, devolver el HTML para que el usuario pueda imprimir
+            // En el futuro se puede implementar una librería como TCPDF o DomPDF
+            return $this->response->setContentType('text/html')->setBody($html);
+            
+        } catch (\Exception $e) {
+            log_message('error', 'Error exportando PDF: ' . $e->getMessage());
+            return $this->response->setJSON(['error' => 'Error al exportar PDF: ' . $e->getMessage()]);
+        }
     }
 
     /**
@@ -773,19 +861,222 @@ class ReportesController extends BaseController
      */
     public function exportarExcel()
     {
-        // Implementar exportación a Excel
-        $tipo_reporte = $this->request->getPost('tipo_reporte');
-        $filtros = $this->request->getPost('filtros');
+        try {
+            $tipo_reporte = $this->request->getPost('tipo_reporte');
+            $filtros = $this->request->getPost('filtros');
+            
+            if (!$tipo_reporte) {
+                return $this->response->setJSON(['error' => 'Tipo de reporte requerido']);
+            }
+            
+            $datos = $this->generarDatosReporte($tipo_reporte, $filtros ?? []);
+            $metadata = $this->obtenerMetadataReporte($tipo_reporte);
+            
+            // Verificar si hay datos
+            if (empty($datos['datos'])) {
+                return $this->response->setJSON([
+                    'error' => 'No hay datos para exportar en el rango de fechas seleccionado'
+                ]);
+            }
+            
+            // Generar CSV (formato compatible con Excel)
+            $csv = $this->generarCSVParaExcel($datos, $metadata, $filtros ?? []);
+            
+            // Configurar headers para descarga
+            $filename = 'reporte_' . $tipo_reporte . '_' . date('Y-m-d_H-i-s') . '.csv';
+            
+            return $this->response
+                ->setContentType('text/csv')
+                ->setHeader('Content-Disposition', 'attachment; filename="' . $filename . '"')
+                ->setBody($csv);
+            
+        } catch (\Exception $e) {
+            log_message('error', 'Error exportando Excel: ' . $e->getMessage());
+            return $this->response->setJSON(['error' => 'Error al exportar Excel: ' . $e->getMessage()]);
+        }
+    }
+
+    /**
+     * Generar HTML para PDF
+     */
+    private function generarHTMLParaPDF($datos, $metadata, $filtros)
+    {
+        $html = '<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>' . $metadata['nombre'] . '</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #333; padding-bottom: 20px; }
+        .header h1 { color: #333; margin: 0; }
+        .header p { color: #666; margin: 5px 0; }
+        .info { margin-bottom: 20px; }
+        .info h3 { color: #555; margin-bottom: 10px; }
+        .info p { margin: 5px 0; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; font-weight: bold; }
+        .stats { margin-top: 20px; }
+        .stats h3 { color: #555; }
+        .stats p { margin: 5px 0; }
+        @media print {
+            body { margin: 0; }
+            .no-print { display: none; }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>' . $metadata['nombre'] . '</h1>
+        <p>' . $metadata['descripcion'] . '</p>
+        <p>Generado el: ' . date('d/m/Y H:i', strtotime($metadata['fecha_generacion'])) . '</p>
+    </div>';
+
+        // Información de filtros
+        if (!empty($filtros)) {
+            $html .= '<div class="info">
+                <h3>Filtros Aplicados</h3>';
+            
+            if (!empty($filtros['fecha_desde']) && !empty($filtros['fecha_hasta'])) {
+                $html .= '<p><strong>Período:</strong> ' . date('d/m/Y', strtotime($filtros['fecha_desde'])) . ' - ' . date('d/m/Y', strtotime($filtros['fecha_hasta'])) . '</p>';
+            }
+            
+            if (!empty($filtros['estado_entrega']) && $filtros['estado_entrega'] !== 'todos') {
+                $html .= '<p><strong>Estado de Entrega:</strong> ' . ucfirst($filtros['estado_entrega']) . '</p>';
+            }
+            
+            if (!empty($filtros['tipo_evento']) && $filtros['tipo_evento'] !== 'todos') {
+                $html .= '<p><strong>Tipo de Evento:</strong> ' . $filtros['tipo_evento'] . '</p>';
+            }
+            
+            $html .= '</div>';
+        }
+
+        // Estadísticas
+        if (isset($datos['estadisticas'])) {
+            $html .= '<div class="stats">
+                <h3>Estadísticas</h3>';
+            
+            foreach ($datos['estadisticas'] as $key => $value) {
+                $label = ucfirst(str_replace('_', ' ', $key));
+                if (is_numeric($value)) {
+                    $html .= '<p><strong>' . $label . ':</strong> ' . number_format($value, 2) . '</p>';
+                } else {
+                    $html .= '<p><strong>' . $label . ':</strong> ' . $value . '</p>';
+                }
+            }
+            
+            $html .= '</div>';
+        }
+
+        // Tabla de datos
+        if (!empty($datos['datos'])) {
+            $html .= '<table>
+                <thead>
+                    <tr>';
+            
+            // Encabezados
+            $primerRegistro = $datos['datos'][0];
+            foreach (array_keys($primerRegistro) as $campo) {
+                $label = ucfirst(str_replace('_', ' ', $campo));
+                $html .= '<th>' . $label . '</th>';
+            }
+            
+            $html .= '</tr>
+                </thead>
+                <tbody>';
+            
+            // Datos
+            foreach ($datos['datos'] as $registro) {
+                $html .= '<tr>';
+                foreach ($registro as $valor) {
+                    $html .= '<td>' . htmlspecialchars($valor) . '</td>';
+                }
+                $html .= '</tr>';
+            }
+            
+            $html .= '</tbody>
+            </table>';
+        }
+
+        $html .= '
+    <div class="no-print" style="margin-top: 30px; text-align: center;">
+        <button onclick="window.print()" style="padding: 10px 20px; font-size: 16px; background-color: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer;">Imprimir PDF</button>
+    </div>
+</body>
+</html>';
+
+        return $html;
+    }
+
+    /**
+     * Generar CSV para Excel
+     */
+    private function generarCSVParaExcel($datos, $metadata, $filtros)
+    {
+        $csv = '';
         
-        $datos = $this->generarDatosReporte($tipo_reporte, $filtros ?? []);
-        $metadata = $this->obtenerMetadataReporte($tipo_reporte);
+        // BOM para UTF-8 (para que Excel reconozca correctamente los caracteres especiales)
+        $csv .= "\xEF\xBB\xBF";
         
-        // Aquí implementarías la generación del Excel
-        return $this->response->setJSON([
-            'success' => true,
-            'message' => 'Funcionalidad de exportación Excel en desarrollo',
-            'datos' => $datos,
-            'metadata' => $metadata
-        ]);
+        // Encabezado del reporte
+        $csv .= $metadata['nombre'] . "\n";
+        $csv .= $metadata['descripcion'] . "\n";
+        $csv .= "Generado el: " . date('d/m/Y H:i', strtotime($metadata['fecha_generacion'])) . "\n";
+        
+        // Información de filtros
+        if (!empty($filtros)) {
+            $csv .= "\nFiltros Aplicados:\n";
+            
+            if (!empty($filtros['fecha_desde']) && !empty($filtros['fecha_hasta'])) {
+                $csv .= "Período: " . date('d/m/Y', strtotime($filtros['fecha_desde'])) . " - " . date('d/m/Y', strtotime($filtros['fecha_hasta'])) . "\n";
+            }
+            
+            if (!empty($filtros['estado_entrega']) && $filtros['estado_entrega'] !== 'todos') {
+                $csv .= "Estado de Entrega: " . ucfirst($filtros['estado_entrega']) . "\n";
+            }
+            
+            if (!empty($filtros['tipo_evento']) && $filtros['tipo_evento'] !== 'todos') {
+                $csv .= "Tipo de Evento: " . $filtros['tipo_evento'] . "\n";
+            }
+        }
+        
+        $csv .= "\n";
+        
+        // Estadísticas
+        if (isset($datos['estadisticas'])) {
+            $csv .= "Estadísticas:\n";
+            foreach ($datos['estadisticas'] as $key => $value) {
+                $label = ucfirst(str_replace('_', ' ', $key));
+                if (is_numeric($value)) {
+                    $csv .= $label . ": " . number_format($value, 2) . "\n";
+                } else {
+                    $csv .= $label . ": " . $value . "\n";
+                }
+            }
+            $csv .= "\n";
+        }
+        
+        // Datos
+        if (!empty($datos['datos'])) {
+            // Encabezados de la tabla
+            $primerRegistro = $datos['datos'][0];
+            $encabezados = array_keys($primerRegistro);
+            $csv .= implode(',', array_map(function($h) { return '"' . ucfirst(str_replace('_', ' ', $h)) . '"'; }, $encabezados)) . "\n";
+            
+            // Datos
+            foreach ($datos['datos'] as $registro) {
+                $fila = [];
+                foreach ($registro as $valor) {
+                    // Escapar comillas y envolver en comillas
+                    $valor = str_replace('"', '""', $valor);
+                    $fila[] = '"' . $valor . '"';
+                }
+                $csv .= implode(',', $fila) . "\n";
+            }
+        }
+        
+        return $csv;
     }
 }

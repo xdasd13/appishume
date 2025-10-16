@@ -128,6 +128,18 @@ class EntregasController extends BaseController
             $personaId = $result['idpersona'] ?? null;
         }
 
+        // Validar que se haya seleccionado un contrato
+        $idcontrato = $this->request->getPost('idcontrato');
+        if (empty($idcontrato)) {
+            return redirect()->back()->withInput()->with('error', 'Debe seleccionar un contrato pagado para registrar la entrega.');
+        }
+
+        // Verificar que el contrato esté pagado
+        $contrato = $this->entregasModel->obtenerContratoPagado($idcontrato);
+        if (!$contrato) {
+            return redirect()->back()->withInput()->with('error', 'El contrato seleccionado no existe o no está pagado completamente. Solo se pueden registrar entregas para contratos pagados al 100%.');
+        }
+
         // Validar los datos del formulario
         $reglas = [
             'idcontrato' => 'required|numeric',
@@ -138,11 +150,10 @@ class EntregasController extends BaseController
 
         if (!$this->validate($reglas)) {
             $errors = $this->validator->getErrors();
-            $errorMessage = 'Por favor, corrija los siguientes errores:<br><ul>';
+            $errorMessage = 'Por favor, corrija los siguientes errores:\n\n';
             foreach ($errors as $field => $error) {
-                $errorMessage .= '<li>' . $error . '</li>';
+                $errorMessage .= '• ' . $error . '\n';
             }
-            $errorMessage .= '</ul>';
             return redirect()->back()->withInput()->with('error', $errorMessage);
         }
 

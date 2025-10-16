@@ -37,7 +37,9 @@
                                         icon: 'error',
                                         title: 'Error',
                                         text: '<?= addslashes(session()->getFlashdata('error')) ?>',
-                                        confirmButtonColor: '#dc3545'
+                                        confirmButtonColor: '#dc3545',
+                                        confirmButtonText: 'Entendido',
+                                        allowOutsideClick: false
                                     });
                                 });
                             </script>
@@ -97,7 +99,8 @@
                                             <?php if (isset($servicios) && !empty($servicios)): ?>
                                                 <option value="">Seleccione una opción</option>
                                                 <?php foreach ($servicios as $servicio): ?>
-                                                    <option value="<?= $servicio['idserviciocontratado'] ?>">
+                                                    <option value="<?= $servicio['idserviciocontratado'] ?>" 
+                                                        <?= old('idserviciocontratado') == $servicio['idserviciocontratado'] ? 'selected' : '' ?>>
                                                         <?= $servicio['servicio'] ?> (<?= date('d/m/Y', strtotime($servicio['fechahoraservicio'])) ?>)
                                                     </option>
                                                 <?php endforeach; ?>
@@ -241,6 +244,12 @@ $(document).ready(function() {
         placeholder: 'Seleccione una opción',
         allowClear: true
     });
+
+    // Restaurar valores después de error
+    var contratoSeleccionado = '<?= old('idcontrato') ?>';
+    if (contratoSeleccionado) {
+        $('#idcontrato').val(contratoSeleccionado).trigger('change');
+    }
     
     // Actualizar el label del archivo cuando se selecciona
     $('#comprobante_entrega').on('change', function() {
@@ -336,7 +345,7 @@ $(document).ready(function() {
         },
         messages: {
             idcontrato: {
-                required: "Por favor seleccione un contrato"
+                required: "Debe seleccionar un contrato pagado para registrar la entrega"
             },
             idserviciocontratado: {
                 required: "Por favor seleccione un servicio"

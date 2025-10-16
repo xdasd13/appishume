@@ -124,11 +124,6 @@ $routes->group('', ['filter' => 'admin'], function($routes) {
     $routes->get('inventario/buscar', 'InventarioController::buscar');
     $routes->get('inventario/estadisticas', 'InventarioController::estadisticas');
     
-    // Sistema de Reportes Dinámicos (solo administradores)
-    $routes->get('reportes', 'ReportesController::index');
-    $routes->post('reportes/generar', 'ReportesController::generar');
-    $routes->post('reportes/exportarPDF', 'ReportesController::exportarPDF');
-    $routes->post('reportes/exportarExcel', 'ReportesController::exportarExcel');
 });
 
 
@@ -136,4 +131,10 @@ $routes->group('', ['filter' => 'admin'], function($routes) {
 $routes->group('', ['filter' => 'auth'], function($routes) {
     // Servicios (requiere autenticación básica)
     $routes->get('servicios/(:num)', 'Servicios::detalle/$1');
+    
+    // Sistema de Reportes Dinámicos (usuarios autenticados)
+    $routes->get('reportes', 'ReportesController::index');
+    $routes->post('reportes/generar', 'ReportesController::generar');
+    $routes->post('reportes/exportarPDF', 'ReportesController::exportarPDF');
+    $routes->post('reportes/exportarExcel', 'ReportesController::exportarExcel');
 });

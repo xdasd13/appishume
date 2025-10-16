@@ -218,6 +218,11 @@
                         <p class="mt-3 text-muted">Generando reporte...</p>
                     </div>
 
+                    <!-- Área de errores -->
+                    <div id="area-errores" style="display: none;">
+                        <!-- Aquí se mostrarán los errores como texto -->
+                    </div>
+
                     <!-- Contenido del reporte -->
                     <div id="contenido-reporte" style="display: none;">
                         <!-- Aquí se cargará el contenido del reporte -->
@@ -311,6 +316,44 @@
     transition: all 0.2s ease-in-out;
 }
 
+/* Estilos para errores */
+#area-errores .alert {
+    border-radius: 8px;
+    border: none;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    margin-bottom: 0;
+}
+
+#area-errores .alert-heading {
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+#area-errores .error-message {
+    font-family: 'Courier New', monospace;
+    font-size: 0.9rem;
+    line-height: 1.4;
+    background-color: rgba(0,0,0,0.05);
+    padding: 0.5rem;
+    border-radius: 4px;
+    border-left: 3px solid rgba(0,0,0,0.2);
+}
+
+#area-errores .alert-danger .error-message {
+    background-color: rgba(220, 53, 69, 0.1);
+    border-left-color: #dc3545;
+}
+
+#area-errores .alert-info .error-message {
+    background-color: rgba(23, 162, 184, 0.1);
+    border-left-color: #17a2b8;
+}
+
+#area-errores .alert-warning .error-message {
+    background-color: rgba(255, 193, 7, 0.1);
+    border-left-color: #ffc107;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
     .col-md-4, .col-md-8 {
@@ -323,6 +366,20 @@
     
     .card-stats .col-7 {
         width: 100%;
+    }
+    
+    #area-errores .alert {
+        margin: 0 1rem;
+    }
+    
+    #area-errores .d-flex {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    #area-errores .d-flex i {
+        margin-right: 0 !important;
+        margin-bottom: 1rem;
     }
 }
 </style>
@@ -389,6 +446,12 @@ $(document).ready(function() {
                         const option = $('<option></option>')
                             .val(key)
                             .text(filtro.opciones[key]);
+                        
+                        // Preseleccionar "todos" si existe
+                        if (key === 'todos') {
+                            option.attr('selected', 'selected');
+                        }
+                        
                         input.append(option);
                     });
                 } else if (filtro.tipo === 'date') {
@@ -450,22 +513,73 @@ $(document).ready(function() {
                 <?= csrf_token() ?>: '<?= csrf_hash() ?>'
             },
             success: function(response) {
-                $('#contenido-reporte').html(response);
-                $('#contenido-reporte').show();
                 $('#loading-reporte').hide();
-                $('#estado-inicial').hide();
+                
+                // Verificar si la respuesta es HTML (vista) o JSON
+                if (typeof response === 'string') {
+                    // Es una vista HTML
+                    $('#contenido-reporte').html(response);
+                    $('#contenido-reporte').show();
+                    $('#estado-inicial').hide();
+                } else {
+                    // Es una respuesta JSON
+                    if (response.success) {
+                        // Reporte exitoso con datos
+                        $('#contenido-reporte').html(response.html || 'Reporte generado correctamente');
+                        $('#contenido-reporte').show();
+                        $('#estado-inicial').hide();
+                    } else if (response.sin_datos) {
+                        // No hay datos para el reporte - mostrar como texto
+                        mostrarErrorComoTexto('Sin Resultados', response.mensaje, 'info');
+                        $('#estado-inicial').show();
+                    } else {
+                        // Error en la respuesta - mostrar como texto
+                        mostrarErrorComoTexto('Error', response.error || 'Error al generar el reporte', 'error');
+                        $('#estado-inicial').show();
+                    }
+                }
             },
             error: function(xhr) {
                 $('#loading-reporte').hide();
-                Swal.fire('Error', 'Error al generar el reporte', 'error');
-                console.error(xhr);
+                
+                let mensajeError = 'Error al generar el reporte';
+                
+                // Manejar diferentes tipos de errores
+                if (xhr.status === 403) {
+                    mensajeError = 'No tiene permisos para generar reportes. Contacte al administrador.';
+                } else if (xhr.status === 500) {
+                    mensajeError = 'Error interno del servidor. Intente nuevamente o contacte al administrador.';
+                } else if (xhr.status === 404) {
+                    mensajeError = 'El servicio de reportes no está disponible.';
+                } else if (xhr.status === 0) {
+                    mensajeError = 'Error de conexión. Verifique su conexión a internet.';
+                }
+                
+                // Mostrar error como texto en lugar de modal
+                mostrarErrorComoTexto('Error', mensajeError, 'error');
+                
+                console.error('Error en reporte:', xhr);
+                $('#estado-inicial').show();
             }
         });
     });
 
     // Limpiar filtros
     $('#limpiar-filtros').on('click', function() {
-        $('#filtros-dinamicos input, #filtros-dinamicos select').val('');
+        // Limpiar inputs de texto y fecha
+        $('#filtros-dinamicos input[type="text"], #filtros-dinamicos input[type="date"]').val('');
+        
+        // Restablecer selects a "todos"
+        $('#filtros-dinamicos select').each(function() {
+            const $select = $(this);
+            const $todosOption = $select.find('option[value="todos"]');
+            if ($todosOption.length > 0) {
+                $select.val('todos');
+            } else {
+                $select.val('');
+            }
+        });
+        
         filtrosActuales = {};
         actualizarContadorFiltros();
     });
@@ -480,7 +594,7 @@ $(document).ready(function() {
     // Exportar PDF
     $('#exportar-pdf').on('click', function() {
         if (!reporteActual) {
-            Swal.fire('Error', 'Por favor genera un reporte primero', 'error');
+            mostrarErrorComoTexto('Error', 'Por favor genera un reporte primero', 'error');
             return;
         }
 
@@ -492,20 +606,46 @@ $(document).ready(function() {
             }
         });
 
-        // Crear formulario temporal para descarga
-        const form = $('<form method="POST" action="<?= base_url("reportes/exportarPDF") ?>"></form>');
-        form.append($('<input type="hidden" name="tipo_reporte">').val(reporteActual));
-        form.append($('<input type="hidden" name="filtros">').val(JSON.stringify(filtros)));
-        form.append($('<input type="hidden" name="<?= csrf_token() ?>">').val('<?= csrf_hash() ?>'));
-        $('body').append(form);
-        form.submit();
-        form.remove();
+        // Mostrar loading
+        mostrarErrorComoTexto('Exportando PDF', 'Generando archivo PDF...', 'info');
+
+        // Hacer petición AJAX para exportar
+        $.ajax({
+            url: '<?= base_url("reportes/exportarPDF") ?>',
+            method: 'POST',
+            data: {
+                tipo_reporte: reporteActual,
+                filtros: JSON.stringify(filtros),
+                <?= csrf_token() ?>: '<?= csrf_hash() ?>'
+            },
+            success: function(response) {
+                // Si es HTML (PDF), abrir en nueva ventana
+                if (typeof response === 'string' && response.includes('<!DOCTYPE html>')) {
+                    const nuevaVentana = window.open('', '_blank');
+                    nuevaVentana.document.write(response);
+                    nuevaVentana.document.close();
+                    $('#area-errores').hide();
+                } else {
+                    // Si es JSON con error
+                    mostrarErrorComoTexto('Error', response.error || 'Error al exportar PDF', 'error');
+                }
+            },
+            error: function(xhr) {
+                let mensajeError = 'Error al exportar PDF';
+                if (xhr.status === 403) {
+                    mensajeError = 'No tiene permisos para exportar reportes';
+                } else if (xhr.status === 500) {
+                    mensajeError = 'Error interno del servidor al exportar PDF';
+                }
+                mostrarErrorComoTexto('Error', mensajeError, 'error');
+            }
+        });
     });
 
     // Exportar Excel
     $('#exportar-excel').on('click', function() {
         if (!reporteActual) {
-            Swal.fire('Error', 'Por favor genera un reporte primero', 'error');
+            mostrarErrorComoTexto('Error', 'Por favor genera un reporte primero', 'error');
             return;
         }
 
@@ -517,14 +657,22 @@ $(document).ready(function() {
             }
         });
 
-        // Crear formulario temporal para descarga
-        const form = $('<form method="POST" action="<?= base_url("reportes/exportarExcel") ?>"></form>');
+        // Mostrar loading
+        mostrarErrorComoTexto('Exportando Excel', 'Generando archivo Excel...', 'info');
+
+        // Crear formulario temporal para descarga (para archivos binarios)
+        const form = $('<form method="POST" action="<?= base_url("reportes/exportarExcel") ?>" target="_blank"></form>');
         form.append($('<input type="hidden" name="tipo_reporte">').val(reporteActual));
         form.append($('<input type="hidden" name="filtros">').val(JSON.stringify(filtros)));
         form.append($('<input type="hidden" name="<?= csrf_token() ?>">').val('<?= csrf_hash() ?>'));
         $('body').append(form);
         form.submit();
         form.remove();
+        
+        // Ocultar mensaje de loading después de un momento
+        setTimeout(function() {
+            $('#area-errores').hide();
+        }, 2000);
     });
 
     // Funciones auxiliares
@@ -555,4 +703,48 @@ $(document).ready(function() {
     
     console.log('Sistema de reportes dinámicos inicializado correctamente');
 });
+
+// Función para mostrar errores como texto en lugar de modales
+function mostrarErrorComoTexto(titulo, mensaje, tipo) {
+    // Ocultar otros elementos
+    $('#contenido-reporte').hide();
+    $('#estado-inicial').hide();
+    $('#loading-reporte').hide();
+    
+    // Determinar clase CSS según el tipo
+    let claseAlerta = 'alert-danger';
+    let icono = 'fas fa-exclamation-triangle';
+    
+    if (tipo === 'info') {
+        claseAlerta = 'alert-info';
+        icono = 'fas fa-info-circle';
+    } else if (tipo === 'warning') {
+        claseAlerta = 'alert-warning';
+        icono = 'fas fa-exclamation-triangle';
+    }
+    
+    // Crear HTML del error
+    let htmlError = `
+        <div class="alert ${claseAlerta} alert-dismissible fade show" role="alert">
+            <div class="d-flex align-items-center">
+                <i class="${icono} fa-2x mr-3"></i>
+                <div class="flex-grow-1">
+                    <h5 class="alert-heading mb-2">${titulo}</h5>
+                    <div class="error-message" style="white-space: pre-line;">${mensaje}</div>
+                </div>
+            </div>
+            <button type="button" class="close" data-dismiss="alert" aria-label="Cerrar">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+    `;
+    
+    // Mostrar el error
+    $('#area-errores').html(htmlError).show();
+    
+    // Auto-ocultar después de 10 segundos
+    setTimeout(function() {
+        $('#area-errores .alert').fadeOut();
+    }, 10000);
+}
 </script>
