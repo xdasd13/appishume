@@ -1,4 +1,4 @@
-<?= $header ?>
+<?= $header; ?>
 
 <div class="container-fluid h-100">
     <div class="row h-100">
@@ -129,31 +129,6 @@
 <div class="mobile-overlay" id="mobileOverlay"></div>
 
 <style>
-/* Reset y configuración base */
-* {
-    box-sizing: border-box;
-}
-
-body {
-    overflow-x: hidden;
-}
-
-.container-fluid {
-    max-width: 100%;
-    overflow-x: hidden;
-}
-
-.h-100 {
-    height: 100vh !important;
-    max-height: 100vh;
-    overflow: hidden;
-}
-
-.row {
-    margin: 0;
-    max-width: 100%;
-}
-
 /* Avatares */
 .avatar-circle {
     width: 40px;

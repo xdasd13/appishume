@@ -1,4 +1,4 @@
-  </div>
+</div>
           <!-- <footer class="footer">
             <div class="container-fluid d-flex justify-content-between">
               <nav class="pull-left">
@@ -82,8 +82,6 @@
       <script src="<?= base_url() . 'assets/js/kaiadmin.min.js'?>"></script>
       <!-- Custom JS - Cargado después de jQuery -->
       <script src="<?= base_url('assets/js/custom.js') ?>"></script>
-      <!-- Overflow Fixes JS -->
-      <script src="<?= base_url('assets/js/overflow-fixes.js') ?>"></script>
 
       <!-- Script global para logout -->
       <script>
