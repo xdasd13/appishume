@@ -72,6 +72,9 @@ $routes->group('', ['filter' => 'admin'], function($routes) {
     $routes->post('usuarios/ajax-check-dni', 'UsuariosController::ajaxCheckDni');
     $routes->get('usuarios/reniec-stats', 'UsuariosController::reniecStats');
     
+    // Validación de emails (solo admins pueden validar emails)
+    $routes->post('usuarios/ajax-check-email', 'UsuariosController::ajaxCheckEmail');
+    
     // Validación de teléfonos (solo admins pueden validar teléfonos)
     $routes->post('usuarios/validarTelefono', 'UsuariosController::validarTelefono');
     $routes->post('usuarios/infoTelefono', 'UsuariosController::infoTelefono');
@@ -102,6 +105,12 @@ $routes->group('', ['filter' => 'trabajador'], function($routes) {
     $routes->get('equipos/porServicio/(:num)', 'Equipos::porServicio/$1');
     $routes->get('equipos/por-usuario/(:num)', 'Equipos::porUsuario/$1');
     $routes->post('equipos/actualizar-estado', 'Equipos::actualizarEstado');
+    
+    // Rutas del historial de actividades
+    $routes->get('equipos/historial/(:num)', 'Equipos::historial/$1');
+    $routes->get('equipos/historial-servicio/(:num)', 'Equipos::historialServicio/$1');
+    $routes->get('equipos/reporte-productividad', 'Equipos::reporteProductividad');
+    $routes->get('equipos/estadisticas-periodo', 'Equipos::estadisticasPeriodo');
     
     // Cronograma (trabajadores pueden ver sus asignaciones)
     $routes->get('cronograma', 'Cronograma::index');
@@ -144,6 +153,12 @@ $routes->group('', ['filter' => 'admin'], function($routes) {
     $routes->get('cronograma/resumen-semanal', 'Cronograma::resumenSemanal');
     $routes->get('cronograma/proyectos-estado/(:segment)', 'Cronograma::proyectosPorEstado/$1');
     
+    // Historial del sistema (solo administradores)
+    $routes->get('historial', 'Historial::index');
+    $routes->post('historial/obtener-actividades', 'Historial::obtenerActividades');
+    $routes->get('historial/exportar-csv', 'Historial::exportarCSV');
+    $routes->post('historial/limpiar-historial', 'Historial::limpiarHistorial');
+    
     // Inventario (solo administradores)
 
 
@@ -161,7 +176,6 @@ $routes->group('inventario', function($routes) {
 });
     
 });
-
 
 // ==================== RUTAS PÚBLICAS DE SERVICIOS ====================
 $routes->group('', ['filter' => 'auth'], function($routes) {

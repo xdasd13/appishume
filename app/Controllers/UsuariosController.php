@@ -886,4 +886,244 @@ class UsuariosController extends BaseController
         }
     }
 
+    /**
+     * Verificar disponibilidad de email via AJAX
+     * 
+     * Valida si un email está disponible y genera alternativas inteligentes
+     * en caso de duplicados. Implementa debounce y validación robusta.
+     * 
+     * @return \CodeIgniter\HTTP\ResponseInterface JSON con estado y alternativas
+     */
+    public function ajaxCheckEmail()
+    {
+        // Validar que sea una petición AJAX POST
+        if (!$this->request->isAJAX() || $this->request->getMethod() !== 'post') {
+            return $this->response->setJSON([
+                'status' => 'error',
+                'message' => 'Método no permitido'
+            ])->setStatusCode(405);
+        }
+
+        try {
+            // Obtener y validar parámetros
+            $email = trim($this->request->getPost('email'));
+            $nombres = trim($this->request->getPost('nombres') ?? '');
+            $apellidos = trim($this->request->getPost('apellidos') ?? '');
+            $excludeUserId = $this->request->getPost('exclude_user_id'); // Para edición
+
+            // Validación básica del email
+            if (empty($email)) {
+                return $this->response->setJSON([
+                    'status' => 'error',
+                    'message' => 'Email es requerido'
+                ]);
+            }
+
+            // Validar formato de email
+            if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                return $this->response->setJSON([
+                    'status' => 'invalid',
+                    'message' => 'Formato de email inválido'
+                ]);
+            }
+
+            // Verificar si el email ya existe (excluyendo usuario actual en edición)
+            $query = $this->usuarioModel->where('email', $email);
+            if ($excludeUserId) {
+                $query->where('idusuario !=', $excludeUserId);
+            }
+            $existingUser = $query->first();
+
+            if ($existingUser) {
+                // Email duplicado - generar alternativas
+                $alternatives = $this->generateEmailAlternatives($nombres, $apellidos, $email, $excludeUserId);
+                
+                // Obtener información del usuario existente
+                $personaExistente = $this->personaModel->find($existingUser->idpersona);
+                
+                log_message('info', "Email duplicado detectado: {$email} - Usuario: {$existingUser->nombreusuario}");
+                
+                return $this->response->setJSON([
+                    'status' => 'exists',
+                    'message' => 'Este email ya está registrado en el sistema',
+                    'current_email' => $email,
+                    'alternatives' => $alternatives,
+                    'existing_user' => [
+                        'nombres' => $personaExistente ? $personaExistente->nombres : 'Usuario',
+                        'apellidos' => $personaExistente ? $personaExistente->apellidos : 'Existente',
+                        'usuario' => $existingUser->nombreusuario,
+                        'estado' => $existingUser->estado ? 'Activo' : 'Inactivo'
+                    ]
+                ]);
+            }
+
+            // Email disponible
+            log_message('info', "Email disponible verificado: {$email}");
+            
+            return $this->response->setJSON([
+                'status' => 'available',
+                'message' => 'Email disponible para uso',
+                'email' => $email
+            ]);
+
+        } catch (\Exception $e) {
+            log_message('error', 'UsuariosController::ajaxCheckEmail - Error: ' . $e->getMessage());
+            log_message('error', 'UsuariosController::ajaxCheckEmail - Trace: ' . $e->getTraceAsString());
+            
+            return $this->response->setJSON([
+                'status' => 'error',
+                'message' => 'Error interno del servidor. Intente nuevamente.',
+                'debug' => ENVIRONMENT === 'development' ? $e->getMessage() : null
+            ])->setStatusCode(500);
+        }
+    }
+
+    /**
+     * Generar alternativas inteligentes de email
+     * 
+     * Implementa múltiples estrategias para generar emails únicos
+     * basados en nombres, apellidos y patrones comunes.
+     * 
+     * @param string $nombres Nombres de la persona
+     * @param string $apellidos Apellidos de la persona  
+     * @param string $originalEmail Email original que causó conflicto
+     * @param int|null $excludeUserId ID de usuario a excluir (para edición)
+     * @return array Lista de emails alternativos disponibles
+     */
+    private function generateEmailAlternatives(string $nombres, string $apellidos, string $originalEmail, $excludeUserId = null): array
+    {
+        $alternatives = [];
+        $maxAlternatives = 5; // Máximo número de sugerencias
+        
+        try {
+            // Extraer componentes del email original
+            $baseEmail = str_replace('@ishume.com', '', $originalEmail);
+            $primerNombre = $this->cleanTextForEmail($this->getFirstWord($nombres));
+            $primerApellido = $this->cleanTextForEmail($this->getFirstWord($apellidos));
+            $segundoApellido = $this->cleanTextForEmail($this->getSecondWord($apellidos));
+            
+            // Estrategias de generación ordenadas por preferencia
+            $strategies = [
+                // Estrategia 1: Agregar número secuencial
+                $baseEmail . '2@ishume.com',
+                $baseEmail . '3@ishume.com',
+                
+                // Estrategia 2: Agregar año actual
+                $baseEmail . date('y') . '@ishume.com',
+                
+                // Estrategia 3: Nombre completo + apellido
+                $primerNombre . '.' . $primerApellido . '@ishume.com',
+                
+                // Estrategia 4: Inicial + apellido + año
+                substr($primerNombre, 0, 1) . $primerApellido . date('y') . '@ishume.com',
+                
+                // Estrategia 5: Nombre + segundo apellido (si existe)
+                $segundoApellido ? $primerNombre . '.' . $segundoApellido . '@ishume.com' : null,
+                
+                // Estrategia 6: Iniciales + apellido
+                substr($primerNombre, 0, 1) . substr($primerApellido, 0, 1) . $primerApellido . '@ishume.com',
+                
+                // Estrategia 7: Nombre + números aleatorios
+                $primerNombre . '.' . $primerApellido . rand(10, 99) . '@ishume.com',
+                
+                // Estrategia 8: Formato tradicional con guión
+                $primerNombre . '-' . $primerApellido . '@ishume.com',
+            ];
+            
+            // Filtrar estrategias nulas y validar disponibilidad
+            foreach (array_filter($strategies) as $candidate) {
+                if (count($alternatives) >= $maxAlternatives) {
+                    break;
+                }
+                
+                // Verificar que el candidato sea válido y único
+                if ($this->isEmailValid($candidate) && $this->isEmailAvailable($candidate, $excludeUserId)) {
+                    $alternatives[] = $candidate;
+                }
+            }
+            
+            log_message('info', "Generadas " . count($alternatives) . " alternativas para email: {$originalEmail}");
+            
+        } catch (\Exception $e) {
+            log_message('error', 'Error generando alternativas de email: ' . $e->getMessage());
+        }
+        
+        return $alternatives;
+    }
+
+    /**
+     * Limpiar texto para uso en emails
+     * 
+     * Normaliza texto removiendo acentos, caracteres especiales
+     * y convirtiendo a formato apropiado para emails.
+     * 
+     * @param string $text Texto a limpiar
+     * @return string Texto normalizado
+     */
+    private function cleanTextForEmail(string $text): string
+    {
+        return strtolower(
+            preg_replace('/[^a-z0-9]/', '', 
+                str_replace(
+                    ['á', 'é', 'í', 'ó', 'ú', 'ñ', 'ü'], 
+                    ['a', 'e', 'i', 'o', 'u', 'n', 'u'], 
+                    strtolower(
+                        iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $text)
+                    )
+                )
+            )
+        );
+    }
+
+    /**
+     * Obtener primera palabra de un texto
+     * 
+     * @param string $text Texto completo
+     * @return string Primera palabra
+     */
+    private function getFirstWord(string $text): string
+    {
+        $words = explode(' ', trim($text));
+        return $words[0] ?? '';
+    }
+
+    /**
+     * Obtener segunda palabra de un texto
+     * 
+     * @param string $text Texto completo
+     * @return string Segunda palabra o cadena vacía
+     */
+    private function getSecondWord(string $text): string
+    {
+        $words = explode(' ', trim($text));
+        return $words[1] ?? '';
+    }
+
+    /**
+     * Validar formato de email
+     * 
+     * @param string $email Email a validar
+     * @return bool True si es válido
+     */
+    private function isEmailValid(string $email): bool
+    {
+        return filter_var($email, FILTER_VALIDATE_EMAIL) !== false;
+    }
+
+    /**
+     * Verificar si un email está disponible
+     * 
+     * @param string $email Email a verificar
+     * @param int|null $excludeUserId ID de usuario a excluir
+     * @return bool True si está disponible
+     */
+    private function isEmailAvailable(string $email, $excludeUserId = null): bool
+    {
+        $query = $this->usuarioModel->where('email', $email);
+        if ($excludeUserId) {
+            $query->where('idusuario !=', $excludeUserId);
+        }
+        return $query->first() === null;
+    }
+
 }

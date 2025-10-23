@@ -212,7 +212,7 @@
     }
 
     .table th {
-        background-color: #2c3e50;
+        background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
         color: #ffffff;
         font-weight: 700;
         font-size: 14px;
@@ -225,8 +225,9 @@
 
     .table th i {
         margin-right: 6px;
-        color: var(--color-primary);
+        color: #ffffff;
         font-size: 15px;
+        opacity: 0.9;
     }
 
     .table th:first-child {
@@ -240,14 +241,15 @@
     .table td {
         padding: 12px 16px;
         border-bottom: 1px solid var(--color-border);
-        color: #1a1a1a;
-        background-color: #ffffff;
+        color: var(--color-text-primary);
+        background-color: var(--color-surface);
         font-size: 13px;
         vertical-align: middle;
     }
 
     .table tbody tr:hover td {
-        background-color: #f5f5f5;
+        background-color: var(--color-surface-light);
+        transition: background-color 0.2s ease;
     }
 
     .table tbody tr:last-child td:first-child {
@@ -271,23 +273,27 @@
     }
 
     .badge-programado {
-        background-color: #2196f3;
-        color: var(--color-white);
+        background-color: #FFF9E6;
+        color: #FF9900;
+        border: 1px solid #FF9900;
     }
 
     .badge-en-proceso {
-        background-color: var(--color-primary);
-        color: var(--color-white);
+        background-color: #FEF5E7;
+        color: #E67E22;
+        border: 1px solid #E67E22;
     }
 
     .badge-completado {
-        background-color: #4caf50;
-        color: var(--color-white);
+        background-color: #E8F8EF;
+        color: #27AE60;
+        border: 1px solid #27AE60;
     }
 
     .badge-pendiente {
-        background-color: #757575;
-        color: var(--color-white);
+        background-color: #F8F9F9;
+        color: #7F8C8D;
+        border: 1px solid #7F8C8D;
     }
 
     /* Buttons */
@@ -320,19 +326,19 @@
     }
 
     .btn-outline-white {
-        background-color: #ffffff;
-        color: #2c3e50;
-        border: 2px solid #2c3e50;
+        background-color: transparent;
+        color: var(--color-text-primary);
+        border: 2px solid var(--color-primary);
         font-weight: 600;
     }
 
     .btn-outline-white:hover {
-        background-color: #2c3e50;
+        background-color: var(--color-primary);
         color: #ffffff;
-        border-color: #2c3e50;
+        border-color: var(--color-primary);
         text-decoration: none;
         transform: translateY(-1px);
-        box-shadow: 0 2px 8px rgba(44, 62, 80, 0.3);
+        box-shadow: 0 2px 8px rgba(255, 152, 0, 0.3);
     }
 
     .btn + .btn {

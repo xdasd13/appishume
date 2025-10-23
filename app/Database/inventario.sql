@@ -7,6 +7,7 @@ CREATE TABLE cateEquipo (
     descripcion TEXT NULL
 ) ENGINE=INNODB;
 
+
 -- TABLA DE MARCAS
 CREATE TABLE marcaEquipo (
     idMarca INT UNSIGNED PRIMARY KEY AUTO_INCREMENT,

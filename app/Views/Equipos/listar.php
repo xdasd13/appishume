@@ -145,6 +145,23 @@
     </div>
     <?php endif; ?>
 
+    <!-- Acceso al Historial (Solo Administradores) -->
+    <?php if (session()->get('tipo_usuario') === 'admin'): ?>
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="alert alert-info d-flex justify-content-between align-items-center">
+                <div>
+                    <i class="fas fa-info-circle me-2"></i>
+                    <strong>Panel de Administrador:</strong> Accede al historial completo del sistema para análisis detallado
+                </div>
+                <a href="<?= base_url('historial') ?>" class="btn btn-primary">
+                    <i class="fas fa-history me-1"></i>Ver Historial Completo
+                </a>
+            </div>
+        </div>
+    </div>
+    <?php endif; ?>
+
     <!-- Tablero Kanban Refactorizado -->
     <div class="row">
         <div class="col-12">
@@ -1009,5 +1026,84 @@ function toggleDescription(button) {
         button.innerHTML = '<small>Ver menos</small>';
     }
 }
+
+// Funciones del historial removidas - ahora están en vista separada /historial
 </script>
+
+<!-- Estilos CSS para el historial -->
+<style>
+.timeline {
+    position: relative;
+    padding-left: 30px;
+}
+
+.timeline::before {
+    content: '';
+    position: absolute;
+    left: 15px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: #dee2e6;
+}
+
+.timeline-item {
+    position: relative;
+    margin-bottom: 20px;
+}
+
+.timeline-marker {
+    position: absolute;
+    left: -22px;
+    top: 5px;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: white;
+    border: 2px solid #dee2e6;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+}
+
+.timeline-content {
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 8px;
+    border-left: 4px solid #007bff;
+}
+
+.timeline-title {
+    color: #495057;
+    font-weight: 600;
+}
+
+.timeline-date {
+    margin-top: 8px;
+}
+
+.card-actions {
+    display: flex;
+    gap: 5px;
+    flex-wrap: wrap;
+}
+
+.card-actions .btn {
+    flex: 1;
+    min-width: 35px;
+}
+
+@media (max-width: 768px) {
+    .card-actions {
+        flex-direction: column;
+    }
+    
+    .card-actions .btn {
+        flex: none;
+        width: 100%;
+    }
+}
+</style>
+
 <?= $footer ?>

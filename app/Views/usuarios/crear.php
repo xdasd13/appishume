@@ -1,8 +1,4 @@
 <?= $header ?>
-<!-- Bootstrap CSS ya se carga en el header -->
-<!-- FontAwesome ya se carga en el header -->
-<!-- jQuery ya se carga en el footer -->
-<!-- SweetAlert2 CSS ya se carga en el header -->
 
 <style>
     /* Estilos */
@@ -328,32 +324,337 @@
     
     .card-body .form-control[readonly].bg-light:focus {
         background-color: #f8f9fa !important;
-        border-color: #28a745;
-        box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25);
-        outline: none;
+
+/* Responsividad */
+@media (max-width: 768px) {
+    .card-credential {
+        margin-bottom: 1rem;
     }
     
-    /* Responsividad */
-    @media (max-width: 768px) {
-        .card-credential {
-            margin-bottom: 1rem;
-        }
-        
-        .form-section {
-            padding: 1rem;
-        }
-        
-        .user-avatar {
-            width: 50px;
-            height: 50px;
-            font-size: 20px;
-        }
-        
-        .card-body .form-floating > .form-control {
-            height: calc(3rem + 2px);
-            padding: 0.75rem 0.5rem;
-        }
+    .form-section {
+        padding: 1rem;
     }
+    
+    .user-avatar {
+        width: 50px;
+        height: 50px;
+        font-size: 20px;
+    }
+    
+    .card-body .form-floating > .form-control {
+        height: calc(3rem + 2px);
+        padding: 0.75rem 0.5rem;
+    }
+}
+
+/* ==================== ESTILOS PARA VALIDACIÓN INTELIGENTE DE EMAILS ==================== */
+    
+/* Estilos para el diálogo de alternativas de email */
+.swal-wide-email {
+    width: 650px !important;
+    max-width: 90vw !important;
+}
+
+/* Botones de alternativas de email */
+.email-alternative-btn {
+    transition: all 0.3s ease;
+    border: 2px solid #007bff;
+    background-color: transparent;
+    color: #007bff;
+    font-weight: 500;
+    border-radius: 20px;
+    padding: 0.375rem 0.75rem;
+    font-size: 0.875rem;
+}
+
+.email-alternative-btn:hover {
+    background-color: #007bff;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 123, 255, 0.3);
+}
+
+.email-alternative-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(0, 123, 255, 0.2);
+}
+
+/* Icono de email verificado */
+.email-verified-icon {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 10;
+    font-size: 1.1rem;
+    animation: emailVerified 0.5s ease-in-out;
+}
+
+@keyframes emailVerified {
+    0% {
+        opacity: 0;
+        transform: translateY(-50%) scale(0.5);
+    }
+    50% {
+        transform: translateY(-50%) scale(1.2);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(-50%) scale(1);
+    }
+}
+
+/* Estados de validación de email */
+.form-control.border-primary {
+    border-color: #007bff !important;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.15);
+}
+
+.form-control.border-warning {
+    border-color: #ffc107 !important;
+    box-shadow: 0 0 0 0.2rem rgba(255, 193, 7, 0.15);
+}
+
+.form-control.border-info {
+    border-color: #17a2b8 !important;
+    box-shadow: 0 0 0 0.2rem rgba(23, 162, 184, 0.15);
+}
+
+/* Indicador de loading para email */
+#email-loading-indicator {
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+    100% {
+        opacity: 1;
+    }
+}
+
+/* Mejoras en feedback de email */
+.example-text.text-success {
+    font-weight: 600;
+    animation: fadeInSuccess 0.3s ease-in-out;
+}
+
+.example-text.text-danger {
+    font-weight: 600;
+    animation: fadeInError 0.3s ease-in-out;
+}
+
+.example-text.text-warning {
+    font-weight: 600;
+    animation: fadeInWarning 0.3s ease-in-out;
+}
+
+@keyframes fadeInSuccess {
+    from {
+        opacity: 0;
+        color: #6c757d;
+    }
+    to {
+        opacity: 1;
+        color: #28a745;
+    }
+}
+
+@keyframes fadeInError {
+    from {
+        opacity: 0;
+        color: #6c757d;
+    }
+    to {
+        opacity: 1;
+        color: #dc3545;
+    }
+}
+
+@keyframes fadeInWarning {
+    from {
+        opacity: 0;
+        color: #6c757d;
+    }
+    to {
+        opacity: 1;
+        color: #ffc107;
+    }
+}
+
+/* Estilos para alertas en diálogos de email */
+.alert.alert-danger.d-flex {
+    border-radius: 8px;
+    border: none;
+    background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+}
+
+.alert.alert-info {
+    border-radius: 8px;
+    border: none;
+    background: linear-gradient(135deg, #d1ecf1 0%, #bee5eb 100%);
+}
+
+.alert.alert-light.border {
+    border-radius: 8px;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+}
+
+/* Responsive para diálogos de email */
+@media (max-width: 768px) {
+    .swal-wide-email {
+        width: 95vw !important;
+        margin: 0 auto;
+    }
+
+    .email-alternative-btn {
+        font-size: 0.75rem;
+        padding: 0.25rem 0.5rem;
+        margin: 0.125rem;
+    }
+
+    .email-verified-icon {
+        font-size: 1rem;
+    }
+}
+
+/* ==================== ESTILOS PARA SUGERENCIAS DE EMAIL EN FORMULARIO ==================== */
+
+/* Contenedor principal de sugerencias */
+.email-suggestions-container {
+    background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+    border: 1px solid #ffc107;
+    border-radius: 8px;
+    padding: 0.75rem;
+    margin-top: 0.5rem;
+    box-shadow: 0 2px 8px rgba(255, 193, 7, 0.2);
+    animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Header de sugerencias */
+.email-suggestions-header {
+    margin-bottom: 0.5rem;
+    padding-bottom: 0.25rem;
+    border-bottom: 1px solid rgba(255, 193, 7, 0.3);
+}
+
+/* Lista de sugerencias */
+.email-suggestions-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    margin-bottom: 0.5rem;
+}
+
+/* Botón individual de sugerencia */
+.email-suggestion-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: white;
+    border: 1px solid #dee2e6;
+    border-radius: 6px;
+    padding: 0.5rem 0.75rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 0.875rem;
+}
+
+.email-suggestion-item:hover {
+    background: #f8f9fa;
+    border-color: #007bff;
+    transform: translateX(3px);
+    box-shadow: 0 2px 4px rgba(0, 123, 255, 0.1);
+}
+
+.email-suggestion-item:active {
+    transform: translateX(1px);
+    box-shadow: 0 1px 2px rgba(0, 123, 255, 0.2);
+}
+
+/* Email en la sugerencia */
+.email-suggestion-email {
+    font-family: 'Courier New', monospace;
+    font-weight: 600;
+    color: #495057;
+    flex-grow: 1;
+}
+
+/* Botón de selección */
+.email-suggestion-select {
+    background: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    transition: background-color 0.2s ease;
+}
+
+.email-suggestion-select:hover {
+    background: #0056b3;
+}
+
+/* Footer de sugerencias */
+.email-suggestions-footer {
+    padding-top: 0.25rem;
+    border-top: 1px solid rgba(255, 193, 7, 0.3);
+    text-align: center;
+}
+
+.email-suggestions-footer a {
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.email-suggestions-footer a:hover {
+    text-decoration: underline;
+}
+
+/* Estado de email con sugerencias */
+.form-control.has-suggestions {
+    border-color: #ffc107 !important;
+    box-shadow: 0 0 0 0.2rem rgba(255, 193, 7, 0.15) !important;
+}
+
+/* Responsive para sugerencias */
+@media (max-width: 768px) {
+    .email-suggestions-container {
+        padding: 0.5rem;
+    }
+    
+    .email-suggestion-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.25rem;
+        padding: 0.5rem;
+    }
+    
+    .email-suggestion-select {
+        align-self: flex-end;
+        font-size: 0.7rem;
+        padding: 0.2rem 0.4rem;
+    }
+}
+
 </style> 
 
 <div class="container-fluid py-4">
@@ -711,12 +1012,36 @@
                                             </div>
                                         </div>
                                         <div class="col-md-6 mb-3">
-                                            <div class="form-floating">
+                                            <div class="form-floating position-relative">
                                                 <input type="email" class="form-control" id="email_nuevo" 
                                                        name="email" required placeholder=" ">
                                                 <label for="email_nuevo">Email *</label>
                                             </div>
                                             <span class="example-text">Ejemplo: juan.perez@empresa.com</span>
+                                            <div id="email-loading-indicator" class="text-info small mt-1" style="display: none;"></div>
+                                            
+                                            <!-- BOTÓN DE PRUEBA - TEMPORAL -->
+                                            <button type="button" id="test-suggestions-btn" class="btn btn-sm btn-warning mt-1" style="display: none;">
+                                                🧪 Probar Sugerencias
+                                            </button>
+                                            
+                                            <!-- Contenedor para sugerencias de email -->
+                                            <div id="email-suggestions-container" class="email-suggestions-container" style="display: none;">
+                                                <div class="email-suggestions-header">
+                                                    <i class="fas fa-exclamation-triangle text-warning me-1"></i>
+                                                    <small class="text-warning fw-bold">Email en uso. Selecciona una alternativa:</small>
+                                                </div>
+                                                <div id="email-suggestions-list" class="email-suggestions-list">
+                                                    <!-- Las sugerencias se cargarán aquí dinámicamente -->
+                                                </div>
+                                                <div class="email-suggestions-footer">
+                                                    <small class="text-muted">
+                                                        <i class="fas fa-info-circle me-1"></i>
+                                                        O puedes <a href="#" id="edit-email-manually" class="text-primary">editar manualmente</a>
+                                                    </small>
+                                                </div>
+                                            </div>
+                                            
                                             <div class="invalid-feedback">Por favor ingrese un email válido.</div>
                                         </div>
                                     </div>
@@ -776,9 +1101,6 @@
         </div>
     </div>
 </div>
-    <!-- SweetAlert2 JS -->
-    <!-- SweetAlert2 JS ya se carga en el footer -->
-    <!-- Bootstrap JS ya se carga en el footer -->
     <script>
         $(document).ready(function() {
     // Función para mostrar alertas con SweetAlert2
@@ -1263,6 +1585,10 @@
      * Generar email automático basado en nombres y apellidos
      */
     function generarEmailAutomatico(nombres, apellidos) {
+        console.log('--- FUNCIÓN BASE GENERAR EMAIL ---');
+        console.log('Nombres entrada:', nombres);
+        console.log('Apellidos entrada:', apellidos);
+        
         // Limpiar y normalizar texto
         function limpiarTexto(texto) {
             return texto
@@ -1277,7 +1603,11 @@
         const nombresLimpio = limpiarTexto(nombres || '');
         const apellidosLimpio = limpiarTexto(apellidos || '');
         
+        console.log('Nombres limpio:', nombresLimpio);
+        console.log('Apellidos limpio:', apellidosLimpio);
+        
         if (!nombresLimpio || !apellidosLimpio) {
+            console.warn('Faltan datos para generar email');
             return ''; // No generar email si faltan datos
         }
         
@@ -1285,10 +1615,702 @@
         const primerNombre = nombresLimpio.split(' ')[0];
         const primerApellido = apellidosLimpio.split(' ')[0];
         
+        console.log('Primer nombre:', primerNombre);
+        console.log('Primer apellido:', primerApellido);
+        console.log('Primera letra nombre:', primerNombre.charAt(0));
+        
         // Generar email: primera letra del nombre + primer apellido + @ishume.com
         const email = `${primerNombre.charAt(0)}${primerApellido}@ishume.com`;
         
+        console.log('Email final generado:', email);
+        console.log('--- FIN FUNCIÓN BASE ---');
+        
         return email;
+    }
+
+    /**
+     * Generar email automático con validación inteligente de duplicados
+     * 
+     * Esta función genera un email base y verifica si está disponible.
+     * En caso de duplicados, muestra alternativas inteligentes al usuario.
+     * 
+     * @param {string} nombres - Nombres de la persona
+     * @param {string} apellidos - Apellidos de la persona
+     */
+    async function generarEmailAutomaticoInteligente(nombres, apellidos) {
+        console.log('=== GENERACIÓN INTELIGENTE DE EMAIL ===');
+        console.log('Nombres recibidos:', nombres);
+        console.log('Apellidos recibidos:', apellidos);
+        
+        // Generar email base usando la función existente
+        const emailBase = generarEmailAutomatico(nombres, apellidos);
+        
+        if (!emailBase) {
+            console.warn('No se pudo generar email base');
+            return;
+        }
+        
+        console.log('Email base generado:', emailBase);
+        console.log('=== INICIANDO VALIDACIÓN AJAX ===');
+        
+        // Mostrar loading mientras se valida
+        mostrarEmailLoading();
+        
+        try {
+            // Verificar disponibilidad via AJAX
+            const response = await $.ajax({
+                url: '<?= base_url('usuarios/ajax-check-email') ?>',
+                type: 'POST',
+                data: {
+                    email: emailBase,
+                    nombres: nombres,
+                    apellidos: apellidos,
+                    '<?= csrf_token() ?>': '<?= csrf_hash() ?>'
+                },
+                timeout: 10000
+            });
+            
+            console.log('=== RESPUESTA VALIDACIÓN EMAIL ===');
+            console.log('Response completa:', response);
+            console.log('Status:', response.status);
+            console.log('Alternativas:', response.alternatives);
+            
+            if (response.status === 'available') {
+                // Email disponible - usar directamente
+                console.log('✅ Email disponible, estableciendo...');
+                establecerEmailDisponible(emailBase);
+                mostrarNotificacionEmailExitoso(emailBase);
+            } else if (response.status === 'exists') {
+                // Email duplicado - mostrar sugerencias AUTOMÁTICAMENTE
+                console.log('⚠️ Email duplicado detectado, mostrando sugerencias automáticamente...');
+                console.log('Datos del usuario existente:', response.existing_user);
+                console.log('Alternativas disponibles:', response.alternatives);
+                
+                // IMPORTANTE: Mostrar sugerencias inmediatamente sin confirmación del usuario
+                mostrarSugerenciasEnFormularioAutomatico(response);
+                
+            } else if (response.status === 'invalid') {
+                // Email inválido
+                console.log('❌ Email inválido');
+                mostrarErrorEmail('El formato del email generado no es válido');
+            } else {
+                // Error desconocido
+                console.log('❌ Error desconocido:', response.message);
+                mostrarErrorEmail('Error al validar email: ' + (response.message || 'Error desconocido'));
+            }
+            
+        } catch (error) {
+            console.error('❌ Error en AJAX validando email:', error);
+            
+            if (error.status === 0) {
+                mostrarErrorEmail('Error de conexión. Verifique su internet.');
+            } else if (error.status === 429) {
+                mostrarErrorEmail('Demasiadas consultas. Espere un momento e intente nuevamente.');
+            } else {
+                // Fallback: usar email base sin validación
+                console.warn('⚠️ Usando email sin validación debido a error:', error);
+                establecerEmailConAdvertencia(emailBase);
+                mostrarNotificacionEmailAdvertencia(emailBase);
+            }
+        }
+    }
+
+    /**
+     * Mostrar loading durante validación de email
+     */
+    function mostrarEmailLoading() {
+        $('#email_nuevo').removeClass('is-valid is-invalid')
+                         .addClass('border-primary')
+                         .attr('readonly', true);
+        
+        // Mostrar indicador de carga
+        const loadingHtml = '<i class="fas fa-spinner fa-spin text-primary me-1"></i>Validando email...';
+        $('#email-loading-indicator').html(loadingHtml).show();
+    }
+
+    /**
+     * Establecer email como disponible
+     */
+    function establecerEmailDisponible(email) {
+        $('#email_nuevo').val(email)
+                         .removeClass('is-invalid border-primary')
+                         .addClass('is-valid bg-light')
+                         .attr('readonly', true);
+        
+        $('#email-loading-indicator').hide();
+        
+        // Agregar icono de verificado
+        agregarIconoEmailVerificado();
+    }
+
+    /**
+     * Establecer email con advertencia (sin validación)
+     */
+    function establecerEmailConAdvertencia(email) {
+        $('#email_nuevo').val(email)
+                         .removeClass('is-invalid border-primary')
+                         .addClass('border-warning')
+                         .attr('readonly', false); // Permitir edición manual
+        
+        $('#email-loading-indicator').hide();
+    }
+
+    /**
+     * Mostrar error en validación de email
+     */
+    function mostrarErrorEmail(mensaje) {
+        $('#email_nuevo').removeClass('is-valid border-primary')
+                         .addClass('is-invalid')
+                         .attr('readonly', false);
+        
+        $('#email-loading-indicator').hide();
+        
+        // Mostrar mensaje de error
+        const errorFeedback = $('#email_nuevo').siblings('.invalid-feedback');
+        if (errorFeedback.length > 0) {
+            errorFeedback.text(mensaje).show();
+        }
+    }
+
+    /**
+     * Agregar icono de email verificado
+     */
+    function agregarIconoEmailVerificado() {
+        const $emailField = $('#email_nuevo');
+        const $parent = $emailField.parent();
+        
+        // Remover icono anterior si existe
+        $parent.find('.email-verified-icon').remove();
+        
+        // Agregar nuevo icono
+        $parent.append('<i class="fas fa-check-circle text-success email-verified-icon" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); z-index: 10;" title="Email verificado y disponible"></i>');
+    }
+
+    /**
+     * Mostrar notificación de email exitoso
+     */
+    function mostrarNotificacionEmailExitoso(email) {
+        setTimeout(() => {
+            Swal.fire({
+                icon: 'success',
+                title: '📧 Email Generado y Verificado',
+                html: `
+                    <div class="text-start">
+                        <p><strong>Email generado automáticamente:</strong></p>
+                        <p class="text-center">
+                            <code class="bg-success text-white p-2 rounded fs-6">${email}</code>
+                            <i class="fas fa-check-circle text-success ms-2"></i>
+                        </p>
+                        <small class="text-muted">
+                            <i class="fas fa-shield-alt me-1"></i>
+                            Email verificado como disponible en el sistema
+                        </small>
+                    </div>
+                `,
+                timer: 4000,
+                timerProgressBar: true,
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                showCloseButton: true
+            });
+        }, 500);
+    }
+
+    /**
+     * Mostrar notificación de email con advertencia
+     */
+    function mostrarNotificacionEmailAdvertencia(email) {
+        setTimeout(() => {
+            Swal.fire({
+                icon: 'warning',
+                title: '⚠️ Email Generado (Sin Validar)',
+                html: `
+                    <div class="text-start">
+                        <p><strong>Email generado:</strong></p>
+                        <p class="text-center">
+                            <code class="bg-warning text-dark p-2 rounded fs-6">${email}</code>
+                        </p>
+                        <small class="text-muted">
+                            <i class="fas fa-exclamation-triangle me-1"></i>
+                            No se pudo validar disponibilidad. Verifique manualmente antes de guardar.
+                        </small>
+                    </div>
+                `,
+                timer: 6000,
+                timerProgressBar: true,
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                showCloseButton: true
+            });
+        }, 500);
+    }
+
+    /**
+     * Mostrar sugerencias de email automáticamente cuando se detecta duplicado en generación RENIEC
+     */
+    function mostrarSugerenciasEnFormularioAutomatico(response) {
+        console.log('=== MOSTRAR SUGERENCIAS AUTOMÁTICAMENTE ===');
+        console.log('Response completa:', response);
+        console.log('Email duplicado:', response.current_email);
+        console.log('Usuario existente:', response.existing_user);
+        console.log('Alternativas disponibles:', response.alternatives);
+        console.log('Cantidad de alternativas:', response.alternatives ? response.alternatives.length : 0);
+        
+        // Verificar que el contenedor existe
+        const $container = $('#email-suggestions-container');
+        console.log('Contenedor encontrado:', $container.length > 0);
+        
+        if ($container.length === 0) {
+            console.error('❌ Contenedor de sugerencias no encontrado!');
+            return;
+        }
+        
+        // Marcar el campo email como que tiene sugerencias y está duplicado
+        $('#email_nuevo').val(response.current_email)
+                         .removeClass('is-valid border-primary')
+                         .addClass('has-suggestions is-invalid')
+                         .attr('readonly', false); // Permitir edición
+        
+        // Ocultar loading
+        $('#email-loading-indicator').hide();
+        
+        // Mostrar información del email duplicado con estilo más prominente
+        const $feedback = $('#email_nuevo').siblings('.invalid-feedback');
+        $feedback.html(`
+            <div class="d-flex align-items-center">
+                <i class="fas fa-exclamation-triangle text-warning me-2"></i>
+                <div>
+                    <strong>Email "${response.current_email}" ya está en uso</strong><br>
+                    <small>Registrado por: <strong>${response.existing_user.nombres} ${response.existing_user.apellidos}</strong></small>
+                </div>
+            </div>
+        `).show();
+        
+        // Generar HTML de sugerencias con mejor diseño
+        let suggestionsHtml = '';
+        if (response.alternatives && response.alternatives.length > 0) {
+            response.alternatives.forEach((email, index) => {
+                suggestionsHtml += `
+                    <div class="email-suggestion-item" data-email="${email}">
+                        <span class="email-suggestion-email">${email}</span>
+                        <button type="button" class="email-suggestion-select" onclick="seleccionarSugerenciaEmailAutomatico('${email}')">
+                            <i class="fas fa-check me-1"></i>Usar este
+                        </button>
+                    </div>
+                `;
+            });
+        } else {
+            suggestionsHtml = `
+                <div class="text-muted text-center py-3">
+                    <i class="fas fa-exclamation-circle me-1"></i>
+                    No se pudieron generar alternativas automáticas.<br>
+                    <small>Puedes editar el email manualmente.</small>
+                </div>
+            `;
+        }
+        
+        // Mostrar el contenedor de sugerencias
+        console.log('📝 HTML de sugerencias generado:', suggestionsHtml);
+        $('#email-suggestions-list').html(suggestionsHtml);
+        
+        console.log('🎯 Mostrando contenedor de sugerencias...');
+        $container.slideDown(400, function() {
+            console.log('✅ Contenedor mostrado exitosamente');
+            
+            // Mostrar notificación automática sobre el duplicado
+            Swal.fire({
+                icon: 'warning',
+                title: '⚠️ Email Duplicado Detectado',
+                html: `
+                    <div class="text-start">
+                        <p><strong>El email generado automáticamente ya está en uso:</strong></p>
+                        <p class="text-center">
+                            <code class="bg-warning text-dark p-2 rounded fs-6">${response.current_email}</code>
+                        </p>
+                        <p><strong>Usuario existente:</strong> ${response.existing_user.nombres} ${response.existing_user.apellidos}</p>
+                        <hr>
+                        <p><strong>Selecciona una alternativa sugerida o edita manualmente.</strong></p>
+                    </div>
+                `,
+                timer: 8000,
+                timerProgressBar: true,
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                showCloseButton: true
+            });
+        });
+        
+        // Configurar evento para edición manual
+        $('#edit-email-manually').off('click').on('click', function(e) {
+            e.preventDefault();
+            console.log('🖊️ Edición manual activada');
+            habilitarEdicionManualEmail();
+            ocultarSugerenciasEmail();
+        });
+        
+        // Agregar eventos hover para las sugerencias
+        setTimeout(() => {
+            $('.email-suggestion-item').on('click', function() {
+                const email = $(this).data('email');
+                console.log('📧 Sugerencia clickeada:', email);
+                seleccionarSugerenciaEmailAutomatico(email);
+            });
+        }, 500);
+        
+        console.log('=== FIN MOSTRAR SUGERENCIAS AUTOMÁTICAMENTE ===');
+    }
+
+    /**
+     * Mostrar sugerencias de email directamente en el formulario (para edición manual)
+     */
+    function mostrarSugerenciasEnFormulario(response) {
+        console.log('=== MOSTRAR SUGERENCIAS EN FORMULARIO ===');
+        console.log('Response completa:', response);
+        console.log('Alternativas disponibles:', response.alternatives);
+        console.log('Cantidad de alternativas:', response.alternatives ? response.alternatives.length : 0);
+        
+        // Verificar que el contenedor existe
+        const $container = $('#email-suggestions-container');
+        console.log('Contenedor encontrado:', $container.length > 0);
+        
+        // Marcar el campo email como que tiene sugerencias
+        $('#email_nuevo').addClass('has-suggestions is-invalid')
+                         .removeClass('is-valid border-primary');
+        
+        // Ocultar loading
+        $('#email-loading-indicator').hide();
+        
+        // Mostrar información del email duplicado
+        const $feedback = $('#email_nuevo').siblings('.invalid-feedback');
+        $feedback.html(`
+            <i class="fas fa-exclamation-triangle me-1"></i>
+            Email <strong>${response.current_email}</strong> ya está en uso por: 
+            <strong>${response.existing_user.nombres} ${response.existing_user.apellidos}</strong>
+        `).show();
+        
+        // Generar HTML de sugerencias
+        let suggestionsHtml = '';
+        if (response.alternatives && response.alternatives.length > 0) {
+            response.alternatives.forEach((email, index) => {
+                suggestionsHtml += `
+                    <div class="email-suggestion-item" data-email="${email}">
+                        <span class="email-suggestion-email">${email}</span>
+                        <button type="button" class="email-suggestion-select" onclick="seleccionarSugerenciaEmail('${email}')">
+                            Seleccionar
+                        </button>
+                    </div>
+                `;
+            });
+        } else {
+            suggestionsHtml = `
+                <div class="text-muted text-center py-2">
+                    <i class="fas fa-exclamation-circle me-1"></i>
+                    No se pudieron generar alternativas automáticas
+                </div>
+            `;
+        }
+        
+        // Mostrar el contenedor de sugerencias
+        console.log('HTML de sugerencias generado:', suggestionsHtml);
+        $('#email-suggestions-list').html(suggestionsHtml);
+        
+        console.log('Intentando mostrar contenedor...');
+        console.log('Contenedor antes de mostrar - display:', $container.css('display'));
+        
+        $container.slideDown(300, function() {
+            console.log('Contenedor mostrado exitosamente');
+            console.log('Contenedor después de mostrar - display:', $container.css('display'));
+        });
+        
+        // Configurar evento para edición manual
+        $('#edit-email-manually').off('click').on('click', function(e) {
+            e.preventDefault();
+            console.log('Edición manual activada');
+            habilitarEdicionManualEmail();
+            ocultarSugerenciasEmail();
+        });
+        
+        // Agregar eventos hover para las sugerencias
+        $('.email-suggestion-item').on('click', function() {
+            const email = $(this).data('email');
+            console.log('Sugerencia clickeada:', email);
+            seleccionarSugerenciaEmail(email);
+        });
+        
+        console.log('=== FIN MOSTRAR SUGERENCIAS ===');
+    }
+
+    /**
+     * Seleccionar una sugerencia de email
+     */
+    function seleccionarSugerenciaEmail(email) {
+        console.log('Email sugerido seleccionado:', email);
+        
+        // Establecer el email seleccionado
+        $('#email_nuevo').val(email)
+                         .removeClass('has-suggestions is-invalid')
+                         .addClass('is-valid');
+        
+        // Ocultar sugerencias
+        ocultarSugerenciasEmail();
+        
+        // Agregar icono de verificado
+        agregarIconoEmailVerificado();
+        
+        // Mostrar feedback positivo
+        const $feedback = $('#email_nuevo').siblings('.invalid-feedback');
+        $feedback.hide();
+        
+        // Actualizar texto de ejemplo
+        const $example = $('#email_nuevo').siblings('.example-text');
+        $example.removeClass('text-danger text-warning')
+               .addClass('text-success')
+               .html('<i class="fas fa-check-circle me-1"></i>Email seleccionado y disponible');
+        
+        // Restaurar texto después de 3 segundos
+        setTimeout(() => {
+            $example.removeClass('text-success')
+                   .addClass('text-muted')
+                   .text('Ejemplo: juan.perez@empresa.com');
+        }, 3000);
+        
+        // Mostrar notificación sutil
+        mostrarNotificacionEmailSeleccionado(email);
+    }
+
+    /**
+     * Seleccionar una sugerencia de email desde generación automática RENIEC
+     */
+    function seleccionarSugerenciaEmailAutomatico(email) {
+        console.log('📧 Email sugerido seleccionado automáticamente:', email);
+        
+        // Establecer el email seleccionado con validación
+        $('#email_nuevo').val(email)
+                         .removeClass('has-suggestions is-invalid border-primary')
+                         .addClass('is-valid bg-light')
+                         .attr('readonly', true); // Bloquear edición como en generación exitosa
+        
+        // Ocultar sugerencias
+        ocultarSugerenciasEmail();
+        
+        // Agregar icono de verificado
+        agregarIconoEmailVerificado();
+        
+        // Ocultar feedback de error
+        const $feedback = $('#email_nuevo').siblings('.invalid-feedback');
+        $feedback.hide();
+        
+        // Mostrar notificación de éxito
+        Swal.fire({
+            icon: 'success',
+            title: '✅ Email Alternativo Seleccionado',
+            html: `
+                <div class="text-start">
+                    <p><strong>Email seleccionado exitosamente:</strong></p>
+                    <p class="text-center">
+                        <code class="bg-success text-white p-2 rounded fs-6">${email}</code>
+                        <i class="fas fa-check-circle text-success ms-2"></i>
+                    </p>
+                    <small class="text-muted">
+                        <i class="fas fa-shield-alt me-1"></i>
+                        Email verificado como disponible en el sistema
+                    </small>
+                </div>
+            `,
+            timer: 4000,
+            timerProgressBar: true,
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            showCloseButton: true
+        });
+        
+        console.log('✅ Email alternativo establecido exitosamente');
+    }
+
+    /**
+     * Ocultar sugerencias de email
+     */
+    function ocultarSugerenciasEmail() {
+        $('#email-suggestions-container').slideUp(200);
+        $('#email_nuevo').removeClass('has-suggestions');
+    }
+
+    /**
+     * Mostrar notificación de email seleccionado
+     */
+    function mostrarNotificacionEmailSeleccionado(email) {
+        Swal.fire({
+            icon: 'success',
+            title: '✅ Email Seleccionado',
+            html: `
+                <p>Has seleccionado:</p>
+                <p class="text-center">
+                    <code class="bg-success text-white p-2 rounded fs-6">${email}</code>
+                </p>
+            `,
+            timer: 2000,
+            timerProgressBar: true,
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false
+        });
+    }
+
+    /**
+     * Mostrar diálogo de email duplicado con alternativas (FUNCIÓN ANTIGUA - MANTENER PARA COMPATIBILIDAD)
+     */
+    function mostrarDialogoEmailDuplicado(response) {
+        const alternativesHtml = response.alternatives.length > 0 
+            ? response.alternatives.map((email, index) => 
+                `<button class="btn btn-outline-primary btn-sm me-2 mb-2 email-alternative-btn" 
+                        onclick="seleccionarEmailAlternativo('${email}')" 
+                        title="Seleccionar ${email}">
+                    ${email}
+                </button>`
+              ).join('')
+            : '<p class="text-muted"><i class="fas fa-exclamation-circle me-1"></i>No se pudieron generar alternativas automáticas</p>';
+        
+        Swal.fire({
+            icon: 'warning',
+            title: '📧 Email en Uso',
+            html: `
+                <div class="text-start">
+                    <div class="alert alert-danger d-flex align-items-center mb-3">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <div>
+                            <strong>Email ya registrado:</strong><br>
+                            <code class="bg-danger text-white p-1 rounded">${response.current_email}</code>
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-info mb-3">
+                        <small>
+                            <i class="fas fa-user me-1"></i>
+                            <strong>Usado por:</strong> ${response.existing_user.nombres} ${response.existing_user.apellidos}<br>
+                            <i class="fas fa-user-circle me-1"></i>
+                            <strong>Usuario:</strong> ${response.existing_user.usuario} 
+                            <span class="badge ${response.existing_user.estado === 'Activo' ? 'bg-success' : 'bg-danger'} ms-1">
+                                ${response.existing_user.estado}
+                            </span>
+                        </small>
+                    </div>
+                    
+                    ${response.alternatives.length > 0 ? `
+                        <div class="mb-3">
+                            <p><strong><i class="fas fa-lightbulb text-warning me-1"></i>Alternativas disponibles:</strong></p>
+                            <div class="d-flex flex-wrap justify-content-center">
+                                ${alternativesHtml}
+                            </div>
+                        </div>
+                    ` : ''}
+                    
+                    <div class="alert alert-light border">
+                        <small class="text-info">
+                            <i class="fas fa-edit me-1"></i>
+                            También puede editar manualmente el campo email
+                        </small>
+                    </div>
+                </div>
+            `,
+            showDenyButton: true,
+            showCancelButton: true,
+            confirmButtonText: '<i class="fas fa-edit me-1"></i>Editar Manualmente',
+            denyButtonText: '<i class="fas fa-times me-1"></i>Cancelar',
+            cancelButtonText: '<i class="fas fa-arrow-left me-1"></i>Generar Otro',
+            confirmButtonColor: '#17a2b8',
+            denyButtonColor: '#6c757d',
+            cancelButtonColor: '#ffc107',
+            customClass: {
+                popup: 'swal-wide-email'
+            },
+            width: '650px'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Permitir edición manual
+                habilitarEdicionManualEmail();
+            } else if (result.isDismissed && result.dismiss === Swal.DismissReason.cancel) {
+                // Intentar generar otro email automáticamente
+                intentarGenerarEmailAlternativo(response);
+            }
+            // Si es deny, no hacer nada (cancelar)
+        });
+    }
+
+    /**
+     * Seleccionar email alternativo
+     */
+    function seleccionarEmailAlternativo(email) {
+        establecerEmailDisponible(email);
+        Swal.close();
+        
+        // Mostrar confirmación
+        Swal.fire({
+            icon: 'success',
+            title: '✅ Email Seleccionado',
+            html: `
+                <p><strong>Email seleccionado:</strong></p>
+                <p class="text-center">
+                    <code class="bg-success text-white p-2 rounded fs-6">${email}</code>
+                </p>
+            `,
+            timer: 2500,
+            timerProgressBar: true,
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false
+        });
+    }
+
+    /**
+     * Habilitar edición manual del email
+     */
+    function habilitarEdicionManualEmail() {
+        $('#email_nuevo').removeClass('is-valid is-invalid bg-light border-primary has-suggestions')
+                         .attr('readonly', false)
+                         .focus()
+                         .addClass('border-info');
+        
+        // Remover icono de verificado
+        $('.email-verified-icon').remove();
+        
+        // Ocultar feedback de error
+        $('#email_nuevo').siblings('.invalid-feedback').hide();
+        
+        // Restaurar texto de ejemplo
+        const $example = $('#email_nuevo').siblings('.example-text');
+        $example.removeClass('text-danger text-warning text-success')
+               .addClass('text-muted')
+               .text('Ejemplo: juan.perez@empresa.com');
+        
+        // Mostrar ayuda
+        Swal.fire({
+            icon: 'info',
+            title: '✏️ Edición Manual Habilitada',
+            text: 'Puede editar el email manualmente. Se validará automáticamente mientras escribe.',
+            timer: 3000,
+            timerProgressBar: true,
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false
+        });
+    }
+
+    /**
+     * Intentar generar email alternativo automáticamente
+     */
+    function intentarGenerarEmailAlternativo(response) {
+        if (response.alternatives && response.alternatives.length > 0) {
+            // Usar la primera alternativa disponible
+            const primeraAlternativa = response.alternatives[0];
+            seleccionarEmailAlternativo(primeraAlternativa);
+        } else {
+            // No hay alternativas, habilitar edición manual
+            habilitarEdicionManualEmail();
+        }
     }
 
     /**
@@ -1371,36 +2393,8 @@
         $('#nombres').val(nombres).addClass('is-valid');
         $('#apellidos').val(apellidos).addClass('is-valid');
         
-        // Generar email automáticamente
-        const emailGenerado = generarEmailAutomatico(nombres, apellidos);
-        console.log('Email generado:', emailGenerado);
-        if (emailGenerado) {
-            $('#email_nuevo').val(emailGenerado).addClass('is-valid').attr('readonly', true).addClass('bg-light');
-            
-            // Mostrar notificación del email generado
-            setTimeout(() => {
-                Swal.fire({
-                    icon: 'info',
-                    title: '📧 Email Generado',
-                    html: `
-                        <div class="text-start">
-                            <p><strong>Se generó automáticamente el email:</strong></p>
-                            <p class="text-center"><code class="bg-light p-2 rounded">${emailGenerado}</code></p>
-                            <small class="text-muted">
-                                <i class="fas fa-info-circle me-1"></i>
-                                Formato: Primera letra del nombre + Primer apellido + @ishume.com
-                            </small>
-                        </div>
-                    `,
-                    timer: 5000,
-                    timerProgressBar: true,
-                    toast: true,
-                    position: 'top-end',
-                    showConfirmButton: false,
-                    showCloseButton: true
-                });
-            }, 1500);
-        }
+        // Generar email automáticamente con validación inteligente
+        generarEmailAutomaticoInteligente(nombres, apellidos);
         
         // Marcar campos como readonly para evitar modificaciones
         $('#nombres, #apellidos').attr('readonly', true).addClass('bg-light');
@@ -1673,281 +2667,48 @@
             return false;
         }
     });
+
+    // ==================== FUNCIÓN DE PRUEBA TEMPORAL ====================
+    
+    // FUNCIÓN DE PRUEBA - TEMPORAL
+    $('#test-suggestions-btn').on('click', function() {
+        console.log('=== PRUEBA DE SUGERENCIAS ===');
+        
+        // Simular respuesta del servidor
+        const mockResponse = {
+            status: 'exists',
+            current_email: 'fyataco@ishume.com',
+            alternatives: [
+                'fyataco2@ishume.com',
+                'fyataco25@ishume.com',
+                'fabian.tasayco@ishume.com',
+                'fyataco47@ishume.com'
+            ],
+            existing_user: {
+                nombres: 'FABIAN ALONSO',
+                apellidos: 'YATACO TASAYCO',
+                usuario: 'fyataco',
+                estado: 'Activo'
+            }
+        };
+        
+        // Establecer email en el campo
+        $('#email_nuevo').val('fyataco@ishume.com');
+        
+        // Mostrar sugerencias
+        mostrarSugerenciasEnFormulario(mockResponse);
+    });
+    
+    // Mostrar botón de prueba cuando hay un email
+    $('#email_nuevo').on('input', function() {
+        const email = $(this).val().trim();
+        if (email.length > 0) {
+            $('#test-suggestions-btn').show();
+        } else {
+            $('#test-suggestions-btn').hide();
+        }
+    });
 });
     </script>
     
     <?= $footer ?>
-    
-    <!-- Script completo del formulario de usuarios -->
-    <script src="<?= base_url('js/user-form-complete.js') ?>"></script>
-    
-    <!-- Script simple para manejar el registro -->
-    <script src="<?= base_url('js/simple-register.js') ?>"></script>
-    
-    <!-- Script para DNI validation - ejecutado después de jQuery -->
-    <script>
-    // Variables globales para validación DNI
-    let dniValidationTimeout;
-    let lastValidatedDni = '';
-    let dniValidationInProgress = false;
-
-    $(document).ready(function() {
-        console.log('jQuery disponible, inicializando validación DNI');
-        
-        // Inicializar validación DNI después de que jQuery esté disponible
-        initializeDniValidation();
-    });
-    
-    function initializeDniValidation() {
-        console.log('Inicializando validación DNI con jQuery disponible');
-        
-        // Bind eventos de validación DNI
-        $('#numerodoc').off('input').on('input', function() {
-            const dni = $(this).val().trim();
-            const $input = $(this);
-            
-            // Limpiar timeout anterior
-            clearTimeout(dniValidationTimeout);
-            
-            // Reset visual states
-            resetDniValidationState();
-            
-            // Validar formato básico
-            if (dni.length === 0) {
-                return;
-            }
-            
-            if (!/^\d{1,8}$/.test(dni)) {
-                showDniError('Solo se permiten números');
-                return;
-            }
-            
-            if (dni.length < 8) {
-                $('#example-numerodoc').text(`Faltan ${8 - dni.length} dígitos`).addClass('text-muted');
-                return;
-            } else {
-                $('#example-numerodoc').text('Ejemplo: 12345678 (8 dígitos)').removeClass('text-muted');
-            }
-            
-            // Si es el mismo DNI ya validado, no revalidar
-            if (dni === lastValidatedDni) {
-                return;
-            }
-            
-            // Debounce: esperar 500ms sin escribir
-            dniValidationTimeout = setTimeout(() => {
-                validateDniWithReniec(dni);
-            }, 500);
-        });
-
-        // Limpiar validación cuando se borra el campo
-        $('#numerodoc').off('keyup').on('keyup', function() {
-            if ($(this).val().length === 0) {
-                resetDniValidationState();
-                $('#numerodoc').removeClass('is-valid is-invalid');
-                $('#nombres, #apellidos, #email_nuevo').val('').removeClass('is-valid bg-light').attr('readonly', false);
-                $('#privacy-notice').hide();
-                lastValidatedDni = '';
-            }
-        });
-
-        // Prevenir envío del formulario si hay validación en progreso
-        $('#formNuevo').off('submit').on('submit', function(e) {
-            if (dniValidationInProgress) {
-                e.preventDefault();
-                Swal.fire({
-                    icon: 'info',
-                    title: 'Validación en Progreso',
-                    text: 'Por favor espere a que termine la validación del DNI',
-                    timer: 2000
-                });
-                return false;
-            }
-        });
-    }
-
-    /**
-     * Validar DNI con RENIEC via AJAX
-     */
-    function validateDniWithReniec(dni) {
-        console.log('validateDniWithReniec llamada con DNI:', dni);
-        if (dniValidationInProgress) {
-            console.log('Validación ya en progreso, saliendo...');
-            return;
-        }
-        
-        dniValidationInProgress = true;
-        showDniLoading();
-        
-        $.ajax({
-            url: '<?= base_url('usuarios/ajax-check-dni') ?>',
-            type: 'POST',
-            data: {
-                dni: dni,
-                '<?= csrf_token() ?>': '<?= csrf_hash() ?>'
-            },
-            timeout: 15000, // 15 segundos timeout
-            success: function(response) {
-                console.log('AJAX Success - Response:', response);
-                dniValidationInProgress = false;
-                lastValidatedDni = dni;
-                
-                if (response.status === 'success') {
-                    handleDniSuccess(response);
-                } else if (response.status === 'exists_active') {
-                    handleDniExistsActive(response);
-                } else if (response.status === 'exists_inactive') {
-                    handleDniExistsInactive(response);
-                } else if (response.status === 'exists_no_user') {
-                    handleDniExistsNoUser(response);
-                } else {
-                    handleDniError(response.message || 'DNI no encontrado');
-                }
-            },
-            error: function(xhr, status, error) {
-                console.log('AJAX Error:', status, error);
-                dniValidationInProgress = false;
-                
-                let errorMessage = 'Error de conexión con el servicio RENIEC';
-                
-                if (status === 'timeout') {
-                    errorMessage = 'Tiempo de espera agotado. Intente nuevamente.';
-                } else if (xhr.status === 0) {
-                    errorMessage = 'Sin conexión a internet. Verifique su conexión.';
-                } else if (xhr.status >= 500) {
-                    errorMessage = 'Error del servidor. Intente más tarde.';
-                }
-                
-                handleDniError(errorMessage);
-            }
-        });
-    }
-
-    /**
-     * Manejar éxito en validación de DNI
-     */
-    function handleDniSuccess(response) {
-        const data = response.data;
-        
-        // Autocompletar campos
-        $('#nombres').val(data.nombres).addClass('is-valid bg-light').attr('readonly', true);
-        $('#apellidos').val(data.apellidos_completos).addClass('is-valid bg-light').attr('readonly', true);
-        
-        // Generar email automático
-        const email = generateEmail(data.nombres, data.apellidos_completos);
-        $('#email_nuevo').val(email).addClass('is-valid bg-light').attr('readonly', true);
-        
-        // Mostrar aviso de privacidad
-        $('#privacy-notice').show();
-        
-        // Mostrar éxito
-        showDniSuccess('DNI válido encontrado en RENIEC');
-    }
-
-    /**
-     * Manejar DNI que ya existe con usuario activo
-     */
-    function handleDniExistsActive(response) {
-        showDniError('Este DNI ya tiene credenciales activas en el sistema');
-    }
-
-    /**
-     * Manejar DNI que existe pero usuario inactivo
-     */
-    function handleDniExistsInactive(response) {
-        showDniError('Este DNI tiene un usuario desactivado. Contacte al administrador.');
-    }
-
-    /**
-     * Manejar DNI que existe pero sin usuario
-     */
-    function handleDniExistsNoUser(response) {
-        showDniError('Este DNI ya existe en el sistema pero sin usuario asociado.');
-    }
-
-    /**
-     * Manejar error en validación de DNI
-     */
-    function handleDniError(message) {
-        showDniError(message);
-        
-        // Limpiar campos autocompletados
-        $('#nombres, #apellidos, #email_nuevo').val('').removeClass('is-valid bg-light').attr('readonly', false);
-        $('#privacy-notice').hide();
-    }
-
-    /**
-     * Mostrar estado de carga
-     */
-    function showDniLoading() {
-        resetDniValidationState();
-        $('#loading-numerodoc').show();
-        $('#numerodoc').removeClass('is-valid is-invalid');
-    }
-
-    /**
-     * Mostrar éxito en validación
-     */
-    function showDniSuccess(message) {
-        resetDniValidationState();
-        $('#success-numerodoc').text(message).show();
-        $('#numerodoc').removeClass('is-invalid').addClass('is-valid');
-    }
-
-    /**
-     * Mostrar error en validación
-     */
-    function showDniError(message) {
-        resetDniValidationState();
-        $('#error-numerodoc').text(message);
-        $('#numerodoc').removeClass('is-valid').addClass('is-invalid');
-        
-        // Limpiar campos relacionados
-        $('#nombres, #apellidos, #email_nuevo').removeClass('is-valid bg-light').attr('readonly', false);
-        $('#privacy-notice').hide();
-    }
-
-    /**
-     * Resetear estados visuales de validación DNI
-     */
-    function resetDniValidationState() {
-        $('#loading-numerodoc, #success-numerodoc, #privacy-notice').hide();
-        $('#error-numerodoc').text('Por favor ingrese un número de documento válido.');
-    }
-
-    /**
-     * Generar email automático basado en nombres y apellidos
-     */
-    function generateEmail(nombres, apellidos) {
-        if (!nombres || !apellidos) return '';
-        
-        // Limpiar y normalizar
-        const nombresClean = nombres.toLowerCase()
-            .replace(/[áàäâ]/g, 'a')
-            .replace(/[éèëê]/g, 'e')
-            .replace(/[íìïî]/g, 'i')
-            .replace(/[óòöô]/g, 'o')
-            .replace(/[úùüû]/g, 'u')
-            .replace(/ñ/g, 'n')
-            .replace(/[^a-z\s]/g, '')
-            .trim();
-        
-        const apellidosClean = apellidos.toLowerCase()
-            .replace(/[áàäâ]/g, 'a')
-            .replace(/[éèëê]/g, 'e')
-            .replace(/[íìïî]/g, 'i')
-            .replace(/[óòöô]/g, 'o')
-            .replace(/[úùüû]/g, 'u')
-            .replace(/ñ/g, 'n')
-            .replace(/[^a-z\s]/g, '')
-            .trim();
-        
-        // Tomar primera palabra de nombres y primera palabra de apellidos
-        const nombre = nombresClean.split(' ')[0];
-        const apellido = apellidosClean.split(' ')[0];
-        
-        const email = `${nombre}.${apellido}@ishume.com`;
-        
-        return email;
-    }
-    </script>
