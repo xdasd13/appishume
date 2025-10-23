@@ -263,15 +263,6 @@
     </div>
 </div>
 
-<style>
-.avatar {
-    width: 30px;
-    height: 30px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: bold;
-}
-</style>
+
 
 <?= $footer; ?>

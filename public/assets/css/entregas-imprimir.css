@@ -1,0 +1,166 @@
+body {
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+            line-height: 1.6;
+            margin: 20px;
+            color: #333;
+            background: white;
+        }
+        
+        .header {
+            text-align: center;
+            border-bottom: 3px solid #007bff;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .company-name {
+            font-size: 28px;
+            font-weight: bold;
+            color: #007bff;
+            margin-bottom: 10px;
+        }
+        
+        .document-title {
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+            margin: 20px 0;
+            border: 2px solid #007bff;
+            padding: 15px;
+            background-color: #f8f9fa;
+            text-align: center;
+        }
+        
+        .section {
+            margin-bottom: 25px;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+        }
+        
+        .section-header {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 15px;
+            font-weight: bold;
+            margin: 0;
+            border-radius: 5px 5px 0 0;
+        }
+        
+        .section-body {
+            padding: 20px;
+        }
+        
+        .info-row {
+            display: flex;
+            margin-bottom: 10px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 8px;
+        }
+        
+        .info-label {
+            font-weight: bold;
+            width: 200px;
+            flex-shrink: 0;
+        }
+        
+        .info-value {
+            flex: 1;
+        }
+        
+        .status-badge {
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 12px;
+        }
+        
+        .status-completed {
+            background-color: #28a745;
+            color: white;
+        }
+        
+        .status-pending {
+            background-color: #ffc107;
+            color: #212529;
+        }
+        
+        .signatures {
+            margin-top: 40px;
+            border-top: 2px solid #007bff;
+            padding-top: 30px;
+        }
+        
+        .signature-box {
+            border: 1px solid #dee2e6;
+            height: 100px;
+            margin: 10px 0;
+        }
+        
+        .footer {
+            margin-top: 30px;
+            font-size: 12px;
+            color: #6c757d;
+            text-align: center;
+            border-top: 1px solid #dee2e6;
+            padding-top: 15px;
+        }
+        
+        .print-buttons {
+            text-align: center;
+            margin-top: 30px;
+            padding: 20px;
+        }
+        
+        .print-buttons button {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            margin: 0 10px;
+            cursor: pointer;
+        }
+        
+        .btn-print {
+            background: #007bff;
+            color: white;
+        }
+        
+        .btn-close {
+            background: #6c757d;
+            color: white;
+        }
+        
+        @media print {
+            body {
+                margin: 0;
+                padding: 15px;
+            }
+            .print-buttons {
+                display: none !important;
+            }
+            .section {
+                page-break-inside: avoid;
+                break-inside: avoid;
+            }
+            .section-header {
+                page-break-after: avoid;
+                break-after: avoid;
+            }
+            .info-row {
+                page-break-inside: avoid;
+                break-inside: avoid;
+            }
+            .signatures {
+                page-break-inside: avoid;
+                break-inside: avoid;
+            }
+            .document-title {
+                page-break-after: avoid;
+                break-after: avoid;
+            }
+            .header {
+                page-break-after: avoid;
+                break-after: avoid;
+            }
+        }

@@ -1,0 +1,26 @@
+.card {
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
+}
+.card-stats .icon-big {
+    font-size: 2.5rem;
+    min-height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.icon-primary { color: #007bff; }
+.icon-success { color: #28a745; }
+.icon-warning { color: #ffc107; }
+.icon-info { color: #17a2b8; }
+.btn-round {
+    border-radius: 30px;
+}
+.table th {
+    border-top: none;
+    font-weight: 600;
+}
+.badge {
+    font-size: 0.8em;
+}

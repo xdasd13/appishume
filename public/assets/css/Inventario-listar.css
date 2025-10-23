@@ -1,0 +1,323 @@
+:root {
+    --primary-color: #2c5aa0;
+    --primary-light: #e8f0fe;
+    --success-color: #10b981;
+    --success-light: #d1fae5;
+    --info-color: #0ea5e9;
+    --info-light: #e0f2fe;
+    --warning-color: #f59e0b;
+    --warning-light: #fef3c7;
+    --danger-color: #ef4444;
+    --danger-light: #fee2e2;
+    --gray-100: #f8f9fa;
+    --gray-200: #e9ecef;
+    --gray-600: #6c757d;
+    --gray-800: #343a40;
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.1);
+    --shadow-md: 0 4px 6px rgba(0,0,0,0.1);
+    --shadow-lg: 0 10px 25px rgba(0,0,0,0.1);
+    --border-radius: 12px;
+    --transition: all 0.3s ease;
+}
+
+/* Header Styles */
+.header-icon-container {
+    width: 60px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.bg-primary-gradient {
+    background: linear-gradient(135deg, var(--primary-color), #4c7bd9);
+}
+
+/* Stat Cards */
+.stat-card {
+    border-radius: var(--border-radius);
+    transition: var(--transition);
+    overflow: hidden;
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-lg) !important;
+}
+
+.shadow-hover {
+    box-shadow: var(--shadow-sm);
+}
+
+.stat-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.bg-primary-light { background-color: var(--primary-light); }
+.bg-success-light { background-color: var(--success-light); }
+.bg-info-light { background-color: var(--info-light); }
+.bg-warning-light { background-color: var(--warning-light); }
+
+/* Equipment Cards */
+.equipment-card {
+    border-radius: var(--border-radius);
+    transition: var(--transition);
+    overflow: hidden;
+    background: white;
+}
+
+.equipment-card:hover {
+    transform: translateY(-8px);
+    box-shadow: var(--shadow-lg);
+}
+
+.equipment-image-container {
+    position: relative;
+    height: 220px;
+    overflow: hidden;
+    background: linear-gradient(135deg, var(--gray-100), var(--gray-200));
+}
+
+.equipment-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+}
+
+.equipment-card:hover .equipment-image {
+    transform: scale(1.05);
+}
+
+.image-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(to bottom, transparent 60%, rgba(0,0,0,0.3));
+    opacity: 0;
+    transition: var(--transition);
+}
+
+.equipment-card:hover .image-overlay {
+    opacity: 1;
+}
+
+.equipment-image-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: var(--gray-600);
+    background: var(--gray-100);
+}
+
+/* Status Badges */
+.status-badge {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.badge-new {
+    background: var(--success-light);
+    color: var(--success-color);
+    border: 1px solid var(--success-color);
+}
+
+.badge-in-use {
+    background: var(--primary-light);
+    color: var(--primary-color);
+    border: 1px solid var(--primary-color);
+}
+
+.badge-maintenance {
+    background: var(--warning-light);
+    color: var(--warning-color);
+    border: 1px solid var(--warning-color);
+}
+
+.badge-damaged {
+    background: var(--danger-light);
+    color: var(--danger-color);
+    border: 1px solid var(--danger-color);
+}
+
+.badge-other {
+    background: var(--gray-200);
+    color: var(--gray-600);
+    border: 1px solid var(--gray-600);
+}
+
+.equipment-status-badge {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    z-index: 2;
+}
+
+/* Botones de acción visibles */
+.equipment-actions-visible {
+    opacity: 1;
+    transform: none;
+}
+
+.equipment-actions-visible .btn-group {
+    gap: 2px;
+}
+
+.equipment-actions-visible .btn {
+    border-radius: 6px;
+    font-size: 0.75rem;
+    padding: 0.4rem 0.5rem;
+    transition: all 0.3s ease;
+    flex: 1;
+    border: 1px solid #dee2e6;
+}
+
+.equipment-actions-visible .btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.equipment-actions-visible .btn-outline-primary:hover {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+.equipment-actions-visible .btn-outline-warning:hover {
+    background-color: var(--warning-color);
+    border-color: var(--warning-color);
+    color: white;
+}
+
+.equipment-actions-visible .btn-outline-danger:hover {
+    background-color: var(--danger-color);
+    border-color: var(--danger-color);
+}
+
+/* Content Styles */
+.equipment-model {
+    font-weight: 700;
+    color: var(--gray-800);
+    margin-bottom: 0.75rem;
+    font-size: 1.1rem;
+}
+
+.equipment-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.meta-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.875rem;
+}
+
+.meta-item i {
+    width: 16px;
+    text-align: center;
+}
+
+.equipment-description {
+    line-height: 1.5;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+/* Stock Indicator */
+.stock-badge {
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.in-stock {
+    background: var(--success-light);
+    color: var(--success-color);
+}
+
+.out-of-stock {
+    background: var(--danger-light);
+    color: var(--danger-color);
+}
+
+/* Empty State */
+.empty-state {
+    padding: 3rem 1rem;
+}
+
+/* Form Controls */
+.form-select, .form-control {
+    border-radius: 8px;
+    border: 1px solid var(--gray-200);
+    transition: var(--transition);
+}
+
+.form-select:focus, .form-control:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.2rem rgba(44, 90, 160, 0.1);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .equipment-image-container {
+        height: 180px;
+    }
+    
+    .equipment-actions-visible .btn {
+        font-size: 0.7rem;
+        padding: 0.3rem 0.4rem;
+    }
+    
+    .equipment-actions-visible .btn i {
+        margin-right: 0.25rem;
+    }
+}
+
+/* Animation for card appearance */
+.equipo-card {
+    animation: fadeInUp 0.6s ease forwards;
+    opacity: 0;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Stagger animation for multiple cards */
+.equipo-card:nth-child(1) { animation-delay: 0.1s; }
+.equipo-card:nth-child(2) { animation-delay: 0.2s; }
+.equipo-card:nth-child(3) { animation-delay: 0.3s; }
+.equipo-card:nth-child(4) { animation-delay: 0.4s; }
+.equipo-card:nth-child(5) { animation-delay: 0.5s; }
+.equipo-card:nth-child(6) { animation-delay: 0.6s; }
+
+/* Tooltips */
+.tooltip {
+    font-size: 0.75rem;
+}

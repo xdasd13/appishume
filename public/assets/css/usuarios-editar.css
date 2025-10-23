@@ -1,0 +1,120 @@
+.user-header {
+            background: linear-gradient(135deg, #FF8008 0%, #FFC837 100%);
+            color: #fff;
+            padding: 2rem;
+            border-radius: 15px;
+            margin-bottom: 2rem;
+            box-shadow: 0 6px 15px rgba(255, 128, 8, 0.3);
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .form-section {
+            background: #fff;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-left: 4px solid #FF8008;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .form-section:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 16px rgba(255, 128, 8, 0.2);
+        }
+
+        .password-toggle {
+            cursor: pointer;
+            color: #FF8008;
+            transition: color 0.3s ease;
+        }
+
+        .password-toggle:hover {
+            color: #e76f00;
+        }
+
+        /* Estilos para campos editables */
+        .form-text .fa-edit {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        /* Estilos para validación de contraseña */
+        .password-strength-container {
+            margin-top: 8px;
+        }
+
+        .password-strength-bar {
+            width: 100%;
+            height: 4px;
+            background-color: #e9ecef;
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .password-strength-fill {
+            height: 100%;
+            transition: all 0.3s ease;
+            border-radius: 2px;
+        }
+
+        .password-strength-fill.weak {
+            width: 25%;
+            background-color: #dc3545;
+        }
+
+        .password-strength-fill.fair {
+            width: 50%;
+            background-color: #fd7e14;
+        }
+
+        .password-strength-fill.good {
+            width: 75%;
+            background-color: #ffc107;
+        }
+
+        .password-strength-fill.strong {
+            width: 100%;
+            background-color: #28a745;
+        }
+
+        .password-requirements {
+            font-size: 0.875rem;
+        }
+
+        .requirement {
+            display: block;
+            margin-bottom: 2px;
+            transition: all 0.3s ease;
+        }
+
+        .requirement.met {
+            color: #28a745;
+        }
+
+        .requirement.met i {
+            color: #28a745;
+        }
+
+        .requirement.met i:before {
+            content: "\f00c"; /* fa-check */
+        }
+
+        .password-match {
+            font-size: 0.875rem;
+        }
+
+        /* Mejorar input groups */
+        .input-group .password-toggle {
+            border-left: none;
+        }
+
+        .input-group .form-control:focus + .password-toggle {
+            border-color: #86b7fe;
+            box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+        }

@@ -1,0 +1,104 @@
+.dropdown-menu {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.notification-item {
+    padding: 10px 15px;
+    border-bottom: 1px solid #f0f0f0;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.notification-item:hover {
+    background-color: #f8f9fa;
+}
+
+.notification-item:last-child {
+    border-bottom: none;
+}
+
+.notification-item.unread {
+    background-color: #e3f2fd;
+    border-left: 3px solid #2196f3;
+}
+
+.notification-icon {
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 10px;
+    font-size: 0.9em;
+}
+
+.notification-icon.mensaje {
+    background-color: #4e73df;
+    color: white;
+}
+
+.notification-icon.mensaje_importante {
+    background-color: #ffc107;
+    color: #333;
+}
+
+.notification-icon.mensaje_urgente {
+    background-color: #dc3545;
+    color: white;
+}
+
+.notification-icon.sistema {
+    background-color: #6c757d;
+    color: white;
+}
+
+.notification-content {
+    flex: 1;
+}
+
+.notification-title {
+    font-weight: bold;
+    margin-bottom: 2px;
+    font-size: 0.9em;
+}
+
+.notification-message {
+    font-size: 0.8em;
+    color: #666;
+    margin-bottom: 2px;
+}
+
+.notification-time {
+    font-size: 0.7em;
+    color: #999;
+}
+
+.badge {
+    animation: pulse 1s ease-in-out;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.2); }
+    100% { transform: scale(1); }
+}
+
+/* Scrollbar personalizado para dropdowns */
+.dropdown-menu::-webkit-scrollbar {
+    width: 6px;
+}
+
+.dropdown-menu::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+.dropdown-menu::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 3px;
+}
+
+.dropdown-menu::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}
