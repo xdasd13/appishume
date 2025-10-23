@@ -86,6 +86,7 @@
         color: #6e707e;
         cursor: pointer;
         z-index: 10;
+        padding: 4px;
     }
     
     .password-toggle:hover {
