@@ -1,4 +1,5 @@
 <?= $header ?>
+<link rel="stylesheet" href="<?= base_url('assets/css/ControlPagos-por_contrato.css') ?>">
 <div class="page-inner">
     <div class="row">
         <div class="col-md-12">
@@ -350,53 +351,3 @@ $(document).ready(function() {
 </script>
 <?php endif; ?>
 
-<style>
-.card-3d {
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-    border: 1px solid #e3e6f0;
-    border-radius: 10px;
-}
-.status-indicator {
-    background: rgba(255,255,255,0.2);
-    padding: 15px;
-    border-radius: 8px;
-    backdrop-filter: blur(10px);
-}
-.badge-lg {
-    font-size: 1rem;
-    padding: 8px 16px;
-}
-.progress {
-    border-radius: 10px;
-    overflow: hidden;
-}
-.progress-bar {
-    font-weight: bold;
-}
-.table-responsive {
-    border-radius: 8px;
-    overflow: hidden;
-}
-.btn-group .btn {
-    border-radius: 4px;
-}
-@media (max-width: 768px) {
-    .card-header .d-flex {
-        flex-direction: column;
-        align-items: flex-start !important;
-    }
-    .card-header .ml-md-auto {
-        margin-left: 0 !important;
-        margin-top: 10px;
-        width: 100%;
-    }
-    .btn-group {
-        display: flex;
-        flex-direction: column;
-        gap: 2px;
-    }
-    .btn-group .btn {
-        margin-bottom: 2px;
-    }
-}
-</style>

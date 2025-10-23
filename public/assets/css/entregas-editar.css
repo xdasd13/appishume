@@ -1,0 +1,24 @@
+.form-label {
+        font-weight: 600;
+        color: #495057;
+        margin-bottom: 8px;
+        display: block;
+    }
+    .form-validate .form-control {
+        border-radius: 6px;
+        border: 1px solid #ddd;
+        transition: all 0.3s ease;
+    }
+    .form-validate .form-control:focus {
+        border-color: #4e73df;
+        box-shadow: 0 0 0 0.2rem rgba(78, 115, 223, 0.25);
+    }
+    .input-group-text {
+        background-color: #f8f9fa;
+        border-color: #ddd;
+    }
+    .btn-lg {
+        padding: 0.75rem 1.5rem;
+        font-size: 1.1rem;
+        border-radius: 6px;
+    }

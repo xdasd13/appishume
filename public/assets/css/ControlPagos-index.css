@@ -1,0 +1,43 @@
+.card-hover {
+    transition: all 0.3s ease;
+    border: 1px solid #e3e6f0;
+}
+.card-hover:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+.btn-hover {
+    transition: all 0.3s ease;
+}
+.btn-hover:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+.row-hover:hover {
+    background-color: #f8f9fa !important;
+}
+.btn-action {
+    transition: all 0.3s ease;
+    border-radius: 50%;
+    width: 35px;
+    height: 35px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 2px;
+}
+.btn-action:hover {
+    transform: scale(1.1);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+.badge-3d {
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+.table-hover-3d tbody tr:hover {
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+}
+.card-header {
+    background: linear-gradient(135deg, #f8f9fc 0%, #e3e6f0 100%);
+    border-bottom: 1px solid #e3e6f0;
+}

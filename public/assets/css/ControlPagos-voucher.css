@@ -1,0 +1,189 @@
+/* Estilos para el voucher profesional */
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f8f9fa;
+            color: #333;
+        }
+        
+        .voucher-container {
+            max-width: 800px;
+            margin: 20px auto;
+            background: white;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        
+        .voucher-header {
+            background: linear-gradient(135deg, #2c3e50, #3498db);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            position: relative;
+        }
+        
+        .voucher-header h1 {
+            margin: 0;
+            font-size: 28px;
+            font-weight: bold;
+        }
+        
+        .voucher-header p {
+            margin: 5px 0 0;
+            font-size: 16px;
+            opacity: 0.9;
+        }
+        
+        .voucher-body {
+            padding: 30px;
+        }
+        
+        .voucher-section {
+            margin-bottom: 25px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .voucher-section:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+        
+        .voucher-section h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-size: 18px;
+            border-left: 4px solid #3498db;
+            padding-left: 10px;
+        }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+        
+        .info-item {
+            margin-bottom: 10px;
+        }
+        
+        .info-label {
+            font-weight: bold;
+            color: #555;
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+        
+        .info-value {
+            color: #333;
+            font-size: 15px;
+        }
+        
+        .amount-highlight {
+            font-size: 18px;
+            font-weight: bold;
+            padding: 8px 12px;
+            border-radius: 5px;
+            display: inline-block;
+            margin-top: 5px;
+        }
+        
+        .amount-positive {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        
+        .amount-negative {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        
+        .amount-warning {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+        
+        .voucher-footer {
+            background: #f8f9fa;
+            padding: 20px 30px;
+            text-align: center;
+            border-top: 1px solid #eee;
+        }
+        
+        .signature-area {
+            margin-top: 40px;
+            border-top: 1px dashed #ccc;
+            padding-top: 20px;
+        }
+        
+        .signature-line {
+            border-top: 1px solid #333;
+            width: 250px;
+            margin: 0 auto;
+            padding-top: 30px;
+        }
+        
+        .print-button {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
+            font-weight: bold;
+            z-index: 1000;
+            transition: all 0.3s ease;
+        }
+        
+        .print-button:hover {
+            background: #2980b9;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(52, 152, 219, 0.4);
+        }
+        
+        .logo {
+            max-width: 150px;
+            margin-bottom: 15px;
+        }
+        
+        .watermark {
+            position: absolute;
+            opacity: 0.03;
+            font-size: 120px;
+            font-weight: bold;
+            color: #000;
+            transform: rotate(-45deg);
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-45deg);
+            pointer-events: none;
+        }
+        
+        @media print {
+            body {
+                background: white;
+            }
+            
+            .voucher-container {
+                box-shadow: none;
+                margin: 0;
+                max-width: 100%;
+            }
+            
+            .print-button {
+                display: none;
+            }
+            
+            .voucher-header {
+                background: #2c3e50 !important;
+                color: black !important;
+                -webkit-print-color-adjust: exact;
+            }
+        }

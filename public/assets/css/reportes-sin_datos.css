@@ -1,0 +1,55 @@
+.report-header {
+    background: linear-gradient(135deg, #ffc107 0%, #ff8c00 100%);
+    color: white;
+    padding: 1.5rem;
+    border-radius: 10px;
+    margin-bottom: 1.5rem;
+}
+
+.report-header h4 {
+    color: white;
+}
+
+.report-header p {
+    color: rgba(255,255,255,0.9);
+}
+
+.report-header small {
+    color: rgba(255,255,255,0.8);
+}
+
+.alert {
+    border-radius: 8px;
+    border: none;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.alert-heading {
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.card {
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.btn {
+    border-radius: 6px;
+    font-weight: 500;
+}
+
+@media (max-width: 768px) {
+    .report-header {
+        padding: 1rem;
+    }
+    
+    .report-header .col-md-4 {
+        margin-top: 1rem;
+        text-align: left !important;
+    }
+    
+    .alert {
+        margin: 0 1rem;
+    }
+}

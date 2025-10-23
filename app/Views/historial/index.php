@@ -1,4 +1,5 @@
 <?= $header ?>
+<link rel="stylesheet" href="<?= base_url('assets/css/historial-index.css') ?>">
 
 <div class="container-fluid py-4">
     <!-- Encabezado -->
@@ -94,6 +95,7 @@
 </div>
 
 <!-- Estilos CSS -->
+<<<<<<< HEAD
 <style>
 /* Paleta de colores de la empresa */
 :root {
@@ -346,6 +348,9 @@
     }
 }
 </style>
+=======
+
+>>>>>>> 7d88b39e190e242f3f4c50280724345b019eaec9
 
 <!-- JavaScript -->
 <script>

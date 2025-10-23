@@ -1,70 +1,7 @@
 <?= $header ?>
+<link rel="stylesheet" href="<?= base_url('assets/css/welcome.css') ?>">
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<style>
-/* Estilos personalizados para SweetAlert Toast */
-.swal-success-popup {
-    font-family: 'Poppins', sans-serif !important;
-    border-radius: 12px !important;
-    box-shadow: 0 8px 25px rgba(76, 175, 80, 0.15) !important;
-}
 
-.swal-success-title {
-    font-family: 'Poppins', sans-serif !important;
-    font-weight: 600 !important;
-    font-size: 1rem !important;
-    color: #2E7D32 !important;
-}
-
-.swal-success-text {
-    font-family: 'Poppins', sans-serif !important;
-    font-weight: 400 !important;
-    font-size: 0.9rem !important;
-    color: #4CAF50 !important;
-}
-
-/* Estilos para mensajes de error */
-.swal2-popup {
-    border-radius: 15px !important;
-    padding: 2rem !important;
-    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15) !important;
-    font-family: 'Poppins', sans-serif !important;
-}
-
-.swal2-title {
-    font-family: 'Poppins', sans-serif !important;
-    font-weight: 600 !important;
-    font-size: 1.3rem !important;
-    color: #E63946 !important;
-}
-
-.swal2-content {
-    font-family: 'Poppins', sans-serif !important;
-    font-weight: 400 !important;
-    font-size: 1rem !important;
-    color: #555555 !important;
-}
-
-/* Detector de sesión expirada */
-.session-expired-popup {
-    border-radius: 15px !important;
-    padding: 2rem !important;
-    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2) !important;
-}
-
-.session-expired-title {
-    font-family: 'Poppins', sans-serif !important;
-    font-weight: 600 !important;
-    font-size: 1.4rem !important;
-    color: #E63946 !important;
-}
-
-.session-expired-text {
-    font-family: 'Poppins', sans-serif !important;
-    font-weight: 400 !important;
-    font-size: 1rem !important;
-    color: #666666 !important;
-}
-</style>
 <h2>Welcome</h2>
 <!-- Bootstrap JS ya se carga en el footer -->
 <script>

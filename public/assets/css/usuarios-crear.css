@@ -1,0 +1,654 @@
+/* Estilos */
+    .card-credential {
+        transition: transform 0.2s;
+        border: 1px solid #dee2e6;
+        border-radius: 10px;
+    }
+    .card-credential:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+    .badge-admin {
+        background-color: #dc3545;
+        font-size: 0.75em;
+        padding: 0.35em 0.65em;
+    }
+    .badge-trabajador {
+        background-color: #0d6efd;
+        font-size: 0.75em;
+        padding: 0.35em 0.65em;
+    }
+    .user-avatar {
+        width: 60px;
+        height: 60px;
+        background: linear-gradient(45deg,rgb(255, 136, 0),rgb(224, 126, 60));
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+        color: white;
+        font-weight: bold;
+    }
+    
+    /*  efecto de label flotante */
+    .card-body .form-floating {
+        position: relative;
+        margin-bottom: 0.5rem;
+    }
+    
+    .card-body .form-floating > label {
+        position: absolute;
+        top: 0;
+        left: 0;
+        height: 100%;
+        padding: 1rem 0.75rem;
+        pointer-events: none;
+        border: 1px solid transparent;
+        transform-origin: 0 0;
+        transition: opacity 0.1s ease-in-out, transform 0.1s ease-in-out;
+        color: #6e707e;
+    }
+    
+    .card-body .form-floating > .form-control {
+        height: calc(3.5rem + 2px);
+        padding: 1rem 0.75rem;
+        border: 1px solid #d1d3e2;
+        border-radius: 0.35rem;
+    }
+    
+    .card-body .form-floating > .form-control:focus,
+    .card-body .form-floating > .form-control:not(:placeholder-shown) {
+        padding-top: 1.625rem;
+        padding-bottom: 0.625rem;
+        border-color: #4e73df;
+        box-shadow: 0 0 0 0.2rem rgba(78, 115, 223, 0.25);
+    }
+    
+    .card-body .form-floating > .form-control:focus ~ label,
+    .card-body .form-floating > .form-control:not(:placeholder-shown) ~ label {
+        transform: scale(0.85) translateY(-0.7rem) translateX(0.15rem);
+        color: #4e73df;
+        background-color: white;
+        padding: 0 0.5rem;
+        margin-left: 0.25rem;
+        height: auto;
+        width: auto;
+    }
+    
+    .password-toggle {
+        position: absolute;
+        right: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: none;
+        border: none;
+        color: #6e707e;
+        cursor: pointer;
+        z-index: 10;
+        padding: 4px;
+    }
+    
+    .password-toggle:hover {
+        color: #4e73df;
+    }
+    
+    /* Estilos para validación de teléfonos */
+    .input-group-append .btn {
+        border-color: #ced4da;
+        z-index: 3;
+    }
+    
+    .input-group-append .btn:hover {
+        border-color: #adb5bd;
+        background-color: #f8f9fa;
+    }
+    
+    .alert-sm {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.875rem;
+        margin-top: 0.5rem;
+    }
+    
+    .is-valid {
+        border-color: #28a745 !important;
+    }
+    
+    .is-invalid {
+        border-color: #dc3545 !important;
+    }
+    
+    .form-control.is-valid:focus {
+        border-color: #28a745;
+        box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25);
+    }
+    
+    .form-control.is-invalid:focus {
+        border-color: #dc3545;
+        box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+    }
+    
+    .btn:disabled {
+        opacity: 0.65;
+        cursor: not-allowed;
+    }
+    
+    /* Estilos para información de teléfono */
+    .phone-info-container {
+        font-size: 0.875rem;
+    }
+    
+    .phone-number-display {
+        background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+        padding: 0.75rem;
+        border-radius: 0.5rem;
+        border-left: 4px solid #28a745;
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+    }
+    
+    .phone-details-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 0.5rem;
+    }
+    
+    .phone-detail-item {
+        display: flex;
+        align-items: center;
+        padding: 0.25rem 0;
+        font-size: 0.8rem;
+    }
+    
+    .phone-detail-item .detail-label {
+        font-weight: 600;
+        margin-right: 0.5rem;
+        color: #495057;
+    }
+    
+    .phone-detail-item .detail-value {
+        color: #6c757d;
+    }
+    
+    /* Mejorar las alertas de teléfono */
+    .alert-sm {
+        border-radius: 0.5rem;
+        border: none;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .alert-success.alert-sm {
+        background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+        color: #155724;
+    }
+    
+    .alert-danger.alert-sm {
+        background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+        color: #721c24;
+    }
+    
+    /* Estilos para subsecciones del formulario */
+    .form-subsection {
+        background: #f8f9fa;
+        border-radius: 0.75rem;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        border: 1px solid #e9ecef;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+    
+    .subsection-title {
+        font-size: 1rem;
+        font-weight: 600;
+        color: #495057;
+        margin-bottom: 1rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 2px solid #dee2e6;
+        display: flex;
+        align-items: center;
+    }
+    
+    .subsection-title i {
+        margin-right: 0.5rem;
+        font-size: 1.1rem;
+    }
+    
+    .form-section {
+        margin-bottom: 2rem;
+    }
+    
+    .section-title {
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: #2c3e50;
+        margin-bottom: 1.5rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 3px solid #4e73df;
+        display: flex;
+        align-items: center;
+    }
+    
+    .section-title i {
+        margin-right: 0.75rem;
+        font-size: 1.3rem;
+        color: #4e73df;
+    }
+    
+    .password-strength {
+        height: 5px;
+        margin-top: 5px;
+        border-radius: 5px;
+        transition: all 0.3s ease;
+        width: 0%;
+    }
+    
+    .password-strength.bg-danger { background-color: #dc3545; }
+    .password-strength.bg-warning { background-color: #ffc107; }
+    .password-strength.bg-success { background-color: #28a745; }
+    
+    /* Estilos para los selects */
+    .form-select {
+        height: calc(3.5rem + 2px);
+        padding: 1rem 0.75rem;
+        border: 1px solid #d1d3e2;
+        border-radius: 0.35rem;
+    }
+    
+    .form-select:focus {
+        border-color: #4e73df;
+        box-shadow: 0 0 0 0.2rem rgba(78, 115, 223, 0.25);
+    }
+    
+    .form-label {
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        color: #4e73df;
+    }
+    
+    /* Estilos para ejemplos */
+    .example-text {
+        font-size: 0.8rem;
+        color: #6c757d;
+        margin-top: 0.25rem;
+        display: block;
+    }
+    
+    .section-title {
+        border-bottom: 2px solid #4e73df;
+        padding-bottom: 0.5rem;
+        margin-bottom: 1.5rem;
+        color: #4e73df;
+    }
+    
+    .form-section {
+        background-color: #f8f9fc;
+        padding: 1.5rem;
+        border-radius: 0.5rem;
+        margin-bottom: 1.5rem;
+        border-left: 4px solid #4e73df;
+    }
+    
+    /* Estilos para feedback de seguridad */
+    .security-feedback {
+        font-size: 0.8rem;
+        margin-top: 0.25rem;
+    }
+    
+    .requirement-met {
+        color: #28a745;
+    }
+    
+    .requirement-unmet {
+        color: #6c757d;
+    }
+    
+    .requirement-met::before {
+        content: "✓ ";
+        font-weight: bold;
+    }
+    
+    .requirement-unmet::before {
+        content: "✗ ";
+        font-weight: bold;
+    }
+    
+    /* Estilos para campos readonly */
+    .card-body .form-control[readonly].bg-light {
+        background-color: #f8f9fa !important;
+        border-color: #28a745;
+        color: #495057;
+        cursor: not-allowed;
+    }
+    
+    .card-body .form-control[readonly].bg-light:focus {
+        background-color: #f8f9fa !important;
+
+/* Responsividad */
+@media (max-width: 768px) {
+    .card-credential {
+        margin-bottom: 1rem;
+    }
+    
+    .form-section {
+        padding: 1rem;
+    }
+    
+    .user-avatar {
+        width: 50px;
+        height: 50px;
+        font-size: 20px;
+    }
+    
+    .card-body .form-floating > .form-control {
+        height: calc(3rem + 2px);
+        padding: 0.75rem 0.5rem;
+    }
+}
+
+/* ==================== ESTILOS PARA VALIDACIÓN INTELIGENTE DE EMAILS ==================== */
+    
+/* Estilos para el diálogo de alternativas de email */
+.swal-wide-email {
+    width: 650px !important;
+    max-width: 90vw !important;
+}
+
+/* Botones de alternativas de email */
+.email-alternative-btn {
+    transition: all 0.3s ease;
+    border: 2px solid #007bff;
+    background-color: transparent;
+    color: #007bff;
+    font-weight: 500;
+    border-radius: 20px;
+    padding: 0.375rem 0.75rem;
+    font-size: 0.875rem;
+}
+
+.email-alternative-btn:hover {
+    background-color: #007bff;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 123, 255, 0.3);
+}
+
+.email-alternative-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(0, 123, 255, 0.2);
+}
+
+/* Icono de email verificado */
+.email-verified-icon {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 10;
+    font-size: 1.1rem;
+    animation: emailVerified 0.5s ease-in-out;
+}
+
+@keyframes emailVerified {
+    0% {
+        opacity: 0;
+        transform: translateY(-50%) scale(0.5);
+    }
+    50% {
+        transform: translateY(-50%) scale(1.2);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(-50%) scale(1);
+    }
+}
+
+/* Estados de validación de email */
+.form-control.border-primary {
+    border-color: #007bff !important;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.15);
+}
+
+.form-control.border-warning {
+    border-color: #ffc107 !important;
+    box-shadow: 0 0 0 0.2rem rgba(255, 193, 7, 0.15);
+}
+
+.form-control.border-info {
+    border-color: #17a2b8 !important;
+    box-shadow: 0 0 0 0.2rem rgba(23, 162, 184, 0.15);
+}
+
+/* Indicador de loading para email */
+#email-loading-indicator {
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+    100% {
+        opacity: 1;
+    }
+}
+
+/* Mejoras en feedback de email */
+.example-text.text-success {
+    font-weight: 600;
+    animation: fadeInSuccess 0.3s ease-in-out;
+}
+
+.example-text.text-danger {
+    font-weight: 600;
+    animation: fadeInError 0.3s ease-in-out;
+}
+
+.example-text.text-warning {
+    font-weight: 600;
+    animation: fadeInWarning 0.3s ease-in-out;
+}
+
+@keyframes fadeInSuccess {
+    from {
+        opacity: 0;
+        color: #6c757d;
+    }
+    to {
+        opacity: 1;
+        color: #28a745;
+    }
+}
+
+@keyframes fadeInError {
+    from {
+        opacity: 0;
+        color: #6c757d;
+    }
+    to {
+        opacity: 1;
+        color: #dc3545;
+    }
+}
+
+@keyframes fadeInWarning {
+    from {
+        opacity: 0;
+        color: #6c757d;
+    }
+    to {
+        opacity: 1;
+        color: #ffc107;
+    }
+}
+
+/* Estilos para alertas en diálogos de email */
+.alert.alert-danger.d-flex {
+    border-radius: 8px;
+    border: none;
+    background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+}
+
+.alert.alert-info {
+    border-radius: 8px;
+    border: none;
+    background: linear-gradient(135deg, #d1ecf1 0%, #bee5eb 100%);
+}
+
+.alert.alert-light.border {
+    border-radius: 8px;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+}
+
+/* Responsive para diálogos de email */
+@media (max-width: 768px) {
+    .swal-wide-email {
+        width: 95vw !important;
+        margin: 0 auto;
+    }
+
+    .email-alternative-btn {
+        font-size: 0.75rem;
+        padding: 0.25rem 0.5rem;
+        margin: 0.125rem;
+    }
+
+    .email-verified-icon {
+        font-size: 1rem;
+    }
+}
+
+/* ==================== ESTILOS PARA SUGERENCIAS DE EMAIL EN FORMULARIO ==================== */
+
+/* Contenedor principal de sugerencias */
+.email-suggestions-container {
+    background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+    border: 1px solid #ffc107;
+    border-radius: 8px;
+    padding: 0.75rem;
+    margin-top: 0.5rem;
+    box-shadow: 0 2px 8px rgba(255, 193, 7, 0.2);
+    animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Header de sugerencias */
+.email-suggestions-header {
+    margin-bottom: 0.5rem;
+    padding-bottom: 0.25rem;
+    border-bottom: 1px solid rgba(255, 193, 7, 0.3);
+}
+
+/* Lista de sugerencias */
+.email-suggestions-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    margin-bottom: 0.5rem;
+}
+
+/* Botón individual de sugerencia */
+.email-suggestion-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: white;
+    border: 1px solid #dee2e6;
+    border-radius: 6px;
+    padding: 0.5rem 0.75rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 0.875rem;
+}
+
+.email-suggestion-item:hover {
+    background: #f8f9fa;
+    border-color: #007bff;
+    transform: translateX(3px);
+    box-shadow: 0 2px 4px rgba(0, 123, 255, 0.1);
+}
+
+.email-suggestion-item:active {
+    transform: translateX(1px);
+    box-shadow: 0 1px 2px rgba(0, 123, 255, 0.2);
+}
+
+/* Email en la sugerencia */
+.email-suggestion-email {
+    font-family: 'Courier New', monospace;
+    font-weight: 600;
+    color: #495057;
+    flex-grow: 1;
+}
+
+/* Botón de selección */
+.email-suggestion-select {
+    background: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    transition: background-color 0.2s ease;
+}
+
+.email-suggestion-select:hover {
+    background: #0056b3;
+}
+
+/* Footer de sugerencias */
+.email-suggestions-footer {
+    padding-top: 0.25rem;
+    border-top: 1px solid rgba(255, 193, 7, 0.3);
+    text-align: center;
+}
+
+.email-suggestions-footer a {
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.email-suggestions-footer a:hover {
+    text-decoration: underline;
+}
+
+/* Estado de email con sugerencias */
+.form-control.has-suggestions {
+    border-color: #ffc107 !important;
+    box-shadow: 0 0 0 0.2rem rgba(255, 193, 7, 0.15) !important;
+}
+
+/* Responsive para sugerencias */
+@media (max-width: 768px) {
+    .email-suggestions-container {
+        padding: 0.5rem;
+    }
+    
+    .email-suggestion-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.25rem;
+        padding: 0.5rem;
+    }
+    
+    .email-suggestion-select {
+        align-self: flex-end;
+        font-size: 0.7rem;
+        padding: 0.2rem 0.4rem;
+    }
+}

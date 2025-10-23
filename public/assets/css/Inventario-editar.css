@@ -1,0 +1,130 @@
+.bg-warning-gradient {
+    background: linear-gradient(135deg, #f59e0b, #fbbf24);
+}
+
+.current-equipment-image {
+    max-height: 150px;
+    width: auto;
+    border: 3px solid #f3f4f6;
+}
+
+.current-equipment-placeholder {
+    width: 150px;
+    height: 150px;
+    background: #f8f9fa;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: #9ca3af;
+    border: 2px dashed #d1d5db;
+    margin: 0 auto;
+}
+
+.current-image-container {
+    position: relative;
+    flex-shrink: 0;
+}
+
+.current-image-preview {
+    width: 150px;
+    height: 150px;
+    object-fit: cover;
+    border-radius: 8px;
+    border: 2px solid #e5e7eb;
+}
+
+/* Los demás estilos son los mismos que en crear.php */
+.section-header {
+    border-bottom: 2px solid #e8f0fe;
+    padding-bottom: 0.5rem;
+}
+
+.form-control, .form-select {
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+    padding: 0.75rem 1rem;
+    transition: all 0.3s ease;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: #2c5aa0;
+    box-shadow: 0 0 0 0.2rem rgba(44, 90, 160, 0.1);
+    transform: translateY(-1px);
+}
+
+.image-preview-container {
+    position: relative;
+    display: inline-block;
+}
+
+.image-preview {
+    width: 150px;
+    height: 150px;
+    object-fit: cover;
+    border-radius: 8px;
+    border: 2px solid #e2e8f0;
+}
+
+.btn-remove-preview {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    width: 24px;
+    height: 24px;
+    border: none;
+    border-radius: 50%;
+    background: #ef4444;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-remove-preview:hover {
+    background: #dc2626;
+    transform: scale(1.1);
+}
+
+/* Status badges (igual que en listar.php) */
+.status-badge {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.badge-new {
+    background: #d1fae5;
+    color: #065f46;
+    border: 1px solid #10b981;
+}
+
+.badge-in-use {
+    background: #dbeafe;
+    color: #1e40af;
+    border: 1px solid #3b82f6;
+}
+
+.badge-maintenance {
+    background: #fef3c7;
+    color: #92400e;
+    border: 1px solid #f59e0b;
+}
+
+.badge-damaged {
+    background: #fee2e2;
+    color: #991b1b;
+    border: 1px solid #ef4444;
+}
+
+.badge-other {
+    background: #f3f4f6;
+    color: #374151;
+    border: 1px solid #9ca3af;
+}

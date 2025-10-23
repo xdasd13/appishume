@@ -1,0 +1,35 @@
+.card {
+    border-radius: 12px;
+    border: none;
+}
+.card-header {
+    border-radius: 12px 12px 0 0 !important;
+}
+.info-item {
+    padding: 12px;
+    border-radius: 8px;
+    background: #f8f9fa;
+    transition: background-color 0.3s ease;
+}
+.info-item:hover {
+    background: #e9ecef;
+}
+.table th {
+    border-top: none;
+    font-weight: 600;
+    background: #343a40;
+    color: white;
+}
+.badge {
+    font-size: 0.85em;
+    padding: 0.6em 1em;
+    border-radius: 20px;
+}
+.btn {
+    border-radius: 6px;
+    transition: all 0.3s ease;
+}
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
