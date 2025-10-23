@@ -95,7 +95,7 @@
 </div>
 
 <!-- Estilos CSS -->
-<<<<<<< HEAD
+
 <style>
 /* Paleta de colores de la empresa */
 :root {
@@ -348,9 +348,7 @@
     }
 }
 </style>
-=======
 
->>>>>>> 7d88b39e190e242f3f4c50280724345b019eaec9
 
 <!-- JavaScript -->
 <script>
