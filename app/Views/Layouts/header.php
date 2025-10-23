@@ -256,6 +256,11 @@
                       <span class="sub-item">Cronograma</span>
                     </a>
                   </li>
+                  <li>
+                    <a href="<?= base_url('/historial') ?>">
+                      <span class="sub-item">Auditoría</span>
+                    </a>
+                  </li>
                 </ul>
               </div>
             </li>

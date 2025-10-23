@@ -1,6 +1,4 @@
--- =============================================
--- SISTEMA DE MENSAJERÍA INTERNA - ISHUME
--- =============================================
+USE ishume;
 
 -- Tabla de mensajes
 CREATE TABLE IF NOT EXISTS mensajes (

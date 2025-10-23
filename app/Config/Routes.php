@@ -120,6 +120,10 @@ $routes->group('', ['filter' => 'trabajador'], function($routes) {
     $routes->get('cronograma/proyecto/(:num)', 'Cronograma::verProyecto/$1');
     $routes->get('cronograma/eventos', 'Cronograma::getEventos');
     $routes->get('cronograma/servicios-fecha/(:segment)', 'Cronograma::serviciosPorFecha/$1');
+    
+    // Historial del sistema (auditoría del Kanban) - Todos los trabajadores pueden ver
+    $routes->get('historial', 'Historial::index');
+    $routes->post('historial/obtenerHistorial', 'Historial::obtenerHistorial');
 });
 
 // ==================== RUTAS PÚBLICAS (CON AUTENTICACIÓN BÁSICA) ====================
@@ -153,11 +157,6 @@ $routes->group('', ['filter' => 'admin'], function($routes) {
     $routes->get('cronograma/resumen-semanal', 'Cronograma::resumenSemanal');
     $routes->get('cronograma/proyectos-estado/(:segment)', 'Cronograma::proyectosPorEstado/$1');
     
-    // Historial del sistema (solo administradores)
-    $routes->get('historial', 'Historial::index');
-    $routes->post('historial/obtener-actividades', 'Historial::obtenerActividades');
-    $routes->get('historial/exportar-csv', 'Historial::exportarCSV');
-    $routes->post('historial/limpiar-historial', 'Historial::limpiarHistorial');
     
     // Inventario (solo administradores)
 
