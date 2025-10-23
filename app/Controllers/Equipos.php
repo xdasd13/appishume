@@ -270,31 +270,82 @@ class Equipos extends BaseController
         }
 
         try {
-            // Obtener estado anterior para el historial
-            $equipoAnterior = $this->equipoModel->find($equipoId);
-            log_message('info', 'Equipo anterior obtenido: ' . json_encode($equipoAnterior));
+            // Obtener usuario actual para la auditoría
+            $usuarioId = session()->get('idusuario') ?? session()->get('usuario_id');
             
-            $estadoAnterior = 'Desconocido';
-            if ($equipoAnterior && is_array($equipoAnterior)) {
-                $estadoAnterior = $equipoAnterior['estadoservicio'] ?? 'Desconocido';
+            if (!$usuarioId) {
+                log_message('warning', 'Usuario no encontrado en sesión, buscando usuario por defecto');
+                
+                // Buscar el primer usuario administrador como fallback
+                $db = \Config\Database::connect();
+                // Intentar diferentes campos para encontrar un admin
+                $usuarioDefault = $db->query("SELECT idusuario FROM usuarios WHERE tipo_usuario = 'admin' OR tipousuario = 'admin' OR rol = 'admin' LIMIT 1")->getRowArray();
+                
+                // Si no encuentra admin, usar cualquier usuario activo
+                if (!$usuarioDefault) {
+                    $usuarioDefault = $db->query("SELECT idusuario FROM usuarios WHERE estado = 1 LIMIT 1")->getRowArray();
+                }
+                
+                if ($usuarioDefault) {
+                    $usuarioId = $usuarioDefault['idusuario'];
+                    log_message('info', "Usando usuario por defecto para auditoría: {$usuarioId}");
+                } else {
+                    log_message('warning', 'No se encontró usuario por defecto, usando método tradicional');
+                    // Fallback al método tradicional si no hay usuario disponible
+                    $resultado = $this->equipoService->actualizarEstado($equipoId, $nuevoEstado);
+                    
+                    return $this->response->setJSON([
+                        'success' => $resultado['success'],
+                        'message' => $resultado['message'] . ' (sin auditoría)'
+                    ]);
+                }
             }
-            log_message('info', 'Estado anterior: ' . $estadoAnterior);
             
-            // Delegar al servicio
-            $resultado = $this->equipoService->actualizarEstado($equipoId, $nuevoEstado);
-            log_message('info', 'Resultado del servicio: ' . json_encode($resultado));
+            // Verificar si existe la tabla de auditoría
+            $db = \Config\Database::connect();
             
-            // Si fue exitoso, registrar en el historial
-            if ($resultado['success']) {
-                log_message('info', 'Intentando registrar historial...');
-                $historialResult = $this->registrarCambioEstadoEquipo($equipoId, $estadoAnterior, $nuevoEstado);
-                log_message('info', 'Resultado historial: ' . ($historialResult ? 'éxito' : 'falló'));
+            try {
+                $tableExists = $db->query("SHOW TABLES LIKE 'auditoria_kanban'")->getNumRows() > 0;
+                log_message('info', 'Verificación tabla auditoria_kanban: ' . ($tableExists ? 'existe' : 'no existe'));
+            } catch (\Exception $e) {
+                log_message('error', 'Error verificando tabla: ' . $e->getMessage());
+                $tableExists = false;
             }
             
-            return $this->response->setJSON([
-                'success' => $resultado['success'],
-                'message' => $resultado['message']
-            ]);
+            if ($tableExists) {
+                // Usar el método con auditoría del EquipoModel
+                log_message('info', "Intentando actualizar con auditoría - Equipo: {$equipoId}, Estado: {$nuevoEstado}, Usuario: {$usuarioId}");
+                
+                $actualizado = $this->equipoModel->cambiarEstadoConAuditoria($equipoId, $nuevoEstado, $usuarioId);
+                
+                if ($actualizado) {
+                    log_message('info', 'Estado actualizado con auditoría exitosamente');
+                    return $this->response->setJSON([
+                        'success' => true,
+                        'message' => 'Estado actualizado correctamente'
+                    ]);
+                } else {
+                    log_message('error', 'Error al actualizar estado con auditoría - Fallback a método tradicional');
+                    
+                    // Fallback al método tradicional si falla la auditoría
+                    $resultado = $this->equipoService->actualizarEstado($equipoId, $nuevoEstado);
+                    
+                    return $this->response->setJSON([
+                        'success' => $resultado['success'],
+                        'message' => $resultado['message'] . ' (fallback sin auditoría)'
+                    ]);
+                }
+            } else {
+                // Fallback al método tradicional si no existe la tabla
+                log_message('warning', 'Tabla auditoria_kanban no existe, usando método tradicional');
+                $resultado = $this->equipoService->actualizarEstado($equipoId, $nuevoEstado);
+                
+                return $this->response->setJSON([
+                    'success' => $resultado['success'],
+                    'message' => $resultado['message'] . ' (sin auditoría)'
+                ]);
+            }
+            
         } catch (\Exception $e) {
             log_message('error', 'Error en actualizarEstado: ' . $e->getMessage());
             return $this->response->setJSON([
