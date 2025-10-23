@@ -5,6 +5,8 @@ namespace App\Controllers;
 use App\Controllers\BaseController;
 use App\Models\EquipoModel;
 use App\Services\EquipoService;
+use App\Libraries\HistorialHelper;
+use App\Models\HistorialActividadesModel;
 
 /**
  * Controlador de Equipos refactorizado aplicando KISS
@@ -268,9 +270,26 @@ class Equipos extends BaseController
         }
 
         try {
+            // Obtener estado anterior para el historial
+            $equipoAnterior = $this->equipoModel->find($equipoId);
+            log_message('info', 'Equipo anterior obtenido: ' . json_encode($equipoAnterior));
+            
+            $estadoAnterior = 'Desconocido';
+            if ($equipoAnterior && is_array($equipoAnterior)) {
+                $estadoAnterior = $equipoAnterior['estadoservicio'] ?? 'Desconocido';
+            }
+            log_message('info', 'Estado anterior: ' . $estadoAnterior);
+            
             // Delegar al servicio
             $resultado = $this->equipoService->actualizarEstado($equipoId, $nuevoEstado);
             log_message('info', 'Resultado del servicio: ' . json_encode($resultado));
+            
+            // Si fue exitoso, registrar en el historial
+            if ($resultado['success']) {
+                log_message('info', 'Intentando registrar historial...');
+                $historialResult = $this->registrarCambioEstadoEquipo($equipoId, $estadoAnterior, $nuevoEstado);
+                log_message('info', 'Resultado historial: ' . ($historialResult ? 'éxito' : 'falló'));
+            }
             
             return $this->response->setJSON([
                 'success' => $resultado['success'],
@@ -281,6 +300,150 @@ class Equipos extends BaseController
             return $this->response->setJSON([
                 'success' => false,
                 'message' => 'Error interno del servidor'
+            ]);
+        }
+    }
+
+    // ==================== MÉTODOS DEL SISTEMA DE HISTORIAL ====================
+
+    /**
+     * Registrar cambio de estado en el historial
+     */
+    private function registrarCambioEstadoEquipo(int $equipoId, string $estadoAnterior, string $estadoNuevo)
+    {
+        try {
+            log_message('info', "Iniciando registro historial - Equipo: $equipoId, De: $estadoAnterior, A: $estadoNuevo");
+            
+            $historialHelper = new HistorialHelper();
+            
+            // Obtener información del equipo y servicio
+            $equipo = $this->equipoModel->getEquipoConDetalles($equipoId);
+            log_message('info', 'Equipo con detalles: ' . json_encode($equipo));
+            
+            if (!$equipo) {
+                log_message('error', 'No se pudo obtener detalles del equipo: ' . $equipoId);
+                return false;
+            }
+            
+            $contexto = $equipo['servicio'] ?? 'Servicio';
+            log_message('info', 'Contexto del servicio: ' . $contexto);
+            
+            $resultado = $historialHelper->registrarCambioEstado(
+                'equipos',
+                $equipoId,
+                $estadoAnterior,
+                $estadoNuevo,
+                $contexto
+            );
+            
+            log_message('info', 'Resultado del registro en historial: ' . ($resultado ? 'éxito' : 'falló'));
+            return $resultado;
+            
+        } catch (\Exception $e) {
+            log_message('error', 'Error registrando cambio de estado: ' . $e->getMessage());
+            log_message('error', 'Stack trace: ' . $e->getTraceAsString());
+            return false;
+        }
+    }
+
+    /**
+     * Obtener historial de actividades de un equipo específico
+     */
+    public function historial(int $equipoId)
+    {
+        try {
+            $historialHelper = new HistorialHelper();
+            $historial = $historialHelper->getHistorialFormateado('equipos', $equipoId, 50);
+            
+            return $this->response->setJSON([
+                'success' => true,
+                'historial' => $historial
+            ]);
+        } catch (\Exception $e) {
+            log_message('error', 'Error obteniendo historial: ' . $e->getMessage());
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'Error al obtener historial'
+            ]);
+        }
+    }
+
+    /**
+     * Obtener historial de actividades de un servicio específico
+     */
+    public function historialServicio(int $servicioId)
+    {
+        try {
+            $historialHelper = new HistorialHelper();
+            $historial = $historialHelper->getHistorialFormateado('servicioscontratados', $servicioId, 50);
+            
+            return $this->response->setJSON([
+                'success' => true,
+                'historial' => $historial
+            ]);
+        } catch (\Exception $e) {
+            log_message('error', 'Error obteniendo historial del servicio: ' . $e->getMessage());
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'Error al obtener historial del servicio'
+            ]);
+        }
+    }
+
+    /**
+     * Generar reporte de productividad del equipo
+     */
+    public function reporteProductividad()
+    {
+        try {
+            $fechaInicio = $this->request->getGet('fecha_inicio') ?? date('Y-m-01');
+            $fechaFin = $this->request->getGet('fecha_fin') ?? date('Y-m-d');
+            
+            $historialModel = new HistorialActividadesModel();
+            $reporte = $historialModel->getReporteProductividadEquipos($fechaInicio, $fechaFin);
+            
+            return $this->response->setJSON([
+                'success' => true,
+                'reporte' => $reporte,
+                'periodo' => [
+                    'inicio' => $fechaInicio,
+                    'fin' => $fechaFin
+                ]
+            ]);
+        } catch (\Exception $e) {
+            log_message('error', 'Error generando reporte de productividad: ' . $e->getMessage());
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'Error al generar reporte de productividad'
+            ]);
+        }
+    }
+
+    /**
+     * Obtener estadísticas de actividades por período
+     */
+    public function estadisticasPeriodo()
+    {
+        try {
+            $fechaInicio = $this->request->getGet('fecha_inicio') ?? date('Y-m-01');
+            $fechaFin = $this->request->getGet('fecha_fin') ?? date('Y-m-d');
+            
+            $historialModel = new HistorialActividadesModel();
+            $estadisticas = $historialModel->getEstadisticasPeriodo($fechaInicio, $fechaFin);
+            
+            return $this->response->setJSON([
+                'success' => true,
+                'estadisticas' => $estadisticas,
+                'periodo' => [
+                    'inicio' => $fechaInicio,
+                    'fin' => $fechaFin
+                ]
+            ]);
+        } catch (\Exception $e) {
+            log_message('error', 'Error obteniendo estadísticas: ' . $e->getMessage());
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'Error al obtener estadísticas'
             ]);
         }
     }
