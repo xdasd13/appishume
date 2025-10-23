@@ -4,230 +4,89 @@
     <!-- Encabezado -->
     <div class="row mb-4">
         <div class="col-12">
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <h2 class="text-primary mb-1">
-                        <i class="fas fa-history me-2"></i><?= $title ?>
-                    </h2>
-                    <p class="text-muted mb-0">Panel de administración del historial de actividades del sistema</p>
+            <div class="activity-header">
+                <div class="activity-title">
+                    <h2 class="mb-1">REGISTRO DE ACTIVIDAD</h2>
+                    <div class="activity-divider"></div>
                 </div>
-                <div class="btn-group">
-                    <button type="button" class="btn btn-success" onclick="exportarHistorial()">
-                        <i class="fas fa-download me-1"></i>Exportar CSV
-                    </button>
-                    <button type="button" class="btn btn-warning" onclick="limpiarHistorial()">
-                        <i class="fas fa-broom me-1"></i>Limpiar Antiguo
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Estadísticas Rápidas -->
-    <div class="row mb-4">
-        <div class="col-md-3">
-            <div class="card bg-primary text-white">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between">
-                        <div>
-                            <h4 class="mb-0"><?= $estadisticas['total_actividades'] ?></h4>
-                            <p class="mb-0">Total Actividades</p>
-                        </div>
-                        <div class="align-self-center">
-                            <i class="fas fa-chart-line fa-2x"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card bg-success text-white">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between">
-                        <div>
-                            <h4 class="mb-0"><?= count($estadisticas['por_usuario']) ?></h4>
-                            <p class="mb-0">Usuarios Activos</p>
-                        </div>
-                        <div class="align-self-center">
-                            <i class="fas fa-users fa-2x"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card bg-info text-white">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between">
-                        <div>
-                            <h4 class="mb-0"><?= count($estadisticas['por_accion']) ?></h4>
-                            <p class="mb-0">Tipos de Acción</p>
-                        </div>
-                        <div class="align-self-center">
-                            <i class="fas fa-tasks fa-2x"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card bg-warning text-white">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between">
-                        <div>
-                            <?php 
-                            $trabajadorActivo = $reporte['trabajador_mas_activo'] ?? null;
-                            $proyectosCompletados = $trabajadorActivo ? $trabajadorActivo['proyectos_completados'] : 0;
-                            ?>
-                            <h4 class="mb-0"><?= $proyectosCompletados ?></h4>
-                            <p class="mb-0">Proyectos Completados</p>
-                        </div>
-                        <div class="align-self-center">
-                            <i class="fas fa-trophy fa-2x"></i>
-                        </div>
+                <div class="activity-controls">
+                    <div class="filter-group">
+                        <select id="filtroFecha" class="form-select me-2" onchange="aplicarFiltros()">
+                            <option value="hoy" <?= $filtro_fecha === 'hoy' ? 'selected' : '' ?>>Hoy</option>
+                            <option value="ayer" <?= $filtro_fecha === 'ayer' ? 'selected' : '' ?>>Ayer</option>
+                            <option value="semana" <?= $filtro_fecha === 'semana' ? 'selected' : '' ?>>Esta semana</option>
+                            <option value="mes" <?= $filtro_fecha === 'mes' ? 'selected' : '' ?>>Este mes</option>
+                        </select>
+                        
+                        <select id="filtroUsuario" class="form-select me-2" onchange="aplicarFiltros()">
+                            <option value="todos">Todos los usuarios</option>
+                            <?php foreach ($usuarios_activos as $usuario): ?>
+                                <option value="<?= $usuario->idusuario ?>" <?= $filtro_usuario == $usuario->idusuario ? 'selected' : '' ?>>
+                                    <?= esc($usuario->nombre_completo) ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                        
+                        <button type="button" class="btn-refresh" onclick="actualizarHistorial()">
+                            <i class="fas fa-sync-alt"></i> Actualizar
+                        </button>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Filtros -->
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="mb-0">
-                        <i class="fas fa-filter me-2"></i>Filtros de Búsqueda
-                    </h5>
-                </div>
-                <div class="card-body">
-                    <form id="filtrosForm" class="row g-3">
-                        <div class="col-md-2">
-                            <label for="tabla" class="form-label">Tabla</label>
-                            <select class="form-select" id="tabla" name="tabla">
-                                <option value="">Todas</option>
-                                <option value="equipos" <?= $filtros['tabla'] === 'equipos' ? 'selected' : '' ?>>Equipos</option>
-                                <option value="servicioscontratados" <?= $filtros['tabla'] === 'servicioscontratados' ? 'selected' : '' ?>>Servicios</option>
-                                <option value="usuarios" <?= $filtros['tabla'] === 'usuarios' ? 'selected' : '' ?>>Usuarios</option>
-                            </select>
-                        </div>
-                        <div class="col-md-2">
-                            <label for="accion" class="form-label">Acción</label>
-                            <select class="form-select" id="accion" name="accion">
-                                <option value="">Todas</option>
-                                <option value="crear" <?= $filtros['accion'] === 'crear' ? 'selected' : '' ?>>Crear</option>
-                                <option value="actualizar" <?= $filtros['accion'] === 'actualizar' ? 'selected' : '' ?>>Actualizar</option>
-                                <option value="cambio_estado" <?= $filtros['accion'] === 'cambio_estado' ? 'selected' : '' ?>>Cambio Estado</option>
-                                <option value="asignar" <?= $filtros['accion'] === 'asignar' ? 'selected' : '' ?>>Asignar</option>
-                                <option value="completar" <?= $filtros['accion'] === 'completar' ? 'selected' : '' ?>>Completar</option>
-                            </select>
-                        </div>
-                        <div class="col-md-2">
-                            <label for="usuario_id" class="form-label">Usuario</label>
-                            <select class="form-select" id="usuario_id" name="usuario_id">
-                                <option value="">Todos</option>
-                                <?php foreach ($usuarios as $usuario): ?>
-                                    <option value="<?= $usuario['idusuario'] ?>" <?= $filtros['usuario_id'] == $usuario['idusuario'] ? 'selected' : '' ?>>
-                                        <?= $usuario['nombres'] ? $usuario['nombres'] . ' ' . $usuario['apellidos'] : $usuario['nombreusuario'] ?>
-                                    </option>
-                                <?php endforeach; ?>
-                            </select>
-                        </div>
-                        <div class="col-md-2">
-                            <label for="fecha_desde" class="form-label">Desde</label>
-                            <input type="date" class="form-control" id="fecha_desde" name="fecha_desde" value="<?= $filtros['fecha_desde'] ?>">
-                        </div>
-                        <div class="col-md-2">
-                            <label for="fecha_hasta" class="form-label">Hasta</label>
-                            <input type="date" class="form-control" id="fecha_hasta" name="fecha_hasta" value="<?= $filtros['fecha_hasta'] ?>">
-                        </div>
-                        <div class="col-md-2">
-                            <label class="form-label">&nbsp;</label>
-                            <div class="d-grid">
-                                <button type="submit" class="btn btn-primary">
-                                    <i class="fas fa-search me-1"></i>Filtrar
-                                </button>
-                            </div>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Historial de Actividades -->
+    <!-- Contenido Principal -->
     <div class="row">
         <div class="col-12">
-            <div class="card">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0">
-                        <i class="fas fa-list me-2"></i>Historial de Actividades
-                    </h5>
-                    <div class="badge bg-secondary">
-                        <?= count($actividades) ?> registros
+            <div class="activity-container">
+                <div id="historial-loading" class="text-center py-4" style="display: none;">
+                    <div class="spinner-border text-warning" role="status">
+                        <span class="visually-hidden">Cargando...</span>
                     </div>
+                    <p class="mt-2">Cargando actividades...</p>
                 </div>
-                <div class="card-body">
-                    <div id="historial-loading" class="text-center py-4" style="display: none;">
-                        <div class="spinner-border text-primary" role="status">
-                            <span class="visually-hidden">Cargando...</span>
+                
+                <div id="historial-content">
+                    <?php if (empty($historial)): ?>
+                        <div class="no-activity">
+                            <i class="fas fa-info-circle"></i>
+                            <p>No se encontraron actividades para el período seleccionado</p>
                         </div>
-                        <p class="mt-2">Cargando actividades...</p>
-                    </div>
-                    
-                    <div id="historial-content">
-                        <?php if (empty($actividades)): ?>
-                            <div class="alert alert-info text-center">
-                                <i class="fas fa-info-circle me-2"></i>
-                                No se encontraron actividades con los filtros seleccionados
-                            </div>
-                        <?php else: ?>
-                            <div class="timeline">
-                                <?php foreach ($actividades as $actividad): ?>
-                                    <div class="timeline-item">
-                                        <div class="timeline-marker">
-                                            <i class="<?= getIconoAccion($actividad['accion']) ?> text-<?= getColorAccion($actividad['accion']) ?>"></i>
-                                        </div>
-                                        <div class="timeline-content">
-                                            <div class="timeline-header">
-                                                <h6 class="timeline-title mb-1"><?= esc($actividad['descripcion']) ?></h6>
-                                                <div class="timeline-meta">
-                                                    <small class="text-muted">
-                                                        <i class="fas fa-user me-1"></i>
-                                                        <?php 
-                                                        $nombreUsuario = '';
-                                                        if (!empty($actividad['nombres']) && !empty($actividad['apellidos'])) {
-                                                            $nombres = explode(' ', $actividad['nombres']);
-                                                            $apellidos = explode(' ', $actividad['apellidos']);
-                                                            $nombreUsuario = $nombres[0] . ' ' . $apellidos[0] . '.';
-                                                        } else {
-                                                            $nombreUsuario = $actividad['nombreusuario'] ?? 'Usuario';
-                                                        }
-                                                        echo esc($nombreUsuario);
-                                                        ?>
-                                                        
-                                                        <span class="mx-2">•</span>
-                                                        
-                                                        <i class="fas fa-table me-1"></i><?= esc($actividad['tabla_afectada']) ?>
-                                                        
-                                                        <span class="mx-2">•</span>
-                                                        
-                                                        <i class="fas fa-tag me-1"></i><?= esc($actividad['accion']) ?>
-                                                    </small>
-                                                </div>
-                                            </div>
-                                            <div class="timeline-date">
-                                                <small class="text-muted">
-                                                    <i class="fas fa-clock me-1"></i>
-                                                    <?= date('d/m/Y H:i:s', strtotime($actividad['created_at'])) ?>
-                                                </small>
-                                            </div>
-                                        </div>
+                    <?php else: ?>
+                        <?php foreach ($historial as $item): ?>
+                            <div class="activity-item">
+                                <div class="activity-time">
+                                    <?= date('H:i', strtotime($item->fecha)) ?>
+                                </div>
+                                <div class="activity-content">
+                                    <div class="activity-user">
+                                        <?= esc($item->usuario_nombre) ?>
                                     </div>
-                                <?php endforeach; ?>
+                                    <div class="activity-action">
+                                        <?php if ($item->accion === 'cambiar_estado'): ?>
+                                            movió "<?= esc($item->equipo_descripcion) ?>"
+                                            <div class="state-change">
+                                                <span class="state-from"><?= esc($item->estado_anterior) ?></span>
+                                                <i class="fas fa-arrow-right"></i>
+                                                <span class="state-to <?= $item->estado_nuevo === 'Completado' ? 'completed' : '' ?>">
+                                                    <?= esc($item->estado_nuevo) ?>
+                                                    <?= $item->estado_nuevo === 'Completado' ? ' ✓' : '' ?>
+                                                </span>
+                                            </div>
+                                        <?php elseif ($item->accion === 'crear'): ?>
+                                            creó nuevo equipo "<?= esc($item->equipo_descripcion) ?>"
+                                        <?php elseif ($item->accion === 'reasignar'): ?>
+                                            reasignó "<?= esc($item->equipo_descripcion) ?>"
+                                        <?php endif; ?>
+                                    </div>
+                                    <div class="activity-service">
+                                        <?= obtenerIconoCategoria($item->categoria) ?> Servicio: <?= esc($item->servicio) ?>
+                                    </div>
+                                </div>
                             </div>
-                        <?php endif; ?>
-                    </div>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
                 </div>
             </div>
         </div>
@@ -236,220 +95,415 @@
 
 <!-- Estilos CSS -->
 <style>
-.timeline {
-    position: relative;
-    padding-left: 30px;
+/* Paleta de colores de la empresa */
+:root {
+    --primary-orange: #ff6b35;
+    --light-orange: #ff8c5a;
+    --dark-orange: #e55a2b;
+    --white: #ffffff;
+    --light-gray: #f8f9fa;
+    --medium-gray: #6c757d;
+    --dark-gray: #343a40;
+    --border-color: #e9ecef;
 }
 
-.timeline::before {
-    content: '';
-    position: absolute;
-    left: 15px;
-    top: 0;
-    bottom: 0;
-    width: 2px;
-    background: #dee2e6;
+/* Header de actividad */
+.activity-header {
+    background: var(--white);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 24px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
 }
 
-.timeline-item {
-    position: relative;
-    margin-bottom: 25px;
+.activity-title h2 {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--dark-gray);
+    margin: 0;
+    letter-spacing: 0.5px;
 }
 
-.timeline-marker {
-    position: absolute;
-    left: -22px;
-    top: 5px;
-    width: 30px;
-    height: 30px;
-    border-radius: 50%;
-    background: white;
-    border: 2px solid #dee2e6;
+.activity-divider {
+    height: 3px;
+    background: linear-gradient(90deg, var(--primary-orange) 0%, var(--light-orange) 100%);
+    border-radius: 2px;
+    margin-top: 8px;
+    width: 100%;
+}
+
+.activity-controls {
     display: flex;
     align-items: center;
-    justify-content: center;
+    gap: 16px;
+    margin-top: 16px;
+}
+
+.filter-group {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.form-select {
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-size: 14px;
+    background: var(--white);
+    min-width: 160px;
+}
+
+.form-select:focus {
+    border-color: var(--primary-orange);
+    box-shadow: 0 0 0 0.2rem rgba(255, 107, 53, 0.25);
+}
+
+.btn-refresh {
+    background: var(--primary-orange);
+    color: var(--white);
+    border: none;
+    border-radius: 8px;
+    padding: 8px 16px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-refresh:hover {
+    background: var(--dark-orange);
+    transform: translateY(-1px);
+}
+
+/* Contenedor de actividades */
+.activity-container {
+    background: var(--white);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 0;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    max-height: 600px;
+    overflow-y: auto;
+}
+
+/* Items de actividad */
+.activity-item {
+    display: flex;
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--border-color);
+    transition: background-color 0.2s ease;
+}
+
+.activity-item:hover {
+    background-color: #fef7f4;
+}
+
+.activity-item:last-child {
+    border-bottom: none;
+}
+
+.activity-time {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--medium-gray);
+    min-width: 60px;
+    margin-right: 20px;
+    text-align: right;
+}
+
+.activity-content {
+    flex: 1;
+}
+
+.activity-user {
+    font-weight: 600;
+    color: var(--dark-gray);
+    font-size: 15px;
+    margin-bottom: 4px;
+}
+
+.activity-action {
+    color: var(--dark-gray);
+    font-size: 14px;
+    line-height: 1.4;
+    margin-bottom: 8px;
+}
+
+.state-change {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 4px;
+}
+
+.state-from {
+    background: #f8f9fa;
+    color: var(--medium-gray);
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.state-to {
+    background: var(--light-orange);
+    color: var(--white);
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.state-to.completed {
+    background: #28a745;
+}
+
+.state-change i {
+    color: var(--medium-gray);
     font-size: 12px;
 }
 
-.timeline-content {
-    background: #f8f9fa;
-    padding: 15px;
-    border-radius: 8px;
-    border-left: 4px solid #007bff;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+.activity-service {
+    font-size: 13px;
+    color: var(--medium-gray);
+    display: flex;
+    align-items: center;
+    gap: 6px;
 }
 
-.timeline-title {
-    color: #495057;
-    font-weight: 600;
-    margin-bottom: 8px;
+.activity-service i {
+    color: var(--primary-orange);
 }
 
-.timeline-meta {
-    margin-bottom: 8px;
+/* Estado vacío */
+.no-activity {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--medium-gray);
 }
 
-.timeline-date {
-    border-top: 1px solid #dee2e6;
-    padding-top: 8px;
-    margin-top: 8px;
+.no-activity i {
+    font-size: 48px;
+    color: var(--primary-orange);
+    margin-bottom: 16px;
 }
 
-.card {
-    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
-    border: 1px solid rgba(0, 0, 0, 0.125);
+.no-activity p {
+    font-size: 16px;
+    margin: 0;
 }
 
-.card-header {
-    background-color: #f8f9fa;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.125);
+/* Scrollbar personalizado */
+.activity-container::-webkit-scrollbar {
+    width: 6px;
+}
+
+.activity-container::-webkit-scrollbar-track {
+    background: var(--light-gray);
+    border-radius: 3px;
+}
+
+.activity-container::-webkit-scrollbar-thumb {
+    background: var(--primary-orange);
+    border-radius: 3px;
+}
+
+.activity-container::-webkit-scrollbar-thumb:hover {
+    background: var(--dark-orange);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .activity-header {
+        padding: 16px;
+    }
+    
+    .activity-controls {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .filter-group {
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .form-select {
+        min-width: auto;
+    }
+    
+    .activity-item {
+        flex-direction: column;
+        padding: 16px;
+    }
+    
+    .activity-time {
+        text-align: left;
+        margin-bottom: 8px;
+        margin-right: 0;
+    }
 }
 </style>
 
 <!-- JavaScript -->
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Manejar envío de filtros
-    document.getElementById('filtrosForm').addEventListener('submit', function(e) {
-        e.preventDefault();
-        aplicarFiltros();
-    });
+    // Auto-actualizar cada 30 segundos
+    setInterval(actualizarHistorial, 30000);
 });
 
 /**
- * Aplicar filtros y recargar actividades
+ * Aplicar filtros y recargar historial
  */
 function aplicarFiltros() {
-    const formData = new FormData(document.getElementById('filtrosForm'));
-    const params = new URLSearchParams(formData);
+    const filtroFecha = document.getElementById('filtroFecha').value;
+    const filtroUsuario = document.getElementById('filtroUsuario').value;
+    
+    // Construir URL con parámetros
+    const params = new URLSearchParams();
+    params.set('fecha', filtroFecha);
+    params.set('usuario', filtroUsuario);
     
     // Recargar página con nuevos filtros
     window.location.href = '<?= base_url('historial') ?>?' + params.toString();
 }
 
 /**
- * Exportar historial a CSV
+ * Actualizar historial via AJAX
  */
-function exportarHistorial() {
-    const formData = new FormData(document.getElementById('filtrosForm'));
-    const params = new URLSearchParams(formData);
+function actualizarHistorial() {
+    const loadingElement = document.getElementById('historial-loading');
+    const contentElement = document.getElementById('historial-content');
     
-    // Abrir enlace de descarga
-    window.open('<?= base_url('historial/exportar-csv') ?>?' + params.toString(), '_blank');
+    // Mostrar loading
+    loadingElement.style.display = 'block';
+    contentElement.style.opacity = '0.5';
+    
+    const filtroFecha = document.getElementById('filtroFecha').value;
+    const filtroUsuario = document.getElementById('filtroUsuario').value;
+    
+    // Hacer petición AJAX
+    fetch('<?= base_url('historial/obtenerHistorial') ?>', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: JSON.stringify({
+            fecha: filtroFecha,
+            usuario: filtroUsuario,
+            '<?= csrf_token() ?>': '<?= csrf_hash() ?>'
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        loadingElement.style.display = 'none';
+        contentElement.style.opacity = '1';
+        
+        if (data.success) {
+            actualizarContenidoHistorial(data.historial);
+        } else {
+            console.error('Error al obtener historial:', data.error);
+        }
+    })
+    .catch(error => {
+        loadingElement.style.display = 'none';
+        contentElement.style.opacity = '1';
+        console.error('Error de conexión:', error);
+    });
 }
 
 /**
- * Limpiar historial antiguo
+ * Actualizar contenido del historial
  */
-function limpiarHistorial() {
-    Swal.fire({
-        title: '¿Limpiar Historial Antiguo?',
-        html: `
-            <div class="mb-3">
-                <label for="dias-mantener" class="form-label">Días a mantener:</label>
-                <input type="number" id="dias-mantener" class="form-control" value="365" min="30" max="3650">
-                <small class="text-muted">Se eliminarán registros anteriores a esta cantidad de días</small>
+function actualizarContenidoHistorial(historial) {
+    const contentElement = document.getElementById('historial-content');
+    
+    if (historial.length === 0) {
+        contentElement.innerHTML = `
+            <div class="no-activity">
+                <i class="fas fa-info-circle"></i>
+                <p>No se encontraron actividades para el período seleccionado</p>
             </div>
-        `,
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonText: 'Sí, limpiar',
-        cancelButtonText: 'Cancelar',
-        confirmButtonColor: '#dc3545',
-        preConfirm: () => {
-            const dias = document.getElementById('dias-mantener').value;
-            if (!dias || dias < 30) {
-                Swal.showValidationMessage('Debe mantener al menos 30 días');
-                return false;
-            }
-            return dias;
-        }
-    }).then((result) => {
-        if (result.isConfirmed) {
-            const dias = result.value;
-            
-            // Mostrar loading
-            Swal.fire({
-                title: 'Limpiando historial...',
-                allowOutsideClick: false,
-                didOpen: () => Swal.showLoading()
-            });
-            
-            // Hacer petición AJAX
-            fetch('<?= base_url('historial/limpiar-historial') ?>', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-Requested-With': 'XMLHttpRequest'
-                },
-                body: JSON.stringify({
-                    dias: dias,
-                    '<?= csrf_token() ?>': '<?= csrf_hash() ?>'
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                Swal.close();
-                
-                if (data.success) {
-                    Swal.fire({
-                        icon: 'success',
-                        title: '¡Historial Limpiado!',
-                        text: data.message,
-                        timer: 3000
-                    }).then(() => {
-                        location.reload();
-                    });
-                } else {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error',
-                        text: data.error || 'Error al limpiar el historial'
-                    });
-                }
-            })
-            .catch(error => {
-                Swal.close();
-                console.error('Error:', error);
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error de Conexión',
-                    text: 'No se pudo conectar con el servidor'
-                });
-            });
-        }
+        `;
+        return;
+    }
+    
+    let html = '';
+    historial.forEach(item => {
+        html += `
+            <div class="activity-item">
+                <div class="activity-time">${item.fecha}</div>
+                <div class="activity-content">
+                    <div class="activity-user">${item.usuario}</div>
+                    <div class="activity-action">
+                        ${generarTextoAccion(item)}
+                    </div>
+                    <div class="activity-service">
+                        ${obtenerIconoServicio(item.categoria)} Servicio: ${item.servicio}
+                    </div>
+                </div>
+            </div>
+        `;
     });
+    
+    contentElement.innerHTML = html;
+}
+
+/**
+ * Generar texto de acción
+ */
+function generarTextoAccion(item) {
+    if (item.accion === 'cambiar_estado') {
+        const completedClass = item.estado_nuevo === 'Completado' ? 'completed' : '';
+        const checkmark = item.estado_nuevo === 'Completado' ? ' ✓' : '';
+        
+        return `
+            movió "${item.descripcion}"
+            <div class="state-change">
+                <span class="state-from">${item.estado_anterior}</span>
+                <i class="fas fa-arrow-right"></i>
+                <span class="state-to ${completedClass}">${item.estado_nuevo}${checkmark}</span>
+            </div>
+        `;
+    } else if (item.accion === 'crear') {
+        return `creó nuevo equipo "${item.descripcion}"`;
+    } else if (item.accion === 'reasignar') {
+        return `reasignó "${item.descripcion}"`;
+    }
+    return item.accion;
+}
+
+/**
+ * Obtener icono según categoría de servicio
+ */
+function obtenerIconoServicio(categoria) {
+    const iconos = {
+        'Audio y Sonido': '<i class="fas fa-volume-up"></i>',
+        'Fotografía y Video': '<i class="fas fa-camera"></i>',
+        'Iluminación': '<i class="fas fa-lightbulb"></i>',
+        'Decoración': '<i class="fas fa-palette"></i>',
+        'Catering': '<i class="fas fa-utensils"></i>'
+    };
+    return iconos[categoria] || '<i class="fas fa-cog"></i>';
 }
 </script>
 
 <?php
-// Funciones helper para iconos y colores
-function getIconoAccion($accion) {
+/**
+ * Obtener icono según categoría de servicio
+ */
+function obtenerIconoCategoria($categoria) {
     $iconos = [
-        'crear' => 'fas fa-plus-circle',
-        'actualizar' => 'fas fa-edit',
-        'eliminar' => 'fas fa-trash',
-        'cambio_estado' => 'fas fa-exchange-alt',
-        'asignar' => 'fas fa-user-plus',
-        'completar' => 'fas fa-check-circle',
-        'subir_archivo' => 'fas fa-upload',
-        'comentario' => 'fas fa-comment'
+        'Audio y Sonido' => '<i class="fas fa-volume-up"></i>',
+        'Fotografía y Video' => '<i class="fas fa-camera"></i>',
+        'Iluminación' => '<i class="fas fa-lightbulb"></i>',
+        'Decoración' => '<i class="fas fa-palette"></i>',
+        'Catering' => '<i class="fas fa-utensils"></i>'
     ];
-    return $iconos[$accion] ?? 'fas fa-info-circle';
-}
-
-function getColorAccion($accion) {
-    $colores = [
-        'crear' => 'success',
-        'actualizar' => 'info',
-        'eliminar' => 'danger',
-        'cambio_estado' => 'warning',
-        'asignar' => 'primary',
-        'completar' => 'success',
-        'subir_archivo' => 'info',
-        'comentario' => 'secondary'
-    ];
-    return $colores[$accion] ?? 'secondary';
+    return $iconos[$categoria] ?? '<i class="fas fa-cog"></i>';
 }
 ?>
 
