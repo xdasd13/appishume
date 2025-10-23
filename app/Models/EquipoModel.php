@@ -162,4 +162,144 @@ class EquipoModel extends Model
             ->get()
             ->getRowArray();
     }
+
+    /**
+     * Cambiar estado de equipo con auditoría
+     */
+    public function cambiarEstadoConAuditoria(int $idequipo, string $nuevoEstado, int $idusuario): bool
+    {
+        try {
+            // Obtener estado actual
+            $equipoActual = $this->asArray()->find($idequipo);
+            if (!$equipoActual) {
+                log_message('error', "Equipo no encontrado: {$idequipo}");
+                return false;
+            }
+
+            $estadoAnterior = $equipoActual['estadoservicio'];
+            log_message('info', "Cambiando estado equipo {$idequipo}: {$estadoAnterior} -> {$nuevoEstado}");
+
+            // Verificar si existen los campos de auditoría en la tabla equipos
+            $db = \Config\Database::connect();
+            $fields = $db->getFieldNames('equipos');
+            $tieneAuditoria = in_array('idusuario_ultima_modificacion', $fields);
+
+            // Preparar datos para actualizar
+            $updateData = ['estadoservicio' => $nuevoEstado];
+            
+            if ($tieneAuditoria) {
+                $updateData['idusuario_ultima_modificacion'] = $idusuario;
+                log_message('info', 'Actualizando con campos de auditoría');
+            } else {
+                log_message('warning', 'Campos de auditoría no existen, actualizando solo estado');
+            }
+
+            // Actualizar equipo
+            $actualizado = $this->update($idequipo, $updateData);
+
+            if ($actualizado && $estadoAnterior !== $nuevoEstado) {
+                // Verificar si existe la tabla de auditoría
+                $tablaExists = $db->query("SHOW TABLES LIKE 'auditoria_kanban'")->getNumRows() > 0;
+                
+                if ($tablaExists) {
+                    // Registrar en auditoría
+                    $auditoriaModel = new AuditoriaKanbanModel();
+                    $registrado = $auditoriaModel->registrarCambio(
+                        $idequipo,
+                        $idusuario,
+                        'cambiar_estado',
+                        $estadoAnterior,
+                        $nuevoEstado
+                    );
+                    log_message('info', 'Auditoría registrada: ' . ($registrado ? 'sí' : 'no'));
+                } else {
+                    log_message('warning', 'Tabla auditoria_kanban no existe');
+                }
+            }
+
+            return $actualizado;
+            
+        } catch (\Exception $e) {
+            log_message('error', 'Error en cambiarEstadoConAuditoria: ' . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Reasignar equipo con auditoría
+     */
+    public function reasignarConAuditoria(int $idequipo, int $nuevoUsuario, int $usuarioQueReasigna): bool
+    {
+        try {
+            // Obtener datos actuales
+            $equipoActual = $this->asArray()->find($idequipo);
+            if (!$equipoActual) {
+                return false;
+            }
+
+            $usuarioAnterior = $equipoActual['idusuario'];
+
+            // Verificar si existen los campos de auditoría
+            $db = \Config\Database::connect();
+            $fields = $db->getFieldNames('equipos');
+            $tieneAuditoria = in_array('idusuario_ultima_modificacion', $fields);
+
+            // Preparar datos para actualizar
+            $updateData = ['idusuario' => $nuevoUsuario];
+            
+            if ($tieneAuditoria) {
+                $updateData['idusuario_ultima_modificacion'] = $usuarioQueReasigna;
+            }
+
+            // Actualizar equipo
+            $actualizado = $this->update($idequipo, $updateData);
+
+            if ($actualizado && $usuarioAnterior !== $nuevoUsuario) {
+                // Verificar si existe la tabla de auditoría
+                $tablaExists = $db->query("SHOW TABLES LIKE 'auditoria_kanban'")->getNumRows() > 0;
+                
+                if ($tablaExists) {
+                    // Registrar en auditoría
+                    $auditoriaModel = new AuditoriaKanbanModel();
+                    $auditoriaModel->registrarCambio(
+                        $idequipo,
+                        $usuarioQueReasigna,
+                        'reasignar',
+                        (string)$usuarioAnterior,
+                        (string)$nuevoUsuario
+                    );
+                }
+            }
+
+            return $actualizado;
+            
+        } catch (\Exception $e) {
+            log_message('error', 'Error en reasignarConAuditoria: ' . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Crear equipo con auditoría
+     */
+    public function crearConAuditoria(array $datos, int $usuarioCreador): int|false
+    {
+        $datos['idusuario_ultima_modificacion'] = $usuarioCreador;
+        
+        $idequipo = $this->insert($datos);
+        
+        if ($idequipo) {
+            // Registrar en auditoría
+            $auditoriaModel = new AuditoriaKanbanModel();
+            $auditoriaModel->registrarCambio(
+                $idequipo,
+                $usuarioCreador,
+                'crear',
+                null,
+                $datos['estadoservicio'] ?? 'Pendiente'
+            );
+        }
+
+        return $idequipo;
+    }
 }
