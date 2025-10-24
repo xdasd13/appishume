@@ -23,29 +23,23 @@ class EquipoModel extends Model
     private function getBaseQuery(): \CodeIgniter\Database\BaseBuilder
     {
         return $this->db->table('equipos e')
-            ->select('
-                e.idequipo,
-                e.idserviciocontratado,
-                e.idusuario,
-                e.descripcion,
-                e.estadoservicio,
-                u.nombreusuario,
-                p.nombres,
-                p.apellidos,
-                c.cargo,
-                s.servicio,
-                sc.direccion,
-                sc.fechahoraservicio,
-                co.fechaevento,
-                te.evento as tipoevento,
-                CONCAT(p.nombres, " ", p.apellidos) as nombre_completo
-            ')
+            ->select('e.idequipo, e.idserviciocontratado, e.idusuario, e.descripcion, e.estadoservicio')
+            ->select('u.nombreusuario, p.nombres, p.apellidos, c.cargo')
+            ->select('s.servicio, sc.direccion, sc.fechahoraservicio, co.fechaevento')
+            ->select('te.evento as tipoevento')
+            ->select('CONCAT(p.nombres, " ", p.apellidos) as nombre_completo')
+            ->select('IF(cl.idpersona IS NOT NULL, CONCAT(pc.nombres, " ", pc.apellidos), IF(cl.idempresa IS NOT NULL, emp.razonsocial, "Cliente no especificado")) as cliente_nombre', false)
+            ->select('IF(cl.idpersona IS NOT NULL, pc.telprincipal, IF(cl.idempresa IS NOT NULL, emp.telefono, NULL)) as cliente_telefono', false)
+            ->select('cl.idcliente')
             ->join('usuarios u', 'e.idusuario = u.idusuario')
             ->join('personas p', 'u.idpersona = p.idpersona')
             ->join('cargos c', 'u.idcargo = c.idcargo')
             ->join('servicioscontratados sc', 'e.idserviciocontratado = sc.idserviciocontratado')
             ->join('servicios s', 'sc.idservicio = s.idservicio')
             ->join('cotizaciones co', 'sc.idcotizacion = co.idcotizacion')
+            ->join('clientes cl', 'co.idcliente = cl.idcliente')
+            ->join('personas pc', 'cl.idpersona = pc.idpersona', 'left')
+            ->join('empresas emp', 'cl.idempresa = emp.idempresa', 'left')
             ->join('tipoeventos te', 'co.idtipoevento = te.idtipoevento', 'left');
     }
 
@@ -113,7 +107,9 @@ class EquipoModel extends Model
             $query->where('e.idserviciocontratado', $servicioId);
         }
         
+        // Ordenar por fecha más próxima primero (ASC) y luego por cliente
         $equipos = $query->orderBy('sc.fechahoraservicio', 'ASC')
+            ->orderBy('cliente_nombre', 'ASC')
             ->get()
             ->getResultArray();
 

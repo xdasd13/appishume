@@ -300,7 +300,12 @@ function renderEquipoCard(array $equipo, string $estado): string {
         <!-- Cuerpo de tarjeta -->
         <div class="card-body-kanban">
             <div class="mb-2">
-                <strong class="text-primary d-block"><?= esc($equipo['servicio']) ?></strong>
+                <strong class="text-primary d-block" style="font-size: 1.1rem;">
+                    <i class="fas fa-user-circle me-1"></i><?= esc($equipo['cliente_nombre']) ?>
+                </strong>
+                <div class="text-success fw-bold mb-1" style="font-size: 0.95rem;">
+                    <i class="fas fa-concierge-bell me-1"></i><?= esc($equipo['servicio']) ?>
+                </div>
                 <small class="text-muted">
                     <i class="fas fa-user me-1"></i><?= esc($nombreCorto) ?>
                     <span class="ms-2">
@@ -320,9 +325,23 @@ function renderEquipoCard(array $equipo, string $estado): string {
                 <?php endif; ?>
             </div>
             
-            <div class="text-muted small mb-2">
-                <i class="fas fa-calendar me-1"></i>
-                <?= date('d/m/Y H:i', strtotime($equipo['fechahoraservicio'])) ?>
+            <div class="mb-2">
+                <div class="text-muted small mb-1">
+                    <i class="fas fa-calendar me-1"></i>
+                    <strong>Fecha:</strong> <?= date('d/m/Y H:i', strtotime($equipo['fechahoraservicio'])) ?>
+                </div>
+                <?php if (!empty($equipo['cliente_telefono'])): ?>
+                <div class="text-muted small mb-1">
+                    <i class="fas fa-phone me-1"></i>
+                    <strong>Tel:</strong> <?= esc($equipo['cliente_telefono']) ?>
+                </div>
+                <?php endif; ?>
+                <?php if (!empty($equipo['tipoevento'])): ?>
+                <div class="text-muted small">
+                    <i class="fas fa-star me-1"></i>
+                    <strong>Evento:</strong> <?= esc($equipo['tipoevento']) ?>
+                </div>
+                <?php endif; ?>
             </div>
         </div>
         
