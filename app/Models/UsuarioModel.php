@@ -14,7 +14,13 @@ class UsuarioModel extends Model
         'tipo_usuario', 'email', 'password_hash', 'estado'
     ];
 
-    // Autenticar usuario por email o nombre de usuario
+    /**
+     * Autenticar usuario por email o nombre de usuario
+     * 
+     * @param string $login Email o nombre de usuario
+     * @param string $password Contraseña
+     * @return array Retorna ['success' => bool, 'message' => string, 'data' => object|null]
+     */
     public function authenticate($login, $password)
     {
         $builder = $this->db->table('usuarios u');
@@ -29,21 +35,50 @@ class UsuarioModel extends Model
         
         $usuario = $builder->get()->getRow();
         
-        if ($usuario) {
-            // Verificar contraseña hasheada
-            if (!empty($usuario->password_hash) && password_verify($password, $usuario->password_hash)) {
-                return $usuario;
-            } elseif (!empty($usuario->claveacceso) && $usuario->claveacceso === $password) {
-                // Migrar contraseña de texto plano a hash y eliminar el texto plano
-                $this->update($usuario->idusuario, [
-                    'password_hash' => password_hash($password, PASSWORD_DEFAULT),
-                    'claveacceso' => null
-                ]);
-                return $usuario;
-            }
+        // Usuario no encontrado
+        if (!$usuario) {
+            return [
+                'success' => false,
+                'message' => 'Usuario no encontrado',
+                'error_type' => 'user_not_found',
+                'data' => null
+            ];
         }
         
-        return false;
+        // Usuario encontrado, verificar contraseña
+        $passwordValida = false;
+        
+        // Verificar contraseña hasheada
+        if (!empty($usuario->password_hash) && password_verify($password, $usuario->password_hash)) {
+            $passwordValida = true;
+        } 
+        // Verificar contraseña en texto plano (legacy) y migrar
+        elseif (!empty($usuario->claveacceso) && $usuario->claveacceso === $password) {
+            $passwordValida = true;
+            // Migrar contraseña de texto plano a hash
+            $this->update($usuario->idusuario, [
+                'password_hash' => password_hash($password, PASSWORD_DEFAULT),
+                'claveacceso' => null
+            ]);
+        }
+        
+        // Contraseña incorrecta
+        if (!$passwordValida) {
+            return [
+                'success' => false,
+                'message' => 'Contraseña incorrecta',
+                'error_type' => 'wrong_password',
+                'data' => null
+            ];
+        }
+        
+        // Autenticación exitosa
+        return [
+            'success' => true,
+            'message' => 'Inicio de sesión exitoso',
+            'error_type' => null,
+            'data' => $usuario
+        ];
     }
 
     // Obtener todos los usuarios técnicos/empleados
