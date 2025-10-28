@@ -34,8 +34,16 @@ class TrabajadorFilter implements FilterInterface
                 ->with('error', 'Debes iniciar sesión para acceder.');
         }
 
-        // Verificar rol permitido
-        $rolUsuario = session()->get('role') ?? session()->get('tipo_usuario');
+        // Verificar rol permitido - buscar en múltiples variables de sesión
+        $rolUsuario = session()->get('role') 
+                   ?? session()->get('tipo_usuario') 
+                   ?? session()->get('usuario_tipo');
+        
+        if (!$rolUsuario) {
+            log_message('error', 'No se pudo determinar el rol del usuario. Sesión: ' . json_encode(session()->get()));
+            return redirect()->to('/login')
+                ->with('error', 'Sesión inválida. Por favor, inicia sesión nuevamente.');
+        }
         
         if (!in_array($rolUsuario, $this->rolesPermitidos)) {
             log_message('warning', sprintf(

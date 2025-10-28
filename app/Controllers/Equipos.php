@@ -270,8 +270,18 @@ class Equipos extends BaseController
         }
 
         try {
-            // Obtener usuario actual para la auditoría
-            $usuarioId = session()->get('idusuario') ?? session()->get('usuario_id');
+            // Obtener usuario actual para la auditoría - buscar en todas las variantes
+            $usuarioId = session()->get('idusuario') 
+                      ?? session()->get('usuario_id') 
+                      ?? session()->get('user_id');
+            
+            log_message('info', 'Datos de sesión completos: ' . json_encode([
+                'usuario_logueado' => session()->get('usuario_logueado'),
+                'usuario_id' => session()->get('usuario_id'),
+                'idusuario' => session()->get('idusuario'),
+                'tipo_usuario' => session()->get('tipo_usuario'),
+                'usuario_tipo' => session()->get('usuario_tipo')
+            ]));
             
             if (!$usuarioId) {
                 log_message('warning', 'Usuario no encontrado en sesión, buscando usuario por defecto');

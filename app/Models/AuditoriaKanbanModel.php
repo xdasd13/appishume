@@ -23,14 +23,20 @@ class AuditoriaKanbanModel extends Model
     public function registrarCambio(int $idequipo, int $idusuario, string $accion, ?string $estadoAnterior = null, ?string $estadoNuevo = null): bool
     {
         try {
+            // Usar NOW() de MySQL para evitar problemas de zona horaria
+            $db = \Config\Database::connect();
+            $fechaActual = $db->query("SELECT NOW() as fecha")->getRow()->fecha;
+            
             $data = [
                 'idequipo' => $idequipo,
                 'idusuario' => $idusuario,
                 'accion' => $accion,
                 'estado_anterior' => $estadoAnterior,
                 'estado_nuevo' => $estadoNuevo,
-                'fecha' => date('Y-m-d H:i:s')
+                'fecha' => $fechaActual
             ];
+            
+            log_message('info', "Registrando auditoría con fecha: {$fechaActual}");
 
             $result = $this->insert($data);
             
@@ -53,6 +59,9 @@ class AuditoriaKanbanModel extends Model
      */
     public function getHistorialCompleto($filtroFecha = null, $filtroUsuario = null, $limite = 50)
     {
+        log_message('info', "getHistorialCompleto - Filtros recibidos: fecha={$filtroFecha}, usuario={$filtroUsuario}, limite={$limite}");
+        log_message('info', "Fecha actual del servidor: " . date('Y-m-d H:i:s'));
+        
         $builder = $this->db->table('auditoria_kanban a');
         $builder->select('
             a.id,
@@ -84,20 +93,30 @@ class AuditoriaKanbanModel extends Model
         $builder->join('personas cl_p', 'cl.idpersona = cl_p.idpersona', 'left');
         $builder->join('empresas emp', 'cl.idempresa = emp.idempresa', 'left');
 
-        // Aplicar filtros
+        // Aplicar filtros de fecha
         if ($filtroFecha) {
             switch ($filtroFecha) {
                 case 'hoy':
-                    $builder->where('DATE(a.fecha)', date('Y-m-d'));
+                    // Registros de hoy: desde las 00:00:00 hasta las 23:59:59
+                    $builder->where('DATE(a.fecha) =', date('Y-m-d'));
                     break;
                 case 'ayer':
-                    $builder->where('DATE(a.fecha)', date('Y-m-d', strtotime('-1 day')));
+                    // Registros de ayer
+                    $builder->where('DATE(a.fecha) =', date('Y-m-d', strtotime('-1 day')));
                     break;
                 case 'semana':
-                    $builder->where('a.fecha >=', date('Y-m-d', strtotime('-7 days')));
+                    // Últimos 7 días (incluyendo hoy)
+                    $fechaInicio = date('Y-m-d', strtotime('-7 days'));
+                    $fechaFin = date('Y-m-d');
+                    $builder->where('DATE(a.fecha) >=', $fechaInicio);
+                    $builder->where('DATE(a.fecha) <=', $fechaFin);
                     break;
                 case 'mes':
-                    $builder->where('a.fecha >=', date('Y-m-d', strtotime('-30 days')));
+                    // Últimos 30 días (incluyendo hoy)
+                    $fechaInicio = date('Y-m-d', strtotime('-30 days'));
+                    $fechaFin = date('Y-m-d');
+                    $builder->where('DATE(a.fecha) >=', $fechaInicio);
+                    $builder->where('DATE(a.fecha) <=', $fechaFin);
                     break;
             }
         }
@@ -109,7 +128,14 @@ class AuditoriaKanbanModel extends Model
         $builder->orderBy('a.fecha', 'DESC');
         $builder->limit($limite);
 
-        return $builder->get()->getResult();
+        // Log de la query SQL generada para debugging
+        $sql = $builder->getCompiledSelect(false);
+        log_message('info', "Query SQL generada: " . $sql);
+        
+        $resultado = $builder->get()->getResult();
+        log_message('info', "Registros encontrados: " . count($resultado));
+        
+        return $resultado;
     }
 
     /**

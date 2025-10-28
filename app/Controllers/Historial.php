@@ -58,8 +58,20 @@ class Historial extends BaseController
      */
     public function obtenerHistorial()
     {
+        // Log para debugging
+        log_message('info', 'obtenerHistorial llamado - AJAX: ' . ($this->request->isAJAX() ? 'sí' : 'no'));
+        log_message('info', 'Usuario en sesión: ' . json_encode([
+            'usuario_logueado' => session()->get('usuario_logueado'),
+            'usuario_id' => session()->get('usuario_id'),
+            'tipo_usuario' => session()->get('tipo_usuario')
+        ]));
+        
         if (!$this->request->isAJAX()) {
-            return $this->response->setStatusCode(400)->setJSON(['error' => 'Petición no válida']);
+            log_message('error', 'Petición no es AJAX');
+            return $this->response->setStatusCode(400)->setJSON([
+                'success' => false,
+                'error' => 'Petición no válida'
+            ]);
         }
 
         try {
@@ -67,7 +79,10 @@ class Historial extends BaseController
             $filtroUsuario = $this->request->getPost('usuario') ?? 'todos';
             $limite = (int)($this->request->getPost('limite') ?? 50);
             
+            log_message('info', "Filtros: fecha={$filtroFecha}, usuario={$filtroUsuario}, limite={$limite}");
+            
             $historial = $this->auditoriaModel->getHistorialCompleto($filtroFecha, $filtroUsuario, $limite);
+            log_message('info', 'Registros encontrados: ' . count($historial));
             
             // Formatear historial para la vista
             $historialFormateado = array_map(function($item) {
