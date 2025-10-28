@@ -16,20 +16,6 @@
             <p>Ingresa tus credenciales para acceder</p>
         </div>
 
-        <?php if (isset($error) && $error): ?>
-            <div class="alert alert-danger">
-                <i class="fas fa-exclamation-triangle me-2"></i>
-                <?= $error ?>
-            </div>
-        <?php endif; ?>
-
-        <?php if (isset($success) && $success): ?>
-            <div class="alert alert-success">
-                <i class="fas fa-check-circle me-2"></i>
-                <?= $success ?>
-            </div>
-        <?php endif; ?>
-
         <form action="<?= base_url('auth/authenticate') ?>" method="POST" id="loginForm">
             <?= csrf_field() ?>
             
@@ -54,7 +40,10 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
     <script>
-        // Configuración del Toast de SweetAlert2
+        /**
+         * Configuración del Toast de SweetAlert2
+         * Toast moderno en la esquina superior derecha
+         */
         const Toast = Swal.mixin({
             toast: true,
             position: "top-end",
@@ -67,65 +56,89 @@
             }
         });
 
-        // Mostrar notificaciones según mensajes del servidor
-        <?php if (isset($error) && $error): ?>
+        /**
+         * Mostrar notificaciones específicas según el tipo de error
+         */
+        <?php 
+        $errorType = session()->getFlashdata('error_type');
+        $successType = session()->getFlashdata('success_type');
+        ?>
+
+        // Error: Usuario no encontrado
+        <?php if ($errorType === 'user_not_found'): ?>
             Toast.fire({
                 icon: "error",
-                title: "Error de autenticación",
-                text: "<?= addslashes($error) ?>"
+                title: "Usuario no encontrado"
             });
         <?php endif; ?>
 
-        <?php if (isset($success) && $success): ?>
+        // Error: Contraseña incorrecta
+        <?php if ($errorType === 'wrong_password'): ?>
             Toast.fire({
-                icon: "success",
-                title: "Sesión iniciada correctamente",
-                text: "<?= addslashes($success) ?>"
+                icon: "error",
+                title: "Contraseña incorrecta"
             });
         <?php endif; ?>
 
-        // Mostrar notificación de cierre de sesión si viene de logout
+        // Error: Validación de campos
+        <?php if ($errorType === 'validation'): ?>
+            Toast.fire({
+                icon: "warning",
+                title: "Campos incompletos"
+            });
+        <?php endif; ?>
+
+        // Éxito: Login exitoso - Mostrar Toast por 2 segundos y redirigir automáticamente
+        <?php if ($successType === 'login_success'): ?>
+            // Toast de éxito con timer de 2 segundos
+            Swal.mixin({
+                toast: true,
+                position: "top-end",
+                showConfirmButton: false,
+                timer: 1000,
+                timerProgressBar: true,
+                didOpen: (toast) => {
+                    toast.onmouseenter = Swal.stopTimer;
+                    toast.onmouseleave = Swal.resumeTimer;
+                }
+            }).fire({
+                icon: "success",
+                title: "Inicio de sesión exitoso"
+            }).then(() => {
+                // Redirigir al dashboard inmediatamente después del Toast
+                window.location.href = "<?= session()->getFlashdata('redirect_to') ?? base_url('/welcome') ?>";
+            });
+        <?php endif; ?>
+
+        // Info: Sesión cerrada
         <?php if (session()->getFlashdata('logout_success')): ?>
             Toast.fire({
                 icon: "info",
-                title: "Sesión cerrada",
-                text: "Has cerrado sesión correctamente"
+                title: "Sesión cerrada"
             });
         <?php endif; ?>
 
-        // Validación del formulario
+        /**
+         * Validación del formulario antes de enviar
+         */
         document.getElementById('loginForm').addEventListener('submit', function(e) {
-            const login = document.getElementById('login').value;
+            const login = document.getElementById('login').value.trim();
             const password = document.getElementById('password').value;
 
+            // Validar campos vacíos
             if (!login || !password) {
                 e.preventDefault();
                 Toast.fire({
                     icon: "warning",
-                    title: "Campos incompletos",
-                    text: "Por favor, completa todos los campos"
+                    title: "Por favor, completa todos los campos"
                 });
                 return false;
             }
 
-            // Mostrar notificación de carga elegante mientras se procesa el login
-            Swal.fire({
-                title: 'Iniciando sesión',
-                text: 'Verificando credenciales...',
-                icon: 'info',
-                allowOutsideClick: false,
-                allowEscapeKey: false,
-                showConfirmButton: false,
-                background: '#ffffff',
-                color: '#333333',
-                customClass: {
-                    popup: 'swal-loading-popup',
-                    title: 'swal-loading-title',
-                    content: 'swal-loading-text'
-                },
-                didOpen: () => {
-                    Swal.showLoading();
-                }
+            // Mostrar toast de carga mientras se procesa
+            Toast.fire({
+                icon: "info",
+                title: "Verificando credenciales..."
             });
         });
     </script>
