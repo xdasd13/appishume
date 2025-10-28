@@ -13,24 +13,28 @@ class AuthController extends BaseController
         $this->usuarioModel = new UsuarioModel();
     }
 
-    // Mostrar formulario de login
+    /**
+     * Mostrar formulario de login
+     * Las notificaciones se manejan con flashdata y SweetAlert Toast
+     */
     public function login()
     {
-        // Si ya está logueado, redirigir al dashboard
-        if (session()->get('usuario_logueado')) {
+        // Si ya está logueado y NO tiene mensaje de éxito pendiente, redirigir al dashboard
+        if (session()->get('usuario_logueado') && !session()->getFlashdata('success_type')) {
             return redirect()->to('/welcome');
         }
 
         $data = [
-            'title' => 'Iniciar Sesión - ISHUME',
-            'error' => session()->getFlashdata('error'),
-            'success' => session()->getFlashdata('success')
+            'title' => 'Iniciar Sesión - ISHUME'
         ];
 
         return view('auth/login', $data);
     }
 
-    // Procesar login
+    /**
+     * Procesar login con validación específica
+     * Retorna mensajes precisos según el tipo de error
+     */
     public function authenticate()
     {
         $rules = [
@@ -41,16 +45,20 @@ class AuthController extends BaseController
         if (!$this->validate($rules)) {
             return redirect()->back()
                            ->withInput()
-                           ->with('error', 'Por favor, completa todos los campos correctamente.');
+                           ->with('error', 'Por favor, completa todos los campos correctamente.')
+                           ->with('error_type', 'validation');
         }
 
         $login = $this->request->getPost('login');
         $password = $this->request->getPost('password');
 
-        // Intentar autenticar
-        $usuario = $this->usuarioModel->authenticate($login, $password);
+        // Intentar autenticar - ahora retorna un array con información detallada
+        $resultado = $this->usuarioModel->authenticate($login, $password);
 
-        if ($usuario) {
+        // Autenticación exitosa
+        if ($resultado['success']) {
+            $usuario = $resultado['data'];
+            
             // Crear sesión
             $nombreCompleto = $usuario->nombres . ' ' . $usuario->apellidos;
             $primerNombre = explode(' ', $usuario->nombres)[0];
@@ -63,21 +71,26 @@ class AuthController extends BaseController
                 'usuario_nombre' => $nombreCompleto,
                 'usuario_nombre_corto' => $nombreCorto,
                 'usuario_tipo' => $usuario->tipo_usuario,
-                'tipo_usuario' => $usuario->tipo_usuario, // Agregar esta línea para compatibilidad
+                'tipo_usuario' => $usuario->tipo_usuario,
                 'usuario_cargo' => $usuario->cargo,
                 'login_time' => date('Y-m-d H:i:s')
             ];
 
             session()->set($sessionData);
 
-            // Redirigir a welcome después del login exitoso
-            return redirect()->to('/welcome')
-                           ->with('success', '¡Bienvenido ' . $usuario->nombres . '!');
-
-        } else {
+            // Redirigir de vuelta al login para mostrar el mensaje de éxito
+            // y luego redirigir automáticamente al dashboard
+            return redirect()->to('/login')
+                           ->with('success', 'Inicio de sesión exitoso')
+                           ->with('success_type', 'login_success')
+                           ->with('redirect_to', '/welcome');
+        } 
+        // Autenticación fallida
+        else {
             return redirect()->back()
                            ->withInput()
-                           ->with('error', 'Credenciales incorrectas. Verifica tu usuario/email y contraseña.');
+                           ->with('error', $resultado['message'])
+                           ->with('error_type', $resultado['error_type']);
         }
     }
 
