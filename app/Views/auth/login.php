@@ -40,10 +40,7 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
     <script>
-        /**
-         * Configuración del Toast de SweetAlert2
-         * Toast moderno en la esquina superior derecha
-         */
+        // Configuración del Toast de SweetAlert2
         const Toast = Swal.mixin({
             toast: true,
             position: "top-end",
@@ -56,9 +53,7 @@
             }
         });
 
-        /**
-         * Mostrar notificaciones específicas según el tipo de error
-         */
+        // Mostrar notificaciones específicas según el tipo de error
         <?php 
         $errorType = session()->getFlashdata('error_type');
         $successType = session()->getFlashdata('success_type');
@@ -88,9 +83,8 @@
             });
         <?php endif; ?>
 
-        // Éxito: Login exitoso - Mostrar Toast por 2 segundos y redirigir automáticamente
+        // Éxito: Login exitoso
         <?php if ($successType === 'login_success'): ?>
-            // Toast de éxito con timer de 2 segundos
             Swal.mixin({
                 toast: true,
                 position: "top-end",
@@ -105,7 +99,6 @@
                 icon: "success",
                 title: "Inicio de sesión exitoso"
             }).then(() => {
-                // Redirigir al dashboard inmediatamente después del Toast
                 window.location.href = "<?= session()->getFlashdata('redirect_to') ?? base_url('/welcome') ?>";
             });
         <?php endif; ?>
@@ -118,14 +111,10 @@
             });
         <?php endif; ?>
 
-        /**
-         * Validación del formulario antes de enviar
-         */
+       // Validación del formulario antes de enviar
         document.getElementById('loginForm').addEventListener('submit', function(e) {
             const login = document.getElementById('login').value.trim();
             const password = document.getElementById('password').value;
-
-            // Validar campos vacíos
             if (!login || !password) {
                 e.preventDefault();
                 Toast.fire({
@@ -134,8 +123,6 @@
                 });
                 return false;
             }
-
-            // Mostrar toast de carga mientras se procesa
             Toast.fire({
                 icon: "info",
                 title: "Verificando credenciales..."

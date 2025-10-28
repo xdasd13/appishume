@@ -55,7 +55,6 @@ class UsuarioModel extends Model
         // Verificar contraseña en texto plano (legacy) y migrar
         elseif (!empty($usuario->claveacceso) && $usuario->claveacceso === $password) {
             $passwordValida = true;
-            // Migrar contraseña de texto plano a hash
             $this->update($usuario->idusuario, [
                 'password_hash' => password_hash($password, PASSWORD_DEFAULT),
                 'claveacceso' => null
@@ -174,7 +173,6 @@ class UsuarioModel extends Model
         return $builder->get()->getRow();
     }
 
-    // Crear nuevo trabajador
     public function crearTrabajador($data)
     {
         $usuarioData = [
