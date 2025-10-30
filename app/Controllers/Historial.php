@@ -7,14 +7,22 @@ use App\Models\AuditoriaKanbanModel;
 use App\Models\UsuarioModel;
 
 /**
- * Controlador de Historial - Auditoría del Kanban
- * Maneja la visualización del registro de actividades del tablero Kanban
+ * Controlador de Historial de Actividades
+ * 
+ * Gestiona el registro de cambios realizados en el tablero Kanban.
+ * Permite visualizar y filtrar las actividades por usuario.
+ * 
+ * @author ISHUME Team
+ * @version 2.0
  */
 class Historial extends BaseController
 {
-    protected AuditoriaKanbanModel $auditoriaModel;
-    protected UsuarioModel $usuarioModel;
+    private AuditoriaKanbanModel $auditoriaModel;
+    private UsuarioModel $usuarioModel;
 
+    /**
+     * Constructor - Inicializa los modelos necesarios
+     */
     public function __construct()
     {
         $this->auditoriaModel = new AuditoriaKanbanModel();
@@ -22,29 +30,29 @@ class Historial extends BaseController
     }
 
     /**
-     * Vista principal del registro de actividad del Kanban
+     * Página principal del historial de actividades
+     * 
+     * Muestra una tabla con todos los cambios realizados en el tablero Kanban.
+     * Incluye filtro de búsqueda por usuario.
+     * 
+     * @return string Vista HTML del historial
      */
     public function index(): string
-    {
-        // Obtener filtros de la URL
-        $filtroFecha = $this->request->getGet('fecha') ?? 'hoy';
+    {        
+        // Obtener filtro de usuario desde la URL (si existe)
         $filtroUsuario = $this->request->getGet('usuario') ?? 'todos';
 
-        // Obtener historial de auditoría
-        $historial = $this->auditoriaModel->getHistorialCompleto($filtroFecha, $filtroUsuario, 50);
+        // Obtener todo el historial de actividades
+        $historial = $this->auditoriaModel->obtenerTodoElHistorial($filtroUsuario);
 
-        // Obtener usuarios activos para el filtro
-        $usuariosActivos = $this->auditoriaModel->getUsuariosActivos();
+        // Obtener lista de usuarios para el buscador
+        $usuarios = $this->auditoriaModel->obtenerUsuariosActivos();
 
-        // Obtener estadísticas
-        $estadisticas = $this->auditoriaModel->getEstadisticas($filtroFecha);
-
+        // Preparar datos para la vista
         $data = [
-            'title' => 'Registro de Actividad - ISHUME',
+            'title' => 'Historial de Actividades - ISHUME',
             'historial' => $historial,
-            'usuarios_activos' => $usuariosActivos,
-            'estadisticas' => $estadisticas,
-            'filtro_fecha' => $filtroFecha,
+            'usuarios' => $usuarios,
             'filtro_usuario' => $filtroUsuario,
             'header' => view('Layouts/header'),
             'footer' => view('Layouts/footer')
@@ -54,52 +62,32 @@ class Historial extends BaseController
     }
 
     /**
-     * Obtener historial via AJAX con filtros
+     * Obtener historial via AJAX (para búsqueda en tiempo real)
+     * 
+     * Endpoint para actualizar la tabla de historial sin recargar la página.
+     * Recibe el filtro de usuario y retorna los datos en formato JSON.
+     * 
+     * @return \CodeIgniter\HTTP\ResponseInterface JSON con el historial
      */
-    public function obtenerHistorial()
+    public function buscarHistorial()
     {
-        // Log para debugging
-        log_message('info', 'obtenerHistorial llamado - AJAX: ' . ($this->request->isAJAX() ? 'sí' : 'no'));
-        log_message('info', 'Usuario en sesión: ' . json_encode([
-            'usuario_logueado' => session()->get('usuario_logueado'),
-            'usuario_id' => session()->get('usuario_id'),
-            'tipo_usuario' => session()->get('tipo_usuario')
-        ]));
-        
+        // Verificar que sea una petición AJAX
         if (!$this->request->isAJAX()) {
-            log_message('error', 'Petición no es AJAX');
             return $this->response->setStatusCode(400)->setJSON([
                 'success' => false,
-                'error' => 'Petición no válida'
+                'mensaje' => 'Petición no válida'
             ]);
         }
 
         try {
-            $filtroFecha = $this->request->getPost('fecha') ?? 'hoy';
+            // Obtener filtro de usuario del POST
             $filtroUsuario = $this->request->getPost('usuario') ?? 'todos';
-            $limite = (int)($this->request->getPost('limite') ?? 50);
             
-            log_message('info', "Filtros: fecha={$filtroFecha}, usuario={$filtroUsuario}, limite={$limite}");
+            // Obtener historial filtrado
+            $historial = $this->auditoriaModel->obtenerTodoElHistorial($filtroUsuario);
             
-            $historial = $this->auditoriaModel->getHistorialCompleto($filtroFecha, $filtroUsuario, $limite);
-            log_message('info', 'Registros encontrados: ' . count($historial));
-            
-            // Formatear historial para la vista
-            $historialFormateado = array_map(function($item) {
-                return [
-                    'id' => $item->id,
-                    'fecha' => date('H:i', strtotime($item->fecha)),
-                    'fecha_completa' => date('d/m/Y H:i', strtotime($item->fecha)),
-                    'usuario' => $item->usuario_nombre,
-                    'accion' => $item->accion,
-                    'estado_anterior' => $item->estado_anterior,
-                    'estado_nuevo' => $item->estado_nuevo,
-                    'servicio' => $item->servicio,
-                    'categoria' => $item->categoria,
-                    'cliente' => $item->cliente_nombre,
-                    'descripcion' => $item->equipo_descripcion
-                ];
-            }, $historial);
+            // Formatear datos para la respuesta
+            $historialFormateado = $this->formatearHistorial($historial);
 
             return $this->response->setJSON([
                 'success' => true,
@@ -108,60 +96,79 @@ class Historial extends BaseController
             ]);
 
         } catch (\Exception $e) {
-            log_message('error', 'Error obteniendo historial: ' . $e->getMessage());
+            log_message('error', 'Error en buscarHistorial: ' . $e->getMessage());
+            
             return $this->response->setJSON([
                 'success' => false,
-                'error' => 'Error al obtener historial'
+                'mensaje' => 'Error al buscar historial'
             ]);
         }
     }
 
     /**
-     * Formatear fecha relativa (hace X tiempo)
+     * Formatear historial para respuesta JSON
+     * 
+     * Convierte los objetos del historial en arrays con formato específico
+     * para la tabla de actividades.
+     * 
+     * @param array $historial Array de objetos del historial
+     * @return array Array formateado para JSON
      */
-    private function formatearFechaRelativa(string $fecha): string
+    private function formatearHistorial(array $historial): array
     {
-        $tiempo = time() - strtotime($fecha);
-        
-        if ($tiempo < 60) {
-            return 'hace unos segundos';
-        } elseif ($tiempo < 3600) {
-            $minutos = floor($tiempo / 60);
-            return "hace {$minutos} minuto" . ($minutos > 1 ? 's' : '');
-        } elseif ($tiempo < 86400) {
-            $horas = floor($tiempo / 3600);
-            return "hace {$horas} hora" . ($horas > 1 ? 's' : '');
-        } else {
-            $dias = floor($tiempo / 86400);
-            return "hace {$dias} día" . ($dias > 1 ? 's' : '');
+        return array_map(function($item) {
+            return [
+                'id' => $item->id,
+                'fecha' => date('d/m/Y', strtotime($item->fecha)),
+                'hora' => date('H:i:s', strtotime($item->fecha)),
+                'dia' => $this->obtenerNombreDia($item->fecha),
+                'usuario' => $item->usuario_nombre,
+                'accion' => $this->obtenerTextoAccion($item),
+                'detalles' => [
+                    'equipo' => $item->equipo_descripcion,
+                    'servicio' => $item->servicio,
+                    'categoria' => $item->categoria,
+                    'cliente' => $item->cliente_nombre,
+                    'estado_anterior' => $item->estado_anterior,
+                    'estado_nuevo' => $item->estado_nuevo
+                ]
+            ];
+        }, $historial);
+    }
+
+    /**
+     * Obtener nombre del día de la semana en español
+     * 
+     * @param string $fecha Fecha en formato Y-m-d H:i:s
+     * @return string Nombre del día (Lunes, Martes, etc.)
+     */
+    private function obtenerNombreDia(string $fecha): string
+    {
+        $dias = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+        $numeroDia = date('w', strtotime($fecha));
+        return $dias[$numeroDia];
+    }
+
+    /**
+     * Generar texto descriptivo de la acción realizada
+     * 
+     * @param object $item Objeto con datos de la actividad
+     * @return string Texto descriptivo de la acción
+     */
+    private function obtenerTextoAccion(object $item): string
+    {
+        switch ($item->accion) {
+            case 'cambiar_estado':
+                return "Cambió estado de '{$item->estado_anterior}' a '{$item->estado_nuevo}'";
+            
+            case 'crear':
+                return "Creó nuevo equipo";
+            
+            case 'reasignar':
+                return "Reasignó equipo";
+            
+            default:
+                return ucfirst($item->accion);
         }
-    }
-
-    /**
-     * Obtener icono según el tipo de servicio
-     */
-    private function obtenerIconoServicio(string $categoria): string
-    {
-        return match(strtolower($categoria)) {
-            'audio y sonido' => 'volume-2',
-            'fotografía y video' => 'camera',
-            'iluminación' => 'lightbulb',
-            'decoración' => 'palette',
-            'catering' => 'utensils',
-            default => 'settings'
-        };
-    }
-
-    /**
-     * Obtener color según el estado
-     */
-    private function obtenerColorEstado(string $estado): string
-    {
-        return match(strtolower($estado)) {
-            'pendiente', 'programado' => 'warning',
-            'en proceso' => 'primary',
-            'completado' => 'success',
-            default => 'secondary'
-        };
     }
 }

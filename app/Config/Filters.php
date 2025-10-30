@@ -76,7 +76,7 @@ class Filters extends BaseFilters
     public array $globals = [
         'before' => [
             // 'honeypot',
-            'csrf' => ['except' => ['usuarios/*', 'equipos/actualizar-estado', 'equipos/saveEquipo', 'equipos/guardar']], // Excluir rutas específicas del CSRF global
+            'csrf' => ['except' => ['usuarios/*', 'equipos/actualizar-estado', 'equipos/saveEquipo', 'equipos/guardar', 'buscar']], // Excluir rutas específicas del CSRF global
             // 'invalidchars',
         ],
         'after' => [

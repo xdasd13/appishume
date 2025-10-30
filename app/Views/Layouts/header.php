@@ -425,13 +425,21 @@
         <nav class="navbar navbar-header navbar-header-transparent navbar-expand-lg border-bottom">
           <div class="container-fluid">
             <nav class="navbar navbar-header-left navbar-expand-lg navbar-form nav-search p-0 d-none d-lg-flex">
-              <div class="input-group">
+              <div class="input-group position-relative">
                 <div class="input-group-prepend">
-                  <button type="submit" class="btn btn-search pe-1">
+                  <button type="button" class="btn btn-search pe-1" id="btn-buscar-global">
                     <i class="fa fa-search search-icon"></i>
                   </button>
                 </div>
-                <input type="text" placeholder="Buscar proyectos, clientes, servicios..." class="form-control" />
+                <input 
+                  type="text" 
+                  id="busqueda-global" 
+                  placeholder="Buscar en todo el sistema..." 
+                  class="form-control" 
+                  autocomplete="off"
+                />
+                <!-- Dropdown de resultados -->
+                <div id="resultados-busqueda" class="dropdown-menu w-100" style="display: none; max-height: 500px; overflow-y: auto;"></div>
               </div>
             </nav>
 
@@ -589,5 +597,244 @@
           </div>
           <div class="page-category">
             <!-- Antes de cerrar el body -->
+
+<!-- Script de Búsqueda Global -->
+<script>
+/**
+ * Buscador Global del Sistema
+ * Utiliza async/await para búsqueda en tiempo real con debounce
+ */
+
+// Variable para el timeout del debounce
+let timeoutBusqueda = null;
+
+// Elementos del DOM
+const inputBusqueda = document.getElementById('busqueda-global');
+const btnBuscar = document.getElementById('btn-buscar-global');
+const dropdownResultados = document.getElementById('resultados-busqueda');
+
+/**
+ * Inicializar buscador cuando el DOM esté listo
+ */
+document.addEventListener('DOMContentLoaded', function() {
+    if (inputBusqueda) {
+        // Evento al escribir en el input (con debounce)
+        inputBusqueda.addEventListener('input', function(e) {
+            const termino = e.target.value.trim();
+            
+            // Limpiar timeout anterior
+            clearTimeout(timeoutBusqueda);
+            
+            // Si el término tiene menos de 3 caracteres, ocultar resultados
+            if (termino.length < 3) {
+                ocultarResultados();
+                return;
+            }
+            
+            // Esperar 500ms después de que el usuario termine de escribir
+            timeoutBusqueda = setTimeout(async () => {
+                await buscarEnSistema(termino);
+            }, 500);
+        });
+        
+        // Evento al hacer clic en el botón de búsqueda
+        btnBuscar.addEventListener('click', async function() {
+            const termino = inputBusqueda.value.trim();
+            if (termino.length >= 3) {
+                await buscarEnSistema(termino);
+            }
+        });
+        
+        // Evento Enter en el input
+        inputBusqueda.addEventListener('keypress', async function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                const termino = inputBusqueda.value.trim();
+                if (termino.length >= 3) {
+                    await buscarEnSistema(termino);
+                }
+            }
+        });
+        
+        // Cerrar resultados al hacer clic fuera
+        document.addEventListener('click', function(e) {
+            if (!inputBusqueda.contains(e.target) && !dropdownResultados.contains(e.target)) {
+                ocultarResultados();
+            }
+        });
+    }
+});
+
+/**
+ * Buscar en todo el sistema (async/await)
+ */
+async function buscarEnSistema(termino) {
+    try {
+        // Mostrar loading
+        mostrarLoading();
+        
+        // Preparar datos del formulario
+        const formData = new FormData();
+        formData.append('termino', termino);
+        
+        // Realizar petición AJAX con fetch
+        const response = await fetch('<?= base_url('buscar') ?>', {
+            method: 'POST',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: formData
+        });
+        
+        // Verificar si la respuesta es exitosa
+        if (!response.ok) {
+            throw new Error('Error en la petición');
+        }
+        
+        // Convertir respuesta a JSON
+        const data = await response.json();
+        
+        // Mostrar resultados
+        if (data.success) {
+            mostrarResultados(data.resultados, data.total, data.termino);
+        } else {
+            console.error('Error del servidor:', data);
+            mostrarError(data.mensaje || 'Error al realizar la búsqueda');
+        }
+        
+    } catch (error) {
+        console.error('Error en búsqueda:', error);
+        mostrarError('Error de conexión: ' + error.message);
+    }
+}
+
+/**
+ * Mostrar loading en el dropdown
+ */
+function mostrarLoading() {
+    dropdownResultados.innerHTML = `
+        <div class="p-4 text-center">
+            <div class="spinner-border spinner-border-sm text-warning" role="status">
+                <span class="visually-hidden">Buscando...</span>
+            </div>
+            <p class="mt-2 mb-0 text-muted small">Buscando en todo el sistema...</p>
+        </div>
+    `;
+    dropdownResultados.style.display = 'block';
+    dropdownResultados.classList.add('show');
+}
+
+/**
+ * Mostrar resultados de la búsqueda
+ */
+function mostrarResultados(resultados, total, termino) {
+    if (total === 0) {
+        dropdownResultados.innerHTML = `
+            <div class="p-4 text-center">
+                <i class="fas fa-search fa-2x text-muted mb-2"></i>
+                <p class="mb-0 text-muted">No se encontraron resultados para "<strong>${termino}</strong>"</p>
+            </div>
+        `;
+        dropdownResultados.style.display = 'block';
+        dropdownResultados.classList.add('show');
+        return;
+    }
+    
+    let html = `
+        <div class="px-3 py-2 bg-light border-bottom">
+            <small class="text-muted">
+                <i class="fas fa-search"></i> 
+                Se encontraron <strong>${total}</strong> resultados para "<strong>${termino}</strong>"
+            </small>
+        </div>
+    `;
+    
+    // Recorrer cada categoría de resultados
+    for (const [categoria, items] of Object.entries(resultados)) {
+        if (items.length > 0) {
+            html += `
+                <div class="dropdown-divider my-0"></div>
+                <h6 class="dropdown-header text-uppercase fw-bold">
+                    ${items[0].categoria}
+                </h6>
+            `;
+            
+            items.forEach(item => {
+                html += `
+                    <a href="${item.url}" class="dropdown-item py-2">
+                        <div class="d-flex align-items-start">
+                            <div class="me-2">
+                                <i class="${item.icono} text-warning"></i>
+                            </div>
+                            <div class="flex-grow-1">
+                                <div class="fw-medium text-dark">${item.titulo}</div>
+                                <small class="text-muted">${item.subtitulo}</small>
+                            </div>
+                        </div>
+                    </a>
+                `;
+            });
+        }
+    }
+    
+    dropdownResultados.innerHTML = html;
+    dropdownResultados.style.display = 'block';
+    dropdownResultados.classList.add('show');
+}
+
+/**
+ * Mostrar mensaje de error
+ */
+function mostrarError(mensaje) {
+    dropdownResultados.innerHTML = `
+        <div class="p-4 text-center">
+            <i class="fas fa-exclamation-triangle fa-2x text-danger mb-2"></i>
+            <p class="mb-0 text-muted">${mensaje}</p>
+        </div>
+    `;
+    dropdownResultados.style.display = 'block';
+    dropdownResultados.classList.add('show');
+}
+
+/**
+ * Ocultar dropdown de resultados
+ */
+function ocultarResultados() {
+    dropdownResultados.style.display = 'none';
+    dropdownResultados.classList.remove('show');
+}
+</script>
+
+<!-- Estilos adicionales para el buscador -->
+<style>
+#resultados-busqueda {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    z-index: 1050;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    margin-top: 4px;
+}
+
+#resultados-busqueda .dropdown-item {
+    border-bottom: 1px solid #f0f0f0;
+    transition: background-color 0.2s;
+}
+
+#resultados-busqueda .dropdown-item:last-child {
+    border-bottom: none;
+}
+
+#resultados-busqueda .dropdown-item:hover {
+    background-color: #fff8f0;
+}
+
+#busqueda-global:focus {
+    border-color: #ffc107;
+    box-shadow: 0 0 0 0.2rem rgba(255, 193, 7, 0.25);
+}
+</style>
 
             <!-- Aquí iría el contenido específico de cada página -->

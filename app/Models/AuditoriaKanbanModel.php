@@ -4,14 +4,26 @@ namespace App\Models;
 
 use CodeIgniter\Model;
 
+/**
+ * Modelo de Auditoría del Kanban
+ * 
+ * Gestiona el registro de cambios realizados en el tablero Kanban de equipos.
+ * Registra acciones como: crear, cambiar_estado, reasignar.
+ * 
+ * @author ISHUME Team
+ * @version 2.0
+ */
 class AuditoriaKanbanModel extends Model
 {
     protected $table = 'auditoria_kanban';
     protected $primaryKey = 'id';
     protected $returnType = 'object';
     protected $allowedFields = [
-        'idequipo', 'idusuario', 'accion', 
-        'estado_anterior', 'estado_nuevo'
+        'idequipo', 
+        'idusuario', 
+        'accion', 
+        'estado_anterior', 
+        'estado_nuevo'
     ];
 
     protected $useTimestamps = false;
@@ -55,14 +67,20 @@ class AuditoriaKanbanModel extends Model
     }
 
     /**
-     * Obtener historial completo con información de usuarios y servicios
+     * Obtener todo el historial de actividades con información completa
+     * 
+     * Recupera todos los cambios realizados en el tablero Kanban con información
+     * de usuarios, equipos, servicios y clientes.
+     * 
+     * @param string $filtroUsuario ID del usuario para filtrar o 'todos'
+     * @param int $limite Número máximo de registros a retornar
+     * @return array Lista de actividades
      */
-    public function getHistorialCompleto($filtroFecha = null, $filtroUsuario = null, $limite = 50)
+    public function obtenerTodoElHistorial(string $filtroUsuario = 'todos', int $limite = 100): array
     {
-        log_message('info', "getHistorialCompleto - Filtros recibidos: fecha={$filtroFecha}, usuario={$filtroUsuario}, limite={$limite}");
-        log_message('info', "Fecha actual del servidor: " . date('Y-m-d H:i:s'));
-        
         $builder = $this->db->table('auditoria_kanban a');
+        
+        // Seleccionar campos necesarios
         $builder->select('
             a.id,
             a.fecha,
@@ -82,6 +100,7 @@ class AuditoriaKanbanModel extends Model
             END as cliente_nombre
         ');
         
+        // Joins para obtener información relacionada
         $builder->join('usuarios u', 'a.idusuario = u.idusuario');
         $builder->join('personas p', 'u.idpersona = p.idpersona');
         $builder->join('equipos eq', 'a.idequipo = eq.idequipo');
@@ -93,86 +112,37 @@ class AuditoriaKanbanModel extends Model
         $builder->join('personas cl_p', 'cl.idpersona = cl_p.idpersona', 'left');
         $builder->join('empresas emp', 'cl.idempresa = emp.idempresa', 'left');
 
-        // Aplicar filtros de fecha
-        if ($filtroFecha) {
-            switch ($filtroFecha) {
-                case 'hoy':
-                    // Registros de hoy: desde las 00:00:00 hasta las 23:59:59
-                    $builder->where('DATE(a.fecha) =', date('Y-m-d'));
-                    break;
-                case 'ayer':
-                    // Registros de ayer
-                    $builder->where('DATE(a.fecha) =', date('Y-m-d', strtotime('-1 day')));
-                    break;
-                case 'semana':
-                    // Últimos 7 días (incluyendo hoy)
-                    $fechaInicio = date('Y-m-d', strtotime('-7 days'));
-                    $fechaFin = date('Y-m-d');
-                    $builder->where('DATE(a.fecha) >=', $fechaInicio);
-                    $builder->where('DATE(a.fecha) <=', $fechaFin);
-                    break;
-                case 'mes':
-                    // Últimos 30 días (incluyendo hoy)
-                    $fechaInicio = date('Y-m-d', strtotime('-30 days'));
-                    $fechaFin = date('Y-m-d');
-                    $builder->where('DATE(a.fecha) >=', $fechaInicio);
-                    $builder->where('DATE(a.fecha) <=', $fechaFin);
-                    break;
-            }
-        }
-
-        if ($filtroUsuario && $filtroUsuario !== 'todos') {
+        // Aplicar filtro de usuario si no es 'todos'
+        if ($filtroUsuario !== 'todos') {
             $builder->where('a.idusuario', $filtroUsuario);
         }
 
+        // Ordenar por fecha descendente (más recientes primero)
         $builder->orderBy('a.fecha', 'DESC');
         $builder->limit($limite);
-
-        // Log de la query SQL generada para debugging
-        $sql = $builder->getCompiledSelect(false);
-        log_message('info', "Query SQL generada: " . $sql);
         
-        $resultado = $builder->get()->getResult();
-        log_message('info', "Registros encontrados: " . count($resultado));
-        
-        return $resultado;
+        return $builder->get()->getResult();
     }
 
     /**
-     * Obtener estadísticas de actividad
+     * Obtener lista de usuarios que han realizado cambios
+     * 
+     * Retorna todos los usuarios que tienen al menos una actividad registrada
+     * en el historial, ordenados por número de cambios realizados.
+     * 
+     * @return array Lista de usuarios activos
      */
-    public function getEstadisticas($periodo = 'mes')
-    {
-        $fechaInicio = match($periodo) {
-            'hoy' => date('Y-m-d'),
-            'semana' => date('Y-m-d', strtotime('-7 days')),
-            'mes' => date('Y-m-d', strtotime('-30 days')),
-            default => date('Y-m-d', strtotime('-30 days'))
-        };
-
-        $builder = $this->db->table('auditoria_kanban a');
-        $builder->select('
-            COUNT(*) as total_cambios,
-            COUNT(DISTINCT a.idusuario) as usuarios_activos,
-            COUNT(DISTINCT a.idequipo) as equipos_modificados
-        ');
-        $builder->where('DATE(a.fecha) >=', $fechaInicio);
-
-        return $builder->get()->getRow();
-    }
-
-    /**
-     * Obtener usuarios que han realizado cambios
-     */
-    public function getUsuariosActivos()
+    public function obtenerUsuariosActivos(): array
     {
         $builder = $this->db->table('auditoria_kanban a');
+        
         $builder->select('
             u.idusuario,
             u.nombreusuario,
             CONCAT(p.nombres, " ", p.apellidos) as nombre_completo,
             COUNT(*) as total_cambios
         ');
+        
         $builder->join('usuarios u', 'a.idusuario = u.idusuario');
         $builder->join('personas p', 'u.idpersona = p.idpersona');
         $builder->groupBy('u.idusuario');

@@ -1,93 +1,120 @@
 <?= $header ?>
-<link rel="stylesheet" href="<?= base_url('assets/css/historial-index.css') ?>">
 
 <div class="container-fluid py-4">
     <!-- Encabezado -->
     <div class="row mb-4">
         <div class="col-12">
-            <div class="activity-header">
-                <div class="activity-title">
-                    <h2 class="mb-1">REGISTRO DE ACTIVIDAD</h2>
-                    <div class="activity-divider"></div>
-                </div>
-                <div class="activity-controls">
-                    <div class="filter-group">
-                        <select id="filtroFecha" class="form-select me-2" onchange="aplicarFiltros()">
-                            <option value="hoy" <?= $filtro_fecha === 'hoy' ? 'selected' : '' ?>>Hoy</option>
-                            <option value="ayer" <?= $filtro_fecha === 'ayer' ? 'selected' : '' ?>>Ayer</option>
-                            <option value="semana" <?= $filtro_fecha === 'semana' ? 'selected' : '' ?>>Esta semana</option>
-                            <option value="mes" <?= $filtro_fecha === 'mes' ? 'selected' : '' ?>>Este mes</option>
-                        </select>
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center flex-wrap">
+                        <!-- Título -->
+                        <div>
+                            <h3 class="mb-0 text-dark fw-bold">
+                                <i class="fas fa-history text-warning"></i>
+                                Historial de Actividades
+                            </h3>
+                            <p class="text-muted mb-0 mt-1">Registro de cambios en el tablero Kanban</p>
+                        </div>
                         
-                        <select id="filtroUsuario" class="form-select me-2" onchange="aplicarFiltros()">
-                            <option value="todos">Todos los usuarios</option>
-                            <?php foreach ($usuarios_activos as $usuario): ?>
-                                <option value="<?= $usuario->idusuario ?>" <?= $filtro_usuario == $usuario->idusuario ? 'selected' : '' ?>>
-                                    <?= esc($usuario->nombre_completo) ?>
-                                </option>
-                            <?php endforeach; ?>
-                        </select>
-                        
-                        <button type="button" class="btn-refresh" onclick="actualizarHistorial()">
-                            <i class="fas fa-sync-alt"></i> Actualizar
-                        </button>
+                        <!-- Buscador -->
+                        <div class="d-flex gap-2 mt-3 mt-md-0">
+                            <select id="filtroUsuario" class="form-select" style="min-width: 250px;">
+                                <option value="todos">Todos los usuarios</option>
+                                <?php foreach ($usuarios as $usuario): ?>
+                                    <option value="<?= $usuario->idusuario ?>" <?= $filtro_usuario == $usuario->idusuario ? 'selected' : '' ?>>
+                                        <?= esc($usuario->nombre_completo) ?> (<?= $usuario->total_cambios ?> cambios)
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+                            <button type="button" class="btn btn-warning" onclick="buscarHistorial()">
+                                <i class="fas fa-search"></i> Buscar
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Contenido Principal -->
+    <!-- Tabla de Historial -->
     <div class="row">
         <div class="col-12">
-            <div class="activity-container">
-                <div id="historial-loading" class="text-center py-4" style="display: none;">
-                    <div class="spinner-border text-warning" role="status">
-                        <span class="visually-hidden">Cargando...</span>
-                    </div>
-                    <p class="mt-2">Cargando actividades...</p>
-                </div>
-                
-                <div id="historial-content">
-                    <?php if (empty($historial)): ?>
-                        <div class="no-activity">
-                            <i class="fas fa-info-circle"></i>
-                            <p>No se encontraron actividades para el período seleccionado</p>
+            <div class="card shadow-sm">
+                <div class="card-body p-0">
+                    <!-- Loading -->
+                    <div id="loading" class="text-center py-5" style="display: none;">
+                        <div class="spinner-border text-warning" role="status">
+                            <span class="visually-hidden">Cargando...</span>
                         </div>
-                    <?php else: ?>
-                        <?php foreach ($historial as $item): ?>
-                            <div class="activity-item">
-                                <div class="activity-time">
-                                    <?= date('H:i', strtotime($item->fecha)) ?>
-                                </div>
-                                <div class="activity-content">
-                                    <div class="activity-user">
-                                        <?= esc($item->usuario_nombre) ?>
-                                    </div>
-                                    <div class="activity-action">
-                                        <?php if ($item->accion === 'cambiar_estado'): ?>
-                                            movió "<?= esc($item->equipo_descripcion) ?>"
-                                            <div class="state-change">
-                                                <span class="state-from"><?= esc($item->estado_anterior) ?></span>
-                                                <i class="fas fa-arrow-right"></i>
-                                                <span class="state-to <?= $item->estado_nuevo === 'Completado' ? 'completed' : '' ?>">
-                                                    <?= esc($item->estado_nuevo) ?>
-                                                    <?= $item->estado_nuevo === 'Completado' ? ' ✓' : '' ?>
+                        <p class="mt-3 text-muted">Buscando actividades...</p>
+                    </div>
+                    
+                    <!-- Tabla -->
+                    <div id="tabla-container" class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th width="10%">Fecha</th>
+                                    <th width="8%">Hora</th>
+                                    <th width="10%">Día</th>
+                                    <th width="15%">Usuario</th>
+                                    <th width="57%">Cambio Realizado</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabla-body">
+                                <?php if (empty($historial)): ?>
+                                    <tr>
+                                        <td colspan="5" class="text-center py-5">
+                                            <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                                            <p class="text-muted mb-0">No se encontraron actividades</p>
+                                        </td>
+                                    </tr>
+                                <?php else: ?>
+                                    <?php foreach ($historial as $item): ?>
+                                        <tr>
+                                            <!-- Fecha -->
+                                            <td class="align-middle">
+                                                <span class="text-dark fw-medium">
+                                                    <?= date('d/m/Y', strtotime($item->fecha)) ?>
                                                 </span>
-                                            </div>
-                                        <?php elseif ($item->accion === 'crear'): ?>
-                                            creó nuevo equipo "<?= esc($item->equipo_descripcion) ?>"
-                                        <?php elseif ($item->accion === 'reasignar'): ?>
-                                            reasignó "<?= esc($item->equipo_descripcion) ?>"
-                                        <?php endif; ?>
-                                    </div>
-                                    <div class="activity-service">
-                                        <?= obtenerIconoCategoria($item->categoria) ?> Servicio: <?= esc($item->servicio) ?>
-                                    </div>
-                                </div>
-                            </div>
-                        <?php endforeach; ?>
-                    <?php endif; ?>
+                                            </td>
+                                            
+                                            <!-- Hora -->
+                                            <td class="align-middle">
+                                                <span class="badge bg-secondary">
+                                                    <?= date('H:i:s', strtotime($item->fecha)) ?>
+                                                </span>
+                                            </td>
+                                            
+                                            <!-- Día -->
+                                            <td class="align-middle">
+                                                <span class="text-muted">
+                                                    <?= obtenerNombreDia($item->fecha) ?>
+                                                </span>
+                                            </td>
+                                            
+                                            <!-- Usuario -->
+                                            <td class="align-middle">
+                                                <div class="d-flex align-items-center">
+                                                    <div class="avatar-circle me-2">
+                                                        <?= strtoupper(substr($item->usuario_nombre, 0, 1)) ?>
+                                                    </div>
+                                                    <span class="fw-medium text-dark">
+                                                        <?= esc($item->usuario_nombre) ?>
+                                                    </span>
+                                                </div>
+                                            </td>
+                                            
+                                            <!-- Cambio Realizado -->
+                                            <td class="align-middle">
+                                                <?= generarTextoAccion($item) ?>
+                                            </td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                <?php endif; ?>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
@@ -95,307 +122,127 @@
 </div>
 
 <!-- Estilos CSS -->
-
 <style>
-/* Paleta de colores de la empresa */
-:root {
-    --primary-orange: #ff6b35;
-    --light-orange: #ff8c5a;
-    --dark-orange: #e55a2b;
-    --white: #ffffff;
-    --light-gray: #f8f9fa;
-    --medium-gray: #6c757d;
-    --dark-gray: #343a40;
-    --border-color: #e9ecef;
-}
-
-/* Header de actividad */
-.activity-header {
-    background: var(--white);
-    border: 1px solid var(--border-color);
-    border-radius: 12px;
-    padding: 24px;
-    margin-bottom: 24px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-}
-
-.activity-title h2 {
-    font-size: 24px;
-    font-weight: 700;
-    color: var(--dark-gray);
-    margin: 0;
-    letter-spacing: 0.5px;
-}
-
-.activity-divider {
-    height: 3px;
-    background: linear-gradient(90deg, var(--primary-orange) 0%, var(--light-orange) 100%);
-    border-radius: 2px;
-    margin-top: 8px;
-    width: 100%;
-}
-
-.activity-controls {
+/* Avatar circular */
+.avatar-circle {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%);
     display: flex;
     align-items: center;
-    gap: 16px;
-    margin-top: 16px;
-}
-
-.filter-group {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-
-.form-select {
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
-    padding: 8px 12px;
+    justify-content: center;
+    color: white;
+    font-weight: bold;
     font-size: 14px;
-    background: var(--white);
-    min-width: 160px;
 }
 
-.form-select:focus {
-    border-color: var(--primary-orange);
-    box-shadow: 0 0 0 0.2rem rgba(255, 107, 53, 0.25);
-}
-
-.btn-refresh {
-    background: var(--primary-orange);
-    color: var(--white);
-    border: none;
-    border-radius: 8px;
-    padding: 8px 16px;
-    font-size: 14px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s ease;
-}
-
-.btn-refresh:hover {
-    background: var(--dark-orange);
-    transform: translateY(-1px);
-}
-
-/* Contenedor de actividades */
-.activity-container {
-    background: var(--white);
-    border: 1px solid var(--border-color);
-    border-radius: 12px;
-    padding: 0;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+/* Tabla responsiva */
+.table-responsive {
     max-height: 600px;
     overflow-y: auto;
 }
 
-/* Items de actividad */
-.activity-item {
-    display: flex;
-    padding: 20px 24px;
-    border-bottom: 1px solid var(--border-color);
-    transition: background-color 0.2s ease;
+/* Hover en filas */
+.table-hover tbody tr:hover {
+    background-color: #fff8f0;
+    cursor: pointer;
 }
 
-.activity-item:hover {
-    background-color: #fef7f4;
-}
-
-.activity-item:last-child {
-    border-bottom: none;
-}
-
-.activity-time {
-    font-size: 14px;
+/* Badges de estado */
+.badge-estado {
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 11px;
     font-weight: 600;
-    color: var(--medium-gray);
-    min-width: 60px;
-    margin-right: 20px;
-    text-align: right;
+    text-transform: uppercase;
 }
 
-.activity-content {
-    flex: 1;
+.badge-pendiente {
+    background-color: #fff3cd;
+    color: #856404;
 }
 
-.activity-user {
-    font-weight: 600;
-    color: var(--dark-gray);
-    font-size: 15px;
-    margin-bottom: 4px;
+.badge-proceso {
+    background-color: #cfe2ff;
+    color: #084298;
 }
 
-.activity-action {
-    color: var(--dark-gray);
-    font-size: 14px;
-    line-height: 1.4;
-    margin-bottom: 8px;
-}
-
-.state-change {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-top: 4px;
-}
-
-.state-from {
-    background: #f8f9fa;
-    color: var(--medium-gray);
-    padding: 2px 8px;
-    border-radius: 4px;
-    font-size: 12px;
-    font-weight: 500;
-}
-
-.state-to {
-    background: var(--light-orange);
-    color: var(--white);
-    padding: 2px 8px;
-    border-radius: 4px;
-    font-size: 12px;
-    font-weight: 500;
-}
-
-.state-to.completed {
-    background: #28a745;
-}
-
-.state-change i {
-    color: var(--medium-gray);
-    font-size: 12px;
-}
-
-.activity-service {
-    font-size: 13px;
-    color: var(--medium-gray);
-    display: flex;
-    align-items: center;
-    gap: 6px;
-}
-
-.activity-service i {
-    color: var(--primary-orange);
-}
-
-/* Estado vacío */
-.no-activity {
-    text-align: center;
-    padding: 60px 20px;
-    color: var(--medium-gray);
-}
-
-.no-activity i {
-    font-size: 48px;
-    color: var(--primary-orange);
-    margin-bottom: 16px;
-}
-
-.no-activity p {
-    font-size: 16px;
-    margin: 0;
+.badge-completado {
+    background-color: #d1e7dd;
+    color: #0f5132;
 }
 
 /* Scrollbar personalizado */
-.activity-container::-webkit-scrollbar {
-    width: 6px;
+.table-responsive::-webkit-scrollbar {
+    width: 8px;
 }
 
-.activity-container::-webkit-scrollbar-track {
-    background: var(--light-gray);
-    border-radius: 3px;
+.table-responsive::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
 }
 
-.activity-container::-webkit-scrollbar-thumb {
-    background: var(--primary-orange);
-    border-radius: 3px;
+.table-responsive::-webkit-scrollbar-thumb {
+    background: #ffc107;
+    border-radius: 4px;
 }
 
-.activity-container::-webkit-scrollbar-thumb:hover {
-    background: var(--dark-orange);
+.table-responsive::-webkit-scrollbar-thumb:hover {
+    background: #ff9800;
 }
 
 /* Responsive */
 @media (max-width: 768px) {
-    .activity-header {
-        padding: 16px;
+    .table thead {
+        display: none;
     }
     
-    .activity-controls {
-        flex-direction: column;
-        align-items: stretch;
+    .table tbody tr {
+        display: block;
+        margin-bottom: 15px;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
     }
     
-    .filter-group {
-        flex-direction: column;
-        gap: 8px;
+    .table tbody td {
+        display: block;
+        text-align: right;
+        padding: 10px 15px;
+        border: none;
     }
     
-    .form-select {
-        min-width: auto;
-    }
-    
-    .activity-item {
-        flex-direction: column;
-        padding: 16px;
-    }
-    
-    .activity-time {
-        text-align: left;
-        margin-bottom: 8px;
-        margin-right: 0;
+    .table tbody td:before {
+        content: attr(data-label);
+        float: left;
+        font-weight: bold;
+        color: #6c757d;
     }
 }
 </style>
 
-
 <!-- JavaScript -->
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Auto-actualizar cada 30 segundos
-    setInterval(actualizarHistorial, 30000);
-});
-
 /**
- * Aplicar filtros y recargar historial
+ * Buscar historial con filtro de usuario
  */
-function aplicarFiltros() {
-    const filtroFecha = document.getElementById('filtroFecha').value;
+function buscarHistorial() {
+    const loadingElement = document.getElementById('loading');
+    const tablaContainer = document.getElementById('tabla-container');
     const filtroUsuario = document.getElementById('filtroUsuario').value;
-    
-    // Construir URL con parámetros
-    const params = new URLSearchParams();
-    params.set('fecha', filtroFecha);
-    params.set('usuario', filtroUsuario);
-    
-    // Recargar página con nuevos filtros
-    window.location.href = '<?= base_url('historial') ?>?' + params.toString();
-}
-
-/**
- * Actualizar historial via AJAX
- */
-function actualizarHistorial() {
-    const loadingElement = document.getElementById('historial-loading');
-    const contentElement = document.getElementById('historial-content');
     
     // Mostrar loading
     loadingElement.style.display = 'block';
-    contentElement.style.opacity = '0.5';
-    
-    const filtroFecha = document.getElementById('filtroFecha').value;
-    const filtroUsuario = document.getElementById('filtroUsuario').value;
+    tablaContainer.style.opacity = '0.5';
     
     // Hacer petición AJAX
-    fetch('<?= base_url('historial/obtenerHistorial') ?>', {
+    fetch('<?= base_url('historial/buscar') ?>', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
             'X-Requested-With': 'XMLHttpRequest'
         },
         body: JSON.stringify({
-            fecha: filtroFecha,
             usuario: filtroUsuario,
             '<?= csrf_token() ?>': '<?= csrf_hash() ?>'
         })
@@ -403,110 +250,157 @@ function actualizarHistorial() {
     .then(response => response.json())
     .then(data => {
         loadingElement.style.display = 'none';
-        contentElement.style.opacity = '1';
+        tablaContainer.style.opacity = '1';
         
         if (data.success) {
-            actualizarContenidoHistorial(data.historial);
+            actualizarTabla(data.historial);
         } else {
-            console.error('Error al obtener historial:', data.error);
+            mostrarError(data.mensaje);
         }
     })
     .catch(error => {
         loadingElement.style.display = 'none';
-        contentElement.style.opacity = '1';
-        console.error('Error de conexión:', error);
+        tablaContainer.style.opacity = '1';
+        console.error('Error:', error);
+        mostrarError('Error de conexión');
     });
 }
 
 /**
- * Actualizar contenido del historial
+ * Actualizar contenido de la tabla
  */
-function actualizarContenidoHistorial(historial) {
-    const contentElement = document.getElementById('historial-content');
+function actualizarTabla(historial) {
+    const tablaBody = document.getElementById('tabla-body');
     
     if (historial.length === 0) {
-        contentElement.innerHTML = `
-            <div class="no-activity">
-                <i class="fas fa-info-circle"></i>
-                <p>No se encontraron actividades para el período seleccionado</p>
-            </div>
+        tablaBody.innerHTML = `
+            <tr>
+                <td colspan="5" class="text-center py-5">
+                    <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                    <p class="text-muted mb-0">No se encontraron actividades</p>
+                </td>
+            </tr>
         `;
         return;
     }
     
     let html = '';
     historial.forEach(item => {
+        const inicial = item.usuario.charAt(0).toUpperCase();
         html += `
-            <div class="activity-item">
-                <div class="activity-time">${item.fecha}</div>
-                <div class="activity-content">
-                    <div class="activity-user">${item.usuario}</div>
-                    <div class="activity-action">
-                        ${generarTextoAccion(item)}
+            <tr>
+                <td class="align-middle">
+                    <span class="text-dark fw-medium">${item.fecha}</span>
+                </td>
+                <td class="align-middle">
+                    <span class="badge bg-secondary">${item.hora}</span>
+                </td>
+                <td class="align-middle">
+                    <span class="text-muted">${item.dia}</span>
+                </td>
+                <td class="align-middle">
+                    <div class="d-flex align-items-center">
+                        <div class="avatar-circle me-2">${inicial}</div>
+                        <span class="fw-medium text-dark">${item.usuario}</span>
                     </div>
-                    <div class="activity-service">
-                        ${obtenerIconoServicio(item.categoria)} Servicio: ${item.servicio}
-                    </div>
-                </div>
-            </div>
+                </td>
+                <td class="align-middle">${item.accion}</td>
+            </tr>
         `;
     });
     
-    contentElement.innerHTML = html;
+    tablaBody.innerHTML = html;
 }
 
 /**
- * Generar texto de acción
+ * Mostrar mensaje de error
  */
-function generarTextoAccion(item) {
-    if (item.accion === 'cambiar_estado') {
-        const completedClass = item.estado_nuevo === 'Completado' ? 'completed' : '';
-        const checkmark = item.estado_nuevo === 'Completado' ? ' ✓' : '';
-        
-        return `
-            movió "${item.descripcion}"
-            <div class="state-change">
-                <span class="state-from">${item.estado_anterior}</span>
-                <i class="fas fa-arrow-right"></i>
-                <span class="state-to ${completedClass}">${item.estado_nuevo}${checkmark}</span>
-            </div>
-        `;
-    } else if (item.accion === 'crear') {
-        return `creó nuevo equipo "${item.descripcion}"`;
-    } else if (item.accion === 'reasignar') {
-        return `reasignó "${item.descripcion}"`;
-    }
-    return item.accion;
-}
-
-/**
- * Obtener icono según categoría de servicio
- */
-function obtenerIconoServicio(categoria) {
-    const iconos = {
-        'Audio y Sonido': '<i class="fas fa-volume-up"></i>',
-        'Fotografía y Video': '<i class="fas fa-camera"></i>',
-        'Iluminación': '<i class="fas fa-lightbulb"></i>',
-        'Decoración': '<i class="fas fa-palette"></i>',
-        'Catering': '<i class="fas fa-utensils"></i>'
-    };
-    return iconos[categoria] || '<i class="fas fa-cog"></i>';
+function mostrarError(mensaje) {
+    Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: mensaje,
+        confirmButtonColor: '#ffc107'
+    });
 }
 </script>
 
 <?php
 /**
- * Obtener icono según categoría de servicio
+ * Obtener nombre del día de la semana en español
  */
-function obtenerIconoCategoria($categoria) {
-    $iconos = [
-        'Audio y Sonido' => '<i class="fas fa-volume-up"></i>',
-        'Fotografía y Video' => '<i class="fas fa-camera"></i>',
-        'Iluminación' => '<i class="fas fa-lightbulb"></i>',
-        'Decoración' => '<i class="fas fa-palette"></i>',
-        'Catering' => '<i class="fas fa-utensils"></i>'
+function obtenerNombreDia($fecha) {
+    $dias = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+    $numeroDia = date('w', strtotime($fecha));
+    return $dias[$numeroDia];
+}
+
+/**
+ * Generar texto descriptivo del cambio realizado
+ */
+function generarTextoAccion($item) {
+    $html = '<div class="d-flex flex-column">';
+    
+    switch ($item->accion) {
+        case 'cambiar_estado':
+            $badgeAnterior = obtenerBadgeEstado($item->estado_anterior);
+            $badgeNuevo = obtenerBadgeEstado($item->estado_nuevo);
+            
+            $html .= '<div class="mb-1">';
+            $html .= '<strong>Cambió estado:</strong> ' . esc($item->equipo_descripcion);
+            $html .= '</div>';
+            $html .= '<div class="d-flex align-items-center gap-2">';
+            $html .= $badgeAnterior;
+            $html .= '<i class="fas fa-arrow-right text-muted"></i>';
+            $html .= $badgeNuevo;
+            $html .= '</div>';
+            $html .= '<small class="text-muted mt-1">';
+            $html .= '<i class="fas fa-briefcase"></i> ' . esc($item->servicio);
+            $html .= ' | <i class="fas fa-user"></i> ' . esc($item->cliente_nombre);
+            $html .= '</small>';
+            break;
+            
+        case 'crear':
+            $html .= '<div class="mb-1">';
+            $html .= '<strong>Creó nuevo equipo:</strong> ' . esc($item->equipo_descripcion);
+            $html .= '</div>';
+            $html .= '<small class="text-muted">';
+            $html .= '<i class="fas fa-briefcase"></i> ' . esc($item->servicio);
+            $html .= '</small>';
+            break;
+            
+        case 'reasignar':
+            $html .= '<div class="mb-1">';
+            $html .= '<strong>Reasignó equipo:</strong> ' . esc($item->equipo_descripcion);
+            $html .= '</div>';
+            $html .= '<small class="text-muted">';
+            $html .= '<i class="fas fa-briefcase"></i> ' . esc($item->servicio);
+            $html .= '</small>';
+            break;
+            
+        default:
+            $html .= ucfirst($item->accion);
+    }
+    
+    $html .= '</div>';
+    return $html;
+}
+
+/**
+ * Obtener badge según el estado
+ */
+function obtenerBadgeEstado($estado) {
+    $clases = [
+        'Pendiente' => 'badge-pendiente',
+        'En Proceso' => 'badge-proceso',
+        'Completado' => 'badge-completado',
+        'Programado' => 'badge-pendiente'
     ];
-    return $iconos[$categoria] ?? '<i class="fas fa-cog"></i>';
+    
+    $clase = $clases[$estado] ?? 'badge-secondary';
+    $icono = $estado === 'Completado' ? '<i class="fas fa-check-circle"></i> ' : '';
+    
+    return '<span class="badge-estado ' . $clase . '">' . $icono . esc($estado) . '</span>';
 }
 ?>
 

@@ -123,7 +123,10 @@ $routes->group('', ['filter' => 'trabajador'], function($routes) {
     
     // Historial del sistema (auditoría del Kanban) - Todos los trabajadores pueden ver
     $routes->get('historial', 'Historial::index');
-    $routes->post('historial/obtenerHistorial', 'Historial::obtenerHistorial');
+    $routes->post('historial/buscar', 'Historial::buscarHistorial');
+    
+    // Buscador global del sistema
+    $routes->post('buscar', 'BuscadorGlobal::buscar');
 });
 
 // ==================== RUTAS PÚBLICAS (CON AUTENTICACIÓN BÁSICA) ====================
