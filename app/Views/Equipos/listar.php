@@ -513,6 +513,18 @@ document.addEventListener('DOMContentLoaded', function() {
  * KISS: función simple y reutilizable
  */
 function showFlashMessages() {
+    // Verificar mensajes de sessionStorage (para redirects AJAX)
+    const toastMessage = sessionStorage.getItem('toast_message');
+    const toastIcon = sessionStorage.getItem('toast_icon');
+    
+    if (toastMessage) {
+        showToast(toastMessage, toastIcon || 'success');
+        // Limpiar sessionStorage después de mostrar
+        sessionStorage.removeItem('toast_message');
+        sessionStorage.removeItem('toast_icon');
+    }
+    
+    // Mensajes flash del servidor (PHP)
     <?php if (session()->getFlashdata('success')): ?>
         showNotification('<?= addslashes(session()->getFlashdata('success')) ?>', 'success');
     <?php endif; ?>
@@ -520,6 +532,29 @@ function showFlashMessages() {
     <?php if (session()->getFlashdata('error')): ?>
         showNotification('<?= addslashes(session()->getFlashdata('error')) ?>', 'error');
     <?php endif; ?>
+}
+
+/**
+ * Mostrar Toast personalizado con SweetAlert
+ * Formato específico solicitado por el usuario
+ */
+function showToast(message, icon = 'success') {
+    const Toast = Swal.mixin({
+        toast: true,
+        position: "top-end",
+        showConfirmButton: false,
+        timer: 3000,
+        timerProgressBar: true,
+        didOpen: (toast) => {
+            toast.onmouseenter = Swal.stopTimer;
+            toast.onmouseleave = Swal.resumeTimer;
+        }
+    });
+    
+    Toast.fire({
+        icon: icon,
+        title: message
+    });
 }
 
 /**

@@ -99,7 +99,7 @@
                                             <div class="form-floating">
                                                 <input type="text" class="form-control" id="nombreusuario_existente" 
                                                        name="nombreusuario" required placeholder=" " 
-                                                       pattern="[a-zA-Z0-9_-]{4,20}">
+                                                       pattern="[a-zA-Z0-9_\-]{4,20}">
                                                 <label for="nombreusuario_existente">Nombre de Usuario *</label>
                                             </div>
                                             <span class="example-text">Ejemplo: juan.perez, jperez2023 (4-20 caracteres alfanuméricos)</span>
@@ -161,7 +161,7 @@
                                 </div>
                                 
                                 <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
-                                    <button type="submit" class="btn btn-primary">
+                                    <button type="submit" class="btn btn-primary" id="btnSubmitExistente" disabled>
                                         <i class="fas fa-save me-1"></i> Crear Credenciales
                                     </button>
                                 </div>
@@ -349,7 +349,7 @@
                                             <div class="form-floating">
                                                 <input type="text" class="form-control" id="nombreusuario_nuevo" 
                                                        name="nombreusuario" required placeholder=" " 
-                                                       pattern="[a-zA-Z0-9_-]{4,20}">
+                                                       pattern="[a-zA-Z0-9_\-]{4,20}">
                                                 <label for="nombreusuario_nuevo">Nombre de Usuario *</label>
                                             </div>
                                             <span class="example-text">Ejemplo: juan.perez, jperez2023 (4-20 caracteres alfanuméricos)</span>
@@ -412,7 +412,7 @@
                                 </div>
                                 
                                 <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
-                                    <button type="submit" class="btn btn-primary">
+                                    <button type="submit" class="btn btn-primary" id="btnSubmitNuevo" disabled>
                                         <i class="fas fa-save me-1"></i> Crear Personal y Credenciales
                                     </button>
                                 </div>
@@ -478,12 +478,47 @@
         }
     }
     
+    // ==================== HABILITAR/DESHABILITAR BOTONES DINÁMICAMENTE ====================
+    
+    //Habilitar botón de formulario EXISTENTE cuando el usuario empiece a escribir
+    function checkFormExistenteFields() {
+        const idpersona = $('#idpersona').val();
+        const idcargo = $('#idcargo_existente').val();
+        const nombreusuario = $('#nombreusuario_existente').val().trim();
+        const email = $('#email_existente').val().trim();
+        const password = $('#password_existente').val();
+        
+        // Habilitar botón si al menos un campo tiene contenido
+        const hasContent = idpersona || idcargo || nombreusuario || email || password;
+        
+        $('#btnSubmitExistente').prop('disabled', !hasContent);
+    }
+    
+    //Habilitar botón de formulario NUEVO cuando el usuario empiece a escribir
+    function checkFormNuevoFields() {
+        const numerodoc = $('#numerodoc').val().trim();
+        const nombres = $('#nombres').val().trim();
+        const apellidos = $('#apellidos').val().trim();
+        const telefono = $('#telprincipal').val().trim();
+        const direccion = $('#direccion').val().trim();
+        const idcargo = $('#idcargo_nuevo').val();
+        const nombreusuario = $('#nombreusuario_nuevo').val().trim();
+        const email = $('#email_nuevo').val().trim();
+        const password = $('#password_nuevo').val();
+        
+        // Habilitar botón si al menos un campo tiene contenido
+        const hasContent = numerodoc || nombres || apellidos || telefono || direccion || 
+                          idcargo || nombreusuario || email || password;
+        
+        $('#btnSubmitNuevo').prop('disabled', !hasContent);
+    }
+    
     // Funciones para manejar el estado del botón
     function setButtonLoading($button, originalText) {
-        // Solo poner en "procesando" si el formulario es válido
+        // Deshabilitar botón pero mantener el texto original
         $button.prop('disabled', true);
         $button.data('original-text', originalText);
-        $button.html('<i class="fas fa-spinner fa-spin me-1"></i> En proceso...');
+        // NO cambiar el texto, mantener el original
         
         // Timeout de seguridad: resetear botón después de 30 segundos
         setTimeout(() => {
@@ -495,21 +530,27 @@
     }
     
     function resetButton($button, originalText) {
-        $button.prop('disabled', false);
-        // Restaurar el texto original
-        $button.html(originalText);
+        console.log('resetButton llamado - Estado actual:', $button.prop('disabled'));
+        // El texto ya está correcto, solo verificar el estado de habilitación
+        
+        // Verificar si debe estar habilitado según el contenido del formulario
+        const buttonId = $button.attr('id');
+        if (buttonId === 'btnSubmitExistente') {
+            checkFormExistenteFields();
+        } else if (buttonId === 'btnSubmitNuevo') {
+            checkFormNuevoFields();
+        }
+        
+        console.log('resetButton completado - Nuevo estado:', $button.prop('disabled'));
     }
     
     // Función de seguridad para resetear botones en caso de error
     function resetAllButtons() {
-        $('#formExistente button[type="submit"]').each(function() {
-            $(this).prop('disabled', false);
-            $(this).html('<i class="fas fa-save me-1"></i> Crear Credenciales');
-        });
-        $('#formNuevo button[type="submit"]').each(function() {
-            $(this).prop('disabled', false);
-            $(this).html('<i class="fas fa-save me-1"></i> Crear Personal y Credenciales');
-        });
+        console.log('resetAllButtons llamado');
+        
+        // Solo verificar estado según contenido (el texto ya está correcto)
+        checkFormExistenteFields();
+        checkFormNuevoFields();
     }
     
     // Validar fortaleza de contraseña y actualizar requisitos visualmente
@@ -654,8 +695,7 @@
         if (!this.checkValidity()) {
             e.stopPropagation();
             this.classList.add('was-validated');
-            // El botón mantiene su texto original
-            resetButton($submitButton, originalButtonText);
+            // NO resetear botón aquí porque nunca se desactivó
             showAlert('error', 'Error de validación', 'Por favor complete todos los campos correctamente.');
             return;
         }
@@ -671,7 +711,7 @@
         if (password !== confirmPassword) {
             $(confirmField).get(0).setCustomValidity('Las contraseñas no coinciden');
             $(confirmField).get(0).reportValidity();
-            resetButton($submitButton, originalButtonText);
+            // NO resetear botón aquí porque nunca se desactivó
             showAlert('error', 'Contraseñas no coinciden', 'Las contraseñas ingresadas no coinciden.');
             return;
         } else {
@@ -683,7 +723,7 @@
         if (password.length < 8 || strength.score < 3) {
             $(passwordField).get(0).setCustomValidity('La contraseña no cumple con los requisitos de seguridad');
             $(passwordField).get(0).reportValidity();
-            resetButton($submitButton, originalButtonText);
+            // NO resetear botón aquí porque nunca se desactivó
             showAlert('error', 'Contraseña débil', 'La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula, un número y un símbolo.');
             return;
         }
@@ -730,7 +770,11 @@
             processData: false,
             contentType: false,
             success: function(response) {
+                console.log('AJAX success - Response:', response);
                 Swal.close();
+                
+                // IMPORTANTE: Resetear botón INMEDIATAMENTE
+                console.log('Reseteando botón después de AJAX success');
                 resetButton($submitButton, originalButtonText);
                 
                 if (response.success) {
@@ -743,22 +787,40 @@
                         window.location.href = '<?= base_url('usuarios') ?>';
                     }, 2000);
                 } else {
+                    console.log('Error del servidor - Reseteando botón');
                     // Mostrar error pero mantener los datos del formulario
                     showAlert('error', 'Error de validación', response.message || 'Por favor revise los campos marcados en rojo.');
+                    
+                    // CRÍTICO: Verificar estado del botón según contenido del formulario
+                    resetButton($submitButton, originalButtonText);
+                    
                     // Función de seguridad adicional para errores del servidor
-                    setTimeout(() => resetAllButtons(), 100);
+                    setTimeout(() => {
+                        console.log('Timeout de seguridad - Reseteando todos los botones');
+                        resetAllButtons();
+                    }, 100);
+                    
                     if (response.errors) {
-                        console.error(response.errors);
+                        console.error('Errores de validación:', response.errors);
                         // Mostrar errores específicos en el formulario
                         mostrarErroresFormulario(response.errors, form);
                     }
                 }
             },
             error: function(xhr, status, error) {
+                console.error('AJAX error:', error);
                 Swal.close();
+                
+                // IMPORTANTE: Verificar estado del botón según contenido del formulario
+                console.log('Reseteando botón después de AJAX error');
                 resetButton($submitButton, originalButtonText);
+                
                 // Función de seguridad adicional
-                setTimeout(() => resetAllButtons(), 100);
+                setTimeout(() => {
+                    console.log('Timeout de seguridad - Reseteando todos los botones');
+                    resetAllButtons();
+                }, 100);
+                
                 showAlert('error', 'Error', 'Error en la solicitud: ' + error);
             }
         });
@@ -811,6 +873,19 @@
     
     // Inicializar ejemplos de documento
     updateDocumentExample();
+
+    // Listeners para habilitar/deshabilitar botones dinámicamente
+    $('#formExistente input, #formExistente select').on('input change', function() {
+        checkFormExistenteFields();
+    });
+    
+    $('#formNuevo input, #formNuevo select').on('input change', function() {
+        checkFormNuevoFields();
+    });
+    
+    // Verificar estado inicial al cargar
+    checkFormExistenteFields();
+    checkFormNuevoFields();
 
     // ==================== VALIDACIÓN AUTOMÁTICA DNI CON RENIEC ====================
     let dniValidationTimeout;

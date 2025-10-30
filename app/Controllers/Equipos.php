@@ -79,7 +79,7 @@ class Equipos extends BaseController
      * Método unificado para guardar/actualizar equipos
      * KISS: una sola función para ambas operaciones
      */
-    public function guardar(): \CodeIgniter\HTTP\RedirectResponse
+    public function guardar()
     {
         return $this->saveEquipo();
     }
@@ -88,7 +88,7 @@ class Equipos extends BaseController
      * Método unificado para guardar/actualizar equipos
      * KISS: una sola función para ambas operaciones
      */
-    public function actualizar(): \CodeIgniter\HTTP\RedirectResponse
+    public function actualizar()
     {
         return $this->saveEquipo();
     }
@@ -96,8 +96,9 @@ class Equipos extends BaseController
     /**
      * Método unificado para guardar/actualizar equipos
      * KISS: una sola función para ambas operaciones
+     * Soporta tanto peticiones normales como AJAX
      */
-    public function saveEquipo(): \CodeIgniter\HTTP\RedirectResponse
+    public function saveEquipo()
     {
         // Validaciones básicas
         $rules = [
@@ -107,7 +108,17 @@ class Equipos extends BaseController
         ];
 
         if (!$this->validate($rules)) {
-            session()->setFlashdata('error', 'Por favor complete correctamente todos los campos.');
+            $error = 'Por favor complete correctamente todos los campos.';
+            
+            // Si es AJAX, devolver JSON
+            if ($this->request->isAJAX()) {
+                return $this->response->setJSON([
+                    'success' => false,
+                    'message' => $error
+                ]);
+            }
+            
+            session()->setFlashdata('error', $error);
             return redirect()->back()->withInput();
         }
 
@@ -128,7 +139,17 @@ class Equipos extends BaseController
         // Obtener información del servicio
         $servicio = $this->equipoModel->getServicioInfo($servicioId);
         if (!$servicio) {
-            session()->setFlashdata('error', 'Servicio no encontrado.');
+            $error = 'Servicio no encontrado.';
+            
+            // Si es AJAX, devolver JSON
+            if ($this->request->isAJAX()) {
+                return $this->response->setJSON([
+                    'success' => false,
+                    'message' => $error
+                ]);
+            }
+            
+            session()->setFlashdata('error', $error);
             return redirect()->to('equipos');
         }
 
@@ -141,8 +162,18 @@ class Equipos extends BaseController
         );
 
         if (!$validacion['valido']) {
-            foreach ($validacion['errores'] as $error) {
-                session()->setFlashdata('error', $error);
+            $error = implode(', ', $validacion['errores']);
+            
+            // Si es AJAX, devolver JSON
+            if ($this->request->isAJAX()) {
+                return $this->response->setJSON([
+                    'success' => false,
+                    'message' => $error
+                ]);
+            }
+            
+            foreach ($validacion['errores'] as $err) {
+                session()->setFlashdata('error', $err);
             }
             return redirect()->back()->withInput();
         }
@@ -167,17 +198,33 @@ class Equipos extends BaseController
                 $mensaje = $success ? 'Técnico asignado correctamente' : 'Error al asignar técnico';
             }
 
+            // Si es AJAX, devolver JSON
+            if ($this->request->isAJAX()) {
+                return $this->response->setJSON([
+                    'success' => $success,
+                    'message' => $mensaje,
+                    'redirect' => base_url('equipos')  // Siempre regresar al tablero general
+                ]);
+            }
+
             session()->setFlashdata($success ? 'success' : 'error', $mensaje);
             
         } catch (\Exception $e) {
             log_message('error', 'Error en saveEquipo: ' . $e->getMessage());
-            session()->setFlashdata('error', 'Error interno del sistema');
+            $error = 'Error interno del sistema';
+            
+            // Si es AJAX, devolver JSON
+            if ($this->request->isAJAX()) {
+                return $this->response->setJSON([
+                    'success' => false,
+                    'message' => $error
+                ]);
+            }
+            
+            session()->setFlashdata('error', $error);
         }
 
-        // Regresar al servicio específico si existe, sino a la vista general
-        if ($servicioId) {
-            return redirect()->to('equipos/porServicio/' . $servicioId);
-        }
+        // Siempre regresar al tablero general para mantener consistencia
         return redirect()->to('equipos');
     }
 
