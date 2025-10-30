@@ -1,6 +1,14 @@
-CREATE DATABASE ishume;
+-- CREAR BASE DE DATOS
+CREATE DATABASE IF NOT EXISTS ishume;
 USE ishume;
 
+-- ELIMINAR TABLAS EXISTENTES (si es necesario)
+DROP TABLE IF EXISTS equipos, controlpagos, entregables, servicioscontratados, 
+contratos, cotizaciones, usuarios, clientes, empresas, personas, 
+servicios, listacondiciones, tipospago, tipoeventos, tipocontrato, 
+condiciones, categorias, cargos;
+
+-- TABLAS MAESTRAS
 CREATE TABLE cargos (
     idcargo INT AUTO_INCREMENT PRIMARY KEY,
     cargo VARCHAR(100) NOT NULL
@@ -11,6 +19,28 @@ CREATE TABLE categorias (
     categoria VARCHAR(100) NOT NULL
 );
 
+CREATE TABLE condiciones (
+    idcondicion INT AUTO_INCREMENT PRIMARY KEY,
+    condicion VARCHAR(100) NOT NULL
+);
+
+CREATE TABLE tipocontrato (
+    idtipocontrato INT AUTO_INCREMENT PRIMARY KEY,
+    tipocontrato VARCHAR(100) NOT NULL,
+    vigenciadias INT
+);
+
+CREATE TABLE tipoeventos (
+    idtipoevento INT AUTO_INCREMENT PRIMARY KEY,
+    evento VARCHAR(100) NOT NULL
+);
+
+CREATE TABLE tipospago (
+    idtipopago INT AUTO_INCREMENT PRIMARY KEY,
+    tipopago VARCHAR(100) NOT NULL
+);
+
+-- TABLAS PRINCIPALES
 CREATE TABLE personas (
     idpersona       INT AUTO_INCREMENT PRIMARY KEY,
     apellidos       VARCHAR(100) NOT NULL,
@@ -39,27 +69,6 @@ CREATE TABLE clientes (
     CONSTRAINT fk_cliente_empresa FOREIGN KEY (idempresa) REFERENCES empresas(idempresa)
 );
 
-CREATE TABLE condiciones (
-    idcondicion INT AUTO_INCREMENT PRIMARY KEY,
-    condicion VARCHAR(100) NOT NULL
-);
-
-CREATE TABLE tipocontrato (
-    idtipocontrato INT AUTO_INCREMENT PRIMARY KEY,
-    tipocontrato VARCHAR(100) NOT NULL,
-    vigenciadias INT
-);
-
-CREATE TABLE tipoeventos (
-    idtipoevento INT AUTO_INCREMENT PRIMARY KEY,
-    evento VARCHAR(100) NOT NULL
-);
-
-CREATE TABLE tipospago (
-    idtipopago INT AUTO_INCREMENT PRIMARY KEY,
-    tipopago VARCHAR(100) NOT NULL
-);
-
 CREATE TABLE usuarios (
     idusuario INT AUTO_INCREMENT PRIMARY KEY,
     idpersona INT,
@@ -72,6 +81,15 @@ CREATE TABLE usuarios (
     password_hash VARCHAR(255),
     CONSTRAINT fk_usuario_persona FOREIGN KEY (idpersona) REFERENCES personas(idpersona),
     CONSTRAINT fk_usuario_cargo FOREIGN KEY (idcargo) REFERENCES cargos(idcargo)
+);
+
+CREATE TABLE servicios (
+    idservicio INT AUTO_INCREMENT PRIMARY KEY,
+    servicio VARCHAR(100) NOT NULL,
+    descripcion VARCHAR(200),
+    precioregular DECIMAL(10,2),
+    idcategoria INT,
+    CONSTRAINT fk_servicio_categoria FOREIGN KEY (idcategoria) REFERENCES categorias(idcategoria)
 );
 
 CREATE TABLE cotizaciones (
@@ -97,6 +115,18 @@ CREATE TABLE contratos (
     CONSTRAINT fk_contrato_cliente FOREIGN KEY (idcliente) REFERENCES clientes(idcliente)
 );
 
+CREATE TABLE servicioscontratados (
+    idserviciocontratado INT AUTO_INCREMENT PRIMARY KEY,
+    idcotizacion INT,
+    idservicio INT,
+    cantidad INT,
+    precio DECIMAL(10,2),
+    fechahoraservicio DATETIME,
+    direccion VARCHAR(150),
+    CONSTRAINT fk_servcontratado_cotizacion FOREIGN KEY (idcotizacion) REFERENCES cotizaciones(idcotizacion),
+    CONSTRAINT fk_servcontratado_servicio FOREIGN KEY (idservicio) REFERENCES servicios(idservicio)
+);
+
 CREATE TABLE controlpagos (
     idpagos INT AUTO_INCREMENT PRIMARY KEY,
     idcontrato INT,
@@ -111,35 +141,6 @@ CREATE TABLE controlpagos (
     CONSTRAINT fk_pago_contrato FOREIGN KEY (idcontrato) REFERENCES contratos(idcontrato),
     CONSTRAINT fk_pago_tipopago FOREIGN KEY (idtipopago) REFERENCES tipospago(idtipopago),
     CONSTRAINT fk_pago_usuario FOREIGN KEY (idusuario) REFERENCES usuarios(idusuario)
-);
-
-CREATE TABLE listacondiciones (
-    idlista INT AUTO_INCREMENT PRIMARY KEY,
-    idcondicion INT,
-    idtipocontrato INT,
-    CONSTRAINT fk_listacondicion_condicion FOREIGN KEY (idcondicion) REFERENCES condiciones(idcondicion),
-    CONSTRAINT fk_listacondicion_tipocontrato FOREIGN KEY (idtipocontrato) REFERENCES tipocontrato(idtipocontrato)
-);
-
-CREATE TABLE servicios (
-    idservicio INT AUTO_INCREMENT PRIMARY KEY,
-    servicio VARCHAR(100) NOT NULL,
-    descripcion VARCHAR(200),
-    precioregular DECIMAL(10,2),
-    idcategoria INT,
-    CONSTRAINT fk_servicio_categoria FOREIGN KEY (idcategoria) REFERENCES categorias(idcategoria)
-);
-
-CREATE TABLE servicioscontratados (
-    idserviciocontratado INT AUTO_INCREMENT PRIMARY KEY,
-    idcotizacion INT,
-    idservicio INT,
-    cantidad INT,
-    precio DECIMAL(10,2),
-    fechahoraservicio DATETIME,
-    direccion VARCHAR(150),
-    CONSTRAINT fk_servcontratado_cotizacion FOREIGN KEY (idcotizacion) REFERENCES cotizaciones(idcotizacion),
-    CONSTRAINT fk_servcontratado_servicio FOREIGN KEY (idservicio) REFERENCES servicios(idservicio)
 );
 
 CREATE TABLE entregables (
@@ -166,15 +167,25 @@ CREATE TABLE equipos (
     CONSTRAINT fk_equipo_usuario FOREIGN KEY (idusuario) REFERENCES usuarios(idusuario)
 );
 
--- DATOS DE PRUEBA CORREGIDOS Y CONSISTENTES
+CREATE TABLE listacondiciones (
+    idlista INT AUTO_INCREMENT PRIMARY KEY,
+    idcondicion INT,
+    idtipocontrato INT,
+    CONSTRAINT fk_listacondicion_condicion FOREIGN KEY (idcondicion) REFERENCES condiciones(idcondicion),
+    CONSTRAINT fk_listacondicion_tipocontrato FOREIGN KEY (idtipocontrato) REFERENCES tipocontrato(idtipocontrato)
+);
+
+-- =============================================================================
+-- INSERCIÓN DE DATOS EN ORDEN CORRECTO
+-- =============================================================================
 
 -- 1. DATOS BÁSICOS (Catálogos)
 INSERT INTO cargos (cargo) VALUES 
-('Gerente de Proyectos'),
-('Coordinador de Eventos'),
-('Técnico en Audio'),
-('Fotógrafo'),
-('Operador de Equipos');
+('Gerente/a de Proyectos'),
+('Coordinador/a de Eventos'),
+('Técnico/a en Audio'),
+('Fotógrafo/a'),
+('Operador/a de Equipos');
 
 INSERT INTO categorias (categoria) VALUES 
 ('Audio y Sonido'),
@@ -212,104 +223,305 @@ INSERT INTO tipospago (tipopago) VALUES
 
 -- 2. PERSONAS Y EMPRESAS
 INSERT INTO personas (apellidos, nombres, tipodoc, numerodoc, telprincipal, telalternativo, direccion, referencia) VALUES 
-('García López', 'Carlos Eduardo', 'DNI', '12345678', '987654321', '945123456', 'Av. Los Álamos 123, San Isidro', 'Cerca al parque central'),
-('Rodríguez Silva', 'María Carmen', 'DNI', '87654321', '976543210', NULL, 'Jr. Las Flores 456, Miraflores', 'Frente a la iglesia San Antonio'),
-('Mendoza Torres', 'José Antonio', 'DNI', '11223344', '965432109', '912345678', 'Calle Los Pinos 789, Surco', 'A 2 cuadras del mercado central'),
-('Fernández Ruiz', 'Ana Lucía', 'DNI', '55667788', '954321098', NULL, 'Av. Industrial 321, Ate', 'Edificio azul, tercer piso'),
-('Vásquez Castro', 'Luis Miguel', 'DNI', '99887766', '943210987', '987123456', 'Urbanización El Sol 654, La Molina', 'Casa esquina con jardín'),
-('Morales Díaz', 'Patricia Isabel', 'DNI', '44556677', '932109876', NULL, 'Calle Real 987, Pueblo Libre', 'Portón verde, casa colonial'),
-('Jiménez Vargas', 'Ricardo Andrés', 'DNI', '33445566', '921098765', '956789012', 'Jr. Comercio 147, Breña', 'Al costado del Banco de Crédito'),
-('Smith Johnson', 'Robert William', 'Pasaporte', 'AB1234567', '998877665', NULL, 'Calle Extranjeros 555, San Borja', 'Condominio Las Torres, Dpto 301'),
-('González Pérez', 'Carmen Rosa', 'DNI', '77889900', '987123789', '945678123', 'Av. Primavera 888, Surco', 'Cerca al centro comercial');
+-- Clientes (DNIs únicos)
+('Quispe Mamani', 'Rosa María', 'DNI', '72458961', '987456123', '945123789', 'Jr. Túpac Amaru 456, Villa El Salvador', 'A una cuadra del mercado central'),
+('Torres Paucar', 'Carlos Alberto', 'DNI', '68542191', '965874123', NULL, 'Av. Universitaria 1890, Los Olivos', 'Conjunto residencial Las Palmeras'),
+('Tasayco Huamán', 'José Luis', 'DNI', '71236581', '954789632', '912456987', 'Calle Los Eucaliptos 234, San Juan de Lurigancho', 'Frente al parque infantil'),
+('Munaico Flores', 'Ana Patricia', 'DNI', '69874521', '978563214', NULL, 'Av. Proceres 567, San Juan de Miraflores', 'Edificio azul, departamento 302'),
+('Chávez Quispe', 'María Elena', 'DNI', '74125891', '932147856', '987654123', 'Jr. Las Magnolias 890, Ate', 'Casa de dos pisos, portón marrón'),
+('Ramírez Soto', 'Juan Carlos', 'DNI', '70589631', '921456789', NULL, 'Av. La Marina 2345, Pueblo Libre', 'Al costado del supermercado Metro'),
+('Vásquez García', 'Lucía Mercedes', 'DNI', '73698741', '965123478', '945789632', 'Calle San Martín 178, Lince', 'Segundo piso, timbre A'),
+('Flores Mendoza', 'Roberto Antonio', 'DNI', '67452181', '978456321', NULL, 'Av. Aviación 4567, San Borja', 'Condominio Los Sauces'),
+('Gutiérrez Silva', 'Carmen Isabel', 'DNI', '75896321', '954123789', '912789456', 'Jr. Independencia 789, Breña', 'Casa colonial color crema'),
+('Castillo Díaz', 'Miguel Ángel', 'DNI', '68741251', '987321654', NULL, 'Av. Javier Prado 3890, San Isidro', 'Torre empresarial, piso 8'),
+('Paredes Rojas', 'Sofía Alejandra', 'DNI', '72589632', '921789456', '965123789', 'Jr. Libertad 234, Miraflores', 'Edificio moderno, dpto 501'),
+('Ccama Quispe', 'Pedro Pablo', 'DNI', '70123451', '978456123', NULL, 'Av. Benavides 2345, Surco', 'Centro comercial anexo'),
+('Huamán Torres', 'Valeria Nicole', 'DNI', '73456781', '954321789', '912456123', 'Calle Real 567, Barranco', 'Casa esquina con jardín'),
+('Poma Condori', 'Diego Alejandro', 'DNI', '68965431', '965789321', NULL, 'Av. Universitaria 5678, Comas', 'Conjunto Los Pinos'),
+('Cruz Ramírez', 'Camila Fernanda', 'DNI', '74789121', '932789456', '987456321', 'Jr. Ucayali 345, Cercado de Lima', 'Local comercial anexo'),
+('Apaza Mamani', 'Jorge Luis', 'DNI', '71963251', '921456321', NULL, 'Av. Colonial 4567, Callao', 'Frente al hospital'),
+('Yupanqui Rojas', 'Andrea Beatriz', 'DNI', '69852141', '954789632', '976543210', 'Calle Los Jazmines 890, Surquillo', 'Casa rosada con rejas negras'),
+('Condori Quispe', 'Fernando José', 'DNI', '72147891', '987654789', NULL, 'Av. Angamos 1234, Miraflores', 'Edificio comercial, piso 3'),
+('Mamani Ccama', 'Gabriela Rosa', 'DNI', '70369851', '965478912', '932147896', 'Jr. Ayacucho 567, Cercado de Lima', 'Al lado de la farmacia'),
+('Paucar Torres', 'Ricardo Martín', 'DNI', '73852141', '921789654', NULL, 'Av. Grau 2890, Barranco', 'Casa antigua con balcón'),
+
+-- Personal de la empresa (DNIs únicos)
+('Admin', 'Sistema', 'DNI', '00000001', '999999999', NULL, 'Oficina Central ISHUME', 'Administrador del sistema'),
+('Salazar Torres', 'Gabriela Andrea', 'DNI', '71452361', '932456789', '987123456', 'Calle Los Rosales 456, Surco', 'Urbanización Santa Patricia'),
+('Rojas Pérez', 'Raúl Fernando', 'DNI', '69874561', '945789123', NULL, 'Av. El Sol 890, La Molina', 'Conjunto Las Lomas, casa 12'),
+('Mendoza Quispe', 'Daniela Sofía', 'DNI', '72589633', '921789456', '965123789', 'Jr. Libertad 234, Miraflores', 'Edificio moderno, dpto 501'),
+('Vargas De La Cruz', 'Luis Enrique', 'DNI', '70123452', '978456123', NULL, 'Av. Benavides 2345, Surco', 'Centro comercial anexo'),
+('Huamán Flores', 'Valeria Nicole', 'DNI', '73456782', '954321789', '912456123', 'Calle Real 567, Barranco', 'Casa esquina con jardín'),
+('Poma Tasayco', 'Diego Alejandro', 'DNI', '68965432', '965789321', NULL, 'Av. Universitaria 5678, Comas', 'Conjunto Los Pinos'),
+('Cruz Munaico', 'Camila Fernanda', 'DNI', '74789122', '932789456', '987456321', 'Jr. Ucayali 345, Cercado de Lima', 'Local comercial anexo'),
+('Soto Gutiérrez', 'Andrés Sebastián', 'DNI', '71963252', '921456321', NULL, 'Av. Colonial 4567, Callao', 'Frente al hospital');
 
 INSERT INTO empresas (ruc, razonsocial, direccion, telefono) VALUES 
-('20123456789', 'Eventos Premium SAC', 'Av. Empresarial 1001, San Isidro', '014567890'),
-('20987654321', 'Corporativo Los Andes EIRL', 'Jr. Negocios 202, Miraflores', '014445556'),
-('20111222333', 'Celebraciones Especiales SRL', 'Calle Eventos 303, Surco', '013334445'),
-('20555666777', 'Hoteles & Convenciones SA', 'Av. Javier Prado 2500, San Borja', '012223334');
+('20567894123', 'Eventos Corporativos del Perú SAC', 'Av. República de Panamá 3456, San Isidro', '014567890'),
+('20741258963', 'Celebraciones Especiales EIRL', 'Jr. Las Camelias 789, San Borja', '013456789'),
+('20896325147', 'Grupo Hotelero Los Andes SA', 'Av. Javier Prado Este 2890, Surco', '012345678'),
+('20369741258', 'Soluciones Empresariales Premium SRL', 'Calle Los Negocios 567, Miraflores', '019876543'),
+('20147852369', 'Banquetes y Eventos Gourmet SAC', 'Av. Primavera 1234, Surco', '018765432'),
+('20852963741', 'Corporación de Eventos Nacionales SA', 'Jr. Comercio 456, Lima', '017654321'),
+('20456789123', 'Producciones Audiovisuales Lima EIRL', 'Av. Arequipa 2567, Lince', '014123456'),
+('20789456123', 'Catering & Banquetes del Sur SAC', 'Calle Los Chefs 890, Surquillo', '012789456');
 
 -- 3. CLIENTES
 INSERT INTO clientes (idpersona, idempresa) VALUES 
-(1, NULL),  -- Carlos García (persona)
-(2, NULL),  -- María Rodríguez (persona)
-(NULL, 1),  -- Eventos Premium SAC
-(3, NULL),  -- José Mendoza (persona)
-(NULL, 2),  -- Corporativo Los Andes EIRL
-(4, NULL),  -- Ana Fernández (persona)
-(NULL, 3),  -- Celebraciones Especiales
-(8, NULL);  -- Robert Smith (extranjero)
+(1, NULL), (2, NULL), (NULL, 1), (3, NULL), (4, NULL),
+(NULL, 2), (5, NULL), (6, NULL), (NULL, 3), (7, NULL),
+(NULL, 4), (8, NULL), (9, NULL), (NULL, 5), (10, NULL),
+(11, NULL), (12, NULL), (13, NULL), (NULL, 6), (14, NULL),
+(15, NULL), (16, NULL), (NULL, 7), (17, NULL), (18, NULL),
+(19, NULL), (NULL, 8);
 
 -- 4. USUARIOS
-INSERT INTO usuarios (idpersona, idcargo, nombreusuario, claveacceso, estado) VALUES 
-(5, 1, 'lvasquez', '1Vasque3', 1),
-(6, 2, 'pmorales', 'pM0rales', 1),
-(7, 3, 'rjimenez', '4J1menez', 1),
-(9, 4, 'cgonzalez', '3Gon3ale3z', 1);
-
 INSERT INTO usuarios (idpersona, idcargo, nombreusuario, claveacceso, tipo_usuario, email, password_hash, estado) VALUES 
-(1, 1, 'admin', 'admin123', 'admin', 'admin@ishume.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 1);
+(20, 1, 'admin', 'admin123', 'admin', 'admin@ishume.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 1);
+
+INSERT INTO usuarios (idpersona, idcargo, nombreusuario, claveacceso, tipo_usuario, email, estado) VALUES 
+(21, 2, 'gsalazar', 'Gaby2025', 'trabajador', 'gsalazar@ishume.com', 1),
+(22, 3, 'rrojas', 'Raul2025', 'trabajador', 'rrojas@ishume.com', 1),
+(23, 4, 'dmendoza', 'Dani2025', 'trabajador', 'dmendoza@ishume.com', 1),
+(24, 5, 'lvargas', 'Luis2025', 'trabajador', 'lvargas@ishume.com', 1),
+(25, 2, 'vhuaman', 'Vale2025', 'trabajador', 'vhuaman@ishume.com', 1),
+(26, 3, 'dpoma', 'Diego2025', 'trabajador', 'dpoma@ishume.com', 1),
+(27, 4, 'ccruz', 'Cami2025', 'trabajador', 'ccruz@ishume.com', 1),
+(28, 5, 'asoto', 'Andres2025', 'trabajador', 'asoto@ishume.com', 1);
 
 -- 5. SERVICIOS
 INSERT INTO servicios (servicio, descripcion, precioregular, idcategoria) VALUES 
-('Sonido para Bodas', 'Equipo completo de sonido para ceremonias y recepciones', 800.00, 1),
-('Fotografía de Eventos', 'Cobertura fotográfica completa del evento', 1200.00, 2),
-('Iluminación LED', 'Sistema de iluminación decorativa con luces LED', 600.00, 3),
-('Video en Vivo', 'Transmisión en vivo del evento', 1500.00, 2),
-('DJ Profesional', 'Servicio de DJ con música y animación', 400.00, 1),
-('Catering Premium', 'Servicio de alimentación para eventos', 25.00, 5),
-('Decoración Floral', 'Arreglos florales y decoración temática', 350.00, 4);
+-- QUINCEAÑERAS (Categoría 2: Fotografía y Video)
+('Sesión Pre-Quinceañera Creativa', 'Sesión fotográfica creativa previa al evento', 850.00, 2),
+('Cobertura Completa Quinceañera', 'Cobertura fotográfica y video del evento completo', 2200.00, 2),
+('Video Resumen Emotivo Quinceañera', 'Video editado con los mejores momentos del evento', 950.00, 2),
+('Álbum Personalizado Quinceañera', 'Álbum de lujo con las mejores fotografías', 680.00, 2),
+
+-- FOTOGRAFÍA PROFESIONAL (Categoría 2: Fotografía y Video)
+('Retratos Individuales y Grupales', 'Sesión de retratos profesionales en estudio o exteriores', 450.00, 2),
+('Fotografía de Producto y Publicitaria', 'Fotografía comercial para productos y publicidad', 750.00, 2),
+('Sesiones en Estudio y Exteriores', 'Sesión fotográfica personalizada en locación', 580.00, 2),
+('Retoque Digital Avanzado', 'Edición profesional y retoque de fotografías', 280.00, 2),
+
+-- BABY SHOWERS (Categoría 2: Fotografía y Video)
+('Fotografía Documental Baby Shower', 'Cobertura completa del evento tipo documental', 720.00, 2),
+('Sesión de Maternidad', 'Sesión fotográfica de maternidad (opcional)', 550.00, 2),
+('Video Resumen Baby Shower', 'Video editado con música del evento', 680.00, 2),
+('Diseño Recuerdos Digitales', 'Diseño de invitaciones y recuerdos digitales', 320.00, 4),
+
+-- BAUTIZOS (Categoría 2: Fotografía y Video)
+('Cobertura Ceremonia Bautizo', 'Fotografía de la ceremonia religiosa completa', 650.00, 2),
+('Fotografías Familiares Bautizo', 'Retratos familiares y grupales del evento', 480.00, 2),
+('Video Documental Bautizo', 'Video documental de la ceremonia y celebración', 850.00, 2),
+('Álbum Fotográfico Elegante Bautizo', 'Álbum de lujo con fotografías del bautizo', 580.00, 2),
+
+-- BODAS (Categoría 2: Fotografía y Video)
+('Sesiones Pre-Boda y Post-Boda', 'Sesiones fotográficas antes y después de la boda', 1200.00, 2),
+('Cobertura Completa Día D', 'Cobertura fotográfica y video del día de la boda', 3500.00, 2),
+('Video Highlights Boda', 'Video resumen de los mejores momentos', 1500.00, 2),
+('Película de Boda', 'Video cinematográfico completo de la boda', 2800.00, 2),
+('Entrega Digital y Física Lujo', 'Entrega de fotografías digitales y álbum físico premium', 950.00, 2),
+
+-- CELEBRACIONES MEMORABLES (Categoría 2: Fotografía y Video)
+('Cobertura Dinámica Evento', 'Fotografía dinámica de eventos sociales', 880.00, 2),
+('Fotografía Invitados y Momentos', 'Captura de invitados y momentos clave del evento', 720.00, 2),
+('Video Resumen Festivo', 'Video editado con los mejores momentos festivos', 950.00, 2),
+('Galería Online Privada', 'Galería digital privada para compartir fotografías', 280.00, 2),
+
+-- MAGIA INFANTIL - CUMPLEAÑOS (Categoría 2: Fotografía y Video / Categoría 4: Decoración)
+('Sesiones Temáticas Infantiles', 'Sesión fotográfica temática para niños', 520.00, 2),
+('Fotografía Cumpleaños Infantil', 'Cobertura completa de cumpleaños infantil', 680.00, 2),
+('Retratos Familiares con Niños', 'Sesión de retratos familiares con niños', 450.00, 2),
+('Edición Especializada Niños', 'Edición y retoque especializado para fotografías infantiles', 320.00, 2),
+
+-- SERVICIOS COMPLEMENTARIOS
+-- Audio y Sonido (Categoría 1)
+('Sonido Básico para Eventos', 'Sistema de audio compacto para eventos pequeños', 450.00, 1),
+('Sonido Premium para Bodas', 'Sistema de audio profesional completo', 1200.00, 1),
+('DJ Profesional', 'DJ con equipo completo y música variada', 650.00, 1),
+
+-- Iluminación (Categoría 3)
+('Iluminación LED Básica', 'Luces LED de colores para ambientación', 400.00, 3),
+('Iluminación Profesional', 'Sistema completo con moving heads y efectos', 950.00, 3),
+
+-- Decoración (Categoría 4)
+('Decoración Temática Evento', 'Ambientación completa según tema del evento', 1200.00, 4),
+('Backdrop Personalizado', 'Fondo decorativo personalizado con nombre', 380.00, 4),
+('Decoración Infantil Temática', 'Decoración especializada para eventos infantiles', 850.00, 4),
+
+-- Catering (Categoría 5)
+('Catering Cóctel', 'Servicio de piqueos y bebidas por persona', 35.00, 5),
+('Catering Almuerzo/Cena', 'Menú completo por persona', 65.00, 5),
+('Torta Personalizada', 'Torta temática según número de personas', 280.00, 5);
 
 -- 6. COTIZACIONES
 INSERT INTO cotizaciones (idcliente, idtipocontrato, idusuariocrea, fechacotizacion, fechaevento, idtipoevento) VALUES 
-(1, 1, 1, '2025-08-30', '2025-09-14', 1),  -- Boda Carlos García
-(2, 1, 2, '2025-08-29', '2025-09-10', 2),  -- Quinceañero María Rodríguez
-(3, 4, 1, '2025-08-25', '2025-09-28', 3),  -- Evento Corporativo Empresa
-(4, 1, 2, '2025-09-01', '2025-10-15', 1),  -- Boda José Mendoza
-(5, 3, 1, '2025-10-05', '2025-11-20', 4),  -- Conferencia Empresa
-(6, 1, 3, '2025-09-10', '2025-10-18', 1),  -- Boda Ana Fernández
-(8, 1, 4, '2025-10-12', '2025-11-22', 3);  -- Evento Robert Smith
+-- Noviembre 2025
+(1, 1, 2, '2025-10-30', '2025-11-15', 1),
+(2, 1, 2, '2025-10-30', '2025-11-08', 2),
+(3, 4, 1, '2025-10-31', '2025-11-20', 3),
+(4, 1, 2, '2025-11-01', '2025-11-22', 1),
+(6, 1, 2, '2025-11-02', '2025-11-25', 1),
+(7, 1, 6, '2025-11-03', '2025-11-28', 1),
+(8, 1, 6, '2025-11-04', '2025-11-30', 2),
+
+-- Diciembre 2025
+(9, 3, 1, '2025-11-05', '2025-12-05', 4),
+(10, 1, 2, '2025-11-06', '2025-12-07', 2),
+(11, 4, 1, '2025-11-07', '2025-12-10', 3),
+(12, 1, 6, '2025-11-08', '2025-12-12', 1),
+(13, 1, 2, '2025-11-10', '2025-12-14', 1),
+(15, 1, 6, '2025-11-12', '2025-12-18', 1),
+(16, 1, 2, '2025-11-15', '2025-12-20', 2),
+(17, 1, 1, '2025-11-18', '2025-12-27', 1),
+
+-- Enero 2026
+(18, 1, 2, '2025-12-01', '2026-01-10', 1),
+(19, 4, 1, '2025-12-05', '2026-01-15', 3),
+(20, 1, 6, '2025-12-08', '2026-01-20', 2),
+(21, 1, 2, '2025-12-10', '2026-01-25', 1);
 
 -- 7. CONTRATOS
 INSERT INTO contratos (idcotizacion, idcliente, autorizapublicacion) VALUES 
-(1, 1, 1),  -- Contrato boda Carlos
-(2, 2, 0),  -- Contrato quinceañero María
-(3, 3, 1),  -- Contrato evento corporativo
-(4, 4, 1),  -- Contrato boda José
-(5, 5, 0),  -- Contrato conferencia
-(6, 6, 1),  -- Contrato boda Ana
-(7, 8, 0);  -- Contrato evento Robert
+(1, 1, 1), (2, 2, 0), (3, 3, 1), (4, 4, 1), (5, 6, 0),
+(6, 7, 1), (7, 8, 1), (8, 9, 0), (9, 10, 1), (10, 11, 1),
+(11, 12, 0), (12, 13, 1), (13, 15, 1), (14, 16, 0), (15, 17, 1),
+(16, 18, 1), (17, 19, 0), (18, 20, 1), (19, 21, 1);
 
--- 8. SERVICIOS CONTRATADOS - DATOS CONSISTENTES
+-- 8. SERVICIOS CONTRATADOS
 INSERT INTO servicioscontratados (idcotizacion, idservicio, cantidad, precio, fechahoraservicio, direccion) VALUES 
--- Contrato 1 (Boda Carlos García) - TOTAL: 2800
-(1, 1, 1, 1600.00, '2025-11-08 15:00:00', 'Hacienda Los Olivos - Km 25 Panamericana Sur'),
-(1, 2, 1, 1200.00, '2025-11-08 14:00:00', 'Hacienda Los Olivos - Km 25 Panamericana Sur'),
+-- Cotización 1: Matrimonio Rosa Quispe (Nov 15)
+(1, 2, 1, 1200.00, '2025-11-15 15:00:00', 'Club Campestre La Pradera, Km 15 Carretera Central'),
+(1, 6, 1, 1800.00, '2025-11-15 14:00:00', 'Club Campestre La Pradera, Km 15 Carretera Central'),
+(1, 11, 1, 950.00, '2025-11-15 14:30:00', 'Club Campestre La Pradera, Km 15 Carretera Central'),
+(1, 14, 1, 1200.00, '2025-11-15 13:00:00', 'Club Campestre La Pradera, Km 15 Carretera Central'),
+(1, 18, 80, 2800.00, '2025-11-15 18:00:00', 'Club Campestre La Pradera, Km 15 Carretera Central'),
+(1, 22, 1, 650.00, '2025-11-15 20:00:00', 'Club Campestre La Pradera, Km 15 Carretera Central'),
 
--- Contrato 2 (Quinceañero María Rodríguez) - TOTAL: 1400
-(2, 1, 1, 800.00, '2025-12-05 19:00:00', 'Salón de Eventos El Dorado - Av. Principal 890, Chorrillos'),
-(2, 3, 1, 600.00, '2025-12-05 18:30:00', 'Salón de Eventos El Dorado - Av. Principal 890, Chorrillos'),
+-- Cotización 2: Quinceañero Carlos Torres (Nov 08)
+(2, 1, 1, 450.00, '2025-11-08 18:00:00', 'Salón de Eventos Villa Real, Av. Universitaria 2345, Los Olivos'),
+(2, 5, 1, 850.00, '2025-11-08 17:30:00', 'Salón de Eventos Villa Real, Av. Universitaria 2345, Los Olivos'),
+(2, 10, 1, 400.00, '2025-11-08 17:00:00', 'Salón de Eventos Villa Real, Av. Universitaria 2345, Los Olivos'),
+(2, 17, 50, 1750.00, '2025-11-08 19:30:00', 'Salón de Eventos Villa Real, Av. Universitaria 2345, Los Olivos'),
+(2, 22, 1, 650.00, '2025-11-08 20:00:00', 'Salón de Eventos Villa Real, Av. Universitaria 2345, Los Olivos'),
 
--- Contrato 3 (Evento Corporativo) - TOTAL: 2500
-(3, 4, 1, 1500.00, '2025-11-20 09:00:00', 'Hotel Business Center - Jr. Ejecutivo 445, San Isidro'),
-(3, 2, 1, 1000.00, '2025-11-20 08:30:00', 'Hotel Business Center - Jr. Ejecutivo 445, San Isidro'),
+-- Cotización 3: Evento Corporativo (Nov 20)
+(3, 3, 1, 800.00, '2025-11-20 09:00:00', 'Hotel Business Center, Jr. Los Ejecutivos 890, San Isidro'),
+(3, 8, 1, 1500.00, '2025-11-20 08:30:00', 'Hotel Business Center, Jr. Los Ejecutivos 890, San Isidro'),
+(3, 12, 1, 750.00, '2025-11-20 08:45:00', 'Hotel Business Center, Jr. Los Ejecutivos 890, San Isidro'),
+(3, 17, 100, 3500.00, '2025-11-20 12:00:00', 'Hotel Business Center, Jr. Los Ejecutivos 890, San Isidro'),
 
--- Contrato 4 (Boda José Mendoza) - TOTAL: 1200
-(4, 1, 1, 800.00, '2026-01-10 16:00:00', 'Club Campestre Las Flores - Cieneguilla'),
-(4, 5, 1, 400.00, '2026-01-10 20:00:00', 'Club Campestre Las Flores - Cieneguilla'),
+-- Cotización 4: Matrimonio José Tasayco (Nov 22)
+(4, 4, 1, 350.00, '2025-11-22 17:00:00', 'Calle Los Eucaliptos 234, San Juan de Lurigancho'),
+(4, 5, 1, 850.00, '2025-11-22 16:30:00', 'Calle Los Eucaliptos 234, San Juan de Lurigancho'),
+(4, 15, 1, 380.00, '2025-11-22 16:00:00', 'Calle Los Eucaliptos 234, San Juan de Lurigancho'),
+(4, 19, 1, 280.00, '2025-11-22 19:00:00', 'Calle Los Eucaliptos 234, San Juan de Lurigancho'),
 
--- Contrato 5 (Conferencia) - TOTAL: 4000
-(5, 2, 2, 2000.00, '2025-11-28 08:00:00', 'Centro de Convenciones Lima - Av. Javier Prado 2500, San Borja'),
+-- Cotización 5: Matrimonio Ana Munaico (Nov 25)
+(5, 1, 1, 450.00, '2025-11-25 11:00:00', 'Parroquia San Pedro, Av. Proceres 567, San Juan de Miraflores'),
+(5, 5, 1, 850.00, '2025-11-25 10:30:00', 'Parroquia San Pedro, Av. Proceres 567, San Juan de Miraflores'),
+(5, 13, 1, 550.00, '2025-11-25 10:00:00', 'Parroquia San Pedro, Av. Proceres 567, San Juan de Miraflores'),
+(5, 17, 40, 1400.00, '2025-11-25 13:00:00', 'Av. Proceres 567, San Juan de Miraflores'),
 
--- Contrato 6 (Boda Ana Fernández) - TOTAL: 1150
-(6, 1, 1, 800.00, '2025-12-14 17:00:00', 'Casa Hacienda San José - Pachacamac'),
-(6, 6, 1, 350.00, '2025-12-14 16:00:00', 'Casa Hacienda San José - Pachacamac'),
+-- Cotización 6: Matrimonio María Chávez (Nov 28)
+(6, 2, 1, 1200.00, '2025-11-28 16:00:00', 'Casa Hacienda San José, Pachacamac'),
+(6, 7, 1, 2200.00, '2025-11-28 15:30:00', 'Casa Hacienda San José, Pachacamac'),
+(6, 11, 1, 950.00, '2025-11-28 15:00:00', 'Casa Hacienda San José, Pachacamac'),
+(6, 18, 60, 2100.00, '2025-11-28 19:00:00', 'Casa Hacienda San José, Pachacamac'),
+(6, 22, 1, 650.00, '2025-11-28 21:00:00', 'Casa Hacienda San José, Pachacamac'),
 
--- Contrato 7 (Evento Robert Smith) - TOTAL: 2250
-(7, 2, 1, 1000.00, '2025-10-19 10:00:00', 'Salón Empresarial Pacífico - Av. La Marina 150, Miraflores'),
-(7, 1, 1, 850.00, '2025-10-20 16:30:00', 'Club de Campo La Pradera - Km 10 Carretera Central'),
-(7, 6, 1, 400.00, '2025-10-20 15:30:00', 'Club de Campo La Pradera - Km 10 Carretera Central');
+-- Cotización 7: Quinceañero Juan Ramírez (Nov 30)
+(7, 1, 1, 450.00, '2025-11-30 18:00:00', 'Salón Los Jardines, Av. La Marina 2345, Pueblo Libre'),
+(7, 5, 1, 850.00, '2025-11-30 17:30:00', 'Salón Los Jardines, Av. La Marina 2345, Pueblo Libre'),
+(7, 10, 1, 400.00, '2025-11-30 17:00:00', 'Salón Los Jardines, Av. La Marina 2345, Pueblo Libre'),
+(7, 17, 35, 1225.00, '2025-11-30 20:00:00', 'Salón Los Jardines, Av. La Marina 2345, Pueblo Libre'),
 
--- 9. CONTROL DE PAGOS - DATOS CONSISTENTES
+-- Cotización 8: Conferencia Empresa (Dic 05)
+(8, 3, 2, 1600.00, '2025-12-05 08:00:00', 'Centro de Convenciones Lima, Av. Javier Prado 2890'),
+(8, 8, 1, 1500.00, '2025-12-05 07:30:00', 'Centro de Convenciones Lima, Av. Javier Prado 2890'),
+(8, 12, 1, 750.00, '2025-12-05 07:45:00', 'Centro de Convenciones Lima, Av. Javier Prado 2890'),
+(8, 17, 150, 5250.00, '2025-12-05 12:00:00', 'Centro de Convenciones Lima, Av. Javier Prado 2890'),
+
+-- Cotización 9: Quinceañero Lucía Vásquez (Dic 07)
+(9, 2, 1, 1200.00, '2025-12-07 18:00:00', 'Club Social El Dorado, Av. Aviación 4567, San Borja'),
+(9, 6, 1, 1800.00, '2025-12-07 17:30:00', 'Club Social El Dorado, Av. Aviación 4567, San Borja'),
+(9, 11, 1, 950.00, '2025-12-07 17:00:00', 'Club Social El Dorado, Av. Aviación 4567, San Borja'),
+(9, 18, 70, 2450.00, '2025-12-07 20:00:00', 'Club Social El Dorado, Av. Aviación 4567, San Borja'),
+(9, 22, 1, 650.00, '2025-12-07 21:30:00', 'Club Social El Dorado, Av. Aviación 4567, San Borja'),
+
+-- Cotización 10: Evento Corporativo (Dic 10)
+(10, 3, 1, 800.00, '2025-12-10 19:00:00', 'Hotel Marriott, Malecón de la Reserva, Miraflores'),
+(10, 7, 1, 2200.00, '2025-12-10 18:30:00', 'Hotel Marriott, Malecón de la Reserva, Miraflores'),
+(10, 11, 1, 950.00, '2025-12-10 18:00:00', 'Hotel Marriott, Malecón de la Reserva, Miraflores'),
+(10, 15, 1, 380.00, '2025-12-10 17:30:00', 'Hotel Marriott, Malecón de la Reserva, Miraflores'),
+(10, 17, 80, 2800.00, '2025-12-10 21:00:00', 'Hotel Marriott, Malecón de la Reserva, Miraflores'),
+
+-- Cotización 11: Matrimonio Roberto Flores (Dic 12)
+(11, 1, 1, 450.00, '2025-12-12 11:00:00', 'Parroquia Virgen del Carmen, Av. Aviación 4567, San Borja'),
+(11, 5, 1, 850.00, '2025-12-12 10:30:00', 'Parroquia Virgen del Carmen, Av. Aviación 4567, San Borja'),
+(11, 13, 1, 550.00, '2025-12-12 10:00:00', 'Parroquia Virgen del Carmen, Av. Aviación 4567, San Borja'),
+(11, 17, 45, 1575.00, '2025-12-12 13:30:00', 'Av. Aviación 4567, San Borja'),
+(11, 23, 1, 400.00, '2025-12-12 14:00:00', 'Av. Aviación 4567, San Borja'),
+
+-- Cotización 12: Matrimonio Carmen Gutiérrez (Dic 14)
+(12, 2, 1, 1200.00, '2025-12-14 17:00:00', 'Country Club Lima, Av. Golf Los Incas, Surco'),
+(12, 6, 1, 1800.00, '2025-12-14 16:30:00', 'Country Club Lima, Av. Golf Los Incas, Surco'),
+(12, 9, 1, 600.00, '2025-12-14 16:00:00', 'Country Club Lima, Av. Golf Los Incas, Surco'),
+(12, 11, 1, 950.00, '2025-12-14 15:30:00', 'Country Club Lima, Av. Golf Los Incas, Surco'),
+(12, 14, 1, 1200.00, '2025-12-14 15:00:00', 'Country Club Lima, Av. Golf Los Incas, Surco'),
+(12, 18, 100, 3500.00, '2025-12-14 19:30:00', 'Country Club Lima, Av. Golf Los Incas, Surco'),
+(12, 22, 1, 650.00, '2025-12-14 22:00:00', 'Country Club Lima, Av. Golf Los Incas, Surco'),
+
+-- Cotización 13: Matrimonio Miguel Castillo (Dic 18)
+(13, 1, 1, 450.00, '2025-12-18 19:00:00', 'Restaurante Campestre Los Sauces, Cieneguilla'),
+(13, 5, 1, 850.00, '2025-12-18 18:30:00', 'Restaurante Campestre Los Sauces, Cieneguilla'),
+(13, 10, 1, 400.00, '2025-12-18 18:00:00', 'Restaurante Campestre Los Sauces, Cieneguilla'),
+(13, 18, 50, 1750.00, '2025-12-18 21:00:00', 'Restaurante Campestre Los Sauces, Cieneguilla'),
+(13, 22, 1, 650.00, '2025-12-18 22:00:00', 'Restaurante Campestre Los Sauces, Cieneguilla'),
+
+-- Cotización 14: Quinceañero Sofía Paredes (Dic 20)
+(14, 3, 1, 800.00, '2025-12-20 18:00:00', 'Salón de Eventos Miraflores, Jr. Libertad 234, Miraflores'),
+(14, 5, 1, 850.00, '2025-12-20 17:30:00', 'Salón de Eventos Miraflores, Jr. Libertad 234, Miraflores'),
+(14, 17, 60, 2100.00, '2025-12-20 19:30:00', 'Salón de Eventos Miraflores, Jr. Libertad 234, Miraflores'),
+(14, 19, 1, 280.00, '2025-12-20 20:30:00', 'Salón de Eventos Miraflores, Jr. Libertad 234, Miraflores'),
+
+-- Cotización 15: Matrimonio Pedro Ccama (Dic 27)
+(15, 2, 1, 1200.00, '2025-12-27 18:00:00', 'Hacienda Villa Verde, Lurín'),
+(15, 7, 1, 2200.00, '2025-12-27 17:30:00', 'Hacienda Villa Verde, Lurín'),
+(15, 11, 1, 950.00, '2025-12-27 17:00:00', 'Hacienda Villa Verde, Lurín'),
+(15, 14, 1, 1200.00, '2025-12-27 16:30:00', 'Hacienda Villa Verde, Lurín'),
+(15, 18, 90, 3150.00, '2025-12-27 20:00:00', 'Hacienda Villa Verde, Lurín'),
+(15, 24, 1, 1200.00, '2025-12-27 22:00:00', 'Hacienda Villa Verde, Lurín'),
+
+-- Cotización 16: Matrimonio Valeria Huamán (Ene 10, 2026)
+(16, 2, 1, 1200.00, '2026-01-10 16:00:00', 'Club Campestre Las Flores, Cieneguilla'),
+(16, 6, 1, 1800.00, '2026-01-10 15:30:00', 'Club Campestre Las Flores, Cieneguilla'),
+(16, 11, 1, 950.00, '2026-01-10 15:00:00', 'Club Campestre Las Flores, Cieneguilla'),
+(16, 18, 70, 2450.00, '2026-01-10 19:00:00', 'Club Campestre Las Flores, Cieneguilla'),
+(16, 22, 1, 650.00, '2026-01-10 21:00:00', 'Club Campestre Las Flores, Cieneguilla'),
+
+-- Cotización 17: Evento Corporativo (Ene 15, 2026)
+(17, 3, 1, 800.00, '2026-01-15 09:00:00', 'Centro Empresarial, Calle Los Negocios 567, Miraflores'),
+(17, 8, 1, 1500.00, '2026-01-15 08:30:00', 'Centro Empresarial, Calle Los Negocios 567, Miraflores'),
+(17, 12, 1, 750.00, '2026-01-15 08:45:00', 'Centro Empresarial, Calle Los Negocios 567, Miraflores'),
+(17, 17, 120, 4200.00, '2026-01-15 12:00:00', 'Centro Empresarial, Calle Los Negocios 567, Miraflores'),
+
+-- Cotización 18: Quinceañero Diego Poma (Ene 20, 2026)
+(18, 1, 1, 450.00, '2026-01-20 18:00:00', 'Salón de Eventos Comas, Av. Universitaria 5678, Comas'),
+(18, 5, 1, 850.00, '2026-01-20 17:30:00', 'Salón de Eventos Comas, Av. Universitaria 5678, Comas'),
+(18, 10, 1, 400.00, '2026-01-20 17:00:00', 'Salón de Eventos Comas, Av. Universitaria 5678, Comas'),
+(18, 17, 50, 1750.00, '2026-01-20 20:00:00', 'Salón de Eventos Comas, Av. Universitaria 5678, Comas'),
+(18, 23, 1, 400.00, '2026-01-20 19:00:00', 'Salón de Eventos Comas, Av. Universitaria 5678, Comas'),
+
+-- Cotización 19: Matrimonio Camila Cruz (Ene 25, 2026)
+(19, 2, 1, 1200.00, '2026-01-25 17:00:00', 'Casa Hacienda El Paraíso, Pachacamac'),
+(19, 7, 1, 2200.00, '2026-01-25 16:30:00', 'Casa Hacienda El Paraíso, Pachacamac'),
+(19, 11, 1, 950.00, '2026-01-25 16:00:00', 'Casa Hacienda El Paraíso, Pachacamac'),
+(19, 14, 1, 1200.00, '2026-01-25 15:30:00', 'Casa Hacienda El Paraíso, Pachacamac'),
+(19, 18, 85, 2975.00, '2026-01-25 19:30:00', 'Casa Hacienda El Paraíso, Pachacamac'),
+(19, 22, 1, 650.00, '2026-01-25 22:00:00', 'Casa Hacienda El Paraíso, Pachacamac');
+
+-- 9. CONTROL DE PAGOS
 INSERT INTO controlpagos (idcontrato, saldo, amortizacion, deuda, idtipopago, numtransaccion, fechahora, idusuario) VALUES 
 -- Contrato 1 (Boda Carlos - Total: 2800) - COMPLETAMENTE PAGADO
 (1, 2800.00, 1400.00, 1400.00, 2, 'TXN20240120001', '2025-01-20 10:30:00', 1),
@@ -372,46 +584,50 @@ INSERT INTO listacondiciones (idcondicion, idtipocontrato) VALUES
 (1, 3), (5, 3),
 (2, 2), (3, 2);
 
--- Pruebas
--- Ver los miembros del equipo y su cargo
-SELECT p.nombres, p.apellidos, p.numerodoc, c.cargo
-FROM usuarios u
-INNER JOIN personas p ON u.idpersona = p.idpersona
-INNER JOIN cargos c ON u.idcargo = c.idcargo
-WHERE u.estado = 1;
+-- =============================================================================
+-- CONSULTAS DE VERIFICACIÓN
+-- =============================================================================
 
--- Ver a quien esta asignado 
-SELECT p.nombres, p.apellidos, c.cargo, s.servicio, eq.descripcion, eq.estadoservicio
-FROM equipos eq
-INNER JOIN usuarios us ON eq.idusuario = us.idusuario
-INNER JOIN personas p ON us.idpersona = p.idpersona
-INNER JOIN cargos c ON us.idcargo = c.idcargo
-INNER JOIN servicioscontratados sc ON eq.idserviciocontratado = sc.idserviciocontratado
-INNER JOIN servicios s ON sc.idservicio = s.idservicio
-WHERE sc.idcotizacion = 2;
+-- Verificar que no hay DNIs duplicados
+SELECT 'Verificación de DNIs duplicados' as verificación;
+SELECT numerodoc, COUNT(*) as cantidad
+FROM personas 
+GROUP BY numerodoc 
+HAVING COUNT(*) > 1;
 
+-- Verificar conteo de registros
+SELECT 'Conteo de registros por tabla' as verificación;
+SELECT 'Personas' as tabla, COUNT(*) as total FROM personas
+UNION ALL SELECT 'Clientes', COUNT(*) FROM clientes
+UNION ALL SELECT 'Usuarios', COUNT(*) FROM usuarios
+UNION ALL SELECT 'Cotizaciones', COUNT(*) FROM cotizaciones
+UNION ALL SELECT 'Contratos', COUNT(*) FROM contratos
+UNION ALL SELECT 'ServiciosContratados', COUNT(*) FROM servicioscontratados
+UNION ALL SELECT 'ControlPagos', COUNT(*) FROM controlpagos
+UNION ALL SELECT 'Equipos', COUNT(*) FROM equipos;
 
---
-SELECT p.nombres, p.apellidos, s.servicio, sc.fechahoraservicio, co.fechaevento
-FROM equipos eq
-INNER JOIN servicioscontratados sc ON eq.idserviciocontratado = sc.idserviciocontratado
-INNER JOIN servicios s ON sc.idservicio = s.idservicio
-INNER JOIN cotizaciones co ON sc.idcotizacion = co.idcotizacion
-INNER JOIN usuarios us ON eq.idusuario = us.idusuario
-INNER JOIN personas p ON us.idpersona = p.idpersona
-WHERE us.idusuario = 4
-AND sc.fechahoraservicio BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL 7 DAY);
-
-
-SELECT 
-    u.nombreusuario,
-    u.email,
-    u.tipo_usuario,
-    CONCAT(p.nombres, ' ', p.apellidos) as nombre_completo,
-    c.cargo
+-- Consulta de ejemplo: Usuarios y sus cargos
+SELECT 'Usuarios del sistema' as consulta;
+SELECT u.nombreusuario, u.email, u.tipo_usuario, 
+       CONCAT(p.nombres, ' ', p.apellidos) as nombre_completo,
+       c.cargo
 FROM usuarios u
 JOIN personas p ON u.idpersona = p.idpersona
 JOIN cargos c ON u.idcargo = c.idcargo
 WHERE u.estado = 1;
 
-SELECT * FROM usuarios;
+-- Consulta de ejemplo: Próximos eventos
+SELECT 'Próximos eventos' as consulta;
+SELECT c.idcotizacion, te.evento, c.fechaevento,
+       CONCAT(per.nombres, ' ', per.apellidos) as cliente_persona,
+       emp.razonsocial as cliente_empresa
+FROM cotizaciones c
+LEFT JOIN clientes cl ON c.idcliente = cl.idcliente
+LEFT JOIN personas per ON cl.idpersona = per.idpersona
+LEFT JOIN empresas emp ON cl.idempresa = emp.idempresa
+JOIN tipoeventos te ON c.idtipoevento = te.idtipoevento
+WHERE c.fechaevento >= CURDATE()
+ORDER BY c.fechaevento ASC
+LIMIT 10;
+
+SELECT 'Base de datos ISHUME creada y poblada exitosamente!' as mensaje_final;
