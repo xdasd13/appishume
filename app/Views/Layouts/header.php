@@ -28,7 +28,7 @@
   <script src="<?= base_url() . 'assets/js/plugin/webfont/webfont.min.js' ?>"></script>
   <script>
     WebFont.load({
-      google: { families: ["Public Sans:300,400,500,600,700"] },
+      google: { families: ["Public Sans:300,400,500,600,700", "Poppins:300,400,500,600,700,800"] },
       custom: {
         families: [
           "Font Awesome 5 Solid",
@@ -49,6 +49,7 @@
   <link rel="stylesheet" href="<?= base_url() . '/assets/css/plugins.min.css' ?>" />
   <link rel="stylesheet" href="<?= base_url() . '/assets/css/kaiadmin.min.css' ?>" />
   <link rel="stylesheet" href="<?= base_url() . 'assets/css/demo.css' ?>" />
+  <link rel="stylesheet" href="<?= base_url('assets/css/sidebar-custom.css') ?>" />
   
   <!-- jQuery -->
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -62,10 +63,7 @@
       <div class="sidebar-logo">
         <!-- Logo Header -->
         <div class="logo-header" data-background-color="dark">
-          <a href="<?= base_url('/welcome') ?>" class="logo">
-            <img src="<?= base_url() . 'assets/img/kaiadmin/logo_light.svg' ?>" alt="IShume Logo" class="navbar-brand"
-              height="20" />
-          </a>
+          <h1>ISHUME</h1>
           <div class="nav-toggle">
             <button class="btn btn-toggle toggle-sidebar">
               <i class="gg-menu-right"></i>
@@ -409,10 +407,7 @@
         <div class="main-header-logo">
           <!-- Logo Header -->
           <div class="logo-header" data-background-color="dark">
-            <a href="<?= base_url('/welcome') ?>" class="logo">
-              <img src="<?= base_url() . 'assets/img/kaiadmin/logo_light.svg' ?>" alt="IShume Logo" class="navbar-brand"
-                height="20" />
-            </a>
+            <a href="<?= base_url('/welcome') ?>" class="logo"><span class="logo-text">ISHUME</span></a>
             <div class="nav-toggle">
               <button class="btn btn-toggle toggle-sidebar">
                 <i class="gg-menu-right"></i>

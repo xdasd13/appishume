@@ -1,0 +1,118 @@
+/* Sidebar Orange/White modern palette overrides */
+
+/* Base background and text */
+.sidebar[data-background-color="dark"] {
+  background: linear-gradient(180deg, #FF8A3D 0%, #FF6A00 100%) !important; /* warmer orange */
+  color: #fff;
+}
+
+/* Logo header inside sidebar */
+.logo-header[data-background-color="dark"] {
+  background: transparent !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+
+/* Text logo styling (ISHUME) */
+.logo-header .logo .logo-text {
+  font-family: 'Poppins', 'Public Sans', Arial, sans-serif;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  font-size: 20px;
+  line-height: 20px;
+  color: #fff;
+}
+.logo-header .logo:hover .logo-text,
+.logo-header .logo:focus .logo-text {
+  color: #fff;
+  text-decoration: none !important;
+}
+
+/* H1 text logo variant (used directly in header.php) */
+.logo-header h1 {
+  font-family: 'Poppins', 'Public Sans', Arial, sans-serif;
+  font-weight: 700;
+  font-size: 26px; /* larger since it replaces an image */
+  line-height: 1.1;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: #fff;
+  margin: 0;
+  padding: 0;
+}
+.logo-header h1 a { color: #fff; text-decoration: none !important; }
+.logo-header h1:hover,
+.logo-header h1:focus { color: #fff; }
+
+@media (max-width: 991.98px) {
+  .logo-header h1 { font-size: 20px; letter-spacing: 1px; }
+}
+.logo-header h1 a {
+  color: #fff;
+  text-decoration: none !important;
+}
+.logo-header h1:hover,
+.logo-header h1:focus {
+  color: #fff;
+}
+
+/* Nav links, icons and text */
+.sidebar[data-background-color="dark"] .nav > .nav-item a {
+  color: rgba(255, 255, 255, 0.92) !important;
+}
+.sidebar[data-background-color="dark"] .nav > .nav-item a i,
+.sidebar[data-background-color="dark"] .nav > .nav-item a .caret {
+  color: #fff !important;
+}
+
+/* Hover, focus, active states */
+.sidebar[data-background-color="dark"] .nav .nav-item > a:hover,
+.sidebar[data-background-color="dark"] .nav .nav-item > a:focus {
+  background: rgba(255, 255, 255, 0.18) !important;
+  color: #000 !important; /* text black on hover */
+  text-decoration: none !important; /* prevent blue underline */
+}
+.sidebar[data-background-color="dark"] .nav .nav-item > a:hover i,
+.sidebar[data-background-color="dark"] .nav .nav-item > a:hover .caret,
+.sidebar[data-background-color="dark"] .nav .nav-item > a:focus i,
+.sidebar[data-background-color="dark"] .nav .nav-item > a:focus .caret {
+  color: #000 !important; /* icons/caret black on hover */
+}
+.sidebar[data-background-color="dark"] .nav .nav-item.active > a,
+.sidebar[data-background-color="dark"] .nav .nav-item.active > a:hover,
+.sidebar[data-background-color="dark"] .nav .nav-item.active > a:focus,
+.sidebar[data-background-color="dark"] .nav .nav-item > a[aria-expanded="true"] {
+  background: rgba(255, 255, 255, 0.16) !important;
+  color: #fff !important;
+}
+
+/* Submenu text color */
+.sidebar[data-background-color="dark"] .nav .nav-collapse .sub-item {
+  color: rgba(255, 255, 255, 0.9) !important;
+}
+
+/* Section titles and mini icons */
+.sidebar[data-background-color="dark"] .nav-section .text-section {
+  color: rgba(255, 255, 255, 0.75) !important;
+}
+.sidebar[data-background-color="dark"] .sidebar-mini-icon i {
+  color: rgba(255, 255, 255, 0.8) !important;
+}
+
+/* Sidebar toggler icons inside sidebar */
+.sidebar[data-background-color="dark"] .btn.btn-toggle i {
+  color: #fff !important;
+}
+
+/* Scrollbar styling inside sidebar */
+.sidebar[data-background-color="dark"] .scrollbar-inner > .scroll-element .scroll-bar {
+  background-color: rgba(255, 255, 255, 0.35) !important;
+}
+.sidebar[data-background-color="dark"] .scrollbar-inner > .scroll-element.scroll-draggable .scroll-bar,
+.sidebar[data-background-color="dark"] .scrollbar-inner > .scroll-element:hover .scroll-bar {
+  background-color: rgba(255, 255, 255, 0.5) !important;
+}
+
+/* Badges near links (e.g., mensajes) */
+.sidebar[data-background-color="dark"] .badge {
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}

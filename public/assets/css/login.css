@@ -81,7 +81,7 @@ body {
 
 .form-control:focus {
     outline: none;
-    border-color: #1a2a6c;
+    border-color: #ff6600;
     background: white;
     box-shadow: 0 0 0 3px rgba(26, 42, 108, 0.1);
 }
@@ -96,7 +96,7 @@ body {
 }
 
 .form-control:focus + .input-icon {
-    color: #1a2a6c;
+    color: #ff9900;
 }
 
 .btn-login {
