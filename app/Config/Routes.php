@@ -172,6 +172,8 @@ $routes->group('inventario', function($routes) {
     $routes->get('editar/(:num)', [InventarioController::class, 'edit']);
     $routes->post('actualizar/(:num)', [InventarioController::class, 'update']);
     $routes->delete('eliminar/(:num)', [InventarioController::class, 'delete']);
+    // Fallback por entornos que bloquean DELETE: aceptar POST también
+    $routes->post('eliminar/(:num)', [InventarioController::class, 'delete']);
     $routes->get('buscar', [InventarioController::class, 'buscar']);
     $routes->get('ver/(:num)', [InventarioController::class, 'ver']);
     $routes->get('estadisticas', [InventarioController::class, 'estadisticas']);

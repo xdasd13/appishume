@@ -180,16 +180,26 @@ class InventarioController extends BaseController
                 return redirect()->to('/inventario');
             }
 
-            // Validar datos
-            if (!$this->validate($this->equipoModel->getValidationRules())) {
-                return redirect()->back()->withInput()->with('validation_errors', $this->validator->getErrors());
+            // Tomar solo campos enviados (parche para edición parcial)
+            $post = $this->request->getPost();
+            $allowed = $this->equipoModel->allowedFields;
+            $data = [];
+            foreach ($allowed as $field) {
+                if (array_key_exists($field, $post)) {
+                    $value = is_string($post[$field]) ? trim($post[$field]) : $post[$field];
+                    // Para edición parcial: ignorar vacíos en campos obligatorios; permitir vacíos en campos textuales opcionales
+                    $optionalEmptyAllowed = ['descripcion','caracteristica','imgEquipo'];
+                    if ($value === '' && !in_array($field, $optionalEmptyAllowed, true)) {
+                        continue; // no actualizar este campo si está vacío
+                    }
+                    $data[$field] = $value;
+                }
+            }
+            if (array_key_exists('cantDisponible', $data)) {
+                $data['cantDisponible'] = (int) $data['cantDisponible'];
             }
 
-            // Preparar datos
-            $data = $this->request->getPost();
-            $data['cantDisponible'] = (int)$data['cantDisponible'];
-
-            // Manejar imagen
+            // Manejar imagen (subida de archivo tiene prioridad)
             $imagen = $this->request->getFile('imagen_file');
             if ($imagen && $imagen->isValid() && !$imagen->hasMoved()) {
                 // Eliminar imagen anterior si existe
@@ -200,6 +210,24 @@ class InventarioController extends BaseController
                 $newName = $imagen->getRandomName();
                 $imagen->move(ROOTPATH . 'public/uploads/equipos/', $newName);
                 $data['imgEquipo'] = 'uploads/equipos/' . $newName;
+            }
+
+            // Validar solo las reglas de los campos que se actualizarán
+            $allRules = $this->equipoModel->getValidationRules();
+            $rulesSubset = [];
+            foreach (array_keys($data) as $field) {
+                if (isset($allRules[$field])) {
+                    $rulesSubset[$field] = $allRules[$field];
+                }
+            }
+            if (!empty($rulesSubset) && !$this->validate($rulesSubset)) {
+                return redirect()->back()->withInput()->with('validation_errors', $this->validator->getErrors());
+            }
+
+            // Si no hay cambios, redirigir sin error
+            if (empty($data)) {
+                session()->setFlashdata('success', 'No se detectaron cambios para actualizar.');
+                return redirect()->to('/inventario');
             }
 
             // Actualizar en base de datos

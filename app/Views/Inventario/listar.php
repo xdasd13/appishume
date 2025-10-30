@@ -353,6 +353,17 @@
 
 <!-- JavaScript Mejorado -->
 <script>
+// CSRF helper
+function getCookie(name) {
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return parts.pop().split(';').shift();
+    return '';
+}
+
+// CSRF constantes renderizadas por PHP
+const CSRF_TOKEN_NAME = '<?= csrf_token() ?>';
+const CSRF_TOKEN_HASH = '<?= csrf_hash() ?>';
 // Inicializar tooltips
 document.addEventListener('DOMContentLoaded', function() {
     var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
@@ -556,13 +567,23 @@ function eliminarEquipo(idEquipo) {
                 }
             });
 
+            const csrfCookie = getCookie('csrf_cookie_name');
+            const body = new URLSearchParams();
+            body.append(CSRF_TOKEN_NAME, CSRF_TOKEN_HASH);
+
             fetch(`/inventario/eliminar/${idEquipo}`, {
-                method: 'DELETE',
+                method: 'POST',
                 headers: {
-                    'X-Requested-With': 'XMLHttpRequest'
-                }
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRF-TOKEN': csrfCookie || CSRF_TOKEN_HASH,
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body
             })
-            .then(response => response.json())
+            .then(async response => {
+                const text = await response.text();
+                try { return JSON.parse(text); } catch { return { success: false, message: 'Error del servidor' }; }
+            })
             .then(data => {
                 if (data.success) {
                     Swal.fire({
@@ -619,4 +640,27 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('filtroMarca').addEventListener('change', aplicarFiltros);
     document.getElementById('filtroEstado').addEventListener('change', aplicarFiltros);
 });
+
+// Mensajes flash del servidor (éxito / error)
+<?php if (session()->getFlashdata('success')): ?>
+document.addEventListener('DOMContentLoaded', function() {
+    Swal.fire({
+        icon: 'success',
+        title: 'Éxito',
+        text: '<?= esc(session()->getFlashdata('success')) ?>',
+        confirmButtonColor: '#2c5aa0'
+    });
+});
+<?php endif; ?>
+
+<?php if (session()->getFlashdata('error')): ?>
+document.addEventListener('DOMContentLoaded', function() {
+    Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: '<?= esc(session()->getFlashdata('error')) ?>',
+        confirmButtonColor: '#2c5aa0'
+    });
+});
+<?php endif; ?>
 </script>

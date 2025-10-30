@@ -122,7 +122,7 @@
                                 <label for="idCateEquipo" class="form-label fw-semibold">
                                     Categoría <span class="text-danger">*</span>
                                 </label>
-                                <select class="form-select" id="idCateEquipo" name="idCateEquipo" required>
+                                <select class="form-select" id="idCateEquipo" name="idCateEquipo">
                                     <option value="">Seleccionar categoría...</option>
                                     <?php foreach ($categorias as $categoria): ?>
                                         <option value="<?= $categoria['idCateEquipo'] ?>" 
@@ -138,7 +138,7 @@
                                 <label for="idMarca" class="form-label fw-semibold">
                                     Marca <span class="text-danger">*</span>
                                 </label>
-                                <select class="form-select" id="idMarca" name="idMarca" required>
+                                <select class="form-select" id="idMarca" name="idMarca">
                                     <option value="">Seleccionar marca...</option>
                                     <?php foreach ($marcas as $marca): ?>
                                         <option value="<?= $marca['idMarca'] ?>" 
@@ -162,7 +162,6 @@
                                        name="modelo" 
                                        value="<?= old('modelo', $equipo['modelo']) ?>"
                                        placeholder="Ej: Sony A6400 con lente kit"
-                                       required
                                        minlength="2"
                                        maxlength="70">
                             </div>
@@ -177,8 +176,7 @@
                                        id="cantDisponible" 
                                        name="cantDisponible" 
                                        value="<?= old('cantDisponible', $equipo['cantDisponible']) ?>"
-                                       min="0"
-                                       required>
+                                       min="0">
                             </div>
                         </div>
 
@@ -226,7 +224,7 @@
                                 <label for="estado" class="form-label fw-semibold">
                                     Estado <span class="text-danger">*</span>
                                 </label>
-                                <select class="form-select" id="estado" name="estado" required>
+                                <select class="form-select" id="estado" name="estado">
                                     <option value="">Seleccionar estado...</option>
                                     <option value="Nuevo" <?= (old('estado', $equipo['estado']) == 'Nuevo') ? 'selected' : '' ?>>Nuevo</option>
                                     <option value="EnUso" <?= (old('estado', $equipo['estado']) == 'EnUso') ? 'selected' : '' ?>>En Uso</option>
@@ -410,6 +408,17 @@
 
 <!-- JavaScript para Editar -->
 <script>
+// CSRF helper
+function getCookie(name) {
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return parts.pop().split(';').shift();
+    return '';
+}
+
+// CSRF constantes renderizadas por PHP
+const CSRF_TOKEN_NAME = '<?= csrf_token() ?>';
+const CSRF_TOKEN_HASH = '<?= csrf_hash() ?>';
 document.addEventListener('DOMContentLoaded', function() {
     const form = document.getElementById('formEditarEquipo');
     const descripcionTextarea = document.getElementById('descripcion');
@@ -500,52 +509,51 @@ document.addEventListener('DOMContentLoaded', function() {
 
         switch (field.name) {
             case 'idCateEquipo':
-                if (!value) {
+                // En edición, permitir vacío; validar solo si viene con valor
+                if (value && (!/^\d+$/.test(value) || parseInt(value) <= 0)) {
                     isValid = false;
-                    message = 'Debe seleccionar una categoría.';
+                    message = 'Debe seleccionar una categoría válida.';
                 }
                 break;
 
             case 'idMarca':
-                if (!value) {
+                if (value && (!/^\d+$/.test(value) || parseInt(value) <= 0)) {
                     isValid = false;
-                    message = 'Debe seleccionar una marca.';
+                    message = 'Debe seleccionar una marca válida.';
                 }
                 break;
 
             case 'modelo':
-                if (!value) {
-                    isValid = false;
-                    message = 'El modelo es obligatorio.';
-                } else if (value.length < 2) {
-                    isValid = false;
-                    message = 'El modelo debe tener al menos 2 caracteres.';
-                } else if (value.length > 70) {
-                    isValid = false;
-                    message = 'El modelo no puede exceder 70 caracteres.';
+                if (value) {
+                    if (value.length < 2) {
+                        isValid = false;
+                        message = 'El modelo debe tener al menos 2 caracteres.';
+                    } else if (value.length > 70) {
+                        isValid = false;
+                        message = 'El modelo no puede exceder 70 caracteres.';
+                    }
                 }
                 break;
 
             case 'cantDisponible':
-                if (!value) {
-                    isValid = false;
-                    message = 'La cantidad es obligatoria.';
-                } else if (parseInt(value) < 0) {
-                    isValid = false;
-                    message = 'La cantidad no puede ser negativa.';
+                if (value !== '') {
+                    if (isNaN(parseInt(value)) || parseInt(value) < 0) {
+                        isValid = false;
+                        message = 'La cantidad no puede ser negativa.';
+                    }
                 }
                 break;
 
             case 'estado':
-                if (!value) {
+                if (value && !['Nuevo','EnUso','EnMantenimiento','Dañado','Otro'].includes(value)) {
                     isValid = false;
-                    message = 'Debe seleccionar un estado.';
+                    message = 'Debe seleccionar un estado válido.';
                 }
                 break;
         }
 
         if (isValid) {
-            if (value || field.hasAttribute('required')) {
+            if (value) {
                 field.classList.add('is-valid');
             }
         } else {
@@ -563,30 +571,14 @@ document.addEventListener('DOMContentLoaded', function() {
     form.addEventListener('submit', function(e) {
         e.preventDefault();
 
+        // Validar solo campos con valor
         let isFormValid = true;
         inputs.forEach(input => {
-            if (!validateField(input)) {
+            if (input.value.trim() && !validateField(input)) {
                 isFormValid = false;
             }
         });
-
-        if (!isFormValid) {
-            Swal.fire({
-                icon: 'error',
-                title: 'Formulario incompleto',
-                text: 'Por favor corrija los errores marcados antes de continuar.',
-                confirmButtonColor: '#2c5aa0'
-            });
-            
-            const firstError = form.querySelector('.is-invalid');
-            if (firstError) {
-                firstError.scrollIntoView({ 
-                    behavior: 'smooth', 
-                    block: 'center' 
-                });
-            }
-            return;
-        }
+        if (!isFormValid) return;
 
         Swal.fire({
             title: '¿Actualizar equipo?',
@@ -660,14 +652,22 @@ function confirmarEliminacion() {
 
 function eliminarEquipo() {
     const equipoId = <?= $equipo['idEquipo'] ?>;
-    
+    const csrfCookie = getCookie('csrf_cookie_name');
+    const body = new URLSearchParams();
+    body.append(CSRF_TOKEN_NAME, CSRF_TOKEN_HASH);
     fetch(`/inventario/eliminar/${equipoId}`, {
-        method: 'DELETE',
+        method: 'POST',
         headers: {
-            'X-Requested-With': 'XMLHttpRequest'
-        }
+            'X-Requested-With': 'XMLHttpRequest',
+            'X-CSRF-TOKEN': csrfCookie || CSRF_TOKEN_HASH,
+            'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        body
     })
-    .then(response => response.json())
+    .then(async response => {
+        const text = await response.text();
+        try { return JSON.parse(text); } catch { return { success: false, message: 'Error del servidor' }; }
+    })
     .then(data => {
         if (data.success) {
             Swal.fire({
