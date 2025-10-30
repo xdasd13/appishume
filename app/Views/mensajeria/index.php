@@ -462,6 +462,12 @@ function enviarMensaje() {
     const csrfToken = $('meta[name="csrf-token"]').attr('content');
     
     const fd = new FormData(document.getElementById('formEnviarMensaje'));
+    const archivo = document.getElementById('archivoAdjunto').files[0];
+    if (archivo && archivo.size > 30 * 1024 * 1024) {
+        mostrarError('El archivo excede el límite de 30 MB');
+        $btnEnviar.prop('disabled', false).html(iconoOriginal);
+        return;
+    }
     fd.set('destinatario_id', destinatarioId);
     fd.set('asunto', 'Mensaje directo');
     fd.set('contenido', texto);

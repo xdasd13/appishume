@@ -91,6 +91,11 @@ class MensajeriaController extends BaseController
         if (!$db->tableExists('notificaciones')) {
             $this->crearTablaNotificaciones();
         }
+
+        // Verificar tabla de adjuntos de mensajes
+        if (!$db->tableExists('archivos_mensaje')) {
+            $this->crearTablaArchivosMensaje();
+        }
     }
 
     /**
@@ -146,6 +151,25 @@ class MensajeriaController extends BaseController
             INDEX idx_fecha_creacion (fecha_creacion)
         )";
         
+        $db->query($sql);
+    }
+
+    /**
+     * Crear tabla para almacenar adjuntos en BD (LONGBLOB)
+     */
+    private function crearTablaArchivosMensaje()
+    {
+        $db = \Config\Database::connect();
+        $sql = "CREATE TABLE IF NOT EXISTS archivos_mensaje (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            mensaje_id INT NULL,
+            nombre_original VARCHAR(255) NOT NULL,
+            mime VARCHAR(100) NOT NULL,
+            tamanio INT NOT NULL,
+            datos LONGBLOB NOT NULL,
+            creado_en DATETIME DEFAULT CURRENT_TIMESTAMP,
+            INDEX idx_mensaje (mensaje_id)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4";
         $db->query($sql);
     }
 
@@ -429,15 +453,24 @@ class MensajeriaController extends BaseController
                 'fecha_envio' => date('Y-m-d H:i:s')
             ];
 
-            // Adjuntos simples: guardar archivo si viene 'archivo'
+            // Adjuntos: guardar en BD (no FS)
             $file = $this->request->getFile('archivo');
+            $archivoMetadata = null;
             if ($file && $file->isValid()) {
-                $uploadDir = FCPATH . 'uploads/mensajeria/';
-                if (!is_dir($uploadDir)) { @mkdir($uploadDir, 0775, true); }
-                $newName = $file->getRandomName();
-                $file->move($uploadDir, $newName);
-                $url = base_url('uploads/mensajeria/' . $newName);
-                $data['contenido'] .= "\n" . '[archivo] ' . $url;
+                // Límite: 30 MB
+                $maxBytes = 30 * 1024 * 1024;
+                if ($file->getSize() > $maxBytes) {
+                    return $this->response->setJSON([
+                        'success' => false,
+                        'message' => 'El archivo excede el límite de 30 MB'
+                    ]);
+                }
+                $archivoMetadata = [
+                    'nombre_original' => $file->getClientName(),
+                    'mime' => $file->getClientMimeType() ?: 'application/octet-stream',
+                    'tamanio' => $file->getSize(),
+                    'datos' => file_get_contents($file->getTempName()),
+                ];
             }
 
             // Insertar mensaje directamente con SQL
@@ -464,6 +497,21 @@ class MensajeriaController extends BaseController
             }
 
             $mensajeId = $db->insertID();
+
+            // Si hubo adjunto, guardarlo en BD y anexar link virtual
+            if ($archivoMetadata) {
+                $db->table('archivos_mensaje')->insert([
+                    'mensaje_id' => $mensajeId,
+                    'nombre_original' => $archivoMetadata['nombre_original'],
+                    'mime' => $archivoMetadata['mime'],
+                    'tamanio' => $archivoMetadata['tamanio'],
+                    'datos' => $archivoMetadata['datos'],
+                ]);
+                $archivoId = $db->insertID();
+                // Actualizar contenido del mensaje para incluir enlace de descarga
+                $enlace = base_url('mensajeria/archivo/' . $archivoId);
+                $db->query("UPDATE mensajes SET contenido = CONCAT(contenido, '\n', '[archivo] ', ?) WHERE id = ?", [$enlace, $mensajeId]);
+            }
 
             // Crear notificación para el destinatario
             $this->crearNotificacion($destinatarioId, $tipo, $asunto, $contenido, $mensajeId);
@@ -521,6 +569,23 @@ class MensajeriaController extends BaseController
             // Si falla la notificación, no es crítico
             log_message('error', 'Error al crear notificación: ' . $e->getMessage());
         }
+    }
+
+    /**
+     * Descargar/servir archivo adjunto desde BD por ID
+     */
+    public function archivo($id)
+    {
+        $db = \Config\Database::connect();
+        $row = $db->table('archivos_mensaje')->where('id', $id)->get()->getRowArray();
+        if (!$row) {
+            return $this->response->setStatusCode(404, 'Archivo no encontrado');
+        }
+        return $this->response
+            ->setHeader('Content-Type', $row['mime'])
+            ->setHeader('Content-Length', (string)$row['tamanio'])
+            ->setHeader('Content-Disposition', 'inline; filename="' . $row['nombre_original'] . '"')
+            ->setBody($row['datos']);
     }
 
     /**
