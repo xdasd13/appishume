@@ -67,9 +67,7 @@
                         </div>
                         <div class="flex-grow-1">
                             <h6 class="mb-0 fw-bold" id="nombreDestinatario">Selecciona una conversación</h6>
-                            <small class="text-success" id="estadoDestinatario">
-                                <i class="fas fa-circle text-success" style="font-size: 8px;"></i> En línea
-                            </small>
+                            <small class="text-muted" id="estadoDestinatario"></small>
                         </div>
                         <div class="dropdown">
                             <button class="btn btn-outline-secondary btn-sm" data-bs-toggle="dropdown">
@@ -103,12 +101,13 @@
 
                 <!-- Área de escritura -->
                 <div class="p-3 border-top bg-white area-escritura" id="areaEscritura" style="display: none;">
-                    <form id="formEnviarMensaje">
+                    <form id="formEnviarMensaje" enctype="multipart/form-data">
                         <input type="hidden" id="destinatario_id" name="destinatario_id">
                         <div class="input-group">
                             <button type="button" class="btn btn-outline-secondary" id="btnAdjuntar">
                                 <i class="fas fa-paperclip"></i>
                             </button>
+                            <input type="file" id="archivoAdjunto" name="archivo" class="d-none" />
                             <input type="text" class="form-control" id="mensajeTexto" 
                                    placeholder="Escribe tu mensaje..." autocomplete="off">
                             <button type="button" class="btn btn-outline-secondary" id="btnEmoji">
@@ -128,15 +127,23 @@
 <!-- Overlay para móviles -->
 <div class="mobile-overlay" id="mobileOverlay"></div>
 
+<!-- Sonido de notificación -->
+<audio id="sndMensaje" preload="auto">
+    <source src="<?= base_url('assets/img/kaiadmin/notify.mp3') ?>" type="audio/mpeg">
+    <source src="<?= base_url('assets/img/kaiadmin/notify.ogg') ?>" type="audio/ogg">
+  </audio>
+
 
 
 <script>
 let conversaciones = [];
 let conversacionActual = null;
 let timeoutBusqueda = null;
+let contadorMensajesPorChat = {}; // para detectar nuevos mensajes
 
 $(document).ready(function() {
     cargarConversaciones();
+    iniciarHeartbeat();
     
     // Configurar eventos
     $('#buscarConversaciones').on('input', function() {
@@ -147,6 +154,20 @@ $(document).ready(function() {
     $('#formEnviarMensaje').on('submit', function(e) {
         e.preventDefault();
         enviarMensaje();
+    });
+
+    // Adjuntos
+    $('#btnAdjuntar').on('click', function(){ $('#archivoAdjunto').click(); });
+    
+    // Typing indicator
+    let typingTimeout;
+    $('#mensajeTexto').on('input', function(){
+        if (!conversacionActual) return;
+        $.post('<?= base_url('mensajeria/typingStart') ?>/' + conversacionActual);
+        clearTimeout(typingTimeout);
+        typingTimeout = setTimeout(function(){
+            $.post('<?= base_url('mensajeria/typingStop') ?>/' + conversacionActual);
+        }, 2000);
     });
     
     $('#mensajeTexto').on('keypress', function(e) {
@@ -276,7 +297,7 @@ function abrirConversacion(usuarioId) {
     const conversacion = conversaciones.find(c => c.usuario_id == usuarioId);
     if (conversacion) {
         $('#nombreDestinatario').text(conversacion.nombre_completo);
-        $('#estadoDestinatario').html('<i class="fas fa-circle text-success" style="font-size: 8px;"></i> En línea');
+        actualizarPresence();
     }
 }
 
@@ -292,12 +313,44 @@ function cargarMensajesConversacion(usuarioId) {
         .done(function(response) {
             if (response.success) {
                 mostrarMensajes(response.data);
+                // Consultar typing status al mostrar
+                consultarTyping();
             } else {
                 mostrarError('Error al cargar mensajes: ' + response.message);
             }
         })
         .fail(function() {
             mostrarError('Error de conexión al cargar mensajes');
+        });
+}
+
+function iniciarHeartbeat(){
+    setInterval(function(){ $.post('<?= base_url('mensajeria/heartbeat') ?>'); }, 20000);
+}
+
+function actualizarPresence(){
+    if (!conversacionActual) return;
+    $.get('<?= base_url('mensajeria/getPresence') ?>/' + conversacionActual)
+        .done(function(r){
+            if (r.success) {
+                $('#estadoDestinatario').html(r.online ?
+                    '<i class="fas fa-circle text-success" style="font-size:8px;"></i> En línea' :
+                    '<i class="fas fa-circle text-muted" style="font-size:8px;"></i> Desconectado');
+            }
+        });
+}
+
+function consultarTyping(){
+    if (!conversacionActual) return;
+    $.get('<?= base_url('mensajeria/typingStatus') ?>/' + conversacionActual)
+        .done(function(r){
+            if (r.success) {
+                if (r.typing) {
+                    $('#estadoDestinatario').html('<i class="fas fa-pencil-alt text-success" style="font-size:8px;"></i> escribiendo…');
+                } else {
+                    actualizarPresence();
+                }
+            }
         });
 }
 
@@ -340,12 +393,35 @@ function mostrarMensajes(mensajes) {
             tipoBadge = `<span class="badge-tipo ${tipoClass}">${tipoTexto}</span>`;
         }
         
+        // Checks de estado estilo WhatsApp
+        let checks = '';
+        if (esPropio) {
+            const st = (mensaje.status || '').toLowerCase();
+            if (st === 'read') {
+                checks = '<span class="ms-1 text-primary">✔✔</span>';
+            } else if (st === 'delivered') {
+                checks = '<span class="ms-1 text-secondary">✔✔</span>';
+            } else {
+                checks = '<span class="ms-1 text-secondary">✔</span>';
+            }
+        }
+
+        // Contenido con soporte básico de adjunto
+        let contenidoHTML = mensaje.contenido;
+        const matchAdj = contenidoHTML.match(/\[archivo\]\s+(https?:[^\s]+)/i);
+        if (matchAdj) {
+            const url = matchAdj[1];
+            const isImg = /(\.png|\.jpg|\.jpeg|\.gif|\.webp)$/i.test(url);
+            const link = `<a href="${url}" target="_blank" rel="noopener">Ver archivo</a>`;
+            contenidoHTML = contenidoHTML.replace(matchAdj[0], isImg ? `<div class=\"mb-1\"><img src=\"${url}\" alt=\"adjunto\" style=\"max-width:220px;border-radius:6px\"/></div>${link}` : link);
+        }
+
         html += `
             <div class="d-flex ${esPropio ? 'justify-content-end' : 'justify-content-start'} mb-2">
                 <div class="mensaje-bubble ${claseBubble}">
                     ${tipoBadge}
-                    <div>${mensaje.contenido}</div>
-                    <div class="mensaje-hora">${horaMensaje}</div>
+                    <div>${contenidoHTML}</div>
+                    <div class="mensaje-hora">${horaMensaje} ${checks}</div>
                 </div>
             </div>
         `;
@@ -355,6 +431,18 @@ function mostrarMensajes(mensajes) {
     
     // Scroll al final
     container.scrollTop(container[0].scrollHeight);
+
+    // Sonido si hay nuevos mensajes recibidos
+    const actual = mensajes.length;
+    const prev = contadorMensajesPorChat[conversacionActual] || 0;
+    if (actual > prev) {
+        const ultimo = mensajes[mensajes.length - 1];
+        if (ultimo && String(ultimo.remitente_id) !== String(usuarioActual)) {
+            const snd = document.getElementById('sndMensaje');
+            if (snd && snd.play) { snd.play().catch(()=>{}); }
+        }
+    }
+    contadorMensajesPorChat[conversacionActual] = actual;
 }
 
 function enviarMensaje() {
@@ -373,22 +461,24 @@ function enviarMensaje() {
     // Obtener el token CSRF
     const csrfToken = $('meta[name="csrf-token"]').attr('content');
     
+    const fd = new FormData(document.getElementById('formEnviarMensaje'));
+    fd.set('destinatario_id', destinatarioId);
+    fd.set('asunto', 'Mensaje directo');
+    fd.set('contenido', texto);
+    fd.set('tipo', 'normal');
+
     $.ajax({
         url: '<?= base_url('mensajeria/procesarEnvio') ?>',
         method: 'POST',
-        headers: {
-            'X-CSRF-TOKEN': csrfToken
-        },
-        data: {
-            destinatario_id: destinatarioId,
-            asunto: 'Mensaje directo',
-            contenido: texto,
-            tipo: 'normal'
-        },
+        headers: { 'X-CSRF-TOKEN': csrfToken },
+        data: fd,
+        contentType: false,
+        processData: false,
         success: function(response) {
             if (response.success) {
                 $('#mensajeTexto').val('');
-                // Recargar mensajes
+                $('#archivoAdjunto').val('');
+                // Recargar mensajes con delay corto para ver el nuevo como 'sent'
                 cargarMensajesConversacion(destinatarioId);
                 // Actualizar lista de conversaciones
                 cargarConversaciones();
@@ -415,13 +505,21 @@ function mostrarError(mensaje) {
     });
 }
 
-// Auto-refresh cada 30 segundos
+// Auto-refresh rápido cuando hay conversación abierta, lento cuando no
 setInterval(function() {
     if (conversacionActual) {
         cargarMensajesConversacion(conversacionActual);
+        cargarConversaciones();
+        actualizarPresence();
+        consultarTyping();
     }
-    cargarConversaciones();
-}, 30000);
+}, 3000);
+
+setInterval(function() {
+    if (!conversacionActual) {
+        cargarConversaciones();
+    }
+}, 15000);
 </script>
 
 <?= $footer ?>

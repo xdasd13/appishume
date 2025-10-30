@@ -23,6 +23,59 @@ class MensajeriaController extends BaseController
     }
 
     /**
+     * Heartbeat para presencia en línea (cache TTL ~ 70s)
+     */
+    public function heartbeat()
+    {
+        $usuarioId = session()->get('usuario_id');
+        if (!$usuarioId) {
+            return $this->response->setJSON(['success' => false]);
+        }
+        $cache = \Config\Services::cache();
+        $cache->save('presence_' . $usuarioId, time(), 70);
+        return $this->response->setJSON(['success' => true]);
+    }
+
+    /** Obtener presencia de un usuario */
+    public function getPresence($otroUsuarioId)
+    {
+        $cache = \Config\Services::cache();
+        $ts = $cache->get('presence_' . $otroUsuarioId);
+        $online = $ts && (time() - (int)$ts) <= 65;
+        return $this->response->setJSON(['success' => true, 'online' => $online]);
+    }
+
+    /** Iniciar estado escribiendo */
+    public function typingStart($otroUsuarioId)
+    {
+        $usuarioId = session()->get('usuario_id');
+        if (!$usuarioId) { return $this->response->setJSON(['success' => false]); }
+        $cache = \Config\Services::cache();
+        $cache->save('typing_' . $usuarioId . '_' . $otroUsuarioId, 1, 6);
+        return $this->response->setJSON(['success' => true]);
+    }
+
+    /** Finalizar estado escribiendo */
+    public function typingStop($otroUsuarioId)
+    {
+        $usuarioId = session()->get('usuario_id');
+        if (!$usuarioId) { return $this->response->setJSON(['success' => false]); }
+        $cache = \Config\Services::cache();
+        $cache->delete('typing_' . $usuarioId . '_' . $otroUsuarioId);
+        return $this->response->setJSON(['success' => true]);
+    }
+
+    /** Consultar si el otro está escribiendo */
+    public function typingStatus($otroUsuarioId)
+    {
+        $usuarioId = session()->get('usuario_id');
+        if (!$usuarioId) { return $this->response->setJSON(['success' => false]); }
+        $cache = \Config\Services::cache();
+        $flag = $cache->get('typing_' . $otroUsuarioId . '_' . $usuarioId);
+        return $this->response->setJSON(['success' => true, 'typing' => (bool)$flag]);
+    }
+
+    /**
      * Verificar y crear las tablas de mensajería si no existen
      */
     private function verificarTablas()
@@ -55,6 +108,7 @@ class MensajeriaController extends BaseController
             contenido TEXT NOT NULL,
             tipo ENUM('normal', 'importante', 'urgente') DEFAULT 'normal',
             leido BOOLEAN DEFAULT FALSE,
+            status ENUM('sent','delivered','read') DEFAULT 'sent',
             fecha_envio DATETIME DEFAULT CURRENT_TIMESTAMP,
             fecha_eliminacion DATETIME NULL,
             INDEX idx_remitente (remitente_id),
@@ -63,6 +117,12 @@ class MensajeriaController extends BaseController
         )";
         
         $db->query($sql);
+        // Intentar agregar columna status si la tabla ya existía
+        try {
+            $db->query("ALTER TABLE mensajes ADD COLUMN IF NOT EXISTS status ENUM('sent','delivered','read') DEFAULT 'sent'");
+        } catch (\Throwable $e) {
+            // Ignorar incompatibilidades o si ya existe
+        }
     }
 
     /**
@@ -206,6 +266,11 @@ class MensajeriaController extends BaseController
             $result = $db->query($sql, [$usuarioId, $otroUsuarioId, $otroUsuarioId, $usuarioId]);
             $mensajes = $result->getResultArray();
             
+            // Marcar como entregados los mensajes recibidos aún en 'sent'
+            try {
+                $db->query("UPDATE mensajes SET status = 'delivered' WHERE destinatario_id = ? AND remitente_id = ? AND status = 'sent'", [$usuarioId, $otroUsuarioId]);
+            } catch (\Throwable $e) {}
+
             // Marcar mensajes como leídos
             $this->marcarMensajesComoLeidos($usuarioId, $otroUsuarioId);
             
@@ -231,7 +296,7 @@ class MensajeriaController extends BaseController
             $db = \Config\Database::connect();
             
             $sql = "UPDATE mensajes 
-                    SET leido = 1 
+                    SET leido = 1, status = 'read' 
                     WHERE destinatario_id = ? AND remitente_id = ? AND leido = 0";
             
             $db->query($sql, [$usuarioId, $otroUsuarioId]);
@@ -364,10 +429,21 @@ class MensajeriaController extends BaseController
                 'fecha_envio' => date('Y-m-d H:i:s')
             ];
 
+            // Adjuntos simples: guardar archivo si viene 'archivo'
+            $file = $this->request->getFile('archivo');
+            if ($file && $file->isValid()) {
+                $uploadDir = FCPATH . 'uploads/mensajeria/';
+                if (!is_dir($uploadDir)) { @mkdir($uploadDir, 0775, true); }
+                $newName = $file->getRandomName();
+                $file->move($uploadDir, $newName);
+                $url = base_url('uploads/mensajeria/' . $newName);
+                $data['contenido'] .= "\n" . '[archivo] ' . $url;
+            }
+
             // Insertar mensaje directamente con SQL
             $db = \Config\Database::connect();
-            $sql = "INSERT INTO mensajes (remitente_id, destinatario_id, asunto, contenido, tipo, leido, fecha_envio) 
-                    VALUES (?, ?, ?, ?, ?, ?, ?)";
+            $sql = "INSERT INTO mensajes (remitente_id, destinatario_id, asunto, contenido, tipo, leido, status, fecha_envio) 
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
             
             $result = $db->query($sql, [
                 $data['remitente_id'],
@@ -376,6 +452,7 @@ class MensajeriaController extends BaseController
                 $data['contenido'],
                 $data['tipo'],
                 $data['leido'],
+                'sent',
                 $data['fecha_envio']
             ]);
             

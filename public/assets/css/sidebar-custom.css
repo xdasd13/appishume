@@ -1,9 +1,17 @@
-/* Sidebar Orange/White modern palette overrides */
+/* Ishume brand palette overrides */
+:root {
+  --ishume-primary: #F29100; /* orange from logo */
+  --ishume-primary-2: #FF8A3D; /* lighter orange for gradients */
+  --ishume-dark-1: #0F1117; /* charcoal */
+  --ishume-dark-2: #151A22; /* slightly lighter charcoal */
+  --ishume-text: #FFFFFF;
+  --ishume-muted: rgba(255, 255, 255, 0.75);
+}
 
 /* Base background and text */
 .sidebar[data-background-color="dark"] {
-  background: linear-gradient(180deg, #FF8A3D 0%, #FF6A00 100%) !important; /* warmer orange */
-  color: #fff;
+  background: linear-gradient(180deg, var(--ishume-dark-1) 0%, var(--ishume-dark-2) 100%) !important;
+  color: var(--ishume-text);
 }
 
 /* Logo header inside sidebar */
@@ -19,7 +27,7 @@
   letter-spacing: 0.5px;
   font-size: 20px;
   line-height: 20px;
-  color: #fff;
+  color: var(--ishume-text);
 }
 .logo-header .logo:hover .logo-text,
 .logo-header .logo:focus .logo-text {
@@ -35,7 +43,7 @@
   line-height: 1.1;
   letter-spacing: 1.5px;
   text-transform: uppercase;
-  color: #fff;
+  color: var(--ishume-text);
   margin: 0;
   padding: 0;
 }
@@ -57,42 +65,44 @@
 
 /* Nav links, icons and text */
 .sidebar[data-background-color="dark"] .nav > .nav-item a {
-  color: rgba(255, 255, 255, 0.92) !important;
+  color: rgba(255, 255, 255, 0.9) !important;
 }
 .sidebar[data-background-color="dark"] .nav > .nav-item a i,
 .sidebar[data-background-color="dark"] .nav > .nav-item a .caret {
-  color: #fff !important;
+  color: var(--ishume-text) !important;
 }
 
 /* Hover, focus, active states */
 .sidebar[data-background-color="dark"] .nav .nav-item > a:hover,
 .sidebar[data-background-color="dark"] .nav .nav-item > a:focus {
-  background: rgba(255, 255, 255, 0.18) !important;
-  color: #000 !important; /* text black on hover */
-  text-decoration: none !important; /* prevent blue underline */
+  background: linear-gradient(90deg, rgba(242, 145, 0, 0.22), rgba(242, 145, 0, 0.08)) !important;
+  color: var(--ishume-text) !important;
+  border-left: 3px solid var(--ishume-primary);
+  text-decoration: none !important;
 }
 .sidebar[data-background-color="dark"] .nav .nav-item > a:hover i,
 .sidebar[data-background-color="dark"] .nav .nav-item > a:hover .caret,
 .sidebar[data-background-color="dark"] .nav .nav-item > a:focus i,
 .sidebar[data-background-color="dark"] .nav .nav-item > a:focus .caret {
-  color: #000 !important; /* icons/caret black on hover */
+  color: var(--ishume-primary) !important;
 }
 .sidebar[data-background-color="dark"] .nav .nav-item.active > a,
 .sidebar[data-background-color="dark"] .nav .nav-item.active > a:hover,
 .sidebar[data-background-color="dark"] .nav .nav-item.active > a:focus,
 .sidebar[data-background-color="dark"] .nav .nav-item > a[aria-expanded="true"] {
-  background: rgba(255, 255, 255, 0.16) !important;
-  color: #fff !important;
+  background: linear-gradient(90deg, rgba(242, 145, 0, 0.28), rgba(242, 145, 0, 0.12)) !important;
+  color: var(--ishume-text) !important;
+  border-left: 3px solid var(--ishume-primary);
 }
 
 /* Submenu text color */
 .sidebar[data-background-color="dark"] .nav .nav-collapse .sub-item {
-  color: rgba(255, 255, 255, 0.9) !important;
+  color: rgba(255, 255, 255, 0.88) !important;
 }
 
 /* Section titles and mini icons */
 .sidebar[data-background-color="dark"] .nav-section .text-section {
-  color: rgba(255, 255, 255, 0.75) !important;
+  color: var(--ishume-muted) !important;
 }
 .sidebar[data-background-color="dark"] .sidebar-mini-icon i {
   color: rgba(255, 255, 255, 0.8) !important;
@@ -100,7 +110,7 @@
 
 /* Sidebar toggler icons inside sidebar */
 .sidebar[data-background-color="dark"] .btn.btn-toggle i {
-  color: #fff !important;
+  color: var(--ishume-text) !important;
 }
 
 /* Scrollbar styling inside sidebar */
@@ -115,4 +125,9 @@
 /* Badges near links (e.g., mensajes) */
 .sidebar[data-background-color="dark"] .badge {
   border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Top header strip (outside sidebar) when using data-background-color="dark" */
+.main-header .logo-header[data-background-color="dark"] {
+  background: linear-gradient(90deg, var(--ishume-dark-1) 0%, var(--ishume-dark-2) 100%) !important;
 }

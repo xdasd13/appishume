@@ -22,7 +22,9 @@
   <!-- En el header -->
   <link rel="stylesheet" href="<?= base_url('assets/css/custom.css') ?>">
   <link rel="stylesheet" href="<?= base_url('assets/css/sweetalert-custom.css') ?>">
-  <link rel="icon" href="<?= base_url() . 'assets/img/kaiadmin/favicon.ico' ?>" type="image/x-icon" />
+  <!-- Favicons -->
+  <link rel="icon" href="<?= base_url('assets/img/kaiadmin/favicon.ico') ?>" type="image/x-icon" />
+  <link rel="apple-touch-icon" href="<?= base_url('assets/img/kaiadmin/logo.png') ?>" />
 
   <!-- Fonts and icons -->
   <script src="<?= base_url() . 'assets/js/plugin/webfont/webfont.min.js' ?>"></script>
