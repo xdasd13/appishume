@@ -2,11 +2,6 @@
 CREATE DATABASE IF NOT EXISTS ishume;
 USE ishume;
 
--- ELIMINAR TABLAS EXISTENTES (si es necesario)
-DROP TABLE IF EXISTS equipos, controlpagos, entregables, servicioscontratados, 
-contratos, cotizaciones, usuarios, clientes, empresas, personas, 
-servicios, listacondiciones, tipospago, tipoeventos, tipocontrato, 
-condiciones, categorias, cargos;
 
 -- TABLAS MAESTRAS
 CREATE TABLE cargos (
@@ -175,9 +170,8 @@ CREATE TABLE listacondiciones (
     CONSTRAINT fk_listacondicion_tipocontrato FOREIGN KEY (idtipocontrato) REFERENCES tipocontrato(idtipocontrato)
 );
 
--- =============================================================================
--- INSERCIÓN DE DATOS EN ORDEN CORRECTO
--- =============================================================================
+
+-- INSERCIÓN DE DATOS 
 
 -- 1. DATOS BÁSICOS (Catálogos)
 INSERT INTO cargos (cargo) VALUES 
@@ -584,9 +578,8 @@ INSERT INTO listacondiciones (idcondicion, idtipocontrato) VALUES
 (1, 3), (5, 3),
 (2, 2), (3, 2);
 
--- =============================================================================
+
 -- CONSULTAS DE VERIFICACIÓN
--- =============================================================================
 
 -- Verificar que no hay DNIs duplicados
 SELECT 'Verificación de DNIs duplicados' as verificación;
@@ -629,5 +622,3 @@ JOIN tipoeventos te ON c.idtipoevento = te.idtipoevento
 WHERE c.fechaevento >= CURDATE()
 ORDER BY c.fechaevento ASC
 LIMIT 10;
-
-SELECT 'Base de datos ISHUME creada y poblada exitosamente!' as mensaje_final;
