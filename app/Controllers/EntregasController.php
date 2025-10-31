@@ -13,20 +13,15 @@ class EntregasController extends BaseController
         $this->entregasModel = new EntregasModel();
     }
 
-    // Listado principal de contratos y entregas - CORREGIDO
     public function index()
     {
         $datos['contratos'] = $this->entregasModel->obtenerContratosConEstadoPago();
-        
-        // Calcular estadísticas para las tarjetas
         $datos['estadisticas'] = $this->calcularEstadisticasEntregas($datos['contratos']);
-        
         $datos['header'] = view('Layouts/header');
         $datos['footer'] = view('Layouts/footer');
         return view('entregas/listar', $datos);
     }
 
-    // Método para calcular estadísticas de entregas
     private function calcularEstadisticasEntregas($contratos)
     {
         $estadisticas = [
@@ -39,12 +34,11 @@ class EntregasController extends BaseController
         ];
 
         foreach ($contratos as $contrato) {
-            // Contar contratos pagados
+            // Tolerancia de 0.01 para considerar pagado (evita errores de redondeo)
             if (($contrato['deuda_actual'] ?? 0) <= 0.01) {
                 $estadisticas['contratos_pagados']++;
             }
             
-            // Contar entregas pendientes
             $totalServicios = intval($contrato['total_servicios'] ?? 0);
             $entregasCompletadas = intval($contrato['entregas_completadas'] ?? 0);
             $entregasPendientes = $totalServicios - $entregasCompletadas;
@@ -53,11 +47,9 @@ class EntregasController extends BaseController
                 $estadisticas['pendientes_entrega']++;
             }
             
-            // Acumular totales
             $estadisticas['total_servicios'] += $totalServicios;
             $estadisticas['servicios_entregados'] += $entregasCompletadas;
             
-            // Si todos los servicios están entregados
             if ($totalServicios > 0 && $totalServicios == $entregasCompletadas) {
                 $estadisticas['entregas_completadas']++;
             }
@@ -66,24 +58,20 @@ class EntregasController extends BaseController
         return $estadisticas;
     }
 
-    // Página para crear nueva entrega (solo contratos pagados)
+    // Solo se pueden crear entregas de contratos completamente pagados
     public function crear()
     {
         $contratoId = $this->request->getGet('contrato');
 
-        // Si se especificó un contrato, verificar que esté completamente pagado
         if ($contratoId) {
-            // Verificar que el contrato existe y está pagado
             $contrato = $this->entregasModel->obtenerContratoPagado($contratoId);
 
             if (!$contrato) {
                 return redirect()->to('entregas')->with('error', 'El contrato seleccionado no existe o no está pagado completamente.');
             }
 
-            // Obtener servicios disponibles para este contrato
             $servicios = $this->entregasModel->obtenerServiciosPorContratoPagado($contratoId);
             
-            // Si no hay servicios disponibles, significa que todas las entregas ya fueron registradas
             if (empty($servicios)) {
                 return redirect()->to('entregas')->with('info', 'Todas las entregas de este contrato ya han sido registradas.');
             }
@@ -97,7 +85,6 @@ class EntregasController extends BaseController
             return view('entregas/crear', $datos);
         }
 
-        // Si no se especificó contrato, mostrar listado de contratos pagados
         $datos['contratos'] = $this->entregasModel->obtenerContratosPagadosCompletos();
         $datos['usuario_actual'] = session()->get('usuario_nombre');
         $datos['usuario_id'] = session()->get('usuario_id');
@@ -106,20 +93,17 @@ class EntregasController extends BaseController
         return view('entregas/crear', $datos);
     }
 
-    // AJAX: obtener servicios de un contrato pagado
+    // Endpoint AJAX: devuelve servicios disponibles de un contrato
     public function obtenerServiciosPorContrato($idcontrato)
     {
         $servicios = $this->entregasModel->obtenerServiciosPorContratoPagado($idcontrato);
         return $this->response->setJSON(['success' => true, 'servicios' => $servicios]);
     }
 
-    // Guardar nueva entrega
     public function guardar()
     {
-        // Importante: Asegúrate de que obtienes el ID de persona, no el ID de usuario
+        // Obtener idpersona del usuario: la tabla entregables usa idpersona, no idusuario
         $usuarioId = session()->get('usuario_id');
-        
-        // Obtener el persona_id desde la tabla usuarios
         $personaId = null;
         if ($usuarioId) {
             $db = db_connect();
@@ -128,19 +112,16 @@ class EntregasController extends BaseController
             $personaId = $result['idpersona'] ?? null;
         }
 
-        // Validar que se haya seleccionado un contrato
         $idcontrato = $this->request->getPost('idcontrato');
         if (empty($idcontrato)) {
             return redirect()->back()->withInput()->with('error', 'Debe seleccionar un contrato pagado para registrar la entrega.');
         }
 
-        // Verificar que el contrato esté pagado
         $contrato = $this->entregasModel->obtenerContratoPagado($idcontrato);
         if (!$contrato) {
             return redirect()->back()->withInput()->with('error', 'El contrato seleccionado no existe o no está pagado completamente. Solo se pueden registrar entregas para contratos pagados al 100%.');
         }
 
-        // Validar los datos del formulario
         $reglas = [
             'idcontrato' => 'required|numeric',
             'idserviciocontratado' => 'required|numeric|is_not_unique[servicioscontratados.idserviciocontratado]',
@@ -165,18 +146,15 @@ class EntregasController extends BaseController
             $nombreComprobante = $nuevoNombre;
         }
 
-        // Usamos la fecha actual para la entrega
         $fechaActual = date('Y-m-d H:i:s');
 
-        // IMPORTANTE: Verifica qué ID estás usando y asegúrate que sea coherente
-        // Si tu relación es con personas, necesitas el ID de persona, no el ID de usuario
         $data = [
             'idserviciocontratado' => $this->request->getPost('idserviciocontratado'),
-            'idpersona' => $personaId, // Usa persona_id en lugar de usuario_id
+            'idpersona' => $personaId,
             'fechahoraentrega' => $fechaActual,
-            'fecha_real_entrega' => $fechaActual, // Marcar como entregada al momento de registro
+            'fecha_real_entrega' => $fechaActual,
             'observaciones' => $this->request->getPost('observaciones'),
-            'estado' => 'completada', // Cambiar a completada al registrar
+            'estado' => 'completada',
             'comprobante_entrega' => $nombreComprobante
         ];
 
@@ -240,14 +218,12 @@ class EntregasController extends BaseController
         }
     }
 
-
     public function ver($id)
     {
         $entrega = $this->entregasModel->obtenerEntregaCompleta($id);
 
-        // Si no se encuentra la entrega, intentamos al menos mostrar datos básicos
+        // Si la consulta completa falla, intentar con datos básicos
         if (!$entrega) {
-            // Intenta obtener al menos los datos básicos de la entrega
             $entregaBasica = $this->entregasModel->find($id);
 
             if (!$entregaBasica) {
@@ -268,7 +244,6 @@ class EntregasController extends BaseController
             $entrega['tipodoc_entrega'] = '';
             $entrega['numerodoc_entrega'] = '';
 
-            // Agregar el estado_visual que falta
             if ($entrega['estado'] == 'completada') {
                 $entrega['estado_visual'] = "✅ ENTREGADO";
             } else if ($entrega['estado'] == 'pendiente') {
@@ -288,9 +263,7 @@ class EntregasController extends BaseController
     {
         $entrega = $this->entregasModel->obtenerEntregaCompleta($id);
 
-        // Si no se encuentra la entrega, intentamos al menos mostrar datos básicos
         if (!$entrega) {
-            // Intenta obtener al menos los datos básicos de la entrega
             $entregaBasica = $this->entregasModel->find($id);
 
             if (!$entregaBasica) {
@@ -311,7 +284,6 @@ class EntregasController extends BaseController
             $entrega['tipodoc_entrega'] = '';
             $entrega['numerodoc_entrega'] = '';
 
-            // Agregar el estado_visual que falta
             if ($entrega['estado'] == 'completada') {
                 $entrega['estado_visual'] = "✅ ENTREGADO";
             } else if ($entrega['estado'] == 'pendiente') {
@@ -327,16 +299,13 @@ class EntregasController extends BaseController
 
     public function historial()
     {
-        // Actualizar entregas existentes sin responsable (solo la primera vez)
+        // Corrige entregas antiguas sin responsable asignado
         $this->entregasModel->actualizarEntregasSinResponsable();
         
-        // Usa el método del modelo en lugar de intentar crear la consulta directamente
         $datos['entregas'] = $this->entregasModel->obtenerTodasLasEntregas();
-
         $datos['header'] = view('Layouts/header');
         $datos['footer'] = view('Layouts/footer');
         return view('entregas/completadas', $datos);
     }
-
 
 }

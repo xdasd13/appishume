@@ -67,7 +67,6 @@ class EntregasModel extends Model
         $builder->join('servicios s', 's.idservicio = sc.idservicio');
         $builder->join('personas per', 'per.idpersona = e.idpersona', 'left');
 
-        // SOLO ENTREGAS PENDIENTES (no completadas)
         $builder->where('e.estado', 'pendiente');
 
         $builder->orderBy('e.fechahoraentrega', 'ASC');
@@ -77,7 +76,7 @@ class EntregasModel extends Model
 
     public function obtenerEntregaCompleta($id)
     {
-        // Consulta mejorada para obtener toda la información del cliente y del responsable
+        // Maneja clientes que pueden ser personas naturales o empresas usando COALESCE y CASE
         $builder = $this->db->table('entregables e');
         $builder->select('e.identregable, e.fechahoraentrega, e.fecha_real_entrega, e.estado, e.observaciones, e.comprobante_entrega,
                     e.idpersona,
@@ -141,13 +140,11 @@ class EntregasModel extends Model
         $builder->join('personas p', 'p.idpersona = cl.idpersona', 'left');
         $builder->join('empresas emp', 'emp.idempresa = cl.idempresa', 'left');
         $builder->join('servicios s', 's.idservicio = sc.idservicio', 'left');
-        // Aseguramos que siempre se obtenga la información del responsable
         $builder->join('personas per', 'per.idpersona = e.idpersona', 'left');
         $builder->where('e.identregable', $id);
 
         $entrega = $builder->get()->getRowArray();
 
-        // Agregar el estado_visual si existe la entrega
         if ($entrega) {
             if ($entrega['estado'] == 'completada') {
                 $entrega['estado_visual'] = "✅ ENTREGADO";
@@ -165,7 +162,6 @@ class EntregasModel extends Model
 
     public function obtenerContratosConEstadoPago()
     {
-        // Consulta mejorada y consistente
         $builder = $this->db->table('contratos c');
         $builder->select('
             c.idcontrato, c.idcotizacion,
@@ -188,25 +184,21 @@ class EntregasModel extends Model
 
         $contratos = $builder->get()->getResultArray();
 
-        // Calcular deuda manualmente para mayor precisión
+        // Calcula deuda y estados en PHP para mayor precisión que en SQL
         foreach ($contratos as &$contrato) {
-            // Asegurar que los valores sean numéricos
             $montoTotal = floatval($contrato['monto_total'] ?? 0);
             $montoPagado = floatval($contrato['monto_pagado'] ?? 0);
             
             $contrato['deuda_actual'] = $montoTotal - $montoPagado;
             
-            // Tolerancia para evitar problemas de redondeo
             if ($contrato['deuda_actual'] < 0.01) {
                 $contrato['deuda_actual'] = 0;
             }
             
-            // Determinar si todos los servicios están completados
             $totalEntregas = intval($contrato['total_entregas'] ?? 0);
             $entregasCompletadas = intval($contrato['entregas_completadas'] ?? 0);
             $totalServicios = intval($contrato['total_servicios'] ?? 0);
             
-            // Verificar si todos los servicios están completados
             if ($totalServicios > 0 && $totalServicios == $entregasCompletadas) {
                 $contrato['todos_servicios_completados'] = true;
                 $contrato['estado_entregas'] = 'Entregas completadas';
@@ -218,7 +210,6 @@ class EntregasModel extends Model
                 $contrato['estado_entregas'] = 'Sin entregas';
             }
             
-            // Estado del pago para mostrar en la interfaz
             if ($contrato['deuda_actual'] <= 0.01) {
                 $contrato['estado_pago'] = 'pagado';
             } else {
@@ -247,19 +238,17 @@ class EntregasModel extends Model
         $builder->join('empresas emp', 'emp.idempresa = cl.idempresa', 'left');
         $builder->join('cotizaciones co', 'co.idcotizacion = c.idcotizacion');
         
-        // Filtrar solo contratos con fecha de evento hasta hoy
         $builder->where('co.fechaevento <=', date('Y-m-d'));
 
         $contratos = $builder->get()->getResultArray();
 
-        // Filtrar manualmente solo los contratos pagados Y con entregas pendientes
+        // Filtrar manualmente: solo pagados Y con entregas pendientes
         $contratosPagados = [];
         foreach ($contratos as $contrato) {
             $deuda = $contrato['monto_total'] - $contrato['monto_pagado'];
             $totalServicios = intval($contrato['total_servicios']);
             $totalEntregas = intval($contrato['total_entregas']);
             
-            // Solo incluir si está pagado Y tiene entregas pendientes
             if ($deuda < 0.01 && $totalServicios > $totalEntregas) {
                 $contrato['deuda_actual'] = 0;
                 $contrato['entregas_pendientes'] = $totalServicios - $totalEntregas;
@@ -272,6 +261,7 @@ class EntregasModel extends Model
 
     public function obtenerServiciosPorContratoPagado($idcontrato)
     {
+        // Excluye servicios que ya tienen entrega usando NOT IN con subconsulta
         $builder = $this->db->table('servicioscontratados sc');
         $builder->select('sc.idserviciocontratado, sc.idservicio, sc.cantidad, sc.precio, 
                          sc.fechahoraservicio, sc.direccion,
@@ -307,13 +297,12 @@ class EntregasModel extends Model
         $contrato = $builder->get()->getRowArray();
 
         if ($contrato) {
-            // Asegurar que los valores sean numéricos
             $montoTotal = floatval($contrato['monto_total'] ?? 0);
             $montoPagado = floatval($contrato['monto_pagado'] ?? 0);
             
             $contrato['deuda_actual'] = $montoTotal - $montoPagado;
             
-            // Tolerancia más amplia para evitar problemas de redondeo
+            // Tolerancia más amplia (0.1) para evitar problemas de redondeo
             if ($contrato['deuda_actual'] < 0.1) {
                 $contrato['deuda_actual'] = 0;
                 return $contrato;
@@ -344,7 +333,6 @@ class EntregasModel extends Model
         $builder->join('servicios s', 's.idservicio = sc.idservicio', 'left');
         $builder->join('personas per', 'per.idpersona = e.idpersona', 'left');
 
-        // NO filtrar por estado para mostrar todas las entregas
         $builder->orderBy('e.fechahoraentrega', 'DESC');
 
         return $builder->get()->getResultArray();
@@ -352,7 +340,7 @@ class EntregasModel extends Model
 
     public function obtenerTodasLasEntregas()
     {
-        // Consulta mejorada para obtener todos los datos necesarios
+        // Usa SQL directo para mejor manejo de casos NULL y clientes persona/empresa
         $sql = "SELECT e.identregable, e.fechahoraentrega, e.fecha_real_entrega, e.estado, 
                        e.observaciones, e.comprobante_entrega, e.idpersona,
                        sc.fechahoraservicio, sc.cantidad, sc.precio,
@@ -365,7 +353,6 @@ class EntregasModel extends Model
                            ELSE '❓ Desconocido'
                        END as estado_visual,
                        
-                       /* Cliente info - puede ser persona o empresa */
                        CASE 
                            WHEN cl.idempresa IS NOT NULL THEN emp.razonsocial
                            WHEN cl.idpersona IS NOT NULL THEN p_cliente.nombres
@@ -378,7 +365,6 @@ class EntregasModel extends Model
                            ELSE ''
                        END as apellido_cliente,
                        
-                       /* Responsable info - siempre es una persona */
                        CASE 
                            WHEN p_entrega.nombres IS NOT NULL AND p_entrega.nombres != '' THEN p_entrega.nombres
                            WHEN e.idpersona IS NULL THEN 'Usuario del Sistema'
@@ -418,10 +404,9 @@ class EntregasModel extends Model
         return $entregas;
     }
 
-    // Método para actualizar entregas existentes sin responsable
+    // Función de mantenimiento: asigna responsable por defecto a entregas antiguas sin idpersona
     public function actualizarEntregasSinResponsable()
     {
-        // Buscar entregas que no tienen idpersona asignado
         $entregasSinResponsable = $this->db->query("
             SELECT e.identregable, e.idpersona 
             FROM entregables e 
@@ -430,8 +415,6 @@ class EntregasModel extends Model
 
         $actualizadas = 0;
         foreach ($entregasSinResponsable as $entrega) {
-            // Por ahora, asignar un valor por defecto o dejarlo como está
-            // En el futuro se podría asignar al usuario administrador
             $this->db->query("
                 UPDATE entregables 
                 SET idpersona = 1 
