@@ -185,5 +185,4 @@ $routes->group('', ['filter' => 'auth'], function($routes) {
     $routes->get('reportes', 'ReportesController::index');
     $routes->post('reportes/generar', 'ReportesController::generar');
     $routes->post('reportes/exportarPDF', 'ReportesController::exportarPDF');
-    $routes->post('reportes/exportarExcel', 'ReportesController::exportarExcel');
 });

@@ -84,7 +84,8 @@ class Filters extends BaseFilters
                 'buscar',
                 'mensajeria/heartbeat',
                 'mensajeria/typingStart/*',
-                'mensajeria/typingStop/*'
+                'mensajeria/typingStop/*',
+                'reportes/exportarPDF'
             ]], // Excluir rutas específicas del CSRF global
             // 'invalidchars',
         ],
