@@ -184,6 +184,7 @@
                                     <th>Amortización (S/)</th>
                                     <th>Deuda (S/)</th>
                                     <th>Tipo Pago</th>
+                                    <th>Pagador</th>
                                     <th>Usuario</th>
                                     <th>Comprobante</th>
                                     <th>Acciones</th>
@@ -228,6 +229,16 @@
                                             <td>
                                                 <span class="badge badge-info badge-3d"><?= $pago['tipopago'] ?></span>
                                             </td>
+                                            <td>
+                                                <?php if (!empty($pago['dni_pagador'])): ?>
+                                                    <div>
+                                                        <strong><?= htmlspecialchars($pago['nombre_pagador'] ?? 'N/A') ?></strong><br>
+                                                        <small class="text-muted">DNI: <?= htmlspecialchars($pago['dni_pagador']) ?></small>
+                                                    </div>
+                                                <?php else: ?>
+                                                    <span class="badge badge-secondary badge-3d">No registrado</span>
+                                                <?php endif; ?>
+                                            </td>
                                             <td><?= $pago['nombreusuario'] ?? 'N/A' ?></td>
                                             <td>
                                                 <?php if (!empty($pago['comprobante'])): ?>
@@ -260,7 +271,7 @@
                                     <?php endforeach; ?>
                                 <?php else: ?>
                                     <tr>
-                                        <td colspan="11" class="text-center">No se encontraron registros de pagos</td>
+                                        <td colspan="12" class="text-center">No se encontraron registros de pagos</td>
                                     </tr>
                                 <?php endif; ?>
                             </tbody>

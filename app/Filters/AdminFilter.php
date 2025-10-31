@@ -38,6 +38,17 @@ class AdminFilter implements FilterInterface
             // Log del intento de acceso no autorizado
             log_message('warning', 'Intento de acceso sin autenticación a ruta administrativa: ' . $request->getUri());
             
+            // Si es una petición AJAX, devolver JSON en lugar de redirigir
+            if ($request->isAJAX()) {
+                $response = service('response');
+                return $response->setStatusCode(401)
+                    ->setJSON([
+                        'status' => 'error',
+                        'message' => 'Sesión no válida. Por favor, inicie sesión nuevamente.',
+                        'redirect' => '/login'
+                    ]);
+            }
+            
             return redirect()->to('/login')
                 ->with('error', 'Debes iniciar sesión para acceder a esta sección.');
         }
@@ -60,6 +71,17 @@ class AdminFilter implements FilterInterface
 
             // Redirección con mensaje específico según el rol
             $mensaje = $this->getMensajeSegunRol($rolUsuario);
+            
+            // Si es una petición AJAX, devolver JSON en lugar de redirigir
+            if ($request->isAJAX()) {
+                $response = service('response');
+                return $response->setStatusCode(403)
+                    ->setJSON([
+                        'status' => 'error',
+                        'message' => $mensaje ?? 'No tienes permisos para realizar esta acción.',
+                        'redirect' => '/dashboard'
+                    ]);
+            }
             
             return redirect()->to('/dashboard')
                 ->with('error', $mensaje);

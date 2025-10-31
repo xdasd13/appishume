@@ -108,6 +108,7 @@
                                                         <th>Amortización (S/)</th>
                                                         <th>Deuda (S/)</th>
                                                         <th>Tipo Pago</th>
+                                                        <th>Pagador</th>
                                                         <th>Usuario</th>
                                                         <th>Comprobante</th>
                                                         <th>Acciones</th>
@@ -131,6 +132,16 @@
                                                             </td>
                                                             <td>
                                                                 <span class="badge badge-info"><?= $pago['tipopago'] ?></span>
+                                                            </td>
+                                                            <td>
+                                                                <?php if (!empty($pago['dni_pagador'])): ?>
+                                                                    <div>
+                                                                        <strong><?= htmlspecialchars($pago['nombre_pagador'] ?? 'N/A') ?></strong><br>
+                                                                        <small class="text-muted">DNI: <?= htmlspecialchars($pago['dni_pagador']) ?></small>
+                                                                    </div>
+                                                                <?php else: ?>
+                                                                    <span class="badge badge-secondary">No registrado</span>
+                                                                <?php endif; ?>
                                                             </td>
                                                             <td><?= $pago['nombreusuario'] ?? 'N/A' ?></td>
                                                             <td>

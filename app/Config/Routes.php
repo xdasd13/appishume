@@ -79,13 +79,16 @@ $routes->group('', ['filter' => 'admin'], function($routes) {
     // Control de Pagos (SOLO ADMINISTRADORES)
     $routes->get('controlpagos', [ControlPagoController::class, 'index']);
     $routes->get('controlpagos/crear', [ControlPagoController::class, 'crear']);
-    $routes->post('controlpagos/guardar', [ControlPagoController::class, 'guardar']);
+    $routes->post('controlpagos/validarDniPagador', [ControlPagoController::class, 'validarDniPagador']);
     $routes->get('controlpagos/ver/(:num)', [ControlPagoController::class, 'ver']);
     $routes->get('controlpagos/por-contrato/(:num)', [ControlPagoController::class, 'porContrato']);
     $routes->get('controlpagos/infoContrato/(:num)', [ControlPagoController::class, 'infoContrato']);
     $routes->get('controlpagos/descargarComprobante/(:num)', [ControlPagoController::class, 'descargarComprobante']);
     $routes->get('controlpagos/generarVoucher/(:num)', [ControlPagoController::class, 'generarVoucher']);
 });
+
+// Ruta para guardar pagos - SIN FILTROS temporalmente para debug
+$routes->post('controlpagos/guardar', [ControlPagoController::class, 'guardar']);
 
 // ==================== RUTAS PARA TRABAJADORES Y SUPERVISORES ====================
 $routes->group('', ['filter' => 'trabajador'], function($routes) {
