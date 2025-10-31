@@ -34,9 +34,6 @@ class ReportesController extends BaseController
         $this->db = \Config\Database::connect();
     }
 
-    /**
-     * Vista principal de reportes con interfaz interactiva
-     */
     public function index()
     {
         $data = [
@@ -48,9 +45,6 @@ class ReportesController extends BaseController
         return view('reportes/index', $data);
     }
 
-    /**
-     * Generar reporte dinámico basado en parámetros
-     */
     public function generar()
     {
         $tipo_reporte = $this->request->getPost('tipo_reporte');
@@ -64,7 +58,6 @@ class ReportesController extends BaseController
         try {
             $datos = $this->generarDatosReporte($tipo_reporte, $filtros ?? []);
             
-            // Verificar si hay datos en el reporte
             if (empty($datos['datos']) || count($datos['datos']) === 0) {
                 $mensajeSinDatos = $this->generarMensajeSinDatos($tipo_reporte, $filtros ?? []);
                 
@@ -106,9 +99,6 @@ class ReportesController extends BaseController
         }
     }
 
-    /**
-     * Obtener reportes disponibles con configuración
-     */
     private function obtenerReportesDisponibles()
     {
         return [
@@ -163,9 +153,6 @@ class ReportesController extends BaseController
         ];
     }
 
-    /**
-     * Obtener filtros base disponibles
-     */
     private function obtenerFiltrosBase()
     {
         return [
@@ -250,9 +237,6 @@ class ReportesController extends BaseController
         ];
     }
 
-    /**
-     * Generar datos específicos para cada tipo de reporte
-     */
     private function generarDatosReporte($tipo_reporte, $filtros)
     {
         switch ($tipo_reporte) {
@@ -273,9 +257,6 @@ class ReportesController extends BaseController
         }
     }
 
-    /**
-     * Reporte Financiero
-     */
     private function generarReporteFinanciero($filtros)
     {
         $builder = $this->contratoModel->db->table('contratos c');
@@ -301,7 +282,6 @@ class ReportesController extends BaseController
         $builder->join('tipoeventos te', 'te.idtipoevento = cot.idtipoevento', 'left');
         $builder->join('servicioscontratados sc', 'sc.idcotizacion = cot.idcotizacion');
         
-        // Subquery para obtener el último pago de cada contrato
         $subquery = $this->contratoModel->db->table('controlpagos cp2');
         $subquery->select('cp2.idcontrato, cp2.deuda, cp2.amortizacion');
         $subquery->where('cp2.fechahora = (SELECT MAX(fechahora) FROM controlpagos cp3 WHERE cp3.idcontrato = cp2.idcontrato)');
@@ -310,13 +290,11 @@ class ReportesController extends BaseController
         
         $builder->groupBy('c.idcontrato');
         
-        // Aplicar filtros
         $this->aplicarFiltrosFecha($builder, $filtros, 'cot.fechaevento');
         $this->aplicarFiltroEstadoPago($builder, $filtros);
         
         $datos = $builder->get()->getResultArray();
         
-        // Calcular estadísticas
         $estadisticas = [
             'total_contratos' => count($datos),
             'monto_total' => array_sum(array_column($datos, 'monto_total')),
@@ -332,9 +310,6 @@ class ReportesController extends BaseController
         ];
     }
 
-    /**
-     * Reporte de Entregas
-     */
     private function generarReporteEntregas($filtros)
     {
         $builder = $this->contratoModel->db->table('entregables en');
@@ -359,7 +334,6 @@ class ReportesController extends BaseController
         $builder->join('personas p', 'p.idpersona = cl.idpersona');
         $builder->join('tipoeventos te', 'te.idtipoevento = cot.idtipoevento', 'left');
         
-        // Aplicar filtros
         $this->aplicarFiltrosFecha($builder, $filtros, 'cot.fechaevento');
         $this->aplicarFiltroEstadoEntrega($builder, $filtros);
         $this->aplicarFiltroTipoEvento($builder, $filtros);
@@ -368,7 +342,6 @@ class ReportesController extends BaseController
         
         $datos = $builder->get()->getResultArray();
         
-        // Agregar estado_visual calculado en PHP
         foreach ($datos as &$dato) {
             if ($dato['estado'] === 'completada' || $dato['fecha_real_entrega'] !== null) {
                 $dato['estado_visual'] = 'Entregado';
@@ -377,7 +350,6 @@ class ReportesController extends BaseController
             }
         }
         
-        // Calcular estadísticas
         $estadisticas = [
             'total_entregas' => count($datos),
             'entregas_completadas' => count(array_filter($datos, function($d) { 
@@ -398,9 +370,6 @@ class ReportesController extends BaseController
         ];
     }
 
-    /**
-     * Reporte de Equipos
-     */
     private function generarReporteEquipos($filtros)
     {
         $builder = $this->equipoModel->db->table('equipos eq');
@@ -428,7 +397,6 @@ class ReportesController extends BaseController
         $builder->join('personas cliente', 'cliente.idpersona = cl.idpersona');
         $builder->join('tipoeventos te', 'te.idtipoevento = cot.idtipoevento', 'left');
         
-        // Aplicar filtros
         $this->aplicarFiltrosFecha($builder, $filtros, 'sc.fechahoraservicio');
         $this->aplicarFiltroTecnico($builder, $filtros);
         $this->aplicarFiltroEstadoEquipo($builder, $filtros);
@@ -437,7 +405,6 @@ class ReportesController extends BaseController
         
         $datos = $builder->get()->getResultArray();
         
-        // Calcular estadísticas por técnico
         $estadisticas_por_tecnico = [];
         foreach ($datos as $equipo) {
             $tecnico = $equipo['tecnico'];
@@ -470,9 +437,6 @@ class ReportesController extends BaseController
         ];
     }
 
-    /**
-     * Reporte de Clientes
-     */
     private function generarReporteClientes($filtros)
     {
         $builder = $this->contratoModel->db->table('clientes cl');
@@ -500,7 +464,6 @@ class ReportesController extends BaseController
         $builder->join('cotizaciones cot', 'cot.idcotizacion = c.idcotizacion', 'left');
         $builder->join('servicioscontratados sc', 'sc.idcotizacion = cot.idcotizacion', 'left');
         
-        // Subquery para último pago
         $subquery = $this->contratoModel->db->table('controlpagos cp2');
         $subquery->select('cp2.idcontrato, cp2.deuda');
         $subquery->where('cp2.fechahora = (SELECT MAX(fechahora) FROM controlpagos cp3 WHERE cp3.idcontrato = cp2.idcontrato)');
@@ -509,14 +472,12 @@ class ReportesController extends BaseController
         
         $builder->groupBy('cl.idcliente');
         
-        // Aplicar filtros
         $this->aplicarFiltroTipoCliente($builder, $filtros);
         
         $builder->orderBy('monto_total_contratado', 'DESC');
         
         $datos = $builder->get()->getResultArray();
         
-        // Calcular estadísticas
         $estadisticas = [
             'total_clientes' => count($datos),
             'clientes_persona' => count(array_filter($datos, function($d) { return $d['tipo_cliente'] === 'Persona Natural'; })),
@@ -531,9 +492,6 @@ class ReportesController extends BaseController
         ];
     }
 
-    /**
-     * Reporte de Cronograma
-     */
     private function generarReporteCronograma($filtros)
     {
         $builder = $this->cronogramaModel->db->table('servicioscontratados sc');
@@ -570,14 +528,12 @@ class ReportesController extends BaseController
         $builder->join('personas responsable', 'responsable.idpersona = u_resp.idpersona', 'left');
         $builder->join('cargos responsable_cargo', 'responsable_cargo.idcargo = u_resp.idcargo', 'left');
         
-        // Aplicar filtros
         $this->aplicarFiltrosFecha($builder, $filtros, 'sc.fechahoraservicio');
         
         $builder->orderBy('sc.fechahoraservicio', 'ASC');
         
         $datos = $builder->get()->getResultArray();
         
-        // Calcular estadísticas
         $estadisticas = [
             'total_proyectos' => count($datos),
             'proyectos_completados' => count(array_filter($datos, function($d) { return $d['estado_proyecto'] === 'Completado'; })),
@@ -592,9 +548,6 @@ class ReportesController extends BaseController
         ];
     }
 
-    /**
-     * Reporte de Rentabilidad
-     */
     private function generarReporteRentabilidad($filtros)
     {
         $builder = $this->contratoModel->db->table('servicioscontratados sc');
@@ -616,7 +569,6 @@ class ReportesController extends BaseController
         $builder->join('cotizaciones cot', 'cot.idcotizacion = sc.idcotizacion');
         $builder->join('tipoeventos te', 'te.idtipoevento = cot.idtipoevento', 'left');
         
-        // Aplicar filtros
         $this->aplicarFiltrosFecha($builder, $filtros, 'cot.fechaevento');
         $this->aplicarFiltroServicio($builder, $filtros);
         $this->aplicarFiltroTipoEvento($builder, $filtros);
@@ -626,7 +578,6 @@ class ReportesController extends BaseController
         
         $datos = $builder->get()->getResultArray();
         
-        // Calcular estadísticas generales
         $estadisticas = [
             'total_servicios_analizados' => count($datos),
             'ingresos_totales' => array_sum(array_column($datos, 'ingresos_totales')),
@@ -641,8 +592,6 @@ class ReportesController extends BaseController
             'estadisticas' => $estadisticas
         ];
     }
-
-    // Métodos auxiliares para filtros
 
     private function aplicarFiltrosFecha($builder, $filtros, $campo_fecha)
     {
@@ -711,8 +660,6 @@ class ReportesController extends BaseController
         }
     }
 
-    // Métodos para obtener datos de catálogos
-
     private function obtenerTiposPago()
     {
         $result = $this->controlPagoModel->db->table('tipospago')->get()->getResultArray();
@@ -772,9 +719,6 @@ class ReportesController extends BaseController
         ];
     }
 
-    /**
-     * Generar mensaje personalizado cuando no hay datos
-     */
     private function generarMensajeSinDatos($tipo_reporte, $filtros)
     {
         $reportes = $this->obtenerReportesDisponibles();
@@ -782,7 +726,6 @@ class ReportesController extends BaseController
         
         $mensaje = "No se encontraron datos para el {$nombreReporte}";
         
-        // Agregar información sobre los filtros aplicados
         if (!empty($filtros)) {
             $filtrosTexto = [];
             
@@ -820,9 +763,6 @@ class ReportesController extends BaseController
         return $mensaje;
     }
 
-    /**
-     * Exportar reporte a PDF
-     */
     public function exportarPDF()
     {
         try {
@@ -836,18 +776,14 @@ class ReportesController extends BaseController
             $datos = $this->generarDatosReporte($tipo_reporte, $filtros ?? []);
             $metadata = $this->obtenerMetadataReporte($tipo_reporte);
             
-            // Verificar si hay datos
             if (empty($datos['datos'])) {
                 return $this->response->setJSON([
                     'error' => 'No hay datos para exportar en el rango de fechas seleccionado'
                 ]);
             }
             
-            // Generar contenido HTML para el PDF
             $html = $this->generarHTMLParaPDF($datos, $metadata, $filtros ?? []);
             
-            // Por ahora, devolver el HTML para que el usuario pueda imprimir
-            // En el futuro se puede implementar una librería como TCPDF o DomPDF
             return $this->response->setContentType('text/html')->setBody($html);
             
         } catch (\Exception $e) {
@@ -856,9 +792,6 @@ class ReportesController extends BaseController
         }
     }
 
-    /**
-     * Exportar reporte a Excel
-     */
     public function exportarExcel()
     {
         try {
@@ -872,17 +805,14 @@ class ReportesController extends BaseController
             $datos = $this->generarDatosReporte($tipo_reporte, $filtros ?? []);
             $metadata = $this->obtenerMetadataReporte($tipo_reporte);
             
-            // Verificar si hay datos
             if (empty($datos['datos'])) {
                 return $this->response->setJSON([
                     'error' => 'No hay datos para exportar en el rango de fechas seleccionado'
                 ]);
             }
             
-            // Generar CSV (formato compatible con Excel)
             $csv = $this->generarCSVParaExcel($datos, $metadata, $filtros ?? []);
             
-            // Configurar headers para descarga
             $filename = 'reporte_' . $tipo_reporte . '_' . date('Y-m-d_H-i-s') . '.csv';
             
             return $this->response
@@ -896,9 +826,6 @@ class ReportesController extends BaseController
         }
     }
 
-    /**
-     * Generar HTML para PDF
-     */
     private function generarHTMLParaPDF($datos, $metadata, $filtros)
     {
         $html = '<!DOCTYPE html>
@@ -933,7 +860,6 @@ class ReportesController extends BaseController
         <p>Generado el: ' . date('d/m/Y H:i', strtotime($metadata['fecha_generacion'])) . '</p>
     </div>';
 
-        // Información de filtros
         if (!empty($filtros)) {
             $html .= '<div class="info">
                 <h3>Filtros Aplicados</h3>';
@@ -953,7 +879,6 @@ class ReportesController extends BaseController
             $html .= '</div>';
         }
 
-        // Estadísticas
         if (isset($datos['estadisticas'])) {
             $html .= '<div class="stats">
                 <h3>Estadísticas</h3>';
@@ -970,13 +895,11 @@ class ReportesController extends BaseController
             $html .= '</div>';
         }
 
-        // Tabla de datos
         if (!empty($datos['datos'])) {
             $html .= '<table>
                 <thead>
                     <tr>';
             
-            // Encabezados
             $primerRegistro = $datos['datos'][0];
             foreach (array_keys($primerRegistro) as $campo) {
                 $label = ucfirst(str_replace('_', ' ', $campo));
@@ -987,7 +910,6 @@ class ReportesController extends BaseController
                 </thead>
                 <tbody>';
             
-            // Datos
             foreach ($datos['datos'] as $registro) {
                 $html .= '<tr>';
                 foreach ($registro as $valor) {
@@ -1010,22 +932,16 @@ class ReportesController extends BaseController
         return $html;
     }
 
-    /**
-     * Generar CSV para Excel
-     */
     private function generarCSVParaExcel($datos, $metadata, $filtros)
     {
         $csv = '';
         
-        // BOM para UTF-8 (para que Excel reconozca correctamente los caracteres especiales)
         $csv .= "\xEF\xBB\xBF";
         
-        // Encabezado del reporte
         $csv .= $metadata['nombre'] . "\n";
         $csv .= $metadata['descripcion'] . "\n";
         $csv .= "Generado el: " . date('d/m/Y H:i', strtotime($metadata['fecha_generacion'])) . "\n";
         
-        // Información de filtros
         if (!empty($filtros)) {
             $csv .= "\nFiltros Aplicados:\n";
             
@@ -1044,7 +960,6 @@ class ReportesController extends BaseController
         
         $csv .= "\n";
         
-        // Estadísticas
         if (isset($datos['estadisticas'])) {
             $csv .= "Estadísticas:\n";
             foreach ($datos['estadisticas'] as $key => $value) {
@@ -1058,18 +973,14 @@ class ReportesController extends BaseController
             $csv .= "\n";
         }
         
-        // Datos
         if (!empty($datos['datos'])) {
-            // Encabezados de la tabla
             $primerRegistro = $datos['datos'][0];
             $encabezados = array_keys($primerRegistro);
             $csv .= implode(',', array_map(function($h) { return '"' . ucfirst(str_replace('_', ' ', $h)) . '"'; }, $encabezados)) . "\n";
             
-            // Datos
             foreach ($datos['datos'] as $registro) {
                 $fila = [];
                 foreach ($registro as $valor) {
-                    // Escapar comillas y envolver en comillas
                     $valor = str_replace('"', '""', $valor);
                     $fila[] = '"' . $valor . '"';
                 }
