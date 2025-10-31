@@ -101,9 +101,6 @@
                                 <a href="<?= base_url('equipos/por-servicio/' . $servicio->idserviciocontratado) ?>" class="btn btn-orange">
                                     <i class="fas fa-users"></i> Equipos
                                 </a>
-                                <a href="<?= base_url('servicios/editar/' . $servicio->idserviciocontratado) ?>" class="btn btn-outline-white">
-                                    <i class="fas fa-edit"></i> Editar
-                                </a>
                             </td>
                         </tr>
                         <?php endforeach; ?>

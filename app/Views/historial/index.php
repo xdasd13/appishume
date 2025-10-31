@@ -143,11 +143,6 @@
     overflow-y: auto;
 }
 
-/* Hover en filas */
-.table-hover tbody tr:hover {
-    background-color: #fff8f0;
-    cursor: pointer;
-}
 
 /* Badges de estado */
 .badge-estado {
