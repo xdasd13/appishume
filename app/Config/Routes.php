@@ -46,14 +46,6 @@ $routes->group('', ['filter' => 'auth'], function($routes) {
     $routes->post('mensajeria/actualizarConfiguracion', 'MensajeriaController::actualizarConfiguracion');
 });
 
-
-
-// Rutas SIMPLES para usuarios (sin autenticación por ahora)
-$routes->get('usuarios-simple', 'UsuariosControllerSimple::index');
-$routes->get('usuarios-simple/crear', 'UsuariosControllerSimple::crear');
-$routes->post('usuarios-simple/guardar', 'UsuariosControllerSimple::guardar');
-$routes->delete('usuarios-simple/eliminar/(:num)', 'UsuariosControllerSimple::eliminar/$1');
-
 // ==================== RUTAS ADMINISTRATIVAS (SOLO ADMINISTRADORES) ====================
 $routes->group('', ['filter' => 'admin'], function($routes) {
     // Gestión de trabajadores
@@ -83,7 +75,6 @@ $routes->group('', ['filter' => 'admin'], function($routes) {
     // Validación de teléfonos (solo admins pueden validar teléfonos)
     $routes->post('usuarios/validarTelefono', 'UsuariosController::validarTelefono');
     $routes->post('usuarios/infoTelefono', 'UsuariosController::infoTelefono');
-    $routes->get('usuarios/testValidacion', 'UsuariosController::testValidacion');
     
     // Control de Pagos (SOLO ADMINISTRADORES)
     $routes->get('controlpagos', [ControlPagoController::class, 'index']);
@@ -120,7 +111,6 @@ $routes->group('', ['filter' => 'trabajador'], function($routes) {
     // Cronograma (trabajadores pueden ver sus asignaciones)
     $routes->get('cronograma', 'Cronograma::index');
     $routes->get('cronograma/proyectos', 'Cronograma::proyectos');
-    $routes->get('cronograma/debug-proyectos', 'Cronograma::debugProyectos'); // Ruta temporal de debug
     $routes->get('proyectos', 'Cronograma::todosLosProyectos');
     $routes->get('cronograma/proyecto/(:num)', 'Cronograma::verProyecto/$1');
     $routes->get('cronograma/eventos', 'Cronograma::getEventos');
