@@ -113,9 +113,6 @@
                             <input type="file" id="archivoAdjunto" name="archivo" class="d-none" accept="image/*" />
                             <input type="text" class="form-control" id="mensajeTexto" 
                                    placeholder="Escribe tu mensaje..." autocomplete="off">
-                            <button type="button" class="btn btn-outline-secondary position-relative" id="btnEmoji">
-                                <i class="fas fa-smile"></i>
-                            </button>
                             <button type="submit" class="btn btn-primary" id="btnEnviar">
                                 <i class="fas fa-paper-plane"></i>
                             </button>
@@ -138,175 +135,6 @@
 
 <!-- Overlay para móviles -->
 <div class="mobile-overlay" id="mobileOverlay"></div>
-
-<!-- Selector de emojis -->
-<div id="emojiPicker" class="bg-white border rounded shadow-lg p-3" style="display: none; position: absolute; bottom: 80px; right: 20px; width: 320px; max-height: 300px; overflow-y: auto; z-index: 1050; border-radius: 12px;">
-    <div class="d-flex justify-content-between align-items-center mb-2">
-        <small class="text-muted fw-bold">Emojis</small>
-        <button type="button" class="btn-close btn-sm" id="btnCerrarEmoji"></button>
-    </div>
-    <div class="emoji-grid" style="display: grid; grid-template-columns: repeat(8, 1fr); gap: 8px;">
-        <span class="emoji-item text-center p-2 rounded" data-emoji="😀" style="cursor: pointer; font-size: 1.5em; transition: background 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">😀</span>
-        <span class="emoji-item text-center p-2 rounded" data-emoji="😃" style="cursor: pointer; font-size: 1.5em; transition: background 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">😃</span>
-        <span class="emoji-item text-center p-2 rounded" data-emoji="😄" style="cursor: pointer; font-size: 1.5em; transition: background 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">😄</span>
-        <span class="emoji-item text-center p-2 rounded" data-emoji="😁" style="cursor: pointer; font-size: 1.5em; transition: background 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">😁</span>
-        <span class="emoji-item text-center p-2 rounded" data-emoji="😅" style="cursor: pointer; font-size: 1.5em; transition: background 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">😅</span>
-        <span class="emoji-item text-center p-2 rounded" data-emoji="😂" style="cursor: pointer; font-size: 1.5em; transition: background 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">😂</span>
-        <span class="emoji-item text-center p-2 rounded" data-emoji="🤣" style="cursor: pointer; font-size: 1.5em; transition: background 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">🤣</span>
-        <span class="emoji-item text-center p-2 rounded" data-emoji="😊" style="cursor: pointer; font-size: 1.5em; transition: background 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">😊</span>
-        <span class="emoji-item text-center p-2 rounded" data-emoji="😇" style="cursor: pointer; font-size: 1.5em; transition: background 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">😇</span>
-        <span class="emoji-item text-center p-2 rounded" data-emoji="🙂" style="cursor: pointer; font-size: 1.5em; transition: background 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">🙂</span>
-        <span class="emoji-item text-center p-2 rounded" data-emoji="🙃" style="cursor: pointer; font-size: 1.5em; transition: background 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">🙃</span>
-        <span class="emoji-item text-center p-2 rounded" data-emoji="😉" style="cursor: pointer; font-size: 1.5em; transition: background 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">😉</span>
-        <span class="emoji-item text-center p-2 rounded" data-emoji="😌" style="cursor: pointer; font-size: 1.5em; transition: background 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">😌</span>
-        <span class="emoji-item text-center p-2 rounded" data-emoji="😍" style="cursor: pointer; font-size: 1.5em; transition: background 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">😍</span>
-        <span class="emoji-item text-center p-2 rounded" data-emoji="🥰" style="cursor: pointer; font-size: 1.5em; transition: background 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">🥰</span>
-        <span class="emoji-item text-center p-2 rounded" data-emoji="😘" style="cursor: pointer; font-size: 1.5em; transition: background 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">😘</span>
-        <span class="emoji-item text-center p-2 rounded" data-emoji="😗" style="cursor: pointer; font-size: 1.5em; transition: background 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">😗</span>
-        <span class="emoji-item text-center p-2 rounded" data-emoji="😙" style="cursor: pointer; font-size: 1.5em; transition: background 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">😙</span>
-        <span class="emoji-item text-center p-2 rounded" data-emoji="😚" style="cursor: pointer; font-size: 1.5em; transition: background 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">😚</span>
-        <span class="emoji-item text-center p-2 rounded" data-emoji="😋" style="cursor: pointer; font-size: 1.5em; transition: background 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">😋</span>
-        <span class="emoji-item text-center p-2 rounded" data-emoji="😛" style="cursor: pointer; font-size: 1.5em; transition: background 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">😛</span>
-        <span class="emoji-item text-center p-2 rounded" data-emoji="😝" style="cursor: pointer; font-size: 1.5em; transition: background 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">😝</span>
-        <span class="emoji-item text-center p-2 rounded" data-emoji="😜" style="cursor: pointer; font-size: 1.5em; transition: background 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">😜</span>
-        <span class="emoji-item text-center p-2 rounded" data-emoji="🤪" style="cursor: pointer; font-size: 1.5em; transition: background 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">🤪</span>
-        <span class="emoji-item text-center p-2 rounded" data-emoji="🤨" style="cursor: pointer; font-size: 1.5em; transition: background 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">🤨</span>
-        <span class="emoji-item text-center p-2 rounded" data-emoji="🧐" style="cursor: pointer; font-size: 1.5em; transition: background 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">🧐</span>
-        <span class="emoji-item text-center p-2 rounded" data-emoji="🤓" style="cursor: pointer; font-size: 1.5em; transition: background 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">🤓</span>
-        <span class="emoji-item text-center p-2 rounded" data-emoji="😎" style="cursor: pointer; font-size: 1.5em; transition: background 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">😎</span>
-        <span class="emoji-item text-center p-2 rounded" data-emoji="🤩" style="cursor: pointer; font-size: 1.5em; transition: background 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">🤩</span>
-        <span class="emoji-item text-center p-2 rounded" data-emoji="🥳" style="cursor: pointer; font-size: 1.5em; transition: background 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">🥳</span>
-        <span class="emoji-item text-center p-2 rounded" data-emoji="😏" style="cursor: pointer; font-size: 1.5em; transition: background 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">😏</span>
-        <span class="emoji-item text-center p-2 rounded" data-emoji="😒" style="cursor: pointer; font-size: 1.5em; transition: background 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">😒</span>
-        <span class="emoji-item text-center p-2 rounded" data-emoji="😞" style="cursor: pointer; font-size: 1.5em; transition: background 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">😞</span>
-        <span class="emoji-item text-center p-2 rounded" data-emoji="😔" style="cursor: pointer; font-size: 1.5em; transition: background 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">😔</span>
-        <span class="emoji-item text-center p-2 rounded" data-emoji="😟" style="cursor: pointer; font-size: 1.5em; transition: background 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">😟</span>
-        <span class="emoji-item text-center p-2 rounded" data-emoji="😕" style="cursor: pointer; font-size: 1.5em; transition: background 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">😕</span>
-        <span class="emoji-item text-center p-2 rounded" data-emoji="🙁" style="cursor: pointer; font-size: 1.5em; transition: background 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">🙁</span>
-        <span class="emoji-item text-center p-2 rounded" data-emoji="☹️" style="cursor: pointer; font-size: 1.5em; transition: background 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">☹️</span>
-        <span class="emoji-item text-center p-2 rounded" data-emoji="😣" style="cursor: pointer; font-size: 1.5em; transition: background 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">😣</span>
-        <span class="emoji-item text-center p-2 rounded" data-emoji="😖" style="cursor: pointer; font-size: 1.5em; transition: background 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">😖</span>
-        <span class="emoji-item text-center p-2 rounded" data-emoji="😫" style="cursor: pointer; font-size: 1.5em; transition: background 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">😫</span>
-        <span class="emoji-item text-center p-2 rounded" data-emoji="😩" style="cursor: pointer; font-size: 1.5em; transition: background 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">😩</span>
-        <span class="emoji-item text-center p-2 rounded" data-emoji="🥺" style="cursor: pointer; font-size: 1.5em; transition: background 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">🥺</span>
-        <span class="emoji-item text-center p-2 rounded" data-emoji="😢" style="cursor: pointer; font-size: 1.5em; transition: background 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">😢</span>
-        <span class="emoji-item text-center p-2 rounded" data-emoji="😭" style="cursor: pointer; font-size: 1.5em; transition: background 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">😭</span>
-        <span class="emoji-item text-center p-2 rounded" data-emoji="😤" style="cursor: pointer; font-size: 1.5em; transition: background 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">😤</span>
-        <span class="emoji-item text-center p-2 rounded" data-emoji="😠" style="cursor: pointer; font-size: 1.5em; transition: background 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">😠</span>
-        <span class="emoji-item text-center p-2 rounded" data-emoji="😡" style="cursor: pointer; font-size: 1.5em; transition: background 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">😡</span>
-        <span class="emoji-item text-center p-2 rounded" data-emoji="🤬" style="cursor: pointer; font-size: 1.5em; transition: background 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">🤬</span>
-        <span class="emoji-item text-center p-2 rounded" data-emoji="🤯" style="cursor: pointer; font-size: 1.5em; transition: background 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">🤯</span>
-        <span class="emoji-item text-center p-2 rounded" data-emoji="😳" style="cursor: pointer; font-size: 1.5em; transition: background 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">😳</span>
-        <span class="emoji-item text-center p-2 rounded" data-emoji="🥵" style="cursor: pointer; font-size: 1.5em; transition: background 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">🥵</span>
-        <span class="emoji-item text-center p-2 rounded" data-emoji="🥶" style="cursor: pointer; font-size: 1.5em; transition: background 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">🥶</span>
-        <span class="emoji-item text-center p-2 rounded" data-emoji="😱" style="cursor: pointer; font-size: 1.5em; transition: background 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">😱</span>
-        <span class="emoji-item text-center p-2 rounded" data-emoji="😨" style="cursor: pointer; font-size: 1.5em; transition: background 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">😨</span>
-        <span class="emoji-item text-center p-2 rounded" data-emoji="😰" style="cursor: pointer; font-size: 1.5em; transition: background 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">😰</span>
-        <span class="emoji-item text-center p-2 rounded" data-emoji="😥" style="cursor: pointer; font-size: 1.5em; transition: background 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">😥</span>
-        <span class="emoji-item text-center p-2 rounded" data-emoji="😓" style="cursor: pointer; font-size: 1.5em; transition: background 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">😓</span>
-        <span class="emoji-item text-center p-2 rounded" data-emoji="🤗" style="cursor: pointer; font-size: 1.5em; transition: background 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">🤗</span>
-        <span class="emoji-item text-center p-2 rounded" data-emoji="🤔" style="cursor: pointer; font-size: 1.5em; transition: background 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">🤔</span>
-        <span class="emoji-item text-center p-2 rounded" data-emoji="🤭" style="cursor: pointer; font-size: 1.5em; transition: background 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">🤭</span>
-        <span class="emoji-item text-center p-2 rounded" data-emoji="🤫" style="cursor: pointer; font-size: 1.5em; transition: background 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">🤫</span>
-        <span class="emoji-item text-center p-2 rounded" data-emoji="🤥" style="cursor: pointer; font-size: 1.5em; transition: background 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">🤥</span>
-        <span class="emoji-item text-center p-2 rounded" data-emoji="😶" style="cursor: pointer; font-size: 1.5em; transition: background 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">😶</span>
-        <span class="emoji-item text-center p-2 rounded" data-emoji="😐" style="cursor: pointer; font-size: 1.5em; transition: background 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">😐</span>
-        <span class="emoji-item text-center p-2 rounded" data-emoji="😑" style="cursor: pointer; font-size: 1.5em; transition: background 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">😑</span>
-        <span class="emoji-item text-center p-2 rounded" data-emoji="😬" style="cursor: pointer; font-size: 1.5em; transition: background 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">😬</span>
-        <span class="emoji-item text-center p-2 rounded" data-emoji="🙄" style="cursor: pointer; font-size: 1.5em; transition: background 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">🙄</span>
-        <span class="emoji-item text-center p-2 rounded" data-emoji="😯" style="cursor: pointer; font-size: 1.5em; transition: background 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">😯</span>
-        <span class="emoji-item text-center p-2 rounded" data-emoji="😦" style="cursor: pointer; font-size: 1.5em; transition: background 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">😦</span>
-        <span class="emoji-item text-center p-2 rounded" data-emoji="😧" style="cursor: pointer; font-size: 1.5em; transition: background 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">😧</span>
-        <span class="emoji-item text-center p-2 rounded" data-emoji="😮" style="cursor: pointer; font-size: 1.5em; transition: background 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">😮</span>
-        <span class="emoji-item text-center p-2 rounded" data-emoji="😲" style="cursor: pointer; font-size: 1.5em; transition: background 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">😲</span>
-        <span class="emoji-item text-center p-2 rounded" data-emoji="🥱" style="cursor: pointer; font-size: 1.5em; transition: background 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">🥱</span>
-        <span class="emoji-item text-center p-2 rounded" data-emoji="😴" style="cursor: pointer; font-size: 1.5em; transition: background 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">😴</span>
-        <span class="emoji-item text-center p-2 rounded" data-emoji="🤤" style="cursor: pointer; font-size: 1.5em; transition: background 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">🤤</span>
-        <span class="emoji-item text-center p-2 rounded" data-emoji="😪" style="cursor: pointer; font-size: 1.5em; transition: background 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">😪</span>
-        <span class="emoji-item text-center p-2 rounded" data-emoji="😵" style="cursor: pointer; font-size: 1.5em; transition: background 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">😵</span>
-        <span class="emoji-item text-center p-2 rounded" data-emoji="🤐" style="cursor: pointer; font-size: 1.5em; transition: background 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">🤐</span>
-        <span class="emoji-item text-center p-2 rounded" data-emoji="🥴" style="cursor: pointer; font-size: 1.5em; transition: background 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">🥴</span>
-        <span class="emoji-item text-center p-2 rounded" data-emoji="🤢" style="cursor: pointer; font-size: 1.5em; transition: background 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">🤢</span>
-        <span class="emoji-item text-center p-2 rounded" data-emoji="🤮" style="cursor: pointer; font-size: 1.5em; transition: background 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">🤮</span>
-        <span class="emoji-item text-center p-2 rounded" data-emoji="🤧" style="cursor: pointer; font-size: 1.5em; transition: background 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">🤧</span>
-        <span class="emoji-item text-center p-2 rounded" data-emoji="😷" style="cursor: pointer; font-size: 1.5em; transition: background 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">😷</span>
-        <span class="emoji-item text-center p-2 rounded" data-emoji="🤒" style="cursor: pointer; font-size: 1.5em; transition: background 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">🤒</span>
-        <span class="emoji-item text-center p-2 rounded" data-emoji="🤕" style="cursor: pointer; font-size: 1.5em; transition: background 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">🤕</span>
-        <span class="emoji-item text-center p-2 rounded" data-emoji="🤑" style="cursor: pointer; font-size: 1.5em; transition: background 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">🤑</span>
-        <span class="emoji-item text-center p-2 rounded" data-emoji="🤠" style="cursor: pointer; font-size: 1.5em; transition: background 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">🤠</span>
-        <span class="emoji-item text-center p-2 rounded" data-emoji="😈" style="cursor: pointer; font-size: 1.5em; transition: background 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">😈</span>
-        <span class="emoji-item text-center p-2 rounded" data-emoji="👿" style="cursor: pointer; font-size: 1.5em; transition: background 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">👿</span>
-        <span class="emoji-item text-center p-2 rounded" data-emoji="👹" style="cursor: pointer; font-size: 1.5em; transition: background 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">👹</span>
-        <span class="emoji-item text-center p-2 rounded" data-emoji="👺" style="cursor: pointer; font-size: 1.5em; transition: background 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">👺</span>
-        <span class="emoji-item text-center p-2 rounded" data-emoji="🤡" style="cursor: pointer; font-size: 1.5em; transition: background 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">🤡</span>
-        <span class="emoji-item text-center p-2 rounded" data-emoji="💩" style="cursor: pointer; font-size: 1.5em; transition: background 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">💩</span>
-        <span class="emoji-item text-center p-2 rounded" data-emoji="👻" style="cursor: pointer; font-size: 1.5em; transition: background 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">👻</span>
-        <span class="emoji-item text-center p-2 rounded" data-emoji="💀" style="cursor: pointer; font-size: 1.5em; transition: background 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">💀</span>
-        <span class="emoji-item text-center p-2 rounded" data-emoji="☠️" style="cursor: pointer; font-size: 1.5em; transition: background 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">☠️</span>
-        <span class="emoji-item text-center p-2 rounded" data-emoji="👽" style="cursor: pointer; font-size: 1.5em; transition: background 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">👽</span>
-        <span class="emoji-item text-center p-2 rounded" data-emoji="👾" style="cursor: pointer; font-size: 1.5em; transition: background 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">👾</span>
-        <span class="emoji-item text-center p-2 rounded" data-emoji="🤖" style="cursor: pointer; font-size: 1.5em; transition: background 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">🤖</span>
-        <span class="emoji-item text-center p-2 rounded" data-emoji="🎃" style="cursor: pointer; font-size: 1.5em; transition: background 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">🎃</span>
-        <span class="emoji-item text-center p-2 rounded" data-emoji="👋" style="cursor: pointer; font-size: 1.5em; transition: background 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">👋</span>
-        <span class="emoji-item text-center p-2 rounded" data-emoji="🤚" style="cursor: pointer; font-size: 1.5em; transition: background 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">🤚</span>
-        <span class="emoji-item text-center p-2 rounded" data-emoji="🖐" style="cursor: pointer; font-size: 1.5em; transition: background 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">🖐</span>
-        <span class="emoji-item text-center p-2 rounded" data-emoji="✋" style="cursor: pointer; font-size: 1.5em; transition: background 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">✋</span>
-        <span class="emoji-item text-center p-2 rounded" data-emoji="🖖" style="cursor: pointer; font-size: 1.5em; transition: background 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">🖖</span>
-        <span class="emoji-item text-center p-2 rounded" data-emoji="👌" style="cursor: pointer; font-size: 1.5em; transition: background 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">👌</span>
-        <span class="emoji-item text-center p-2 rounded" data-emoji="🤏" style="cursor: pointer; font-size: 1.5em; transition: background 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">🤏</span>
-        <span class="emoji-item text-center p-2 rounded" data-emoji="✌️" style="cursor: pointer; font-size: 1.5em; transition: background 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">✌️</span>
-        <span class="emoji-item text-center p-2 rounded" data-emoji="🤞" style="cursor: pointer; font-size: 1.5em; transition: background 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">🤞</span>
-        <span class="emoji-item text-center p-2 rounded" data-emoji="🤟" style="cursor: pointer; font-size: 1.5em; transition: background 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">🤟</span>
-        <span class="emoji-item text-center p-2 rounded" data-emoji="🤘" style="cursor: pointer; font-size: 1.5em; transition: background 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">🤘</span>
-        <span class="emoji-item text-center p-2 rounded" data-emoji="🤙" style="cursor: pointer; font-size: 1.5em; transition: background 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">🤙</span>
-        <span class="emoji-item text-center p-2 rounded" data-emoji="👈" style="cursor: pointer; font-size: 1.5em; transition: background 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">👈</span>
-        <span class="emoji-item text-center p-2 rounded" data-emoji="👉" style="cursor: pointer; font-size: 1.5em; transition: background 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">👉</span>
-        <span class="emoji-item text-center p-2 rounded" data-emoji="👆" style="cursor: pointer; font-size: 1.5em; transition: background 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">👆</span>
-        <span class="emoji-item text-center p-2 rounded" data-emoji="🖕" style="cursor: pointer; font-size: 1.5em; transition: background 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">🖕</span>
-        <span class="emoji-item text-center p-2 rounded" data-emoji="👇" style="cursor: pointer; font-size: 1.5em; transition: background 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">👇</span>
-        <span class="emoji-item text-center p-2 rounded" data-emoji="☝️" style="cursor: pointer; font-size: 1.5em; transition: background 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">☝️</span>
-        <span class="emoji-item text-center p-2 rounded" data-emoji="👍" style="cursor: pointer; font-size: 1.5em; transition: background 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">👍</span>
-        <span class="emoji-item text-center p-2 rounded" data-emoji="👎" style="cursor: pointer; font-size: 1.5em; transition: background 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">👎</span>
-        <span class="emoji-item text-center p-2 rounded" data-emoji="✊" style="cursor: pointer; font-size: 1.5em; transition: background 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">✊</span>
-        <span class="emoji-item text-center p-2 rounded" data-emoji="👊" style="cursor: pointer; font-size: 1.5em; transition: background 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">👊</span>
-        <span class="emoji-item text-center p-2 rounded" data-emoji="🤛" style="cursor: pointer; font-size: 1.5em; transition: background 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">🤛</span>
-        <span class="emoji-item text-center p-2 rounded" data-emoji="🤜" style="cursor: pointer; font-size: 1.5em; transition: background 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">🤜</span>
-        <span class="emoji-item text-center p-2 rounded" data-emoji="👏" style="cursor: pointer; font-size: 1.5em; transition: background 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">👏</span>
-        <span class="emoji-item text-center p-2 rounded" data-emoji="🙌" style="cursor: pointer; font-size: 1.5em; transition: background 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">🙌</span>
-        <span class="emoji-item text-center p-2 rounded" data-emoji="👐" style="cursor: pointer; font-size: 1.5em; transition: background 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">👐</span>
-        <span class="emoji-item text-center p-2 rounded" data-emoji="🤲" style="cursor: pointer; font-size: 1.5em; transition: background 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">🤲</span>
-        <span class="emoji-item text-center p-2 rounded" data-emoji="🤝" style="cursor: pointer; font-size: 1.5em; transition: background 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">🤝</span>
-        <span class="emoji-item text-center p-2 rounded" data-emoji="🙏" style="cursor: pointer; font-size: 1.5em; transition: background 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">🙏</span>
-        <span class="emoji-item text-center p-2 rounded" data-emoji="💪" style="cursor: pointer; font-size: 1.5em; transition: background 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">💪</span>
-        <span class="emoji-item text-center p-2 rounded" data-emoji="❤️" style="cursor: pointer; font-size: 1.5em; transition: background 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">❤️</span>
-        <span class="emoji-item text-center p-2 rounded" data-emoji="🧡" style="cursor: pointer; font-size: 1.5em; transition: background 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">🧡</span>
-        <span class="emoji-item text-center p-2 rounded" data-emoji="💛" style="cursor: pointer; font-size: 1.5em; transition: background 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">💛</span>
-        <span class="emoji-item text-center p-2 rounded" data-emoji="💚" style="cursor: pointer; font-size: 1.5em; transition: background 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">💚</span>
-        <span class="emoji-item text-center p-2 rounded" data-emoji="💙" style="cursor: pointer; font-size: 1.5em; transition: background 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">💙</span>
-        <span class="emoji-item text-center p-2 rounded" data-emoji="💜" style="cursor: pointer; font-size: 1.5em; transition: background 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">💜</span>
-        <span class="emoji-item text-center p-2 rounded" data-emoji="🖤" style="cursor: pointer; font-size: 1.5em; transition: background 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">🖤</span>
-        <span class="emoji-item text-center p-2 rounded" data-emoji="🤍" style="cursor: pointer; font-size: 1.5em; transition: background 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">🤍</span>
-        <span class="emoji-item text-center p-2 rounded" data-emoji="🤎" style="cursor: pointer; font-size: 1.5em; transition: background 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">🤎</span>
-        <span class="emoji-item text-center p-2 rounded" data-emoji="💯" style="cursor: pointer; font-size: 1.5em; transition: background 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">💯</span>
-        <span class="emoji-item text-center p-2 rounded" data-emoji="✅" style="cursor: pointer; font-size: 1.5em; transition: background 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">✅</span>
-        <span class="emoji-item text-center p-2 rounded" data-emoji="❌" style="cursor: pointer; font-size: 1.5em; transition: background 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">❌</span>
-        <span class="emoji-item text-center p-2 rounded" data-emoji="⭕" style="cursor: pointer; font-size: 1.5em; transition: background 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">⭕</span>
-        <span class="emoji-item text-center p-2 rounded" data-emoji="❓" style="cursor: pointer; font-size: 1.5em; transition: background 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">❓</span>
-        <span class="emoji-item text-center p-2 rounded" data-emoji="❗" style="cursor: pointer; font-size: 1.5em; transition: background 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">❗</span>
-        <span class="emoji-item text-center p-2 rounded" data-emoji="🔥" style="cursor: pointer; font-size: 1.5em; transition: background 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">🔥</span>
-        <span class="emoji-item text-center p-2 rounded" data-emoji="⭐" style="cursor: pointer; font-size: 1.5em; transition: background 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">⭐</span>
-        <span class="emoji-item text-center p-2 rounded" data-emoji="🌟" style="cursor: pointer; font-size: 1.5em; transition: background 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">🌟</span>
-        <span class="emoji-item text-center p-2 rounded" data-emoji="💝" style="cursor: pointer; font-size: 1.5em; transition: background 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">💝</span>
-        <span class="emoji-item text-center p-2 rounded" data-emoji="💖" style="cursor: pointer; font-size: 1.5em; transition: background 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">💖</span>
-        <span class="emoji-item text-center p-2 rounded" data-emoji="💗" style="cursor: pointer; font-size: 1.5em; transition: background 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">💗</span>
-        <span class="emoji-item text-center p-2 rounded" data-emoji="💓" style="cursor: pointer; font-size: 1.5em; transition: background 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">💓</span>
-        <span class="emoji-item text-center p-2 rounded" data-emoji="💞" style="cursor: pointer; font-size: 1.5em; transition: background 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">💞</span>
-        <span class="emoji-item text-center p-2 rounded" data-emoji="💕" style="cursor: pointer; font-size: 1.5em; transition: background 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">💕</span>
-        <span class="emoji-item text-center p-2 rounded" data-emoji="💟" style="cursor: pointer; font-size: 1.5em; transition: background 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">💟</span>
-        <span class="emoji-item text-center p-2 rounded" data-emoji="❣️" style="cursor: pointer; font-size: 1.5em; transition: background 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">❣️</span>
-        <span class="emoji-item text-center p-2 rounded" data-emoji="💔" style="cursor: pointer; font-size: 1.5em; transition: background 0.2s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">💔</span>
-    </div>
-</div>
 
 <!-- Sonido de notificación -->
 <audio id="sndMensaje" preload="auto">
@@ -357,47 +185,6 @@ $(document).ready(function() {
     $('#btnQuitarPreview').on('click', function() {
         $('#archivoAdjunto').val('');
         $('#previewImagen').hide();
-    });
-    
-    // Selector de emojis
-    $('#btnEmoji').on('click', function(e) {
-        e.stopPropagation();
-        const picker = $('#emojiPicker');
-        const areaEscritura = $('#areaEscritura');
-        const btnOffset = $(this).offset();
-        const areaOffset = areaEscritura.offset();
-        
-        if (picker.is(':visible')) {
-            picker.hide();
-        } else {
-            picker.css({
-                'bottom': (areaEscritura.outerHeight() + 10) + 'px',
-                'right': '20px'
-            }).show();
-        }
-    });
-    
-    $('#btnCerrarEmoji').on('click', function() {
-        $('#emojiPicker').hide();
-    });
-    
-    // Cerrar emoji picker al hacer clic fuera
-    $(document).on('click', function(e) {
-        if (!$(e.target).closest('#btnEmoji, #emojiPicker').length) {
-            $('#emojiPicker').hide();
-        }
-    });
-    
-    // Insertar emoji en input
-    $('.emoji-item').on('click', function() {
-        const emoji = $(this).data('emoji');
-        const input = $('#mensajeTexto');
-        const start = input[0].selectionStart || input.val().length;
-        const end = input[0].selectionEnd || input.val().length;
-        const text = input.val();
-        input.val(text.substring(0, start) + emoji + text.substring(end));
-        input[0].selectionStart = input[0].selectionEnd = start + emoji.length;
-        input.focus();
     });
     
     // Typing indicator con manejo de errores silencioso
@@ -777,16 +564,25 @@ function enviarMensaje() {
     const $btnEnviar = $('#btnEnviar');
     const iconoOriginal = $btnEnviar.html();
     
-    // Limpiar inmediatamente el campo para permitir escribir el siguiente mensaje
+    // Obtener archivo antes de limpiar campos
+    const archivo = document.getElementById('archivoAdjunto').files[0];
+    const tieneArchivo = archivo !== undefined;
+    
+    // Limpiar inmediatamente el campo de texto para permitir escribir el siguiente mensaje
     $('#mensajeTexto').val('');
-    $btnEnviar.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i>');
+    
+    // Actualizar botón con indicador apropiado
+    if (tieneArchivo) {
+        $btnEnviar.prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-1"></i> Procesando...');
+    } else {
+        $btnEnviar.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i>');
+    }
     
     // Obtener el token CSRF
     const csrfToken = $('meta[name="csrf-token"]').attr('content');
     
     const fd = new FormData();
-    const archivo = document.getElementById('archivoAdjunto').files[0];
-    if (archivo) {
+    if (tieneArchivo) {
         if (archivo.size > 30 * 1024 * 1024) {
             mostrarError('El archivo excede el límite de 30 MB');
             $btnEnviar.prop('disabled', false).html(iconoOriginal);
@@ -801,51 +597,76 @@ function enviarMensaje() {
     fd.append('contenido', texto);
     fd.append('tipo', 'normal');
 
-    // Enviar de forma asíncrona sin bloquear
-    $.ajax({
-        url: '<?= base_url('mensajeria/procesarEnvio') ?>',
-        method: 'POST',
-        headers: { 'X-CSRF-TOKEN': csrfToken },
-        data: fd,
-        contentType: false,
-        processData: false,
-        timeout: 5000, // Reducido a 5 segundos para respuesta más rápida
-        success: function(response) {
-            if (response.success) {
-                // Limpiar archivo si existe
-                $('#archivoAdjunto').val('');
-                $('#previewImagen').hide();
-                
-                // Cargar mensajes de forma asíncrona sin bloquear
-                ultimoMensajeId = 0;
-                // Usar setTimeout para no bloquear el siguiente envío
-                setTimeout(() => {
-                    cargarMensajesConversacion(destinatarioId, false);
-                    cargarConversaciones();
-                }, 100);
-            } else {
-                mostrarError(response.message || 'Error al enviar mensaje');
-            }
-        },
-        error: function(xhr, status, error) {
-            // Solo mostrar error si es crítico, no bloquear
-            if (xhr.status === 401) {
+        // Enviar de forma asíncrona sin bloquear
+        const xhr = new XMLHttpRequest();
+        
+        // Configurar upload progress para mostrar progreso
+        if (tieneArchivo && xhr.upload) {
+            xhr.upload.addEventListener('progress', function(e) {
+                if (e.lengthComputable) {
+                    const percentComplete = (e.loaded / e.total) * 100;
+                    if (percentComplete < 100) {
+                        $btnEnviar.html(`<i class="fas fa-spinner fa-spin me-1"></i> ${Math.round(percentComplete)}%`);
+                    }
+                }
+            }, false);
+        }
+        
+        xhr.addEventListener('load', function() {
+            if (xhr.status === 200) {
+                try {
+                    const response = JSON.parse(xhr.responseText);
+                    if (response.success) {
+                        // Limpiar archivo si existe
+                        $('#archivoAdjunto').val('');
+                        $('#previewImagen').hide();
+                        
+                        // Cargar mensajes de forma asíncrona sin bloquear
+                        ultimoMensajeId = 0;
+                        // Usar setTimeout para no bloquear el siguiente envío
+                        setTimeout(() => {
+                            cargarMensajesConversacion(destinatarioId, false);
+                            cargarConversaciones();
+                        }, 100);
+                    } else {
+                        mostrarError(response.message || 'Error al enviar mensaje');
+                    }
+                } catch (e) {
+                    mostrarError('Error al procesar la respuesta del servidor');
+                }
+            } else if (xhr.status === 401) {
                 window.location.href = '<?= base_url('login') ?>';
                 return;
             } else if (xhr.status === 403) {
                 mostrarError('Acceso denegado. Verifique su sesión.');
-            } else if (status !== 'abort') {
-                // Solo mostrar error si no fue cancelado manualmente
-                console.error('Error al enviar mensaje:', error);
+            } else {
+                mostrarError('Error al enviar mensaje. Por favor, intente nuevamente.');
             }
-        },
-        complete: function() {
-            // SIEMPRE resetear el estado, incluso si hay error
+            
+            // SIEMPRE resetear el estado
             $btnEnviar.prop('disabled', false).html(iconoOriginal);
             enviandoMensaje = false;
-            $('#mensajeTexto').focus(); // Enfocar de nuevo para escribir rápido
-        }
-    });
+            $('#mensajeTexto').focus();
+        });
+        
+        xhr.addEventListener('error', function() {
+            mostrarError('Error de conexión. Verifique su internet.');
+            $btnEnviar.prop('disabled', false).html(iconoOriginal);
+            enviandoMensaje = false;
+            $('#mensajeTexto').focus();
+        });
+        
+        xhr.addEventListener('timeout', function() {
+            mostrarError('Tiempo de espera agotado. El archivo puede ser muy grande o hay problemas de conexión.');
+            $btnEnviar.prop('disabled', false).html(iconoOriginal);
+            enviandoMensaje = false;
+            $('#mensajeTexto').focus();
+        });
+        
+        xhr.open('POST', '<?= base_url('mensajeria/procesarEnvio') ?>');
+        xhr.setRequestHeader('X-CSRF-TOKEN', csrfToken);
+        xhr.timeout = 60000; // 60 segundos
+        xhr.send(fd);
 }
 
 function mostrarError(mensaje) {

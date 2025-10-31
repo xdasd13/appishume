@@ -215,17 +215,30 @@ class MensajeriaController extends BaseController
     private function crearTablaArchivosMensaje()
     {
         $db = \Config\Database::connect();
-        $sql = "CREATE TABLE IF NOT EXISTS archivos_mensaje (
-            id INT AUTO_INCREMENT PRIMARY KEY,
-            mensaje_id INT NULL,
-            nombre_original VARCHAR(255) NOT NULL,
-            mime VARCHAR(100) NOT NULL,
-            tamanio INT NOT NULL,
-            datos LONGBLOB NOT NULL,
-            creado_en DATETIME DEFAULT CURRENT_TIMESTAMP,
-            INDEX idx_mensaje (mensaje_id)
-        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4";
-        $db->query($sql);
+        
+        // Crear tabla si no existe
+        if (!$db->tableExists('archivos_mensaje')) {
+            $sql = "CREATE TABLE archivos_mensaje (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                mensaje_id INT NULL,
+                nombre_original VARCHAR(255) NOT NULL,
+                mime VARCHAR(100) NOT NULL,
+                tamanio INT NOT NULL,
+                datos LONGBLOB NULL,
+                path VARCHAR(500) NULL,
+                creado_en DATETIME DEFAULT CURRENT_TIMESTAMP,
+                INDEX idx_mensaje (mensaje_id)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4";
+            $db->query($sql);
+        } else {
+            // Agregar columna path si no existe (migración)
+            $columnas = $db->getFieldNames('archivos_mensaje');
+            if (!in_array('path', $columnas)) {
+                $db->query("ALTER TABLE archivos_mensaje ADD COLUMN path VARCHAR(500) NULL AFTER tamanio");
+            }
+            // Hacer datos opcional (puede ser NULL si usamos path)
+            $db->query("ALTER TABLE archivos_mensaje MODIFY datos LONGBLOB NULL");
+        }
     }
 
     /**
@@ -648,9 +661,11 @@ class MensajeriaController extends BaseController
                 'fecha_envio' => date('Y-m-d H:i:s')
             ];
 
-            // Adjuntos: guardar en BD (no FS)
+            // Adjuntos: guardar en sistema de archivos (optimizado)
             $file = $this->request->getFile('archivo');
             $archivoMetadata = null;
+            $archivoPath = null;
+            
             if ($file && $file->isValid()) {
                 // Límite: 30 MB
                 $maxBytes = 30 * 1024 * 1024;
@@ -660,12 +675,43 @@ class MensajeriaController extends BaseController
                         'message' => 'El archivo excede el límite de 30 MB'
                     ]);
                 }
-                $archivoMetadata = [
-                    'nombre_original' => $file->getClientName(),
-                    'mime' => $file->getClientMimeType() ?: 'application/octet-stream',
-                    'tamanio' => $file->getSize(),
-                    'datos' => file_get_contents($file->getTempName()),
-                ];
+                
+                // Crear directorio si no existe
+                $uploadDir = ROOTPATH . 'public/uploads/mensajeria/';
+                if (!is_dir($uploadDir)) {
+                    mkdir($uploadDir, 0755, true);
+                }
+                
+                // Generar nombre único para el archivo
+                $extension = $file->getClientExtension();
+                $newName = date('YmdHis') . '_' . uniqid() . '.' . $extension;
+                $fullPath = $uploadDir . $newName;
+                
+                // Mover archivo directamente (más rápido que cargar en memoria)
+                if ($file->move($uploadDir, $newName)) {
+                    $archivoPath = 'uploads/mensajeria/' . $newName;
+                    
+                    // Optimizar imagen si es una imagen grande (reducir tamaño)
+                    $mimeType = $file->getClientMimeType();
+                    if (strpos($mimeType, 'image/') === 0 && $file->getSize() > 1024 * 1024) { // > 1MB
+                        $this->optimizarImagen($fullPath, $mimeType);
+                    }
+                    
+                    // Obtener tamaño final después de optimización
+                    $tamanioFinal = file_exists($fullPath) ? filesize($fullPath) : $file->getSize();
+                    
+                    $archivoMetadata = [
+                        'nombre_original' => $file->getClientName(),
+                        'mime' => $mimeType ?: 'application/octet-stream',
+                        'tamanio' => $tamanioFinal,
+                        'path' => $archivoPath,
+                    ];
+                } else {
+                    return $this->response->setJSON([
+                        'success' => false,
+                        'message' => 'Error al guardar el archivo'
+                    ]);
+                }
             }
 
             // Insertar mensaje directamente con SQL
@@ -714,18 +760,19 @@ class MensajeriaController extends BaseController
 
             $mensajeId = $db->insertID();
 
-            // Si hubo adjunto, guardarlo en BD y anexar link virtual
-            if ($archivoMetadata) {
+            // Si hubo adjunto, guardar referencia en BD y anexar link directo
+            if ($archivoMetadata && $archivoPath) {
+                // Guardar solo metadatos en BD (no el archivo completo)
                 $db->table('archivos_mensaje')->insert([
                     'mensaje_id' => $mensajeId,
                     'nombre_original' => $archivoMetadata['nombre_original'],
                     'mime' => $archivoMetadata['mime'],
                     'tamanio' => $archivoMetadata['tamanio'],
-                    'datos' => $archivoMetadata['datos'],
+                    'path' => $archivoPath, // Ruta del archivo en lugar de datos BLOB
                 ]);
-                $archivoId = $db->insertID();
-                // Actualizar contenido del mensaje para incluir enlace de descarga
-                $enlace = base_url('mensajeria/archivo/' . $archivoId);
+                
+                // Crear enlace directo al archivo (más rápido)
+                $enlace = base_url($archivoPath);
                 $db->query("UPDATE mensajes SET contenido = CONCAT(contenido, '\n', '[archivo] ', ?) WHERE id = ?", [$enlace, $mensajeId]);
             }
 
@@ -845,7 +892,7 @@ class MensajeriaController extends BaseController
     }
 
     /**
-     * Descargar/servir archivo adjunto desde BD por ID
+     * Descargar/servir archivo adjunto desde sistema de archivos o BD (retrocompatibilidad)
      */
     public function archivo($id)
     {
@@ -854,11 +901,120 @@ class MensajeriaController extends BaseController
         if (!$row) {
             return $this->response->setStatusCode(404, 'Archivo no encontrado');
         }
-        return $this->response
-            ->setHeader('Content-Type', $row['mime'])
-            ->setHeader('Content-Length', (string)$row['tamanio'])
-            ->setHeader('Content-Disposition', 'inline; filename="' . $row['nombre_original'] . '"')
-            ->setBody($row['datos']);
+        
+        // Si tiene path (nuevo sistema), servir desde archivo
+        if (!empty($row['path']) && file_exists(ROOTPATH . 'public/' . $row['path'])) {
+            $filePath = ROOTPATH . 'public/' . $row['path'];
+            $fileContent = file_get_contents($filePath);
+            $actualSize = filesize($filePath);
+            
+            return $this->response
+                ->setHeader('Content-Type', $row['mime'])
+                ->setHeader('Content-Length', (string)$actualSize)
+                ->setHeader('Content-Disposition', 'inline; filename="' . $row['nombre_original'] . '"')
+                ->setHeader('Cache-Control', 'public, max-age=31536000')
+                ->setBody($fileContent);
+        }
+        
+        // Retrocompatibilidad: servir desde BD si existe datos BLOB
+        if (!empty($row['datos'])) {
+            return $this->response
+                ->setHeader('Content-Type', $row['mime'])
+                ->setHeader('Content-Length', (string)$row['tamanio'])
+                ->setHeader('Content-Disposition', 'inline; filename="' . $row['nombre_original'] . '"')
+                ->setBody($row['datos']);
+        }
+        
+        return $this->response->setStatusCode(404, 'Archivo no encontrado');
+    }
+    
+    /**
+     * Optimizar imagen para reducir tamaño
+     */
+    private function optimizarImagen($filePath, $mimeType)
+    {
+        try {
+            // Solo optimizar si GD está disponible
+            if (!extension_loaded('gd')) {
+                return;
+            }
+            
+            $maxWidth = 1920;
+            $maxHeight = 1080;
+            $quality = 85;
+            
+            $image = null;
+            
+            // Cargar imagen según tipo
+            switch ($mimeType) {
+                case 'image/jpeg':
+                case 'image/jpg':
+                    $image = imagecreatefromjpeg($filePath);
+                    break;
+                case 'image/png':
+                    $image = imagecreatefrompng($filePath);
+                    break;
+                case 'image/gif':
+                    $image = imagecreatefromgif($filePath);
+                    break;
+                default:
+                    return; // No optimizar otros formatos
+            }
+            
+            if (!$image) {
+                return;
+            }
+            
+            $originalWidth = imagesx($image);
+            $originalHeight = imagesy($image);
+            
+            // Si la imagen es más pequeña que el máximo, no hacer nada
+            if ($originalWidth <= $maxWidth && $originalHeight <= $maxHeight) {
+                imagedestroy($image);
+                return;
+            }
+            
+            // Calcular nuevas dimensiones manteniendo proporción
+            $ratio = min($maxWidth / $originalWidth, $maxHeight / $originalHeight);
+            $newWidth = (int)($originalWidth * $ratio);
+            $newHeight = (int)($originalHeight * $ratio);
+            
+            // Crear nueva imagen redimensionada
+            $newImage = imagecreatetruecolor($newWidth, $newHeight);
+            
+            // Preservar transparencia para PNG
+            if ($mimeType === 'image/png') {
+                imagealphablending($newImage, false);
+                imagesavealpha($newImage, true);
+                $transparent = imagecolorallocatealpha($newImage, 255, 255, 255, 127);
+                imagefilledrectangle($newImage, 0, 0, $newWidth, $newHeight, $transparent);
+            }
+            
+            // Redimensionar
+            imagecopyresampled($newImage, $image, 0, 0, 0, 0, $newWidth, $newHeight, $originalWidth, $originalHeight);
+            
+            // Guardar imagen optimizada
+            switch ($mimeType) {
+                case 'image/jpeg':
+                case 'image/jpg':
+                    imagejpeg($newImage, $filePath, $quality);
+                    break;
+                case 'image/png':
+                    imagepng($newImage, $filePath, 9);
+                    break;
+                case 'image/gif':
+                    imagegif($newImage, $filePath);
+                    break;
+            }
+            
+            // Liberar memoria
+            imagedestroy($image);
+            imagedestroy($newImage);
+            
+        } catch (\Exception $e) {
+            // Si falla la optimización, continuar con el archivo original
+            log_message('debug', 'Error al optimizar imagen: ' . $e->getMessage());
+        }
     }
 
     /**

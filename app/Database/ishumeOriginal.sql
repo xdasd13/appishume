@@ -108,6 +108,8 @@ CREATE TABLE controlpagos (
     fechahora DATETIME,
     idusuario INT,
     comprobante VARCHAR(255) NULL,
+    dni_pagador VARCHAR(8) NULL,
+    nombre_pagador VARCHAR(255) NULL,
     CONSTRAINT fk_pago_contrato FOREIGN KEY (idcontrato) REFERENCES contratos(idcontrato),
     CONSTRAINT fk_pago_tipopago FOREIGN KEY (idtipopago) REFERENCES tipospago(idtipopago),
     CONSTRAINT fk_pago_usuario FOREIGN KEY (idusuario) REFERENCES usuarios(idusuario)

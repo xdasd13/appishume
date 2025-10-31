@@ -127,6 +127,40 @@ function getPeruDateTimeFormatted() {
                             </div>
                         </div>
 
+                        <!-- Campos para identificar al pagador -->
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="dni_pagador">DNI del Pagador *</label>
+                                    <div class="input-group">
+                                        <input type="text" class="form-control" id="dni_pagador" name="dni_pagador" 
+                                               maxlength="8" pattern="[0-9]{8}" required 
+                                               placeholder="Ingrese 8 dígitos">
+                                        <div class="input-group-append">
+                                            <button type="button" class="btn btn-primary" id="btnValidarDni">
+                                                <i class="fas fa-search mr-1"></i> Validar
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <small class="form-text text-muted">Ingrese el DNI de la persona que realiza el pago</small>
+                                    <div id="dni-feedback" class="mt-2"></div>
+                                    <div id="privacy-notice-pagador" class="alert alert-info mt-2" style="display: none;">
+                                        <i class="fas fa-info-circle mr-1"></i>
+                                        <small>Los datos fueron obtenidos de RENIEC y están protegidos por la Ley de Protección de Datos Personales</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="nombre_pagador">Nombre Completo del Pagador *</label>
+                                    <input type="text" class="form-control" id="nombre_pagador" name="nombre_pagador" 
+                                           required readonly style="background-color: #f8f9fa;">
+                                    <small class="form-text text-muted">Se completará automáticamente al validar el DNI</small>
+                                    <input type="hidden" id="nombre_pagador_hidden" name="nombre_pagador_hidden">
+                                </div>
+                            </div>
+                        </div>
+
                         <div class="row">
                             <div class="col-md-12">
                                 <div class="form-group">
@@ -209,6 +243,141 @@ function getPeruDateTimeFormatted() {
 <!-- Scripts para la funcionalidad del formulario -->
 <script>
 $(document).ready(function() {
+    // Validación de DNI del pagador
+    let dniValidationInProgress = false;
+    let lastValidatedDni = '';
+
+    // Validar DNI al hacer clic en el botón
+    $('#btnValidarDni').on('click', function() {
+        const dni = $('#dni_pagador').val().trim();
+        validateDniPagador(dni);
+    });
+
+    // Validar DNI al presionar Enter en el campo
+    $('#dni_pagador').on('keypress', function(e) {
+        if (e.which === 13) {
+            e.preventDefault();
+            const dni = $(this).val().trim();
+            validateDniPagador(dni);
+        }
+    });
+
+    // Función para validar DNI del pagador
+    function validateDniPagador(dni) {
+        // Validación básica
+        if (!dni) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'DNI requerido',
+                text: 'Por favor, ingrese el DNI del pagador',
+                timer: 3000,
+                showConfirmButton: false
+            });
+            $('#dni_pagador').focus();
+            return;
+        }
+
+        // Validar formato
+        if (!/^\d{8}$/.test(dni)) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Formato inválido',
+                text: 'El DNI debe tener exactamente 8 dígitos numéricos',
+                timer: 3000,
+                showConfirmButton: false
+            });
+            $('#dni_pagador').removeClass('is-valid').addClass('is-invalid');
+            return;
+        }
+
+        // Si ya se validó este DNI, no validar de nuevo
+        if (lastValidatedDni === dni) {
+            return;
+        }
+
+        if (dniValidationInProgress) {
+            return;
+        }
+
+        dniValidationInProgress = true;
+        const $btn = $('#btnValidarDni');
+        const originalHtml = $btn.html();
+        $btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin mr-1"></i> Validando...');
+
+        $.ajax({
+            url: '<?= base_url('/controlpagos/validarDniPagador') ?>',
+            type: 'POST',
+            data: {
+                dni: dni,
+                csrf_test_name: $('input[name="csrf_test_name"]').val()
+            },
+            dataType: 'json',
+            success: function(response) {
+                if (response.status === 'success') {
+                    // DNI válido
+                    $('#dni_pagador').removeClass('is-invalid').addClass('is-valid');
+                    
+                    // Completar nombre
+                    const nombreCompleto = response.data.nombres + ' ' + response.data.apellidos_completos;
+                    $('#nombre_pagador').val(nombreCompleto).removeClass('is-invalid').addClass('is-valid');
+                    $('#nombre_pagador_hidden').val(nombreCompleto);
+                    
+                    // Mostrar aviso de privacidad
+                    $('#privacy-notice-pagador').show();
+                    
+                    // Mostrar mensaje de éxito
+                    $('#dni-feedback').html(
+                        '<div class="alert alert-success alert-dismissible fade show" role="alert">' +
+                        '<i class="fas fa-check-circle mr-2"></i>DNI válido: ' + nombreCompleto +
+                        '<button type="button" class="close" data-dismiss="alert"><span>&times;</span></button>' +
+                        '</div>'
+                    );
+                    
+                    lastValidatedDni = dni;
+                } else {
+                    // DNI inválido
+                    $('#dni_pagador').removeClass('is-valid').addClass('is-invalid');
+                    $('#nombre_pagador').val('').removeClass('is-valid');
+                    $('#nombre_pagador_hidden').val('');
+                    $('#privacy-notice-pagador').hide();
+                    
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'DNI no encontrado',
+                        text: response.message || 'El DNI no fue encontrado en RENIEC',
+                        confirmButtonColor: '#dc3545'
+                    });
+                    
+                    $('#dni-feedback').html(
+                        '<div class="alert alert-danger alert-dismissible fade show" role="alert">' +
+                        '<i class="fas fa-times-circle mr-2"></i>' + (response.message || 'DNI no válido') +
+                        '<button type="button" class="close" data-dismiss="alert"><span>&times;</span></button>' +
+                        '</div>'
+                    );
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('Error AJAX:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error de conexión',
+                    text: 'No se pudo conectar con el servicio de validación de DNI',
+                    confirmButtonColor: '#dc3545'
+                });
+                $('#dni_pagador').removeClass('is-valid').addClass('is-invalid');
+                $('#dni-feedback').html(
+                    '<div class="alert alert-danger alert-dismissible fade show" role="alert">' +
+                    '<i class="fas fa-exclamation-triangle mr-2"></i>Error de conexión' +
+                    '<button type="button" class="close" data-dismiss="alert"><span>&times;</span></button>' +
+                    '</div>'
+                );
+            },
+            complete: function() {
+                dniValidationInProgress = false;
+                $btn.prop('disabled', false).html(originalHtml);
+            }
+        });
+    }
     // Función para mostrar/ocultar campos según tipo de pago
     function toggleCamposTipoPago() {
         var tipoPago = $('#idtipopago option:selected').text().toLowerCase();
@@ -400,6 +569,8 @@ $(document).ready(function() {
         var amortizacion = parseFloat($('#amortizacion').val()) || 0;
         var fechaHora = $('#fechahora').val();
         var tipoPagoTexto = $('#idtipopago option:selected').text().toLowerCase();
+        var dniPagador = $('#dni_pagador').val().trim();
+        var nombrePagador = $('#nombre_pagador').val().trim();
         
         // Validar campos condicionales
         var numTransaccion = $('#numtransaccion').val();
@@ -411,6 +582,8 @@ $(document).ready(function() {
         if (!tipoPago) errores.push('Seleccione un tipo de pago');
         if (amortizacion <= 0) errores.push('Ingrese un monto de amortización válido (mayor a 0)');
         if (!fechaHora) errores.push('Seleccione fecha y hora');
+        if (!dniPagador || dniPagador.length !== 8) errores.push('Debe validar el DNI del pagador (8 dígitos)');
+        if (!nombrePagador) errores.push('Debe validar el DNI del pagador para obtener su nombre');
         
         // Validar campos específicos según tipo de pago
         if (!tipoPagoTexto.includes('efectivo')) {
@@ -451,6 +624,9 @@ $(document).ready(function() {
             return false;
         }
         
+        // Guardar referencia del formulario
+        var $form = $('#pagoForm');
+        
         // Mostrar confirmación
         Swal.fire({
             title: '¿Confirmar registro de pago?',
@@ -460,6 +636,8 @@ $(document).ready(function() {
                   '<p><strong>Amortización:</strong> S/ ' + amortizacion.toFixed(2) + '</p>' +
                   '<p><strong>Nuevo Saldo:</strong> S/ ' + (saldoActual - amortizacion).toFixed(2) + '</p>' +
                   '<p><strong>Fecha/Hora:</strong> ' + fechaHora + '</p>' +
+                  '<p><strong>DNI Pagador:</strong> ' + dniPagador + '</p>' +
+                  '<p><strong>Nombre Pagador:</strong> ' + nombrePagador + '</p>' +
                   (!tipoPagoTexto.includes('efectivo') ? '<p><strong>Transacción:</strong> ' + numTransaccion + '</p>' : '') +
                   '</div>',
             icon: 'question',
@@ -468,23 +646,133 @@ $(document).ready(function() {
             cancelButtonText: 'Cancelar',
             confirmButtonColor: '#28a745',
             cancelButtonColor: '#6c757d',
-            showLoaderOnConfirm: true,
-            preConfirm: () => {
-                return new Promise((resolve) => {
-                    // Enviar formulario
-                    $(this).unbind('submit').submit();
-                    resolve();
-                });
-            }
+            allowOutsideClick: false,
+            allowEscapeKey: false
         }).then((result) => {
             if (result.isConfirmed) {
-                // Mostrar notificación de éxito
+                // Mostrar indicador de carga
                 Swal.fire({
-                    icon: 'success',
-                    title: 'Procesando',
-                    text: 'El pago se está registrando...',
-                    timer: 2000,
-                    showConfirmButton: false
+                    title: 'Procesando...',
+                    html: 'Registrando el pago, por favor espere.',
+                    allowOutsideClick: false,
+                    allowEscapeKey: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+                
+                // Crear un formulario temporal y enviarlo
+                var formData = new FormData($form[0]);
+                
+                // Asegurar que el token CSRF se incluya
+                var csrfToken = $('input[name="csrf_test_name"]').val();
+                if (csrfToken) {
+                    formData.append('csrf_test_name', csrfToken);
+                }
+                
+                // Log para debugging
+                console.log('Enviando formulario a:', $form.attr('action'));
+                console.log('CSRF Token:', csrfToken);
+                console.log('FormData contiene:', Array.from(formData.keys()));
+                
+                // Enviar el formulario mediante AJAX
+                $.ajax({
+                    url: $form.attr('action'),
+                    type: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    beforeSend: function(xhr) {
+                        console.log('Enviando petición AJAX...');
+                        // Asegurar que el header se establezca
+                        xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+                    },
+                    success: function(response) {
+                        // Verificar si es JSON
+                        try {
+                            var jsonResponse = typeof response === 'string' ? JSON.parse(response) : response;
+                            
+                            if (jsonResponse.status === 'success') {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: '¡Éxito!',
+                                    text: jsonResponse.message || 'El pago se registró correctamente',
+                                    confirmButtonColor: '#28a745',
+                                    timer: 2000,
+                                    timerProgressBar: true
+                                }).then(() => {
+                                    window.location.href = jsonResponse.redirect || '<?= base_url('/controlpagos') ?>';
+                                });
+                            } else {
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Error',
+                                    text: jsonResponse.message || 'Error al registrar el pago',
+                                    confirmButtonColor: '#dc3545'
+                                });
+                            }
+                        } catch(e) {
+                            // Si no es JSON, probablemente es HTML (redirect)
+                            if (response.includes('<!DOCTYPE') || response.includes('<html')) {
+                                window.location.href = '<?= base_url('/controlpagos') ?>';
+                            } else {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: '¡Éxito!',
+                                    text: 'El pago se registró correctamente',
+                                    confirmButtonColor: '#28a745'
+                                }).then(() => {
+                                    window.location.href = '<?= base_url('/controlpagos') ?>';
+                                });
+                            }
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Error:', error);
+                        console.error('Status:', xhr.status);
+                        console.error('Response:', xhr.responseText);
+                        
+                        var errorMsg = 'Error al registrar el pago.';
+                        
+                        // Intentar extraer el mensaje de error de la respuesta JSON
+                        if (xhr.responseText) {
+                            try {
+                                var jsonResponse = JSON.parse(xhr.responseText);
+                                if (jsonResponse.message) {
+                                    errorMsg = jsonResponse.message;
+                                }
+                            } catch(e) {
+                                // Si no es JSON, intentar extraer de HTML
+                                try {
+                                    var parser = new DOMParser();
+                                    var doc = parser.parseFromString(xhr.responseText, 'text/html');
+                                    var errorElement = doc.querySelector('.alert-danger, .error, [role="alert"]');
+                                    if (errorElement) {
+                                        errorMsg = errorElement.textContent.trim();
+                                    }
+                                } catch(e2) {
+                                    // Si no se puede parsear, usar el mensaje por defecto
+                                    if (xhr.status === 500) {
+                                        errorMsg = 'Error interno del servidor. Por favor, verifique los logs del servidor.';
+                                    } else if (xhr.status === 422) {
+                                        errorMsg = 'Error de validación. Por favor, verifique todos los campos.';
+                                    } else {
+                                        errorMsg = 'Error al comunicarse con el servidor. Código: ' + xhr.status;
+                                    }
+                                }
+                            }
+                        }
+                        
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            html: errorMsg,
+                            confirmButtonColor: '#dc3545'
+                        });
+                    }
                 });
             }
         });
