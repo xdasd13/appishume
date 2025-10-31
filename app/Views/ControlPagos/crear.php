@@ -3,18 +3,16 @@
 <?php
 // Función helper para obtener fecha y hora de Perú
 function getPeruDateTime() {
-    $originalTimezone = date_default_timezone_get();
     date_default_timezone_set('America/Lima');
     $peruDateTime = date('Y-m-d H:i:s');
-    date_default_timezone_set($originalTimezone);
+    date_default_timezone_set('America/Lima');
     return $peruDateTime;
 }
 
 function getPeruDateTimeFormatted() {
-    $originalTimezone = date_default_timezone_get();
     date_default_timezone_set('America/Lima');
     $peruDateTime = date('d/m/Y H:i');
-    date_default_timezone_set($originalTimezone);
+    date_default_timezone_set('America/Lima');
     return $peruDateTime;
     
 }

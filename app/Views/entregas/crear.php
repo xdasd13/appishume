@@ -129,7 +129,7 @@
                                         <label for="observaciones" class="form-label">
                                             <i class="fas fa-sticky-note mr-2 text-info"></i>Formato de Entrega *
                                         </label>
-                                        <textarea class="form-control" id="observaciones" name="observaciones" rows="3" placeholder="Ej: USB físico, link digital, cuadros 30x40, etc." required><?= old('observaciones') ?></textarea>
+                                        <textarea class="form-control" id="observaciones" name="observaciones" rows="3" placeholder="Ej: USB físico, link digital, cuadros 30x40, etc."><?= old('observaciones') ?></textarea>
                                         <small class="form-text text-muted mt-2">Describa el formato de entrega (físico/digital) y especificaciones</small>
                                     </div>
                                 </div>
@@ -279,8 +279,7 @@ $(document).ready(function() {
                 required: true
             },
             observaciones: {
-                required: true,
-                minlength: 10
+                required: false
             },
             comprobante_entrega: {
                 required: true
@@ -294,8 +293,7 @@ $(document).ready(function() {
                 required: "Por favor seleccione un servicio"
             },
             observaciones: {
-                required: "Por favor describa el formato de entrega",
-                minlength: "Debe describir mínimo 10 caracteres"
+                required: "Por favor describa el formato de entrega"
             },
             comprobante_entrega: {
                 required: "El comprobante de entrega es obligatorio"

@@ -88,7 +88,7 @@
                                         <label for="observaciones" class="form-label">
                                             <i class="fas fa-sticky-note mr-2 text-info"></i>Formato de Entrega *
                                         </label>
-                                        <textarea class="form-control" id="observaciones" name="observaciones" rows="3" required><?= $entrega['observaciones'] ?></textarea>
+                                        <textarea class="form-control" id="observaciones" name="observaciones" rows="3"><?= $entrega['observaciones'] ?></textarea>
                                         <small class="form-text text-muted">Describa el formato de entrega (físico/digital) y especificaciones</small>
                                     </div>
                                 </div>
@@ -193,8 +193,7 @@ $(document).ready(function() {
                 required: true
             },
             observaciones: {
-                required: true,
-                minlength: 10
+                required: false
             },
             comprobante_entrega: {
                 extension: "pdf"
@@ -205,8 +204,7 @@ $(document).ready(function() {
                 required: "La fecha de entrega es requerida"
             },
             observaciones: {
-                required: "Por favor describa el formato de entrega",
-                minlength: "Debe describir mínimo 10 caracteres"
+                required: "Por favor describa el formato de entrega"
             },
             comprobante_entrega: {
                 extension: "Solo se permiten archivos PDF"

@@ -124,7 +124,7 @@ class EntregasController extends BaseController
         $reglas = [
             'idcontrato' => 'required|numeric',
             'idserviciocontratado' => 'required|numeric|is_not_unique[servicioscontratados.idserviciocontratado]',
-            'observaciones' => 'required|min_length[10]',
+            'observaciones' => 'permit_empty',
             'comprobante_entrega' => 'uploaded[comprobante_entrega]|max_size[comprobante_entrega,5120]|ext_in[comprobante_entrega,pdf]'
         ];
 
@@ -180,7 +180,7 @@ class EntregasController extends BaseController
     {
         $validation = \Config\Services::validation();
         $validation->setRules([
-            'observaciones' => 'required|min_length[10]',
+            'observaciones' => 'permit_empty',
             'comprobante_entrega' => 'if_exist|max_size[comprobante_entrega,5120]|ext_in[comprobante_entrega,pdf]'
         ]);
         if (!$validation->withRequest($this->request)->run()) {

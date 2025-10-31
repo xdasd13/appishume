@@ -248,8 +248,8 @@ class ControlPagoController extends BaseController
         date_default_timezone_set('America/Lima');
         $peruDateTime = date('Y-m-d H:i:s');
         
-        // Restaurar zona horaria por defecto
-        date_default_timezone_set('UTC');
+        // Mantener zona horaria de Perú
+        date_default_timezone_set('America/Lima');
         
         return $peruDateTime;
     }

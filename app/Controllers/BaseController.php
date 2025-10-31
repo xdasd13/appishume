@@ -51,6 +51,14 @@ abstract class BaseController extends Controller
         // Do Not Edit This Line
         parent::initController($request, $response, $logger);
 
+        // Establecer zona horaria de Perú en MySQL
+        try {
+            $db = \Config\Database::connect();
+            $db->query("SET time_zone = '-05:00'"); // Zona horaria de Perú (America/Lima)
+        } catch (\Exception $e) {
+            // Si falla la conexión, no es crítico
+        }
+
         // Preload any models, libraries, etc, here.
 
         // E.g.: $this->session = service('session');
