@@ -498,10 +498,6 @@ function renderClienteCard(array $clienteData, string $estado): string {
     return ob_get_clean();
 }
 ?>
-
-<!-- CSS Personalizado para Kanban -->
-
-
 <!-- JavaScript Refactorizado para Kanban -->
 <script>
 // Variables globales
@@ -979,8 +975,6 @@ function toggleDescription(button) {
 
 // Funciones del historial removidas - ahora están en vista separada /historial
 </script>
-
-<!-- Estilos CSS para el historial -->
 
 
 <?= $footer ?>
