@@ -15,7 +15,11 @@
                 
                 <!-- Estadísticas rápidas -->
                 <?php if (isset($estadisticas)): ?>
-                <div class="d-flex gap-3">
+                <div class="d-flex gap-2">
+                    <div class="badge bg-secondary fs-6 px-3 py-2">
+                        <i class="fas fa-calendar-alt me-1"></i>
+                        Programados: <?= $estadisticas['Programado'] ?? 0 ?>
+                    </div>
                     <div class="badge bg-warning fs-6 px-3 py-2">
                         <i class="fas fa-clock me-1"></i>
                         Pendientes: <?= $estadisticas['Pendiente'] ?? 0 ?>
@@ -180,6 +184,7 @@
             <?php 
             // Usar datos agrupados del modelo o crear estructura por defecto
             $equiposKanban = $equiposKanban ?? [
+                'Programado' => [],
                 'Pendiente' => [],
                 'En Proceso' => [],
                 'Completado' => []
@@ -191,8 +196,9 @@
             <div class="kanban-board">
                 <div class="row g-4">
                     <?php 
-                    // Configuración de columnas KISS
+                    // Configuración de columnas KISS - 4 estados
                     $columnas = [
+                        'Programado' => ['color' => 'secondary', 'icono' => 'fas fa-calendar-alt'],
                         'Pendiente' => ['color' => 'warning', 'icono' => 'fas fa-clock'],
                         'En Proceso' => ['color' => 'info', 'icono' => 'fas fa-spinner'],
                         'Completado' => ['color' => 'success', 'icono' => 'fas fa-check-circle']
@@ -200,7 +206,7 @@
                     ?>
                     
                     <?php foreach ($columnas as $estado => $config): ?>
-                    <div class="col-lg-4 col-md-6">
+                    <div class="col-lg-3 col-md-6">
                         <div class="kanban-column">
                             <!-- Header de columna -->
                             <div class="kanban-column-header bg-<?= $config['color'] ?>">
@@ -262,12 +268,14 @@
 function renderEquipoCard(array $equipo, string $estado): string {
     // Mapeo local de colores e iconos (KISS: simple y directo)
     $colores = [
+        'Programado' => 'secondary',
         'Pendiente' => 'warning',
         'En Proceso' => 'info', 
         'Completado' => 'success'
     ];
     
     $iconos = [
+        'Programado' => 'fas fa-calendar-alt',
         'Pendiente' => 'fas fa-clock',
         'En Proceso' => 'fas fa-spinner',
         'Completado' => 'fas fa-check-circle'
@@ -371,12 +379,14 @@ function renderEquipoCard(array $equipo, string $estado): string {
 function renderClienteCard(array $clienteData, string $estado): string {
     // Mapeo local de colores e iconos
     $colores = [
+        'Programado' => 'secondary',
         'Pendiente' => 'warning',
         'En Proceso' => 'info', 
         'Completado' => 'success'
     ];
     
     $iconos = [
+        'Programado' => 'fas fa-calendar-alt',
         'Pendiente' => 'fas fa-clock',
         'En Proceso' => 'fas fa-spinner',
         'Completado' => 'fas fa-check-circle'
@@ -868,8 +878,8 @@ function updateEmptyStates() {
  */
 function getStatusColor(status) {
     const colors = {
+        'Programado': 'secondary',
         'Pendiente': 'warning',
-        'Programado': 'warning', 
         'En Proceso': 'info',
         'Completado': 'success'
     };
@@ -878,8 +888,8 @@ function getStatusColor(status) {
 
 function getStatusIcon(status) {
     const icons = {
+        'Programado': 'info',
         'Pendiente': 'warning',
-        'Programado': 'warning',
         'En Proceso': 'info', 
         'Completado': 'success'
     };
@@ -888,8 +898,8 @@ function getStatusIcon(status) {
 
 function getStatusFontAwesome(status) {
     const icons = {
+        'Programado': 'fas fa-calendar-alt',
         'Pendiente': 'fas fa-clock',
-        'Programado': 'fas fa-clock',
         'En Proceso': 'fas fa-spinner', 
         'Completado': 'fas fa-check-circle'
     };
@@ -898,30 +908,52 @@ function getStatusFontAwesome(status) {
 
 /**
  * Validar transición de estado (lado cliente)
+ * Flujo: Programado → Pendiente → En Proceso → Completado
  * Usando la misma lógica del helper PHP
  */
 function validarTransicionEstado(estadoActual, nuevoEstado) {
-    // Regla 1: Completado no puede regresar
+    // Si no hay cambio, es válido
+    if (estadoActual === nuevoEstado) {
+        return { valido: true, mensaje: 'Sin cambios' };
+    }
+    
+    // Regla 1: Completado no puede regresar a ningún estado
     if (estadoActual === 'Completado') {
         return {
             valido: false,
-            mensaje: 'Este servicio ya está completo'
+            mensaje: 'Este servicio ya está completo y no puede modificarse'
         };
     }
     
-    // Regla 2: No saltar directamente a Completado
-    if ((estadoActual === 'Pendiente' || estadoActual === 'Programado') && nuevoEstado === 'Completado') {
+    // Regla 2: No se puede saltar de Programado directamente a En Proceso o Completado
+    if (estadoActual === 'Programado' && (nuevoEstado === 'En Proceso' || nuevoEstado === 'Completado')) {
         return {
             valido: false,
-            mensaje: 'Este servicio aún no tiene proceso'
+            mensaje: 'Debe pasar primero por Pendiente antes de iniciar el proceso'
         };
     }
     
-    // Regla 3: En Proceso no puede regresar a Pendiente
-    if (estadoActual === 'En Proceso' && nuevoEstado === 'Pendiente') {
+    // Regla 3: No se puede saltar de Pendiente directamente a Completado
+    if (estadoActual === 'Pendiente' && nuevoEstado === 'Completado') {
         return {
             valido: false,
-            mensaje: 'Este servicio está en proceso'
+            mensaje: 'Debe iniciar el proceso antes de completar el servicio'
+        };
+    }
+    
+    // Regla 4: En Proceso no puede regresar a Pendiente o Programado
+    if (estadoActual === 'En Proceso' && (nuevoEstado === 'Pendiente' || nuevoEstado === 'Programado')) {
+        return {
+            valido: false,
+            mensaje: 'Este servicio ya está en proceso y no puede retroceder'
+        };
+    }
+    
+    // Regla 5: Pendiente no puede regresar a Programado
+    if (estadoActual === 'Pendiente' && nuevoEstado === 'Programado') {
+        return {
+            valido: false,
+            mensaje: 'Este servicio ya salió de programación'
         };
     }
     

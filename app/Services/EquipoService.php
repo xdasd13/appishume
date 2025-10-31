@@ -167,20 +167,20 @@ class EquipoService
         $builder->groupBy('estadoservicio');
         $resultados = $builder->get()->getResultArray();
 
+        // Flujo: Programado → Pendiente → En Proceso → Completado
         $estadisticas = [
+            'Programado' => 0,
             'Pendiente' => 0,
             'En Proceso' => 0,
-            'Completado' => 0,
-            'Programado' => 0
+            'Completado' => 0
         ];
 
         foreach ($resultados as $resultado) {
-            $estadisticas[$resultado['estadoservicio']] = (int)$resultado['total'];
+            $estado = $resultado['estadoservicio'];
+            if (isset($estadisticas[$estado])) {
+                $estadisticas[$estado] = (int)$resultado['total'];
+            }
         }
-
-        // Agrupar Pendiente y Programado
-        $estadisticas['Pendiente'] += $estadisticas['Programado'];
-        unset($estadisticas['Programado']);
 
         return $estadisticas;
     }
