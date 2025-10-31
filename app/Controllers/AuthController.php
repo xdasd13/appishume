@@ -73,10 +73,20 @@ class AuthController extends BaseController
                 'usuario_tipo' => $usuario->tipo_usuario,
                 'tipo_usuario' => $usuario->tipo_usuario,
                 'usuario_cargo' => $usuario->cargo,
+                'usuario_email' => $usuario->email ?? '',
                 'login_time' => date('Y-m-d H:i:s')
             ];
 
             session()->set($sessionData);
+
+            // Activar presencia en línea al iniciar sesión
+            try {
+                $cache = \Config\Services::cache();
+                $cache->save('presence_' . $usuario->idusuario, time(), 70);
+            } catch (\Exception $e) {
+                // Silencioso si falla, no es crítico
+                log_message('debug', 'No se pudo activar presencia al iniciar sesión: ' . $e->getMessage());
+            }
 
             // Redirigir de vuelta al login para mostrar el mensaje de éxito
             // y luego redirigir automáticamente al dashboard

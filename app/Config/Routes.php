@@ -31,6 +31,11 @@ $routes->group('', ['filter' => 'auth'], function($routes) {
     $routes->get('mensajeria/buscarUsuarios', 'MensajeriaController::buscarUsuarios');
     $routes->get('mensajeria/getConversaciones', 'MensajeriaController::getConversaciones');
     $routes->get('mensajeria/getMensajesConversacion/(:num)', 'MensajeriaController::getMensajesConversacion/$1');
+    $routes->post('mensajeria/heartbeat', 'MensajeriaController::heartbeat');
+    $routes->get('mensajeria/getPresence/(:num)', 'MensajeriaController::getPresence/$1');
+    $routes->get('mensajeria/typingStatus/(:num)', 'MensajeriaController::typingStatus/$1');
+    $routes->post('mensajeria/typingStart/(:num)', 'MensajeriaController::typingStart/$1');
+    $routes->post('mensajeria/typingStop/(:num)', 'MensajeriaController::typingStop/$1');
     
     // APIs AJAX para notificaciones
     $routes->get('mensajeria/getMensajesNoLeidos', 'MensajeriaController::getMensajesNoLeidos');

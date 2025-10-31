@@ -20,7 +20,7 @@
                                     // Obtener usuarios del sistema
                                     $usuarioModel = new \App\Models\UsuarioModel();
                                     $usuarios = $usuarioModel->getUsuariosCompletos();
-                                    $usuarioActual = session()->get('idusuario');
+                                    $usuarioActual = session()->get('usuario_id');
                                     
                                     foreach ($usuarios as $usuario): 
                                         if ($usuario->idusuario != $usuarioActual): // No incluir al usuario actual
@@ -67,7 +67,7 @@
                             <a href="<?= base_url('mensajeria') ?>" class="btn btn-secondary">
                                 <i class="fas fa-arrow-left"></i> Cancelar
                             </a>
-                            <button type="submit" class="btn btn-primary" id="btnEnviar">
+                            <button type="submit" class="btn btn-primary" id="btnEnviar" disabled>
                                 <i class="fas fa-paper-plane"></i> Enviar Mensaje
                             </button>
                         </div>
@@ -83,14 +83,68 @@ $(document).ready(function() {
     // Configurar envío del formulario
     $('#formEnviarMensaje').on('submit', function(e) {
         e.preventDefault();
-        enviarMensaje();
+        if (validarFormulario()) {
+            enviarMensaje();
+        }
     });
     
-    // Validar campos en tiempo real
-    $('#destinatario_id, #asunto, #contenido, #tipo').on('change input', function() {
-        validarFormulario();
+    // Validar campos individualmente cuando cambian (no marcar todo en rojo)
+    $('#destinatario_id').on('change', function() {
+        // Solo validar el campo que cambió
+        validarCampo($(this));
+        // Verificar si todos los campos están completos para habilitar botón
+        verificarFormularioCompleto();
     });
+    
+    $('#tipo').on('change', function() {
+        validarCampo($(this));
+        verificarFormularioCompleto();
+    });
+    
+    $('#asunto, #contenido').on('blur', function() {
+        // Validar solo cuando el usuario termina de escribir (pierde el foco)
+        validarCampo($(this));
+        verificarFormularioCompleto();
+    });
+    
+    // Limpiar validación cuando el usuario empiece a escribir
+    $('#asunto, #contenido').on('input', function() {
+        // Solo limpiar el error, no mostrar validación positiva aún
+        $(this).removeClass('is-invalid');
+        // Verificar estado del formulario mientras escribe
+        verificarFormularioCompleto();
+    });
+    
+    // Función para verificar si el formulario está completo sin validar todo
+    function verificarFormularioCompleto() {
+        const destinatarioId = $('#destinatario_id').val();
+        const asunto = $('#asunto').val().trim();
+        const contenido = $('#contenido').val().trim();
+        const tipo = $('#tipo').val();
+        
+        // Solo habilitar si todos los campos tienen valor (sin restricción de caracteres)
+        const completo = destinatarioId && asunto && asunto.trim().length > 0 && contenido && contenido.trim().length > 0 && tipo;
+        $('#btnEnviar').prop('disabled', !completo);
+    }
 });
+
+function validarCampo($campo) {
+    const campoId = $campo.attr('id');
+    const valor = $campo.val() ? $campo.val().trim() : '';
+    
+    // Limpiar clases previas
+    $campo.removeClass('is-invalid is-valid');
+    
+    // Validaciones específicas por campo
+    if (!valor) {
+        $campo.addClass('is-invalid');
+        return false;
+    } else {
+        // Sin validaciones de longitud mínima - solo que no esté vacío
+        $campo.addClass('is-valid');
+        return true;
+    }
+}
 
 function validarFormulario() {
     const destinatarioId = $('#destinatario_id').val();
@@ -102,31 +156,31 @@ function validarFormulario() {
     
     // Validar destinatario
     if (!destinatarioId) {
-        $('#destinatario_id').addClass('is-invalid');
+        $('#destinatario_id').removeClass('is-valid').addClass('is-invalid');
         esValido = false;
     } else {
         $('#destinatario_id').removeClass('is-invalid').addClass('is-valid');
     }
     
-    // Validar asunto
-    if (!asunto) {
-        $('#asunto').addClass('is-invalid');
+    // Validar asunto (sin restricción de caracteres mínimos)
+    if (!asunto || asunto.trim().length === 0) {
+        $('#asunto').removeClass('is-valid').addClass('is-invalid');
         esValido = false;
     } else {
         $('#asunto').removeClass('is-invalid').addClass('is-valid');
     }
     
-    // Validar contenido
-    if (!contenido) {
-        $('#contenido').addClass('is-invalid');
+    // Validar contenido (sin restricción de caracteres mínimos)
+    if (!contenido || contenido.trim().length === 0) {
+        $('#contenido').removeClass('is-valid').addClass('is-invalid');
         esValido = false;
     } else {
-        $('#contenido').removeClass('is-invalid').addClass('is-valid');
+        $('#contenido').removeClass('is-invalid').addClass(' почемуvalid');
     }
     
     // Validar tipo
     if (!tipo) {
-        $('#tipo').addClass('is-invalid');
+        $('#tipo').removeClass('is-valid').addClass('is-invalid');
         esValido = false;
     } else {
         $('#tipo').removeClass('is-invalid').addClass('is-valid');
@@ -201,10 +255,20 @@ function enviarMensaje() {
                 });
             }
         },
-        error: function() {
+        error: function(xhr, status, error) {
+            let mensajeError = 'Error de conexión. Intente nuevamente.';
+            
+            if (xhr.status === 403) {
+                mensajeError = 'Acceso denegado. Por favor, verifique su sesión e intente nuevamente.';
+            } else if (xhr.status === 401) {
+                mensajeError = 'Sesión expirada. Por favor, inicie sesión nuevamente.';
+            } else if (xhr.responseJSON && xhr.responseJSON.message) {
+                mensajeError = xhr.responseJSON.message;
+            }
+            
             Swal.fire({
                 title: 'Error',
-                text: 'Error de conexión. Intente nuevamente.',
+                text: mensajeError,
                 icon: 'error',
                 confirmButtonText: 'OK'
             });

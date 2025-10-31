@@ -36,6 +36,17 @@ class AuthFilter implements FilterInterface
         if (!session()->get('usuario_logueado')) {
             $this->logUnauthorizedAccess($request, 'No autenticado');
             
+            // Si es una petición AJAX, devolver JSON en lugar de redirigir
+            if ($request->isAJAX()) {
+                $response = service('response');
+                return $response->setStatusCode(401)
+                    ->setJSON([
+                        'success' => false,
+                        'message' => 'Sesión no válida. Por favor, inicie sesión nuevamente.',
+                        'redirect' => '/login'
+                    ]);
+            }
+            
             return redirect()->to('/login')
                 ->with('error', 'Debes iniciar sesión para acceder.');
         }
@@ -49,6 +60,17 @@ class AuthFilter implements FilterInterface
                 $this->logUnauthorizedAccess($request, "Rol insuficiente: {$rolUsuario} vs {$rolRequerido}");
                 
                 $mensaje = $this->getMensajeAccesoDenegado($rolRequerido, $rolUsuario);
+                
+                // Si es una petición AJAX, devolver JSON en lugar de redirigir
+                if ($request->isAJAX()) {
+                    $response = service('response');
+                    return $response->setStatusCode(403)
+                        ->setJSON([
+                            'success' => false,
+                            'message' => $mensaje,
+                            'redirect' => $this->getRedirectUrl($rolUsuario)
+                        ]);
+                }
                 
                 return redirect()->to($this->getRedirectUrl($rolUsuario))
                     ->with('error', $mensaje);

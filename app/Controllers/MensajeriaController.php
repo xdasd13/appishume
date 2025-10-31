@@ -27,52 +27,78 @@ class MensajeriaController extends BaseController
      */
     public function heartbeat()
     {
-        $usuarioId = session()->get('usuario_id');
-        if (!$usuarioId) {
-            return $this->response->setJSON(['success' => false]);
+        try {
+            $usuarioId = session()->get('usuario_id') ?? session()->get('idusuario');
+            if (!$usuarioId) {
+                return $this->response->setStatusCode(401)->setJSON(['success' => false, 'message' => 'No autenticado']);
+            }
+            $cache = \Config\Services::cache();
+            $cache->save('presence_' . $usuarioId, time(), 70);
+            return $this->response->setJSON(['success' => true]);
+        } catch (\Exception $e) {
+            return $this->response->setJSON(['success' => false, 'message' => $e->getMessage()]);
         }
-        $cache = \Config\Services::cache();
-        $cache->save('presence_' . $usuarioId, time(), 70);
-        return $this->response->setJSON(['success' => true]);
     }
 
     /** Obtener presencia de un usuario */
     public function getPresence($otroUsuarioId)
     {
-        $cache = \Config\Services::cache();
-        $ts = $cache->get('presence_' . $otroUsuarioId);
-        $online = $ts && (time() - (int)$ts) <= 65;
-        return $this->response->setJSON(['success' => true, 'online' => $online]);
+        try {
+            $cache = \Config\Services::cache();
+            $ts = $cache->get('presence_' . $otroUsuarioId);
+            $online = $ts && (time() - (int)$ts) <= 65;
+            return $this->response->setJSON(['success' => true, 'online' => $online]);
+        } catch (\Exception $e) {
+            return $this->response->setJSON(['success' => false, 'online' => false]);
+        }
     }
 
     /** Iniciar estado escribiendo */
     public function typingStart($otroUsuarioId)
     {
-        $usuarioId = session()->get('usuario_id');
-        if (!$usuarioId) { return $this->response->setJSON(['success' => false]); }
-        $cache = \Config\Services::cache();
-        $cache->save('typing_' . $usuarioId . '_' . $otroUsuarioId, 1, 6);
-        return $this->response->setJSON(['success' => true]);
+        try {
+            $usuarioId = session()->get('usuario_id') ?? session()->get('idusuario');
+            if (!$usuarioId) { 
+                return $this->response->setJSON(['success' => false, 'message' => 'No autenticado']); 
+            }
+            $cache = \Config\Services::cache();
+            $cache->save('typing_' . $usuarioId . '_' . $otroUsuarioId, 1, 6);
+            return $this->response->setJSON(['success' => true]);
+        } catch (\Exception $e) {
+            return $this->response->setJSON(['success' => false, 'message' => $e->getMessage()]);
+        }
     }
 
     /** Finalizar estado escribiendo */
     public function typingStop($otroUsuarioId)
     {
-        $usuarioId = session()->get('usuario_id');
-        if (!$usuarioId) { return $this->response->setJSON(['success' => false]); }
-        $cache = \Config\Services::cache();
-        $cache->delete('typing_' . $usuarioId . '_' . $otroUsuarioId);
-        return $this->response->setJSON(['success' => true]);
+        try {
+            $usuarioId = session()->get('usuario_id') ?? session()->get('idusuario');
+            if (!$usuarioId) { 
+                return $this->response->setJSON(['success' => false, 'message' => 'No autenticado']); 
+            }
+            $cache = \Config\Services::cache();
+            $cache->delete('typing_' . $usuarioId . '_' . $otroUsuarioId);
+            return $this->response->setJSON(['success' => true]);
+        } catch (\Exception $e) {
+            return $this->response->setJSON(['success' => false, 'message' => $e->getMessage()]);
+        }
     }
 
     /** Consultar si el otro está escribiendo */
     public function typingStatus($otroUsuarioId)
     {
-        $usuarioId = session()->get('usuario_id');
-        if (!$usuarioId) { return $this->response->setJSON(['success' => false]); }
-        $cache = \Config\Services::cache();
-        $flag = $cache->get('typing_' . $otroUsuarioId . '_' . $usuarioId);
-        return $this->response->setJSON(['success' => true, 'typing' => (bool)$flag]);
+        try {
+            $usuarioId = session()->get('usuario_id') ?? session()->get('idusuario');
+            if (!$usuarioId) { 
+                return $this->response->setJSON(['success' => false, 'typing' => false]); 
+            }
+            $cache = \Config\Services::cache();
+            $flag = $cache->get('typing_' . $otroUsuarioId . '_' . $usuarioId);
+            return $this->response->setJSON(['success' => true, 'typing' => (bool)$flag]);
+        } catch (\Exception $e) {
+            return $this->response->setJSON(['success' => false, 'typing' => false]);
+        }
     }
 
     /**
@@ -85,6 +111,9 @@ class MensajeriaController extends BaseController
         // Verificar si la tabla mensajes existe
         if (!$db->tableExists('mensajes')) {
             $this->crearTablaMensajes();
+        } else {
+            // Verificar si la columna status existe y agregarla si no
+            $this->verificarColumnaStatus();
         }
         
         // Verificar si la tabla notificaciones existe
@@ -95,6 +124,32 @@ class MensajeriaController extends BaseController
         // Verificar tabla de adjuntos de mensajes
         if (!$db->tableExists('archivos_mensaje')) {
             $this->crearTablaArchivosMensaje();
+        }
+    }
+
+    /**
+     * Verificar y agregar columna status si no existe
+     */
+    private function verificarColumnaStatus()
+    {
+        $db = \Config\Database::connect();
+        
+        try {
+            // Verificar si la columna status existe
+            $columnas = $db->getFieldNames('mensajes');
+            
+            if (!in_array('status', $columnas)) {
+                // Agregar la columna status
+                $db->query("ALTER TABLE mensajes ADD COLUMN status ENUM('sent','delivered','read') DEFAULT 'sent' AFTER leido");
+            }
+        } catch (\Throwable $e) {
+            // Si hay error, intentar con sintaxis alternativa
+            try {
+                $db->query("ALTER TABLE mensajes ADD COLUMN status ENUM('sent','delivered','read') DEFAULT 'sent'");
+            } catch (\Throwable $e2) {
+                // Ignorar si no se puede agregar
+                log_message('warning', 'No se pudo agregar la columna status: ' . $e2->getMessage());
+            }
         }
     }
 
@@ -178,10 +233,29 @@ class MensajeriaController extends BaseController
      */
     public function index()
     {
+        // Obtener email del usuario si no está en sesión
+        $usuarioEmail = session('usuario_email');
+        if (empty($usuarioEmail)) {
+            $usuarioId = session('usuario_id');
+            if ($usuarioId) {
+                $db = \Config\Database::connect();
+                $usuario = $db->table('usuarios')
+                    ->select('email')
+                    ->where('idusuario', $usuarioId)
+                    ->get()
+                    ->getRow();
+                if ($usuario && !empty($usuario->email)) {
+                    session()->set('usuario_email', $usuario->email);
+                    $usuarioEmail = $usuario->email;
+                }
+            }
+        }
+        
         $data = [
             'title' => 'Mensajería - ISHUME',
             'header' => view('Layouts/header'),
-            'footer' => view('Layouts/footer')
+            'footer' => view('Layouts/footer'),
+            'usuario_email' => $usuarioEmail ?? session('usuario_email') ?? ''
         ];
 
         return view('mensajeria/index', $data);
@@ -204,44 +278,75 @@ class MensajeriaController extends BaseController
 
             $db = \Config\Database::connect();
             
-            // Obtener conversaciones con información del otro usuario
+            // Consulta optimizada: calcular mensajes no leídos en tiempo real desde la tabla mensajes
+            // Usar directamente la consulta que agrupa desde mensajes para mayor precisión
             $sql = "
-                SELECT DISTINCT
-                    CASE 
-                        WHEN m.remitente_id = ? THEN m.destinatario_id
-                        ELSE m.remitente_id
-                    END as usuario_id,
-                    CASE 
-                        WHEN m.remitente_id = ? THEN CONCAT(p_dest.nombres, ' ', p_dest.apellidos)
-                        ELSE CONCAT(p_rem.nombres, ' ', p_rem.apellidos)
-                    END as nombre_completo,
-                    CASE 
-                        WHEN m.remitente_id = ? THEN u_dest.nombreusuario
-                        ELSE u_rem.nombreusuario
-                    END as nombreusuario,
-                    (SELECT contenido FROM mensajes m2 
-                     WHERE (m2.remitente_id = ? AND m2.destinatario_id = usuario_id) 
-                        OR (m2.destinatario_id = ? AND m2.remitente_id = usuario_id)
-                     ORDER BY m2.fecha_envio DESC LIMIT 1) as ultimo_mensaje,
-                    (SELECT fecha_envio FROM mensajes m2 
-                     WHERE (m2.remitente_id = ? AND m2.destinatario_id = usuario_id) 
-                        OR (m2.destinatario_id = ? AND m2.remitente_id = usuario_id)
-                     ORDER BY m2.fecha_envio DESC LIMIT 1) as fecha_ultimo_mensaje,
-                    (SELECT COUNT(*) FROM mensajes m3 
-                     WHERE m3.destinatario_id = ? AND m3.remitente_id = usuario_id AND m3.leido = 0) as mensajes_no_leidos
-                FROM mensajes m
-                LEFT JOIN usuarios u_rem ON u_rem.idusuario = m.remitente_id
-                LEFT JOIN usuarios u_dest ON u_dest.idusuario = m.destinatario_id
-                LEFT JOIN personas p_rem ON p_rem.idpersona = u_rem.idpersona
-                LEFT JOIN personas p_dest ON p_dest.idpersona = u_dest.idpersona
-                WHERE m.remitente_id = ? OR m.destinatario_id = ?
-                ORDER BY fecha_ultimo_mensaje DESC
+                SELECT 
+                    other_id as usuario_id,
+                    MAX(nombre_completo) as nombre_completo,
+                    MAX(nombreusuario) as nombreusuario,
+                    SUBSTRING_INDEX(GROUP_CONCAT(ultimo_contenido ORDER BY fecha_envio DESC), ',', 1) as ultimo_mensaje,
+                    MAX(fecha_envio) as fecha_ultimo_mensaje,
+                    SUM(CASE WHEN destinatario_id = ? AND leido = 0 AND (eliminado_destinatario = 0 OR eliminado_destinatario IS NULL) THEN 1 ELSE 0 END) as mensajes_no_leidos
+                FROM (
+                    SELECT DISTINCT
+                        CASE WHEN m.remitente_id = ? THEN m.destinatario_id ELSE m.remitente_id END as other_id,
+                        CASE WHEN m.remitente_id = ? THEN CONCAT(p_dest.nombres, ' ', p_dest.apellidos)
+                             ELSE CONCAT(p_rem.nombres, ' ', p_rem.apellidos) END as nombre_completo,
+                        CASE WHEN m.remitente_id = ? THEN u_dest.nombreusuario ELSE u_rem.nombreusuario END as nombreusuario,
+                        m.contenido as ultimo_contenido,
+                        m.fecha_envio,
+                        m.destinatario_id,
+                        m.leido,
+                        m.eliminado_destinatario
+                    FROM mensajes m
+                    LEFT JOIN usuarios u_rem ON u_rem.idusuario = m.remitente_id
+                    LEFT JOIN usuarios u_dest ON u_dest.idusuario = m.destinatario_id
+                    LEFT JOIN personas p_rem ON p_rem.idpersona = u_rem.idpersona
+                    LEFT JOIN personas p_dest ON p_dest.idpersona = u_dest.idpersona
+                    WHERE (m.remitente_id = ? OR m.destinatario_id = ?)
+                    AND (m.eliminado_remitente = 0 OR m.eliminado_remitente IS NULL)
+                    AND (m.eliminado_destinatario = 0 OR m.eliminado_destinatario IS NULL)
+                ) as subquery
+                GROUP BY other_id
+                ORDER BY MAX(fecha_envio) DESC
+                LIMIT 50
             ";
-            
-            $result = $db->query($sql, [
-                $usuarioId, $usuarioId, $usuarioId, $usuarioId, $usuarioId, 
-                $usuarioId, $usuarioId, $usuarioId, $usuarioId, $usuarioId
-            ]);
+            try {
+                $result = $db->query($sql, [$usuarioId, $usuarioId, $usuarioId, $usuarioId, $usuarioId, $usuarioId, $usuarioId]);
+            } catch (\Exception $e) {
+                // Fallback: consulta agrupada sin duplicados
+                $sql = "
+                    SELECT 
+                        other_id as usuario_id,
+                        MAX(nombre_completo) as nombre_completo,
+                        MAX(nombreusuario) as nombreusuario,
+                        SUBSTRING_INDEX(GROUP_CONCAT(ultimo_contenido ORDER BY fecha_envio DESC), ',', 1) as ultimo_mensaje,
+                        MAX(fecha_envio) as fecha_ultimo_mensaje,
+                        SUM(CASE WHEN destinatario_id = ? AND leido = 0 THEN 1 ELSE 0 END) as mensajes_no_leidos
+                    FROM (
+                        SELECT DISTINCT
+                            CASE WHEN m.remitente_id = ? THEN m.destinatario_id ELSE m.remitente_id END as other_id,
+                            CASE WHEN m.remitente_id = ? THEN CONCAT(p_dest.nombres, ' ', p_dest.apellidos)
+                                 ELSE CONCAT(p_rem.nombres, ' ', p_rem.apellidos) END as nombre_completo,
+                            CASE WHEN m.remitente_id = ? THEN u_dest.nombreusuario ELSE u_rem.nombreusuario END as nombreusuario,
+                            m.contenido as ultimo_contenido,
+                            m.fecha_envio,
+                            m.destinatario_id,
+                            m.leido
+                        FROM mensajes m
+                        LEFT JOIN usuarios u_rem ON u_rem.idusuario = m.remitente_id
+                        LEFT JOIN usuarios u_dest ON u_dest.idusuario = m.destinatario_id
+                        LEFT JOIN personas p_rem ON p_rem.idpersona = u_rem.idpersona
+                        LEFT JOIN personas p_dest ON p_dest.idpersona = u_dest.idpersona
+                        WHERE (m.remitente_id = ? OR m.destinatario_id = ?)
+                    ) as subquery
+                    GROUP BY other_id
+                    ORDER BY MAX(fecha_envio) DESC
+                    LIMIT 50
+                ";
+                $result = $db->query($sql, [$usuarioId, $usuarioId, $usuarioId, $usuarioId, $usuarioId, $usuarioId]);
+            }
             
             $conversaciones = $result->getResultArray();
             
@@ -290,9 +395,12 @@ class MensajeriaController extends BaseController
             $result = $db->query($sql, [$usuarioId, $otroUsuarioId, $otroUsuarioId, $usuarioId]);
             $mensajes = $result->getResultArray();
             
-            // Marcar como entregados los mensajes recibidos aún en 'sent'
+            // Marcar como entregados los mensajes recibidos aún en 'sent' (solo si la columna existe)
             try {
-                $db->query("UPDATE mensajes SET status = 'delivered' WHERE destinatario_id = ? AND remitente_id = ? AND status = 'sent'", [$usuarioId, $otroUsuarioId]);
+                $columnas = $db->getFieldNames('mensajes');
+                if (in_array('status', $columnas)) {
+                    $db->query("UPDATE mensajes SET status = 'delivered' WHERE destinatario_id = ? AND remitente_id = ? AND status = 'sent'", [$usuarioId, $otroUsuarioId]);
+                }
             } catch (\Throwable $e) {}
 
             // Marcar mensajes como leídos
@@ -319,11 +427,88 @@ class MensajeriaController extends BaseController
         try {
             $db = \Config\Database::connect();
             
-            $sql = "UPDATE mensajes 
-                    SET leido = 1, status = 'read' 
-                    WHERE destinatario_id = ? AND remitente_id = ? AND leido = 0";
+            // Contar cuántos mensajes se van a marcar como leídos
+            $countResult = $db->query(
+                "SELECT COUNT(*) as total FROM mensajes 
+                 WHERE destinatario_id = ? AND remitente_id = ? AND leido = 0",
+                [$usuarioId, $otroUsuarioId]
+            );
+            $countRow = $countResult->getRowArray();
+            $cantidadNoLeidos = $countRow['total'] ?? 0;
             
-            $db->query($sql, [$usuarioId, $otroUsuarioId]);
+            if ($cantidadNoLeidos > 0) {
+                // Verificar si la columna status existe
+                $columnas = $db->getFieldNames('mensajes');
+                $tieneStatus = in_array('status', $columnas);
+                
+                if ($tieneStatus) {
+                    $sql = "UPDATE mensajes 
+                            SET leido = 1, status = 'read', fecha_leido = NOW()
+                            WHERE destinatario_id = ? AND remitente_id = ? AND leido = 0";
+                } else {
+                    $sql = "UPDATE mensajes 
+                            SET leido = 1, fecha_leido = NOW()
+                            WHERE destinatario_id = ? AND remitente_id = ? AND leido = 0";
+                }
+                
+                $db->query($sql, [$usuarioId, $otroUsuarioId]);
+                
+                // Actualizar contador en tabla conversaciones
+                // Primero verificar si existe la conversación
+                $convResult = $db->query(
+                    "SELECT * FROM conversaciones 
+                     WHERE (usuario1_id = ? AND usuario2_id = ?) 
+                        OR (usuario1_id = ? AND usuario2_id = ?)",
+                    [$usuarioId, $otroUsuarioId, $otroUsuarioId, $usuarioId]
+                );
+                $conversacion = $convResult->getRowArray();
+                
+                if ($conversacion) {
+                    // Recalcular el contador real desde mensajes para asegurar precisión
+                    // Esto garantiza que el contador esté sincronizado con la realidad
+                    $countReal = $db->query(
+                        "SELECT COUNT(*) as total FROM mensajes 
+                         WHERE destinatario_id = ? AND remitente_id = ? AND leido = 0 
+                         AND (eliminado_destinatario = 0 OR eliminado_destinatario IS NULL)",
+                        [$usuarioId, $otroUsuarioId]
+                    )->getRowArray();
+                    $totalReal = $countReal['total'] ?? 0;
+                    
+                    // Actualizar el contador según quién es usuario1 y usuario2
+                    if ($conversacion['usuario1_id'] == $usuarioId) {
+                        // El usuario actual es usuario1, está marcando como leídos mensajes que recibió de usuario2
+                        // Por lo tanto, actualizar mensajes_no_leidos_usuario1 con el valor real
+                        $db->query(
+                            "UPDATE conversaciones 
+                             SET mensajes_no_leidos_usuario1 = ?
+                             WHERE id = ?",
+                            [$totalReal, $conversacion['id']]
+                        );
+                    } else {
+                        // El usuario actual es usuario2, está marcando como leídos mensajes que recibió de usuario1
+                        // Por lo tanto, actualizar mensajes_no_leidos_usuario2 con el valor real
+                        $db->query(
+                            "UPDATE conversaciones 
+                             SET mensajes_no_leidos_usuario2 = ?
+                             WHERE id = ?",
+                            [$totalReal, $conversacion['id']]
+                        );
+                    }
+                } else {
+                    // Si no existe la conversación, crear una nueva
+                    // Esto no debería pasar, pero por si acaso
+                    try {
+                        $db->query(
+                            "INSERT INTO conversaciones (usuario1_id, usuario2_id, mensajes_no_leidos_usuario1, mensajes_no_leidos_usuario2, fecha_ultimo_mensaje)
+                             VALUES (?, ?, 0, 0, NOW())
+                             ON DUPLICATE KEY UPDATE fecha_ultimo_mensaje = NOW()",
+                            [min($usuarioId, $otroUsuarioId), max($usuarioId, $otroUsuarioId)]
+                        );
+                    } catch (\Exception $e) {
+                        // Silencioso
+                    }
+                }
+            }
             
         } catch (\Exception $e) {
             log_message('error', 'Error al marcar mensajes como leídos: ' . $e->getMessage());
@@ -335,7 +520,7 @@ class MensajeriaController extends BaseController
      */
     public function conversacion($contactoId)
     {
-        $usuarioId = session()->get('idusuario');
+        $usuarioId = session()->get('usuario_id');
         
         // Verificar que el contacto existe
         $contacto = $this->usuarioModel->getUsuarioCompleto($contactoId);
@@ -369,7 +554,7 @@ class MensajeriaController extends BaseController
      */
     public function enviar()
     {
-        $usuarioId = session()->get('idusuario');
+        $usuarioId = session()->get('usuario_id');
         
         // Obtener lista de usuarios para enviar mensaje
         $usuarios = $this->usuarioModel->getUsuariosCompletos(1); // Solo usuarios activos
@@ -390,12 +575,21 @@ class MensajeriaController extends BaseController
     public function procesarEnvio()
     {
         try {
-            $usuarioId = session()->get('usuario_id');
+            // Verificar autenticación - usar múltiples métodos para compatibilidad
+            $usuarioId = session()->get('usuario_id') 
+                      ?? session()->get('idusuario') 
+                      ?? null;
+            
+            // Si aún no hay usuario_id, verificar si hay sesión activa
+            if (!$usuarioId && session()->get('usuario_logueado')) {
+                // Intentar obtener de otras variables de sesión
+                $usuarioId = session()->get('usuario_id');
+            }
             
             if (!$usuarioId) {
-                return $this->response->setJSON([
+                return $this->response->setStatusCode(401)->setJSON([
                     'success' => false,
-                    'message' => 'Usuario no autenticado'
+                    'message' => 'Usuario no autenticado. Por favor, inicie sesión nuevamente.'
                 ]);
             }
 
@@ -413,17 +607,18 @@ class MensajeriaController extends BaseController
                 ]);
             }
 
-            if (!$asunto || strlen($asunto) < 3) {
+            // Sin restricción de caracteres mínimos - solo que no esté vacío
+            if (!$asunto || strlen(trim($asunto)) === 0) {
                 return $this->response->setJSON([
                     'success' => false,
-                    'message' => 'El asunto debe tener al menos 3 caracteres'
+                    'message' => 'El asunto no puede estar vacío'
                 ]);
             }
 
-            if (!$contenido || strlen($contenido) < 5) {
+            if (!$contenido || strlen(trim($contenido)) === 0) {
                 return $this->response->setJSON([
                     'success' => false,
-                    'message' => 'El contenido debe tener al menos 5 caracteres'
+                    'message' => 'El contenido no puede estar vacío'
                 ]);
             }
 
@@ -475,19 +670,40 @@ class MensajeriaController extends BaseController
 
             // Insertar mensaje directamente con SQL
             $db = \Config\Database::connect();
-            $sql = "INSERT INTO mensajes (remitente_id, destinatario_id, asunto, contenido, tipo, leido, status, fecha_envio) 
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
             
-            $result = $db->query($sql, [
-                $data['remitente_id'],
-                $data['destinatario_id'], 
-                $data['asunto'],
-                $data['contenido'],
-                $data['tipo'],
-                $data['leido'],
-                'sent',
-                $data['fecha_envio']
-            ]);
+            // Verificar si la columna status existe
+            $columnas = $db->getFieldNames('mensajes');
+            $tieneStatus = in_array('status', $columnas);
+            
+            if ($tieneStatus) {
+                $sql = "INSERT INTO mensajes (remitente_id, destinatario_id, asunto, contenido, tipo, leido, status, fecha_envio) 
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+                $params = [
+                    $data['remitente_id'],
+                    $data['destinatario_id'], 
+                    $data['asunto'],
+                    $data['contenido'],
+                    $data['tipo'],
+                    $data['leido'],
+                    'sent',
+                    $data['fecha_envio']
+                ];
+            } else {
+                // Si no tiene status, insertar sin esa columna
+                $sql = "INSERT INTO mensajes (remitente_id, destinatario_id, asunto, contenido, tipo, leido, fecha_envio) 
+                        VALUES (?, ?, ?, ?, ?, ?, ?)";
+                $params = [
+                    $data['remitente_id'],
+                    $data['destinatario_id'], 
+                    $data['asunto'],
+                    $data['contenido'],
+                    $data['tipo'],
+                    $data['leido'],
+                    $data['fecha_envio']
+                ];
+            }
+            
+            $result = $db->query($sql, $params);
             
             if (!$result) {
                 return $this->response->setJSON([
@@ -511,6 +727,63 @@ class MensajeriaController extends BaseController
                 // Actualizar contenido del mensaje para incluir enlace de descarga
                 $enlace = base_url('mensajeria/archivo/' . $archivoId);
                 $db->query("UPDATE mensajes SET contenido = CONCAT(contenido, '\n', '[archivo] ', ?) WHERE id = ?", [$enlace, $mensajeId]);
+            }
+
+            // Actualizar o crear conversación en la tabla conversaciones
+            try {
+                // Normalizar IDs para evitar duplicados (menor primero)
+                $usuario1 = min($usuarioId, $destinatarioId);
+                $usuario2 = max($usuarioId, $destinatarioId);
+                
+                // Verificar si existe la conversación
+                $convCheck = $db->query(
+                    "SELECT id FROM conversaciones 
+                     WHERE usuario1_id = ? AND usuario2_id = ?",
+                    [$usuario1, $usuario2]
+                );
+                
+                if ($convCheck->getNumRows() > 0) {
+                    // Actualizar conversación existente
+                    if ($usuarioId == $usuario1) {
+                        // Si el remitente es usuario1, incrementar contador de usuario2
+                        $db->query(
+                            "UPDATE conversaciones 
+                             SET ultimo_mensaje_id = ?, 
+                                 fecha_ultimo_mensaje = ?,
+                                 mensajes_no_leidos_usuario2 = mensajes_no_leidos_usuario2 + 1
+                             WHERE usuario1_id = ? AND usuario2_id = ?",
+                            [$mensajeId, $data['fecha_envio'], $usuario1, $usuario2]
+                        );
+                    } else {
+                        // Si el remitente es usuario2, incrementar contador de usuario1
+                        $db->query(
+                            "UPDATE conversaciones 
+                             SET ultimo_mensaje_id = ?, 
+                                 fecha_ultimo_mensaje = ?,
+                                 mensajes_no_leidos_usuario1 = mensajes_no_leidos_usuario1 + 1
+                             WHERE usuario1_id = ? AND usuario2_id = ?",
+                            [$mensajeId, $data['fecha_envio'], $usuario1, $usuario2]
+                        );
+                    }
+                } else {
+                    // Crear nueva conversación
+                    $db->query(
+                        "INSERT INTO conversaciones 
+                         (usuario1_id, usuario2_id, ultimo_mensaje_id, fecha_ultimo_mensaje, mensajes_no_leidos_usuario1, mensajes_no_leidos_usuario2)
+                         VALUES (?, ?, ?, ?, ?, ?)",
+                        [
+                            $usuario1, 
+                            $usuario2, 
+                            $mensajeId, 
+                            $data['fecha_envio'],
+                            $usuarioId == $usuario1 ? 0 : 1, // Si remitente es usuario1, usuario2 tiene 1 no leído
+                            $usuarioId == $usuario2 ? 0 : 1  // Si remitente es usuario2, usuario1 tiene 1 no leído
+                        ]
+                    );
+                }
+            } catch (\Exception $e) {
+                // Silencioso si falla, los triggers pueden manejar esto
+                log_message('debug', 'No se pudo actualizar conversación: ' . $e->getMessage());
             }
 
             // Crear notificación para el destinatario
@@ -682,7 +955,7 @@ class MensajeriaController extends BaseController
             ]);
         }
 
-        $usuarioId = session()->get('idusuario');
+        $usuarioId = session()->get('usuario_id');
         $limit = $this->request->getGet('limit') ?: 5;
         
         try {
@@ -713,7 +986,7 @@ class MensajeriaController extends BaseController
             ]);
         }
 
-        $usuarioId = session()->get('idusuario');
+        $usuarioId = session()->get('usuario_id');
         $notificacionId = $this->request->getPost('notificacion_id');
         
         if (!$notificacionId) {
@@ -758,7 +1031,7 @@ class MensajeriaController extends BaseController
             ]);
         }
 
-        $usuarioId = session()->get('idusuario');
+        $usuarioId = session()->get('usuario_id');
         $termino = $this->request->getGet('q');
         
         if (empty($termino) || strlen($termino) < 2) {
@@ -796,7 +1069,7 @@ class MensajeriaController extends BaseController
             ]);
         }
 
-        $usuarioId = session()->get('idusuario');
+        $usuarioId = session()->get('usuario_id');
         $mensajeId = $this->request->getPost('mensaje_id');
         
         if (!$mensajeId) {
@@ -834,7 +1107,7 @@ class MensajeriaController extends BaseController
      */
     public function configuracion()
     {
-        $usuarioId = session()->get('idusuario');
+        $usuarioId = session()->get('usuario_id');
         
         $configuracion = $this->notificacionModel->getConfiguracionNotificaciones($usuarioId);
 
@@ -860,7 +1133,7 @@ class MensajeriaController extends BaseController
             ]);
         }
 
-        $usuarioId = session()->get('idusuario');
+        $usuarioId = session()->get('usuario_id');
 
         try {
             $result = $this->notificacionModel->marcarTodasComoLeidas($usuarioId);
@@ -897,7 +1170,7 @@ class MensajeriaController extends BaseController
             ]);
         }
 
-        $usuarioId = session()->get('idusuario');
+        $usuarioId = session()->get('usuario_id');
         
         try {
             $configuracion = [

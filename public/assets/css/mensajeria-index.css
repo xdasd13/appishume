@@ -23,16 +23,33 @@
     flex-shrink: 0;
 }
 
+/* Panel de conversaciones - ancho fijo como sidebar */
+.panel-conversaciones-left {
+    width: 260px;
+    min-width: 260px;
+    max-width: 260px;
+    flex-shrink: 0;
+}
+
+/* Asegurar que el contenedor principal ocupe todo el ancho */
+.container-fluid {
+    width: 100% !important;
+    max-width: 100% !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+}
+
 /* Items de conversación */
 .conversacion-item {
-    padding: 15px 20px;
+    padding: 18px 16px;
     border-bottom: 1px solid #f0f0f0;
     cursor: pointer;
     transition: all 0.2s ease;
     position: relative;
-    min-height: 80px;
+    min-height: 85px;
     display: flex;
     align-items: center;
+    font-size: 14px;
 }
 
 .conversacion-item:hover {
@@ -56,21 +73,61 @@
 
 /* Burbujas de mensaje */
 .mensaje-bubble {
-    max-width: 70%;
-    padding: 12px 16px;
+    max-width: 75%;
+    padding: 14px 18px;
     border-radius: 20px;
-    margin-bottom: 8px;
+    margin-bottom: 12px;
     word-wrap: break-word;
     word-break: break-word;
     position: relative;
     box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    font-size: 15px;
+    line-height: 1.6;
+    font-weight: 400;
 }
 
 .mensaje-propio {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #0084ff 0%, #0077e6 50%, #0066cc 100%);
     color: white;
     margin-left: auto;
     border-bottom-right-radius: 5px;
+    box-shadow: 0 2px 8px rgba(0, 132, 255, 0.3), 
+                0 4px 12px rgba(0, 119, 230, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 1px solid rgba(0, 132, 255, 0.4);
+}
+
+.mensaje-propio::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, 
+        transparent, 
+        rgba(255, 255, 255, 0.15), 
+        transparent);
+    transition: left 0.5s;
+}
+
+.mensaje-propio:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 132, 255, 0.4), 
+                0 6px 16px rgba(0, 119, 230, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.25);
+}
+
+.mensaje-propio:hover::before {
+    left: 100%;
+}
+
+.mensaje-propio * {
+    position: relative;
+    z-index: 1;
 }
 
 .mensaje-recibido {
@@ -82,10 +139,27 @@
 }
 
 .mensaje-hora {
-    font-size: 0.75em;
-    opacity: 0.7;
-    margin-top: 4px;
+    font-size: 0.7em;
+    opacity: 0.85;
+    margin-top: 6px;
     text-align: right;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 4px;
+    font-weight: 400;
+}
+
+.mensaje-propio .mensaje-hora {
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.mensaje-propio .mensaje-hora .text-primary {
+    color: rgba(255, 255, 255, 0.95) !important;
+}
+
+.mensaje-propio .mensaje-hora .text-secondary {
+    color: rgba(255, 255, 255, 0.75) !important;
 }
 
 .mensaje-recibido .mensaje-hora {
@@ -143,10 +217,23 @@
 /* Badge de mensajes no leídos */
 .conversacion-item .badge {
     position: absolute;
-    top: 15px;
-    right: 20px;
-    font-size: 0.7em;
-    padding: 4px 8px;
+    top: 12px;
+    right: 12px;
+    font-size: 0.75em;
+    padding: 5px 9px;
+    min-width: 22px;
+    text-align: center;
+}
+
+.conversacion-item h6 {
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 4px;
+}
+
+.conversacion-item .text-muted.small {
+    font-size: 12px;
+    line-height: 1.4;
 }
 
 /* Separador de fechas */
@@ -200,7 +287,7 @@
         padding: 0;
     }
     
-    .col-md-4 {
+    .panel-conversaciones-left {
         position: fixed;
         top: 0;
         left: 0;
@@ -210,15 +297,15 @@
         transition: transform 0.3s ease;
         box-shadow: 2px 0 10px rgba(0,0,0,0.1);
         background: white;
-        width: 280px;
-        max-width: 80vw;
+        width: 280px !important;
+        max-width: 80vw !important;
     }
     
-    .col-md-4.show {
+    .panel-conversaciones-left.show {
         transform: translateX(0);
     }
     
-    .col-md-8 {
+    .flex-grow-1 {
         width: 100%;
         padding: 0;
     }
@@ -288,9 +375,9 @@
         font-size: 12px;
     }
     
-    .col-md-4 {
-        width: 100%;
-        max-width: 100vw;
+    .panel-conversaciones-left {
+        width: 100% !important;
+        max-width: 100vw !important;
     }
 }
 
@@ -329,17 +416,25 @@
     overflow-x: hidden;
 }
 
+/* Eliminar espacio debajo - solo ajustar altura sin romper layout */
+.container-fluid.p-0[style*="height: calc"] {
+    margin-bottom: 0 !important;
+    padding-bottom: 0 !important;
+}
+
 /* Asegurar que los contenedores no se salgan */
 .panel-conversaciones {
-    height: calc(100vh - 140px);
     overflow-y: auto;
     overflow-x: hidden;
+    flex: 1;
+    min-height: 0;
 }
 
 .panel-mensajes {
-    height: calc(100vh - 120px);
     overflow-y: auto;
     overflow-x: hidden;
+    flex: 1;
+    min-height: 0;
 }
 
 /* Fix para el área de escritura */

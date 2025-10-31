@@ -31,7 +31,7 @@ class MensajeModel extends Model
     protected $validationRules = [
         'remitente_id' => 'required|integer',
         'destinatario_id' => 'required|integer',
-        'asunto' => 'required|min_length[3]|max_length[255]',
+        'asunto' => 'required|min_length[1]|max_length[255]',
         'contenido' => 'required|min_length[1]',
         'tipo' => 'required|in_list[normal,importante,urgente]'
     ];
@@ -47,7 +47,7 @@ class MensajeModel extends Model
         ],
         'asunto' => [
             'required' => 'El asunto es obligatorio',
-            'min_length' => 'El asunto debe tener al menos 3 caracteres',
+            'min_length' => 'El asunto no puede estar vacío',
             'max_length' => 'El asunto no puede exceder 255 caracteres'
         ],
         'contenido' => [

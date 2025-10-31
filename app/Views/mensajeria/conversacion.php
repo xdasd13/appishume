@@ -198,12 +198,12 @@ function enviarRespuesta() {
     const contenido = $('#contenido_respuesta').val().trim();
     const tipo = $('#tipo_respuesta').val();
     
-    if (asunto.length < 3) {
-        Swal.fire('Error', 'El asunto debe tener al menos 3 caracteres', 'error');
+    if (!asunto || asunto.trim().length === 0) {
+        Swal.fire('Error', 'El asunto no puede estar vacío', 'error');
         return;
     }
     
-    if (contenido.length < 1) {
+    if (!contenido || contenido.trim().length === 0) {
         Swal.fire('Error', 'El contenido es obligatorio', 'error');
         return;
     }
@@ -240,10 +240,22 @@ function enviarRespuesta() {
                 });
             }
         },
-        error: function() {
+        error: function(xhr, status, error) {
+            let mensajeError = 'Error al enviar la respuesta. Intente nuevamente.';
+            
+            if (xhr.status === 403) {
+                mensajeError = 'Acceso denegado. Por favor, verifique su sesión e intente nuevamente.';
+            } else if (xhr.status === 401) {
+                mensajeError = 'Sesión expirada. Por favor, inicie sesión nuevamente.';
+                window.location.href = '<?= base_url('login') ?>';
+                return;
+            } else if (xhr.responseJSON && xhr.responseJSON.message) {
+                mensajeError = xhr.responseJSON.message;
+            }
+            
             Swal.fire({
                 title: 'Error',
-                text: 'Error al enviar la respuesta. Intente nuevamente.',
+                text: mensajeError,
                 icon: 'error',
                 confirmButtonText: 'OK'
             });
