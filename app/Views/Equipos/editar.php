@@ -136,25 +136,25 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                 });
                 
-                if (response.ok) {
-                    await Swal.fire({
-                        icon: 'success',
-                        title: '¡Actualizado!',
-                        text: 'El equipo ha sido actualizado correctamente',
-                        confirmButtonColor: '#28a745'
-                    });
+                // Parsear respuesta JSON
+                const data = await response.json();
+                
+                if (response.ok && data.success) {
+                    // Guardar mensaje en sessionStorage para mostrarlo después del redirect
+                    sessionStorage.setItem('toast_message', data.message || 'Cambio realizado correctamente');
+                    sessionStorage.setItem('toast_icon', 'success');
                     
-                    // Redirigir después de la confirmación
-                    window.location.href = '<?= base_url('equipos') ?>';
+                    // Redirigir inmediatamente
+                    window.location.href = data.redirect || '<?= base_url('equipos') ?>';
                 } else {
-                    throw new Error('Error en la respuesta del servidor');
+                    throw new Error(data.message || 'Error en la respuesta del servidor');
                 }
             } catch (error) {
                 console.error('Error:', error);
                 Swal.fire({
                     icon: 'error',
                     title: 'Error',
-                    text: 'Ocurrió un error al actualizar el equipo',
+                    text: error.message || 'Ocurrió un error al actualizar el equipo',
                     confirmButtonColor: '#dc3545'
                 });
                 

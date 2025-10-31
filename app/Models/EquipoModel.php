@@ -23,7 +23,7 @@ class EquipoModel extends Model
     private function getBaseQuery(): \CodeIgniter\Database\BaseBuilder
     {
         return $this->db->table('equipos e')
-            ->select('e.idequipo, e.idserviciocontratado, e.idusuario, e.descripcion, e.estadoservicio')
+            ->select('e.idequipo, e.idserviciocontratado, e.idusuario, e.descripcion, e.estadoservicio, e.fecha_asignacion')
             ->select('u.nombreusuario, p.nombres, p.apellidos, c.cargo')
             ->select('s.servicio, sc.direccion, sc.fechahoraservicio, co.fechaevento')
             ->select('te.evento as tipoevento')
@@ -98,6 +98,7 @@ class EquipoModel extends Model
     /**
      * Obtiene equipos agrupados por estado para el Kanban
      * KISS: método específico para la vista
+     * Ordenamiento: Más recientes primero (por fecha de asignación DESC)
      */
     public function getEquiposParaKanban(?int $servicioId = null): array
     {
@@ -107,9 +108,10 @@ class EquipoModel extends Model
             $query->where('e.idserviciocontratado', $servicioId);
         }
         
-        // Ordenar por fecha más próxima primero (ASC) y luego por cliente
-        $equipos = $query->orderBy('sc.fechahoraservicio', 'ASC')
-            ->orderBy('cliente_nombre', 'ASC')
+        // Ordenar por fecha de asignación más reciente primero (DESC)
+        // Esto hace que las nuevas asignaciones aparezcan de primero
+        $equipos = $query->orderBy('e.fecha_asignacion', 'DESC')
+            ->orderBy('e.idequipo', 'DESC')  // Fallback: ID más alto (más reciente) primero
             ->get()
             ->getResultArray();
 

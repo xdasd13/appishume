@@ -339,7 +339,7 @@
 
             if (data.success) {
                 await Swal.fire({
-                    title: '¡Eliminado!',
+                    title: '¡Desactivado!',
                     text: `Las credenciales de ${nombre} han sido desactivadas exitosamente.`,
                     icon: 'success',
                     confirmButtonColor: '#4e73df',
