@@ -44,7 +44,8 @@ class Equipos extends BaseController
         $data = [
             'titulo' => 'Gestión de Equipos',
             'equiposKanban' => $this->equipoModel->getEquiposParaKanban(),
-            'estadisticas' => $this->equipoService->obtenerEstadisticas()
+            'estadisticas' => $this->equipoService->obtenerEstadisticas(),
+            'tecnicos' => $this->equipoService->obtenerTodosTecnicos()
         ];
         
         return $this->render('equipos/listar', $data);
