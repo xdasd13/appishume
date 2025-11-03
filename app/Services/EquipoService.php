@@ -136,7 +136,6 @@ class EquipoService
      */
     public function obtenerTecnicosDisponibles(int $servicioId, string $fechaEvento): array
     {
-        // Obtener todos los técnicos activos
         $builder = $this->db->table('usuarios u');
         $builder->select('u.idusuario, p.nombres, p.apellidos, c.cargo');
         $builder->join('personas p', 'u.idpersona = p.idpersona');
@@ -144,7 +143,6 @@ class EquipoService
         $builder->where('u.estado', 1);
         $tecnicos = $builder->get()->getResultArray();
 
-        // Evaluar disponibilidad de cada técnico
         foreach ($tecnicos as &$tecnico) {
             $tecnico['yaAsignado'] = $this->yaEstaAsignado($tecnico['idusuario'], $servicioId);
             $tecnico['conflictos'] = $this->obtenerConflictos($tecnico['idusuario'], $fechaEvento, $servicioId);
@@ -153,6 +151,17 @@ class EquipoService
         }
 
         return $tecnicos;
+    }
+
+    public function obtenerTodosTecnicos(): array
+    {
+        $builder = $this->db->table('usuarios u');
+        $builder->select('u.idusuario, p.nombres, p.apellidos, c.cargo');
+        $builder->join('personas p', 'u.idpersona = p.idpersona');
+        $builder->join('cargos c', 'u.idcargo = c.idcargo');
+        $builder->where('u.estado', 1);
+        $builder->orderBy('p.nombres', 'ASC');
+        return $builder->get()->getResultArray();
     }
 
     /**
