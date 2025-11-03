@@ -556,14 +556,33 @@ class UsuariosController extends BaseController
                 ]);
             }
 
+            // Verificar si el usuario está desactivando su propia cuenta
+            $usuarioActual = session()->get('usuario_id');
+            $esPropiaCuenta = ($idusuario == $usuarioActual);
+
             // Usar soft delete (cambiar estado a 0) en lugar de eliminar físicamente
             $result = $this->usuarioModel->update($idusuario, ['estado' => 0]);
 
             if ($result) {
                 log_message('info', 'Usuario desactivado exitosamente - ID: ' . $idusuario);
+                
+                // Si desactivó su propia cuenta, destruir la sesión
+                if ($esPropiaCuenta) {
+                    log_message('warning', 'Usuario desactivó su propia cuenta - Cerrando sesión - ID: ' . $idusuario);
+                    session()->destroy();
+                    
+                    return $this->response->setJSON([
+                        'success' => true,
+                        'message' => 'Credenciales desactivadas exitosamente',
+                        'logout' => true,
+                        'redirect' => base_url('login')
+                    ]);
+                }
+                
                 return $this->response->setJSON([
                     'success' => true,
-                    'message' => 'Credenciales desactivadas exitosamente'
+                    'message' => 'Credenciales desactivadas exitosamente',
+                    'logout' => false
                 ]);
             } else {
                 return $this->response->setJSON([
