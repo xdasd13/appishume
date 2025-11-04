@@ -556,33 +556,28 @@ class UsuariosController extends BaseController
                 ]);
             }
 
-            // Verificar si el usuario está desactivando su propia cuenta
+            // Verificar si el usuario está intentando desactivar su propia cuenta
             $usuarioActual = session()->get('usuario_id');
             $esPropiaCuenta = ($idusuario == $usuarioActual);
+
+            // Prevenir que un usuario desactive su propia cuenta
+            if ($esPropiaCuenta) {
+                log_message('warning', 'Usuario intentó desactivar su propia cuenta - ID: ' . $idusuario);
+                return $this->response->setJSON([
+                    'success' => false,
+                    'message' => 'No puedes desactivar tu propia cuenta',
+                    'self_account' => true
+                ]);
+            }
 
             // Usar soft delete (cambiar estado a 0) en lugar de eliminar físicamente
             $result = $this->usuarioModel->update($idusuario, ['estado' => 0]);
 
             if ($result) {
                 log_message('info', 'Usuario desactivado exitosamente - ID: ' . $idusuario);
-                
-                // Si desactivó su propia cuenta, destruir la sesión
-                if ($esPropiaCuenta) {
-                    log_message('warning', 'Usuario desactivó su propia cuenta - Cerrando sesión - ID: ' . $idusuario);
-                    session()->destroy();
-                    
-                    return $this->response->setJSON([
-                        'success' => true,
-                        'message' => 'Credenciales desactivadas exitosamente',
-                        'logout' => true,
-                        'redirect' => base_url('login')
-                    ]);
-                }
-                
                 return $this->response->setJSON([
                     'success' => true,
-                    'message' => 'Credenciales desactivadas exitosamente',
-                    'logout' => false
+                    'message' => 'Credenciales desactivadas exitosamente'
                 ]);
             } else {
                 return $this->response->setJSON([
