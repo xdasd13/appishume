@@ -1,7 +1,5 @@
 <?php
-
 namespace App\Controllers;
-
 use App\Models\UsuarioModel;
 
 class AuthController extends BaseController
@@ -13,53 +11,36 @@ class AuthController extends BaseController
         $this->usuarioModel = new UsuarioModel();
     }
 
-    /**
-     * Mostrar formulario de login
-     * Las notificaciones se manejan con flashdata y SweetAlert Toast
-     */
     public function login()
     {
-        // Si ya está logueado y NO tiene mensaje de éxito pendiente, redirigir al dashboard
         if (session()->get('usuario_logueado') && !session()->getFlashdata('success_type')) {
             return redirect()->to('/welcome');
         }
-
-        $data = [
-            'title' => 'Iniciar Sesión - ISHUME'
-        ];
-
+        $data = ['title' => 'Iniciar Sesión - ISHUME'];
         return view('auth/login', $data);
     }
-
-    /**
-     * Procesar login con validación específica
-     * Retorna mensajes precisos según el tipo de error
-     */
+    
+    //Funcion para autenticar al usuario
     public function authenticate()
     {
         $rules = [
             'login' => 'required',
             'password' => 'required|min_length[3]'
         ];
-
+        
         if (!$this->validate($rules)) {
             return redirect()->back()
-                           ->withInput()
-                           ->with('error', 'Por favor, completa todos los campos correctamente.')
-                           ->with('error_type', 'validation');
+                ->withInput()
+                ->with('error', 'Por favor, completa todos los campos correctamente.')
+                ->with('error_type', 'validation');
         }
-
+        
         $login = $this->request->getPost('login');
         $password = $this->request->getPost('password');
-
-        // Intentar autenticar - ahora retorna un array con información detallada
         $resultado = $this->usuarioModel->authenticate($login, $password);
 
-        // Autenticación exitosa
         if ($resultado['success']) {
             $usuario = $resultado['data'];
-            
-            // Crear sesión
             $nombreCompleto = $usuario->nombres . ' ' . $usuario->apellidos;
             $primerNombre = explode(' ', $usuario->nombres)[0];
             $primeraLetraApellido = substr($usuario->apellidos, 0, 1);
@@ -79,32 +60,25 @@ class AuthController extends BaseController
 
             session()->set($sessionData);
 
-            // Activar presencia en línea al iniciar sesión
             try {
                 $cache = \Config\Services::cache();
                 $cache->save('presence_' . $usuario->idusuario, time(), 70);
             } catch (\Exception $e) {
-                // Silencioso si falla, no es crítico
                 log_message('debug', 'No se pudo activar presencia al iniciar sesión: ' . $e->getMessage());
             }
 
-            // Redirigir de vuelta al login para mostrar el mensaje de éxito
-            // y luego redirigir automáticamente al dashboard
             return redirect()->to('/login')
-                           ->with('success', 'Inicio de sesión exitoso')
-                           ->with('success_type', 'login_success')
-                           ->with('redirect_to', '/welcome');
-        } 
-        // Autenticación fallida
-        else {
+                ->with('success', 'Inicio de sesión exitoso')
+                ->with('success_type', 'login_success')
+                ->with('redirect_to', '/welcome');
+        } else {
             return redirect()->back()
-                           ->withInput()
-                           ->with('error', $resultado['message'])
-                           ->with('error_type', $resultado['error_type']);
+                ->withInput()
+                ->with('error', $resultado['message'])
+                ->with('error_type', $resultado['error_type']);
         }
     }
 
-    // Dashboard unificado
     public function dashboard()
     {
         if (!session()->get('usuario_logueado')) {
@@ -114,7 +88,6 @@ class AuthController extends BaseController
         $tipoUsuario = session()->get('tipo_usuario') ?? session()->get('role');
         $usuarioNombre = session()->get('usuario_nombre') ?? 'Usuario';
         
-        // Dashboard unificado para todos los roles
         $data = [
             'title' => 'Dashboard - ISHUME',
             'usuario' => $usuarioNombre,
@@ -123,7 +96,6 @@ class AuthController extends BaseController
             'footer' => view('Layouts/footer')
         ];
 
-        // Agregar datos específicos según el rol
         if (in_array($tipoUsuario, ['admin', 'administrador'])) {
             $data['usuarios'] = $this->usuarioModel->getUsuarios();
             $data['trabajadores'] = $this->usuarioModel->getTrabajadores();
@@ -133,7 +105,6 @@ class AuthController extends BaseController
         return view('welcome', $data);
     }
 
-    // Dashboard para trabajador
     public function trabajadorDashboard()
     {
         if (!session()->get('usuario_logueado') || session()->get('usuario_tipo') !== 'trabajador') {
@@ -152,7 +123,6 @@ class AuthController extends BaseController
         return view('trabajador/dashboard', $data);
     }
 
-    // Crear nuevo trabajador (solo admin)
     public function crearTrabajador()
     {
         if (!session()->get('usuario_logueado') || session()->get('usuario_tipo') !== 'admin') {
@@ -174,11 +144,10 @@ class AuthController extends BaseController
 
             if (!$this->validate($rules)) {
                 return redirect()->back()
-                               ->withInput()
-                               ->with('error', 'Por favor, corrige los errores en el formulario.');
+                    ->withInput()
+                    ->with('error', 'Por favor, corrige los errores en el formulario.');
             }
 
-            // Crear persona
             $personaData = [
                 'nombres' => $this->request->getPost('nombres'),
                 'apellidos' => $this->request->getPost('apellidos'),
@@ -193,7 +162,6 @@ class AuthController extends BaseController
             $personaId = $personaModel->insert($personaData);
 
             if ($personaId) {
-                // Crear usuario
                 $usuarioData = [
                     'idpersona' => $personaId,
                     'idcargo' => $this->request->getPost('idcargo'),
@@ -207,16 +175,15 @@ class AuthController extends BaseController
 
                 if ($usuarioId) {
                     return redirect()->to('/dashboard')
-                                   ->with('success', 'Trabajador creado exitosamente.');
+                        ->with('success', 'Trabajador creado exitosamente.');
                 }
             }
 
             return redirect()->back()
-                           ->withInput()
-                           ->with('error', 'Error al crear el trabajador.');
+                ->withInput()
+                ->with('error', 'Error al crear el trabajador.');
         }
 
-        // Obtener cargos para el formulario
         $cargoModel = new \App\Models\CargoModel();
         $cargos = $cargoModel->findAll();
 
@@ -228,7 +195,6 @@ class AuthController extends BaseController
         return view('admin/crear_trabajador', $data);
     }
 
-    // Actualizar estado de equipo (solo trabajadores)
     public function actualizarEstado()
     {
         if (!session()->get('usuario_logueado') || session()->get('usuario_tipo') !== 'trabajador') {
@@ -237,7 +203,6 @@ class AuthController extends BaseController
 
         $equipoId = $this->request->getPost('equipo_id');
         $nuevoEstado = $this->request->getPost('estado');
-
         $estadosPermitidos = ['Pendiente', 'En Proceso', 'Completado'];
         
         if (!in_array($nuevoEstado, $estadosPermitidos)) {
@@ -253,21 +218,15 @@ class AuthController extends BaseController
         }
     }
 
-    // Verificar estado de sesión (AJAX)
     public function checkSession()
     {
-        $response = [
-            'valid' => session()->get('usuario_logueado') ? true : false
-        ];
-        
+        $response = ['valid' => session()->get('usuario_logueado') ? true : false];
         return $this->response->setJSON($response);
     }
 
-    // Cerrar sesión
     public function logout()
     {
         session()->destroy();
         return redirect()->to('/login')->with('logout_success', true);
     }
-
 }
