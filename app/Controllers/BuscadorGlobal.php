@@ -1,39 +1,21 @@
 <?php
-
 namespace App\Controllers;
 
 use App\Controllers\BaseController;
 use CodeIgniter\Database\BaseConnection;
 
-/**
- * Controlador de Búsqueda Global
- * 
- * Realiza búsquedas en todo el sistema: clientes, servicios, equipos, 
- * pagos, entregas, usuarios, cotizaciones, etc.
- * 
- * @author ISHUME Team
- * @version 1.0
- */
+
 class BuscadorGlobal extends BaseController
 {
     private BaseConnection $db;
     
-    /**
-     * Constructor
-     */
+   //Constructor
     public function __construct()
     {
         $this->db = \Config\Database::connect();
     }
 
-    /**
-     * Buscar en todo el sistema
-     * 
-     * Recibe un término de búsqueda y retorna resultados de todas las tablas
-     * relevantes del sistema.
-     * 
-     * @return \CodeIgniter\HTTP\ResponseInterface JSON con resultados
-     */
+    //Funcion para buscar
     public function buscar()
     {
         try {
@@ -87,9 +69,7 @@ class BuscadorGlobal extends BaseController
         }
     }
 
-    /**
-     * Buscar en módulos y rutas del sistema
-     */
+    //Funcion para buscar en módulos y rutas del sistema
     private function buscarModulos(string $termino): array
     {
         // Definir todos los módulos del sistema
@@ -216,9 +196,7 @@ class BuscadorGlobal extends BaseController
         return $resultados;
     }
 
-    /**
-     * Buscar en clientes (personas y empresas)
-     */
+    //Funcion para buscar clientes
     private function buscarClientes(string $termino): array
     {
         $builder = $this->db->table('clientes cl');
@@ -252,9 +230,7 @@ class BuscadorGlobal extends BaseController
         }, $resultados);
     }
 
-    /**
-     * Buscar en servicios
-     */
+    //Funcion para buscar servicios
     private function buscarServicios(string $termino): array
     {
         $builder = $this->db->table('servicios s');
@@ -285,9 +261,7 @@ class BuscadorGlobal extends BaseController
         }, $resultados);
     }
 
-    /**
-     * Buscar en equipos
-     */
+    //Funcion para buscar equipos
     private function buscarEquipos(string $termino): array
     {
         $builder = $this->db->table('equipos eq');
@@ -321,9 +295,7 @@ class BuscadorGlobal extends BaseController
         }, $resultados);
     }
 
-    /**
-     * Buscar en pagos
-     */
+    //Funcion para buscar pagos
     private function buscarPagos(string $termino): array
     {
         $builder = $this->db->table('controlpagos cp');
@@ -360,9 +332,7 @@ class BuscadorGlobal extends BaseController
         }, $resultados);
     }
 
-    /**
-     * Buscar en entregas
-     */
+    //Funcion para buscar entregas
     private function buscarEntregas(string $termino): array
     {
         $builder = $this->db->table('entregables en');
@@ -395,9 +365,7 @@ class BuscadorGlobal extends BaseController
         }, $resultados);
     }
 
-    /**
-     * Buscar en usuarios
-     */
+    //Funcion para buscar usuarios
     private function buscarUsuarios(string $termino): array
     {
         $builder = $this->db->table('usuarios u');
@@ -432,9 +400,7 @@ class BuscadorGlobal extends BaseController
         }, $resultados);
     }
 
-    /**
-     * Buscar en cotizaciones
-     */
+    //Funcion para buscar cotizaciones
     private function buscarCotizaciones(string $termino): array
     {
         $builder = $this->db->table('cotizaciones cot');
