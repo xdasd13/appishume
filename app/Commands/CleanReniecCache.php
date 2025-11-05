@@ -6,67 +6,26 @@ use App\Libraries\ReniecService;
 use CodeIgniter\CLI\BaseCommand;
 use CodeIgniter\CLI\CLI;
 
-/**
- * Comando para limpiar cache expirado de RENIEC
- * 
- * Uso: php spark reniec:clean-cache
- * 
- * @author Sistema Ishume
- * @version 1.0
- */
 class CleanReniecCache extends BaseCommand
 {
-    /**
-     * The Command's Group
-     *
-     * @var string
-     */
+   
     protected $group = 'RENIEC';
 
-    /**
-     * The Command's Name
-     *
-     * @var string
-     */
     protected $name = 'reniec:clean-cache';
 
-    /**
-     * The Command's Description
-     *
-     * @var string
-     */
     protected $description = 'Limpia el cache expirado de consultas RENIEC (registros con más de 90 días)';
 
-    /**
-     * The Command's Usage
-     *
-     * @var string
-     */
     protected $usage = 'reniec:clean-cache [options]';
 
-    /**
-     * The Command's Arguments
-     *
-     * @var array
-     */
     protected $arguments = [];
 
-    /**
-     * The Command's Options
-     *
-     * @var array
-     */
     protected $options = [
         '--dry-run' => 'Mostrar qué registros se eliminarían sin eliminarlos realmente',
         '--force'   => 'Forzar limpieza sin confirmación',
         '--stats'   => 'Mostrar estadísticas detalladas del cache'
     ];
 
-    /**
-     * Actually execute a command.
-     *
-     * @param array $params
-     */
+
     public function run(array $params)
     {
         CLI::write('=== Limpieza de Cache RENIEC ===', 'yellow');
@@ -118,9 +77,7 @@ class CleanReniecCache extends BaseCommand
         }
     }
 
-    /**
-     * Mostrar estadísticas del cache
-     */
+    //Mostrar estadísticas del cache
     private function showStats(ReniecService $reniecService): void
     {
         $stats = $reniecService->getStats();
@@ -134,9 +91,7 @@ class CleanReniecCache extends BaseCommand
         CLI::write('  • Tasa de acierto: ' . $stats['cache_hit_rate'] . '%', 'yellow');
     }
 
-    /**
-     * Dry run - mostrar qué se eliminaría
-     */
+    //Dry run - mostrar qué se eliminaría
     private function dryRun(ReniecService $reniecService): void
     {
         CLI::write(' Modo DRY RUN - Solo mostrando qué se eliminaría:', 'yellow');
