@@ -50,7 +50,7 @@
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <strong class="text-primary"><i
-                                            class="fas fa-concierge-bell me-2"></i>Servicio:</strong>
+                                    class="fas fa-concierge-bell me-2"></i>Servicio:</strong>
                                     <p class="mb-0"><?= is_array($servicio) ? $servicio['servicio'] : $servicio->servicio ?>
                                     </p>
                                 </div>
@@ -170,7 +170,7 @@
 
                         <div class="col-md-3">
                             <select id="filterTecnico" class="form-select">
-                                <option value="">Todos los técnicos</option>
+                                <option value="">Todos los trabajadores</option>
                                 <?php if (isset($tecnicos)): ?>
                                     <?php foreach ($tecnicos as $tecnico): ?>
                                         <option value="<?= $tecnico['idusuario'] ?>">
@@ -209,7 +209,7 @@
         </div>
     </div>
 
-    <!-- Tablero Kanban Refactorizado -->
+    <!-- Tablero Kanban-->
     <div class="row">
         <div class="col-12">
             <div class="d-flex justify-content-between align-items-center mb-4">
@@ -307,11 +307,11 @@
     </div>
 </div>
 
-<!-- Función PHP para renderizar tarjetas (componente reutilizable) -->
+<!-- Función PHP para renderizar tarjetas -->
 <?php
 function renderEquipoCard(array $equipo, string $estado): string
 {
-    // Mapeo local de colores e iconos (KISS: simple y directo)
+    // Mapeo local de colores e iconos
     $colores = [
         'Programado' => 'secondary',
         'Pendiente' => 'warning',

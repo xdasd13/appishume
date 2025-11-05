@@ -2,7 +2,6 @@
 CREATE DATABASE IF NOT EXISTS ishume;
 USE ishume;
 
-
 -- TABLAS MAESTRAS
 CREATE TABLE cargos (
     idcargo INT AUTO_INCREMENT PRIMARY KEY,
@@ -175,7 +174,7 @@ CREATE TABLE listacondiciones (
 
 -- INSERCIÓN DE DATOS 
 
--- 1. DATOS BÁSICOS (Catálogos)
+-- 1. DATOS BÁSICOS (cargos)
 INSERT INTO cargos (cargo) VALUES 
 ('Gerente/a de Proyectos'),
 ('Coordinador/a de Eventos'),

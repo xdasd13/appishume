@@ -96,9 +96,6 @@
                                             <!-- Usuario -->
                                             <td class="align-middle">
                                                 <div class="d-flex align-items-center">
-                                                    <div class="avatar-circle me-2">
-                                                        <?= strtoupper(substr($item->usuario_nombre, 0, 1)) ?>
-                                                    </div>
                                                     <span class="fw-medium text-dark">
                                                         <?= esc($item->usuario_nombre) ?>
                                                     </span>
@@ -123,20 +120,6 @@
 
 <!-- Estilos CSS -->
 <style>
-    /* Avatar circular */
-    .avatar-circle {
-        width: 32px;
-        height: 32px;
-        border-radius: 50%;
-        background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: white;
-        font-weight: bold;
-        font-size: 14px;
-    }
-
     /* Tabla responsiva */
     .table-responsive {
         max-height: 600px;
