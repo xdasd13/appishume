@@ -50,7 +50,7 @@
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <strong class="text-primary"><i
-                                    class="fas fa-concierge-bell me-2"></i>Servicio:</strong>
+                                            class="fas fa-concierge-bell me-2"></i>Servicio:</strong>
                                     <p class="mb-0"><?= is_array($servicio) ? $servicio['servicio'] : $servicio->servicio ?>
                                     </p>
                                 </div>

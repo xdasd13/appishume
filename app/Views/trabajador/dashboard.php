@@ -37,7 +37,6 @@
                 <i class="fas fa-calendar me-2"></i> Mi Cronograma
             </a>
         </nav>
-        
         <div class="position-absolute bottom-0 w-100 p-3">
             <a href="<?= base_url('auth/logout') ?>" class="nav-link text-danger">
                 <i class="fas fa-sign-out-alt me-2"></i> Cerrar Sesión

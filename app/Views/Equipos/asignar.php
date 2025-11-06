@@ -4,11 +4,8 @@
 <!-- Incluir SweetAlert -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-
-
 <div class="container">
     <h2><?= $titulo ?></h2>
-
     <!-- Mostrar mensajes con SweetAlert -->
     <?php if (session()->getFlashdata('error')): ?>
         <script>
@@ -284,5 +281,4 @@
         });
     });
 </script>
-
 <?= $footer ?>

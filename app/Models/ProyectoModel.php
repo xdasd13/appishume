@@ -166,15 +166,12 @@ class ProyectoModel extends Model
         try {
             // Contar servicios contratados
             $servicios = $this->db->query("SELECT COUNT(*) as total FROM servicioscontratados")->getRow();
-            log_message('info', 'Total servicios contratados: ' . $servicios->total);
             
             // Contar contratos
             $contratos = $this->db->query("SELECT COUNT(*) as total FROM contratos")->getRow();
-            log_message('info', 'Total contratos: ' . $contratos->total);
             
             // Contar equipos
             $equipos = $this->db->query("SELECT COUNT(*) as total FROM equipos")->getRow();
-            log_message('info', 'Total equipos: ' . $equipos->total);
             
             return [
                 'servicios' => $servicios->total,

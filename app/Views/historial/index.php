@@ -35,7 +35,6 @@
             </div>
         </div>
     </div>
-
     <!-- Tabla de Historial -->
     <div class="row">
         <div class="col-12">
