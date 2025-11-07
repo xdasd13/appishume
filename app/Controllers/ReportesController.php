@@ -39,7 +39,9 @@ class ReportesController extends BaseController
         $data = [
             'title' => 'Reportes Dinámicos - IShume',
             'reportes_disponibles' => $this->obtenerReportesDisponibles(),
-            'filtros_base' => $this->obtenerFiltrosBase()
+            'filtros_base' => $this->obtenerFiltrosBase(),
+            'header' => view('Layouts/header'),
+            'footer' => view('Layouts/footer')
         ];
 
         return view('reportes/index', $data);
@@ -765,15 +767,32 @@ class ReportesController extends BaseController
 
     public function exportarPDF()
     {
+        // Debug: Log de sesión
+        $usuarioLogueado = session()->get('usuario_logueado');
+        $tipoUsuario = session()->get('tipo_usuario') ?? session()->get('role');
+        
+        log_message('debug', 'exportarPDF - Usuario logueado: ' . ($usuarioLogueado ? 'Sí' : 'No'));
+        log_message('debug', 'exportarPDF - Tipo usuario: ' . ($tipoUsuario ?? 'No definido'));
+        
         try {
             $tipo_reporte = $this->request->getPost('tipo_reporte');
-            $filtros = $this->request->getPost('filtros');
+            $filtrosRaw = $this->request->getPost('filtros');
             
             if (!$tipo_reporte) {
                 return $this->response->setJSON(['error' => 'Tipo de reporte requerido']);
             }
             
-            $datos = $this->generarDatosReporte($tipo_reporte, $filtros ?? []);
+            // Parsear filtros si vienen como JSON string
+            $filtros = [];
+            if (!empty($filtrosRaw)) {
+                if (is_string($filtrosRaw)) {
+                    $filtros = json_decode($filtrosRaw, true) ?? [];
+                } else {
+                    $filtros = $filtrosRaw;
+                }
+            }
+            
+            $datos = $this->generarDatosReporte($tipo_reporte, $filtros);
             $metadata = $this->obtenerMetadataReporte($tipo_reporte);
             
             if (empty($datos['datos'])) {
@@ -782,7 +801,7 @@ class ReportesController extends BaseController
                 ]);
             }
             
-            $html = $this->generarHTMLParaPDF($datos, $metadata, $filtros ?? []);
+            $html = $this->generarHTMLParaPDF($datos, $metadata, $filtros);
             
             return $this->response->setContentType('text/html')->setBody($html);
             
@@ -792,39 +811,6 @@ class ReportesController extends BaseController
         }
     }
 
-    public function exportarExcel()
-    {
-        try {
-            $tipo_reporte = $this->request->getPost('tipo_reporte');
-            $filtros = $this->request->getPost('filtros');
-            
-            if (!$tipo_reporte) {
-                return $this->response->setJSON(['error' => 'Tipo de reporte requerido']);
-            }
-            
-            $datos = $this->generarDatosReporte($tipo_reporte, $filtros ?? []);
-            $metadata = $this->obtenerMetadataReporte($tipo_reporte);
-            
-            if (empty($datos['datos'])) {
-                return $this->response->setJSON([
-                    'error' => 'No hay datos para exportar en el rango de fechas seleccionado'
-                ]);
-            }
-            
-            $csv = $this->generarCSVParaExcel($datos, $metadata, $filtros ?? []);
-            
-            $filename = 'reporte_' . $tipo_reporte . '_' . date('Y-m-d_H-i-s') . '.csv';
-            
-            return $this->response
-                ->setContentType('text/csv')
-                ->setHeader('Content-Disposition', 'attachment; filename="' . $filename . '"')
-                ->setBody($csv);
-            
-        } catch (\Exception $e) {
-            log_message('error', 'Error exportando Excel: ' . $e->getMessage());
-            return $this->response->setJSON(['error' => 'Error al exportar Excel: ' . $e->getMessage()]);
-        }
-    }
 
     private function generarHTMLParaPDF($datos, $metadata, $filtros)
     {
@@ -930,64 +916,5 @@ class ReportesController extends BaseController
 </html>';
 
         return $html;
-    }
-
-    private function generarCSVParaExcel($datos, $metadata, $filtros)
-    {
-        $csv = '';
-        
-        $csv .= "\xEF\xBB\xBF";
-        
-        $csv .= $metadata['nombre'] . "\n";
-        $csv .= $metadata['descripcion'] . "\n";
-        $csv .= "Generado el: " . date('d/m/Y H:i', strtotime($metadata['fecha_generacion'])) . "\n";
-        
-        if (!empty($filtros)) {
-            $csv .= "\nFiltros Aplicados:\n";
-            
-            if (!empty($filtros['fecha_desde']) && !empty($filtros['fecha_hasta'])) {
-                $csv .= "Período: " . date('d/m/Y', strtotime($filtros['fecha_desde'])) . " - " . date('d/m/Y', strtotime($filtros['fecha_hasta'])) . "\n";
-            }
-            
-            if (!empty($filtros['estado_entrega']) && $filtros['estado_entrega'] !== 'todos') {
-                $csv .= "Estado de Entrega: " . ucfirst($filtros['estado_entrega']) . "\n";
-            }
-            
-            if (!empty($filtros['tipo_evento']) && $filtros['tipo_evento'] !== 'todos') {
-                $csv .= "Tipo de Evento: " . $filtros['tipo_evento'] . "\n";
-            }
-        }
-        
-        $csv .= "\n";
-        
-        if (isset($datos['estadisticas'])) {
-            $csv .= "Estadísticas:\n";
-            foreach ($datos['estadisticas'] as $key => $value) {
-                $label = ucfirst(str_replace('_', ' ', $key));
-                if (is_numeric($value)) {
-                    $csv .= $label . ": " . number_format($value, 2) . "\n";
-                } else {
-                    $csv .= $label . ": " . $value . "\n";
-                }
-            }
-            $csv .= "\n";
-        }
-        
-        if (!empty($datos['datos'])) {
-            $primerRegistro = $datos['datos'][0];
-            $encabezados = array_keys($primerRegistro);
-            $csv .= implode(',', array_map(function($h) { return '"' . ucfirst(str_replace('_', ' ', $h)) . '"'; }, $encabezados)) . "\n";
-            
-            foreach ($datos['datos'] as $registro) {
-                $fila = [];
-                foreach ($registro as $valor) {
-                    $valor = str_replace('"', '""', $valor);
-                    $fila[] = '"' . $valor . '"';
-                }
-                $csv .= implode(',', $fila) . "\n";
-            }
-        }
-        
-        return $csv;
     }
 }

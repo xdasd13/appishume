@@ -54,7 +54,7 @@ $(document).ready(function() {
     $('form').on('submit', function() {
         var submitBtn = $(this).find('button[type="submit"]');
         submitBtn.prop('disabled', true);
-        submitBtn.html('<i class="fas fa-spinner fa-spin"></i> Procesando...');
+        submitBtn.html('<i class="fas fa-spinner fa-spin"></i> Crear Personal y Credenciales');
     });
     
     // Funcionalidad para filtros en tiempo real

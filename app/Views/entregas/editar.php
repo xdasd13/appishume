@@ -77,10 +77,10 @@
                                 <div class="col-md-12">
                                     <div class="form-group">
                                         <label for="observaciones" class="form-label">
-                                            <i class="fas fa-sticky-note mr-2 text-info"></i>Formato de Entrega *
+                                            <i class="fas fa-sticky-note mr-2 text-info"></i>Formato de Entrega
                                         </label>
-                                        <textarea class="form-control" id="observaciones" name="observaciones" rows="3" required><?= $entrega['observaciones'] ?></textarea>
-                                        <small class="form-text text-muted">Describa el formato de entrega y especificaciones</small>
+                                        <textarea class="form-control" id="observaciones" name="observaciones" rows="3"><?= $entrega['observaciones'] ?></textarea>
+                                        <small class="form-text text-muted">Describa el formato de entrega (físico/digital) y especificaciones</small>
                                     </div>
                                 </div>
                             </div>
@@ -181,7 +181,7 @@ $(document).ready(function() {
     $('.form-validate').validate({
         rules: {
             observaciones: {
-                required: true
+                required: false
             },
             comprobante_entrega: {
                 extension: "pdf"

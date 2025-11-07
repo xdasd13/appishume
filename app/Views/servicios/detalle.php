@@ -31,7 +31,8 @@
                         <div class="col-md-6">
                             <div class="info-item mb-3">
                                 <div class="d-flex align-items-center">
-                                    <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px;">
+                                    <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3"
+                                        style="width: 40px; height: 40px;">
                                         <i class="fas fa-concierge-bell"></i>
                                     </div>
                                     <div>
@@ -43,7 +44,8 @@
 
                             <div class="info-item mb-3">
                                 <div class="d-flex align-items-center">
-                                    <div class="bg-success text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px;">
+                                    <div class="bg-success text-white rounded-circle d-flex align-items-center justify-content-center me-3"
+                                        style="width: 40px; height: 40px;">
                                         <i class="fas fa-user-tie"></i>
                                     </div>
                                     <div>
@@ -55,7 +57,8 @@
 
                             <div class="info-item mb-3">
                                 <div class="d-flex align-items-center">
-                                    <div class="bg-info text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px;">
+                                    <div class="bg-info text-white rounded-circle d-flex align-items-center justify-content-center me-3"
+                                        style="width: 40px; height: 40px;">
                                         <i class="fas fa-star"></i>
                                     </div>
                                     <div>
@@ -70,7 +73,8 @@
                         <div class="col-md-6">
                             <div class="info-item mb-3">
                                 <div class="d-flex align-items-center">
-                                    <div class="bg-warning text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px;">
+                                    <div class="bg-warning text-white rounded-circle d-flex align-items-center justify-content-center me-3"
+                                        style="width: 40px; height: 40px;">
                                         <i class="fas fa-calendar-day"></i>
                                     </div>
                                     <div>
@@ -82,7 +86,8 @@
 
                             <div class="info-item mb-3">
                                 <div class="d-flex align-items-center">
-                                    <div class="bg-danger text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px;">
+                                    <div class="bg-danger text-white rounded-circle d-flex align-items-center justify-content-center me-3"
+                                        style="width: 40px; height: 40px;">
                                         <i class="fas fa-clock"></i>
                                     </div>
                                     <div>
@@ -94,7 +99,8 @@
 
                             <div class="info-item mb-3">
                                 <div class="d-flex align-items-center">
-                                    <div class="bg-secondary text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px;">
+                                    <div class="bg-secondary text-white rounded-circle d-flex align-items-center justify-content-center me-3"
+                                        style="width: 40px; height: 40px;">
                                         <i class="fas fa-map-marker-alt"></i>
                                     </div>
                                     <div>
@@ -141,7 +147,8 @@
                             <span class="badge bg-white text-info ms-2"><?= count($equipos) ?></span>
                         </h4>
                         <div>
-                            <a href="<?= base_url('equipos/asignar/'.$servicio->idserviciocontratado) ?>" class="btn btn-light btn-sm me-2">
+                            <a href="<?= base_url('equipos/asignar/' . $servicio->idserviciocontratado) ?>"
+                                class="btn btn-light btn-sm me-2">
                                 <i class="fas fa-plus-circle me-1"></i>Asignar Nuevo Equipo
                             </a>
                         </div>
@@ -149,85 +156,89 @@
                 </div>
                 <div class="card-body">
                     <?php if (!empty($equipos)): ?>
-                    <div class="table-responsive">
-                        <table class="table table-hover">
-                            <thead class="table-dark">
-                                <tr>
-                                    <th style="width: 25%">
-                                        <i class="fas fa-user me-1"></i>Usuario Asignado
-                                    </th>
-                                    <th style="width: 40%">
-                                        <i class="fas fa-file-alt me-1"></i>Descripción
-                                    </th>
-                                    <th style="width: 20%">
-                                        <i class="fas fa-tasks me-1"></i>Estado
-                                    </th>
-                                    <th style="width: 15%">
-                                        <i class="fas fa-cogs me-1"></i>Acciones
-                                    </th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php foreach ($equipos as $equipo): ?>
-                                <tr>
-                                    <td>
-                                        <div class="d-flex align-items-center">
-                                            <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 35px; height: 35px;">
-                                                <i class="fas fa-user"></i>
-                                            </div>
-                                            <div>
-                                                <strong><?= $equipo['nombres'] . ' ' . $equipo['apellidos'] ?></strong>
-                                                <br>
-                                                <small class="text-muted">@<?= $equipo['nombreusuario'] ?></small>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <span class="d-inline-block text-truncate" style="max-width: 300px;" title="<?= $equipo['descripcion'] ?>">
-                                            <?= $equipo['descripcion'] ?>
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <?php
-                                        $badge_class = [
-                                            'Completado' => 'bg-success',
-                                            'En Proceso' => 'bg-warning',
-                                            'Pendiente' => 'bg-secondary',
-                                            'Programado' => 'bg-info'
-                                        ];
-                                        $icon_class = [
-                                            'Completado' => 'fa-check-circle',
-                                            'En Proceso' => 'fa-spinner',
-                                            'Pendiente' => 'fa-clock',
-                                            'Programado' => 'fa-calendar-check'
-                                        ];
-                                        ?>
-                                        <span class="badge <?= $badge_class[$equipo['estadoservicio']] ?>">
-                                            <i class="fas <?= $icon_class[$equipo['estadoservicio']] ?> me-1"></i>
-                                            <?= $equipo['estadoservicio'] ?>
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <div class="btn-group" role="group">
-                                            <a href="<?= base_url('equipos/editar/'.$equipo['idequipo']) ?>" class="btn btn-warning btn-sm" title="Editar Asignación">
-                                                <i class="fas fa-edit"></i>
-                                            </a>
-                                        </div>
-                                    </td>
-                                </tr>
-                                <?php endforeach; ?>
-                            </tbody>
-                        </table>
-                    </div>
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th style="width: 25%">
+                                            <i class="fas fa-user me-1"></i>Usuario Asignado
+                                        </th>
+                                        <th style="width: 40%">
+                                            <i class="fas fa-file-alt me-1"></i>Descripción
+                                        </th>
+                                        <th style="width: 20%">
+                                            <i class="fas fa-tasks me-1"></i>Estado
+                                        </th>
+                                        <th style="width: 15%">
+                                            <i class="fas fa-cogs me-1"></i>Acciones
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php foreach ($equipos as $equipo): ?>
+                                        <tr>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3"
+                                                        style="width: 35px; height: 35px;">
+                                                        <i class="fas fa-user"></i>
+                                                    </div>
+                                                    <div>
+                                                        <strong><?= $equipo['nombres'] . ' ' . $equipo['apellidos'] ?></strong>
+                                                        <br>
+                                                        <small class="text-muted">@<?= $equipo['nombreusuario'] ?></small>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <span class="d-inline-block text-truncate" style="max-width: 300px;"
+                                                    title="<?= $equipo['descripcion'] ?>">
+                                                    <?= $equipo['descripcion'] ?>
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <?php
+                                                $badge_class = [
+                                                    'Completado' => 'bg-success',
+                                                    'En Proceso' => 'bg-warning',
+                                                    'Pendiente' => 'bg-secondary',
+                                                    'Programado' => 'bg-info'
+                                                ];
+                                                $icon_class = [
+                                                    'Completado' => 'fa-check-circle',
+                                                    'En Proceso' => 'fa-spinner',
+                                                    'Pendiente' => 'fa-clock',
+                                                    'Programado' => 'fa-calendar-check'
+                                                ];
+                                                ?>
+                                                <span class="badge <?= $badge_class[$equipo['estadoservicio']] ?>">
+                                                    <i class="fas <?= $icon_class[$equipo['estadoservicio']] ?> me-1"></i>
+                                                    <?= $equipo['estadoservicio'] ?>
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <div class="btn-group" role="group">
+                                                    <a href="<?= base_url('equipos/editar/' . $equipo['idequipo']) ?>"
+                                                        class="btn btn-warning btn-sm" title="Editar Asignación">
+                                                        <i class="fas fa-edit"></i>
+                                                    </a>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                </tbody>
+                            </table>
+                        </div>
                     <?php else: ?>
-                    <div class="text-center py-5">
-                        <i class="fas fa-users-slash fa-3x text-muted mb-3"></i>
-                        <h5 class="text-muted">No hay equipos asignados</h5>
-                        <p class="text-muted mb-4">Este servicio no tiene personal asignado todavía.</p>
-                        <a href="<?= base_url('equipos/asignar/'.$servicio->idserviciocontratado) ?>" class="btn btn-primary">
-                            <i class="fas fa-plus-circle me-2"></i>Asignar Primer Equipo
-                        </a>
-                    </div>
+                        <div class="text-center py-5">
+                            <i class="fas fa-users-slash fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">No hay equipos asignados</h5>
+                            <p class="text-muted mb-4">Este servicio no tiene personal asignado todavía.</p>
+                            <a href="<?= base_url('equipos/asignar/' . $servicio->idserviciocontratado) ?>"
+                                class="btn btn-primary">
+                                <i class="fas fa-plus-circle me-2"></i>Asignar Primer Equipo
+                            </a>
+                        </div>
                     <?php endif; ?>
                 </div>
             </div>

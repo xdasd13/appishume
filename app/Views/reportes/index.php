@@ -1,4 +1,4 @@
-<?= $this->include('Layouts/header') ?>
+<?= $header; ?>
 
 <div class="page-inner">
 
@@ -110,13 +110,13 @@
                     </div>
 
                     <!-- Descripción del reporte seleccionado -->
-                    <div id="descripcion-reporte" class="alert alert-info animate-fade-in" style="display: none;">
+                    <div id="descripcion-reporte" class="alert alert-info animate-fade-in">
                         <i class="fas fa-info-circle mr-2"></i>
                         <span id="texto-descripcion"></span>
                     </div>
 
                     <!-- Filtros dinámicos -->
-                    <div id="panel-filtros" style="display: none;">
+                    <div id="panel-filtros">
                         <h5 class="mb-3">
                             <i class="fas fa-filter mr-2"></i>
                             Filtros Disponibles
@@ -139,7 +139,7 @@
             </div>
 
             <!-- Panel de exportación -->
-            <div class="card mt-4" id="panel-exportacion" style="display: none;">
+            <div class="card mt-4" id="panel-exportacion">
                 <div class="card-header">
                     <h4 class="card-title">
                         <i class="fas fa-download mr-2"></i>
@@ -185,7 +185,7 @@
                     </div>
 
                     <!-- Loading -->
-                    <div id="loading-reporte" class="text-center py-5" style="display: none;">
+                    <div id="loading-reporte" class="text-center py-5">
                         <div class="spinner-border text-primary" role="status">
                             <span class="sr-only">Generando reporte...</span>
                         </div>
@@ -193,12 +193,12 @@
                     </div>
 
                     <!-- Área de errores -->
-                    <div id="area-errores" style="display: none;">
+                    <div id="area-errores">
                         <!-- Aquí se mostrarán los errores como texto -->
                     </div>
 
                     <!-- Contenido del reporte -->
-                    <div id="contenido-reporte" style="display: none;">
+                    <div id="contenido-reporte">
                         <!-- Aquí se cargará el contenido del reporte -->
                     </div>
                 </div>
@@ -238,10 +238,7 @@
 
 <!-- Scripts específicos para reportes se cargan al final -->
 
-<!-- Estilos específicos para reportes -->
-
-
-<?= $this->include('Layouts/footer') ?>
+<?= $footer; ?>
 
 <!-- Scripts específicos para reportes - Cargados después del footer -->
 <script>
@@ -382,19 +379,23 @@ $(document).ready(function() {
             }
         });
 
+        // Obtener token CSRF dinámico
+        const csrfTokenGenerar = $('meta[name="csrf-token"]').attr('content');
+        const csrfNameGenerar = '<?= csrf_token() ?>';
+        
         // Enviar petición AJAX
         $.ajax({
             url: '<?= base_url("reportes/generar") ?>',
             method: 'POST',
-            dataType: 'html',
             data: {
                 tipo_reporte: reporteActual,
                 filtros: filtros,
                 formato: 'html',
-                <?= csrf_token() ?>: '<?= csrf_hash() ?>'
+                [csrfNameGenerar]: csrfTokenGenerar || ''
             },
             success: function(response) {
                 $('#loading-reporte').hide();
+                $('#area-errores').hide().html(''); // Limpiar errores anteriores
                 
                 // Verificar si la respuesta es HTML (vista) o JSON
                 if (typeof response === 'string') {
@@ -456,9 +457,8 @@ $(document).ready(function() {
                 mostrarErrorComoTexto('Error', mensajeError, 'error');
                 
                 console.error('Error en reporte:', xhr);
-                console.error('Status:', xhr.status);
-                console.error('Response:', xhr.responseText);
                 $('#estado-inicial').show();
+                $('#loading-reporte').hide();
             }
         });
     });
@@ -507,15 +507,39 @@ $(document).ready(function() {
         // Mostrar loading
         mostrarErrorComoTexto('Exportando PDF', 'Generando archivo PDF...', 'info');
 
+        // Obtener token CSRF del meta tag o del input hidden si existe
+        let csrfToken = $('meta[name="csrf-token"]').attr('content');
+        const csrfName = '<?= csrf_token() ?>';
+        
+        // Si no está en el meta tag, buscar en inputs hidden
+        if (!csrfToken) {
+            csrfToken = $('input[name="' + csrfName + '"]').val();
+        }
+        
+        // Debug: verificar token
+        if (!csrfToken) {
+            console.error('CSRF Token no encontrado');
+            mostrarErrorComoTexto('Error', 'No se pudo obtener el token de seguridad. Por favor, recargue la página.', 'error');
+            return;
+        }
+        
+        console.log('Token CSRF encontrado:', csrfToken.substring(0, 20) + '...');
+        console.log('Nombre CSRF:', csrfName);
+        
+        // Preparar datos de la petición (sin CSRF ya que está excluido)
+        const postData = {
+            tipo_reporte: reporteActual,
+            filtros: JSON.stringify(filtros)
+        };
+        
         // Hacer petición AJAX para exportar
         $.ajax({
             url: '<?= base_url("reportes/exportarPDF") ?>',
             method: 'POST',
-            data: {
-                tipo_reporte: reporteActual,
-                filtros: JSON.stringify(filtros),
-                <?= csrf_token() ?>: '<?= csrf_hash() ?>'
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
             },
+            data: postData,
             success: function(response) {
                 // Si es HTML (PDF), abrir en nueva ventana
                 if (typeof response === 'string' && response.includes('<!DOCTYPE html>')) {
@@ -523,21 +547,93 @@ $(document).ready(function() {
                     nuevaVentana.document.write(response);
                     nuevaVentana.document.close();
                     $('#area-errores').hide();
-                } else {
+                } else if (typeof response === 'object' && response.error) {
                     // Si es JSON con error
-                    mostrarErrorComoTexto('Error', response.error || 'Error al exportar PDF', 'error');
+                    mostrarErrorComoTexto('Error', response.error, 'error');
+                } else {
+                    // Respuesta inesperada
+                    mostrarErrorComoTexto('Error', 'Respuesta del servidor no reconocida', 'error');
+                    console.error('Respuesta inesperada:', response);
                 }
+                
             },
-            error: function(xhr) {
+            error: function(xhr, status, error) {
                 let mensajeError = 'Error al exportar PDF';
-                if (xhr.status === 403) {
-                    mensajeError = 'No tiene permisos para exportar reportes';
-                } else if (xhr.status === 500) {
-                    mensajeError = 'Error interno del servidor al exportar PDF';
+                let respuesta = null;
+                
+                try {
+                    respuesta = JSON.parse(xhr.responseText);
+                } catch (e) {
+                    // Si no es JSON, podría ser HTML con un mensaje de error
+                    const responseText = xhr.responseText || '';
+                    if (responseText.includes('administrador') || responseText.includes('Debe iniciar')) {
+                        mensajeError = 'Su sesión ha expirado o no tiene los permisos necesarios. Por favor, recargue la página.';
+                    }
                 }
+                
+                if (xhr.status === 403) {
+                    if (respuesta && respuesta.message) {
+                        mensajeError = respuesta.message;
+                    } else {
+                        // Intentar obtener mensaje del HTML si está disponible
+                        const responseText = xhr.responseText || '';
+                        if (responseText.includes('administrador') || responseText.includes('Debe iniciar')) {
+                            mensajeError = 'Su sesión ha expirado. Por favor, recargue la página e inicie sesión nuevamente.';
+                        } else {
+                            mensajeError = 'Acceso denegado. Verifique que tenga permisos para exportar reportes.';
+                        }
+                    }
+                } else if (xhr.status === 401) {
+                    mensajeError = 'Su sesión ha expirado. Por favor, recargue la página e inicie sesión nuevamente.';
+                } else if (xhr.status === 500) {
+                    mensajeError = 'Error interno del servidor al exportar PDF. Por favor, intente nuevamente.';
+                } else if (xhr.status === 0) {
+                    mensajeError = 'Error de conexión. Verifique su conexión a internet.';
+                }
+                
+                console.error('Error en exportación PDF:', {
+                    status: xhr.status,
+                    statusText: xhr.statusText,
+                    response: xhr.responseText,
+                    error: error
+                });
+                
                 mostrarErrorComoTexto('Error', mensajeError, 'error');
             }
         });
+    });
+
+    // Exportar Excel
+    $('#exportar-excel').on('click', function() {
+        if (!reporteActual) {
+            mostrarErrorComoTexto('Error', 'Por favor genera un reporte primero', 'error');
+            return;
+        }
+
+        const filtros = {};
+        $('#filtros-dinamicos input, #filtros-dinamicos select').each(function() {
+            const valor = $(this).val();
+            if (valor && valor !== 'todos') {
+                filtros[$(this).attr('name')] = valor;
+            }
+        });
+
+        // Mostrar loading
+        mostrarErrorComoTexto('Exportando Excel', 'Generando archivo Excel...', 'info');
+
+        // Crear formulario temporal para descarga (para archivos binarios)
+        const form = $('<form method="POST" action="<?= base_url("reportes/exportarExcel") ?>" target="_blank"></form>');
+        form.append($('<input type="hidden" name="tipo_reporte">').val(reporteActual));
+        form.append($('<input type="hidden" name="filtros">').val(JSON.stringify(filtros)));
+        form.append($('<input type="hidden" name="<?= csrf_token() ?>">').val('<?= csrf_hash() ?>'));
+        $('body').append(form);
+        form.submit();
+        form.remove();
+        
+        // Ocultar mensaje de loading después de un momento
+        setTimeout(function() {
+            $('#area-errores').hide();
+        }, 2000);
     });
 
     // Funciones auxiliares
@@ -580,38 +676,52 @@ function mostrarErrorComoTexto(titulo, mensaje, tipo) {
     
     // Determinar clase CSS según el tipo
     let claseAlerta = 'alert-danger';
+    let tipoClase = 'alert-danger-custom';
     let icono = 'fas fa-exclamation-triangle';
     
     if (tipo === 'info') {
         claseAlerta = 'alert-info';
+        tipoClase = 'alert-info-custom';
         icono = 'fas fa-info-circle';
     } else if (tipo === 'warning') {
         claseAlerta = 'alert-warning';
+        tipoClase = 'alert-warning-custom';
         icono = 'fas fa-exclamation-triangle';
     }
     
-    // Crear HTML del error
+    // Crear HTML del error usando clases CSS
     let htmlError = `
-        <div class="alert ${claseAlerta} alert-dismissible fade show" role="alert">
-            <div class="d-flex align-items-center">
-                <i class="${icono} fa-2x mr-3"></i>
+        <div class="alert ${claseAlerta} ${tipoClase} alert-dismissible fade show shadow-sm alert-custom" role="alert">
+            <div class="d-flex align-items-start">
+                <i class="${icono} fa-3x mr-3 alert-icon-custom"></i>
                 <div class="flex-grow-1">
-                    <h5 class="alert-heading mb-2">${titulo}</h5>
-                    <div class="error-message" style="white-space: pre-line;">${mensaje}</div>
+                    <h4 class="alert-heading mb-3 font-weight-bold alert-title-custom">
+                        ${titulo}
+                    </h4>
+                    <div class="error-message alert-message-custom">
+                        ${mensaje}
+                    </div>
                 </div>
+                <button type="button" class="close ml-3 alert-close-custom" data-dismiss="alert" aria-label="Cerrar">
+                    <span aria-hidden="true" class="alert-close-icon">&times;</span>
+                </button>
             </div>
-            <button type="button" class="close" data-dismiss="alert" aria-label="Cerrar">
-                <span aria-hidden="true">&times;</span>
-            </button>
         </div>
     `;
     
     // Mostrar el error
-    $('#area-errores').html(htmlError).show();
+    $('#area-errores').html(htmlError).show().removeClass('hidden');
     
-    // Auto-ocultar después de 10 segundos
-    setTimeout(function() {
-        $('#area-errores .alert').fadeOut();
-    }, 10000);
+    // Auto-ocultar después de 5 segundos solo si es info
+    if (tipo === 'info') {
+        setTimeout(function() {
+            $('#area-errores .alert').fadeOut(500, function() {
+                $(this).remove();
+                if ($('#area-errores').html().trim() === '') {
+                    $('#area-errores').hide();
+                }
+            });
+        }, 5000);
+    }
 }
 </script>

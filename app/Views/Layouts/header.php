@@ -100,61 +100,6 @@
               <h4 class="text-section">GESTIÓN PRINCIPAL</h4>
             </li>
 
-            <!-- Clientes -->
-            <li class="nav-item">
-              <a data-bs-toggle="collapse" href="#clientes">
-                <i class="fas fa-users"></i>
-                <p>Gestión de Clientes</p>
-                <span class="caret"></span>
-              </a>
-              <div class="collapse" id="clientes">
-                <ul class="nav nav-collapse">
-                  <li>
-                    <a href="<?= base_url('/personas') ?>">
-                      <span class="sub-item">Personas Naturales</span>
-                    </a>
-                  </li>
-                  <li>
-                    <a href="<?= base_url('/empresas') ?>">
-                      <span class="sub-item">Empresas</span>
-                    </a>
-                  </li>
-                  <li>
-                    <a href="<?= base_url('/clientes') ?>">
-                      <span class="sub-item">Lista de Clientes</span>
-                    </a>
-                  </li>
-                </ul>
-              </div>
-            </li>
-
-            <!-- Servicios -->
-            <li class="nav-item">
-              <a data-bs-toggle="collapse" href="#servicios">
-                <i class="fas fa-briefcase"></i>
-                <p>Servicios</p>
-                <span class="caret"></span>
-              </a>
-              <div class="collapse" id="servicios">
-                <ul class="nav nav-collapse">
-                  <li>
-                    <a href="<?= base_url('/categorias') ?>">
-                      <span class="sub-item">Categorías</span>
-                    </a>
-                  </li>
-                  <li>
-                    <a href="<?= base_url('/servicios') ?>">
-                      <span class="sub-item">Catálogo de Servicios</span>
-                    </a>
-                  </li>
-                  <li>
-                    <a href="<?= base_url('/servicios/precios') ?>">
-                      <span class="sub-item">Gestión de Precios</span>
-                    </a>
-                  </li>
-                </ul>
-              </div>
-            </li>
 
             <!-- Inventario -->
             <li class="nav-item">
@@ -187,38 +132,6 @@
               <h4 class="text-section">OPERACIONES</h4>
             </li>
 
-            <!-- Cotizaciones y Contratos -->
-            <li class="nav-item">
-              <a data-bs-toggle="collapse" href="#comercial">
-                <i class="fas fa-file-contract"></i>
-                <p>Gestión Comercial</p>
-                <span class="caret"></span>
-              </a>
-              <div class="collapse" id="comercial">
-                <ul class="nav nav-collapse">
-                  <li>
-                    <a href="<?= base_url('/cotizaciones/nueva') ?>">
-                      <span class="sub-item">Nueva Cotización</span>
-                    </a>
-                  </li>
-                  <li>
-                    <a href="<?= base_url('/cotizaciones') ?>">
-                      <span class="sub-item">Lista Cotizaciones</span>
-                    </a>
-                  </li>
-                  <li>
-                    <a href="<?= base_url('/contratos') ?>">
-                      <span class="sub-item">Contratos</span>
-                    </a>
-                  </li>
-                  <li>
-                    <a href="<?= base_url('/contratos/pendientes') ?>">
-                      <span class="sub-item">Contratos Pendientes</span>
-                    </a>
-                  </li>
-                </ul>
-              </div>
-            </li>
 
             <!-- Proyectos en Ejecución -->
             <li class="nav-item">
@@ -232,11 +145,6 @@
                   <li>
                     <a href="<?= base_url('/cronograma/proyectos') ?>">
                       <span class="sub-item">Proyectos Activos</span>
-                    </a>
-                  </li>
-                  <li>
-                    <a href="<?= base_url('/servicios-contratados') ?>">
-                      <span class="sub-item">Servicios Contratados</span>
                     </a>
                   </li>
                   <li>
@@ -313,11 +221,6 @@
                       <span class="sub-item">Control de Pagos</span>
                     </a>
                   </li>
-                  <li>
-                    <a href="<?= base_url('/pagos/pendientes') ?>">
-                      <span class="sub-item">Pagos Pendientes</span>
-                    </a>
-                  </li>
                 </ul>
               </div>
             </li>
@@ -343,31 +246,6 @@
                   <li>
                     <a href="<?= base_url('/usuarios') ?>">
                       <span class="sub-item">Usuarios</span>
-                    </a>
-                  </li>
-                  <li>
-                    <a href="<?= base_url('/cargos') ?>">
-                      <span class="sub-item">Cargos</span>
-                    </a>
-                  </li>
-                  <li>
-                    <a href="<?= base_url('/tipos-contrato') ?>">
-                      <span class="sub-item">Tipos de Contrato</span>
-                    </a>
-                  </li>
-                  <li>
-                    <a href="<?= base_url('/condiciones') ?>">
-                      <span class="sub-item">Condiciones</span>
-                    </a>
-                  </li>
-                  <li>
-                    <a href="<?= base_url('/tipos-evento') ?>">
-                      <span class="sub-item">Tipos de Evento</span>
-                    </a>
-                  </li>
-                  <li>
-                    <a href="<?= base_url('/tipos-pago') ?>">
-                      <span class="sub-item">Métodos de Pago</span>
                     </a>
                   </li>
                 </ul>
@@ -487,11 +365,6 @@
                       </div>
                     </div>
                   </li>
-                  <li>
-                    <a class="see-all" href="<?= base_url('/notificaciones') ?>">Ver todas<i
-                        class="fa fa-angle-right"></i>
-                    </a>
-                  </li>
                 </ul>
               </li>
 
@@ -508,14 +381,6 @@
                   <div class="quick-actions-scroll scrollbar-outer">
                     <div class="quick-actions-items">
                       <div class="row m-0">
-                        <a class="col-6 col-md-4 p-0" href="<?= base_url('/cotizaciones/nueva') ?>">
-                          <div class="quick-actions-item">
-                            <div class="avatar-item bg-primary rounded-circle">
-                              <i class="fas fa-file-alt"></i>
-                            </div>
-                            <span class="text">Cotización</span>
-                          </div>
-                        </a>
                         <a class="col-6 col-md-4 p-0" href="<?= base_url('/controlpagos/crear') ?>">
                           <div class="quick-actions-item">
                             <div class="avatar-item bg-warning rounded-circle">
@@ -553,9 +418,6 @@
                 <ul class="dropdown-menu dropdown-user animated fadeIn">
                   <div class="dropdown-user-scroll scrollbar-outer">
                     <li>
-                      <div class="dropdown-divider"></div>
-                      <a class="dropdown-item" href="<?= base_url('/perfil') ?>">Mi Perfil</a>
-                      <a class="dropdown-item" href="<?= base_url('/configuracion') ?>">Configuración</a>
                       <div class="dropdown-divider"></div>
                       <a class="dropdown-item" href="#" onclick="confirmLogout(event)">Cerrar Sesión</a>
                     </li>

@@ -9,7 +9,6 @@ CREATE TABLE auditoria_kanban (
     estado_anterior VARCHAR(20) NULL COMMENT 'NULL si es nuevo',
     estado_nuevo VARCHAR(20),
     fecha DATETIME DEFAULT CURRENT_TIMESTAMP,
-    
     CONSTRAINT fk_auditoria_equipo FOREIGN KEY (idequipo) REFERENCES equipos(idequipo),
     CONSTRAINT fk_auditoria_usuario FOREIGN KEY (idusuario) REFERENCES usuarios(idusuario)
 ) ENGINE=InnoDB COMMENT='Registro de todos los cambios en el Kanban';
@@ -27,9 +26,6 @@ ALTER TABLE equipos
         COMMENT 'Usuario que hizo el último cambio',
     ADD CONSTRAINT fk_equipo_modificador 
         FOREIGN KEY (idusuario_ultima_modificacion) REFERENCES usuarios(idusuario);
-
-
-
 -- Verificación rápida:
 SELECT 'Tablas creadas correctamente' AS resultado;
 SHOW TABLES LIKE '%auditoria%';

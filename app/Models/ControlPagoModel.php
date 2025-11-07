@@ -17,7 +17,9 @@ class ControlPagoModel extends Model
         'numtransaccion', 
         'fechahora', 
         'idusuario', 
-        'comprobante'
+        'comprobante',
+        'dni_pagador',
+        'nombre_pagador'
     ];
 
     public function obtenerPagosCompletos($filtro_contrato = null, $filtro_estado = null, $filtro_fecha = null)

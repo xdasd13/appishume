@@ -116,7 +116,9 @@ class EquipoModel extends Model
             ->getResultArray();
 
         // Agrupar por estado para facilitar el renderizado
+        // Flujo: Programado → Pendiente → En Proceso → Completado
         $agrupados = [
+            'Programado' => [],
             'Pendiente' => [],
             'En Proceso' => [],
             'Completado' => []
@@ -124,10 +126,6 @@ class EquipoModel extends Model
 
         foreach ($equipos as $equipo) {
             $estado = $equipo['estadoservicio'];
-            // Agrupar Programado con Pendiente
-            if ($estado === 'Programado') {
-                $estado = 'Pendiente';
-            }
             
             if (isset($agrupados[$estado])) {
                 $agrupados[$estado][] = $equipo;

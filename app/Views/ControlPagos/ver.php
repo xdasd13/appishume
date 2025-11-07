@@ -73,6 +73,26 @@
                                             <td><?= $pago['nombreusuario'] ?? 'N/A' ?></td>
                                         </tr>
                                         <tr>
+                                            <th>DNI del Pagador:</th>
+                                            <td>
+                                                <?php if (!empty($pago['dni_pagador'])): ?>
+                                                    <span class="badge badge-primary badge-3d"><?= htmlspecialchars($pago['dni_pagador']) ?></span>
+                                                <?php else: ?>
+                                                    <span class="badge badge-secondary">No registrado</span>
+                                                <?php endif; ?>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <th>Nombre del Pagador:</th>
+                                            <td>
+                                                <?php if (!empty($pago['nombre_pagador'])): ?>
+                                                    <strong><?= htmlspecialchars($pago['nombre_pagador']) ?></strong>
+                                                <?php else: ?>
+                                                    <span class="badge badge-secondary">No registrado</span>
+                                                <?php endif; ?>
+                                            </td>
+                                        </tr>
+                                        <tr>
                                             <th>Comprobante:</th>
                                             <td>
                                                 <?php if (!empty($pago['comprobante'])): ?>

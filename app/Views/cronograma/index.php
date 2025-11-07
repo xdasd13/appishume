@@ -42,7 +42,7 @@
                 </div>
                 <div class="stat-info">
                     <h3><?= $tecnicos ?? 0 ?></h3>
-                    <p>Técnicos disponibles</p>
+                    <p>Personal disponible</p>
                 </div>
             </div>
         </div>
@@ -80,32 +80,33 @@
                     </thead>
                     <tbody>
                         <?php foreach ($proximos as $servicio): ?>
-                        <tr>
-                            <td><?= date('d/m/Y H:i', strtotime($servicio->fechahoraservicio)) ?></td>
-                            <td><?= $servicio->cliente ?></td>
-                            <td><?= $servicio->servicio ?></td>
-                            <td><?= $servicio->direccion ?></td>
-                            <td>
-                                <?php
+                            <tr>
+                                <td><?= date('d/m/Y H:i', strtotime($servicio->fechahoraservicio)) ?></td>
+                                <td><?= $servicio->cliente ?></td>
+                                <td><?= $servicio->servicio ?></td>
+                                <td><?= $servicio->direccion ?></td>
+                                <td>
+                                    <?php
                                     $estado = strtolower($servicio->estado);
                                     $badgeClass = 'badge-programado';
-                                    if ($estado == 'en proceso') $badgeClass = 'badge-en-proceso';
-                                    elseif ($estado == 'completado') $badgeClass = 'badge-completado';
-                                    elseif ($estado == 'pendiente') $badgeClass = 'badge-pendiente';
-                                ?>
-                                <span class="badge <?= $badgeClass ?>">
-                                    <?= ucfirst($servicio->estado) ?>
-                                </span>
-                            </td>
-                            <td>
-                                <a href="<?= base_url('equipos/por-servicio/' . $servicio->idserviciocontratado) ?>" class="btn btn-orange">
-                                    <i class="fas fa-users"></i> Equipos
-                                </a>
-                                <a href="<?= base_url('servicios/editar/' . $servicio->idserviciocontratado) ?>" class="btn btn-outline-white">
-                                    <i class="fas fa-edit"></i> Editar
-                                </a>
-                            </td>
-                        </tr>
+                                    if ($estado == 'en proceso')
+                                        $badgeClass = 'badge-en-proceso';
+                                    elseif ($estado == 'completado')
+                                        $badgeClass = 'badge-completado';
+                                    elseif ($estado == 'pendiente')
+                                        $badgeClass = 'badge-pendiente';
+                                    ?>
+                                    <span class="badge <?= $badgeClass ?>">
+                                        <?= ucfirst($servicio->estado) ?>
+                                    </span>
+                                </td>
+                                <td>
+                                    <a href="<?= base_url('equipos/por-servicio/' . $servicio->idserviciocontratado) ?>"
+                                        class="btn btn-orange">
+                                        <i class="fas fa-users"></i> Equipos
+                                    </a>
+                                </td>
+                            </tr>
                         <?php endforeach; ?>
                     </tbody>
                 </table>
@@ -117,67 +118,64 @@
 <script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js'></script>
 <script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/locales/es.min.js'></script>
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('Inicializando calendario...');
-    
-    var calendarEl = document.getElementById('calendar');
-    var calendar = new FullCalendar.Calendar(calendarEl, {
-        locale: 'es',
-        initialView: 'dayGridMonth',
-        height: 'auto',
-        headerToolbar: {
-            left: 'prev,next today',
-            center: 'title',
-            right: 'dayGridMonth,timeGridWeek,timeGridDay'
-        },
-        events: {
-            url: '<?= base_url('cronograma/eventos') ?>',
-            failure: function() {
-                console.error('Error al cargar eventos del calendario');
-                alert('Error al cargar los eventos del calendario. Verifique la conexión.');
-            }
-        },
-        eventDidMount: function(info) {
-            console.log('Evento cargado:', info.event.title, info.event.start);
-        },
-        eventsSet: function(events) {
-            console.log('Total eventos cargados:', events.length);
-            if (events.length === 0) {
-                console.warn('No se encontraron eventos para mostrar en el calendario');
-            }
-        },
-        eventClick: function(info) {
-            const evento = info.event.extendedProps;
-            Swal.fire({
-                icon: 'info',
-                title: info.event.title,
-                html: `<b>Fecha:</b> ${info.event.start.toLocaleString()}<br>
+    document.addEventListener('DOMContentLoaded', function () {
+
+        var calendarEl = document.getElementById('calendar');
+        var calendar = new FullCalendar.Calendar(calendarEl, {
+            locale: 'es',
+            initialView: 'dayGridMonth',
+            height: 'auto',
+            headerToolbar: {
+                left: 'prev,next today',
+                center: 'title',
+                right: 'dayGridMonth,timeGridWeek,timeGridDay'
+            },
+            events: {
+                url: '<?= base_url('cronograma/eventos') ?>',
+                failure: function () {
+                    console.error('Error al cargar eventos del calendario');
+                    alert('Error al cargar los eventos del calendario. Verifique la conexión.');
+                }
+            },
+            eventDidMount: function (info) {
+                console.log('Evento cargado:', info.event.title, info.event.start);
+            },
+            eventsSet: function (events) {
+                console.log('Total eventos cargados:', events.length);
+                if (events.length === 0) {
+                    console.warn('No se encontraron eventos para mostrar en el calendario');
+                }
+            },
+            eventClick: function (info) {
+                const evento = info.event.extendedProps;
+                Swal.fire({
+                    icon: 'info',
+                    title: info.event.title,
+                    html: `<b>Fecha:</b> ${info.event.start.toLocaleString()}<br>
                        <b>Lugar:</b> ${evento.direccion}<br>
                        <b>Teléfono:</b> ${evento.telefono}`,
-                confirmButtonColor: '#ff9800'
-            });
-        },
-        dateClick: function(info) {
-            Swal.fire({
-                title: 'Crear servicio',
-                text: `¿Deseas crear un servicio para el ${info.dateStr}?`,
-                icon: 'question',
-                showCancelButton: true,
-                confirmButtonColor: '#ff9800',
-                cancelButtonColor: '#6C757D',
-                confirmButtonText: 'Sí, crear',
-                cancelButtonText: 'Cancelar'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    window.location.href = '<?= base_url('servicios/crear') ?>?fecha=' + info.dateStr;
-                }
-            });
-        }
+                    confirmButtonColor: '#ff9800'
+                });
+            },
+            dateClick: function (info) {
+                Swal.fire({
+                    title: 'Crear servicio',
+                    text: `¿Deseas crear un servicio para el ${info.dateStr}?`,
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonColor: '#ff9800',
+                    cancelButtonColor: '#6C757D',
+                    confirmButtonText: 'Sí, crear',
+                    cancelButtonText: 'Cancelar'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        window.location.href = '<?= base_url('servicios/crear') ?>?fecha=' + info.dateStr;
+                    }
+                });
+            }
+        });
+        calendar.render();
     });
-    
-    calendar.render();
-    console.log('Calendario renderizado');
-});
 </script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <?= $footer ?>

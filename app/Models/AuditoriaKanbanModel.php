@@ -35,7 +35,7 @@ class AuditoriaKanbanModel extends Model
     public function registrarCambio(int $idequipo, int $idusuario, string $accion, ?string $estadoAnterior = null, ?string $estadoNuevo = null): bool
     {
         try {
-            // Usar NOW() de MySQL para evitar problemas de zona horaria
+            
             $db = \Config\Database::connect();
             $fechaActual = $db->query("SELECT NOW() as fecha")->getRow()->fecha;
             

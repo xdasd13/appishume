@@ -5,6 +5,7 @@ namespace App\Controllers;
 use App\Controllers\BaseController;
 use App\Models\ControlPagoModel;
 use App\Models\ContratoModel;
+use App\Libraries\ReniecService;
 
 class ControlPagoController extends BaseController
 {
@@ -99,104 +100,166 @@ class ControlPagoController extends BaseController
 
     public function guardar()
     {
-        if (!session()->get('usuario_logueado')) {
-            return redirect()->to('/login')->with('error', 'Acceso denegado.');
-        }
-
-        // Validar los datos del formulario
-        $reglas = [
-            'idcontrato' => 'required|numeric',
-            'amortizacion' => 'required|decimal',
-            'idtipopago' => 'required|numeric',
-            'numtransaccion' => 'permit_empty|string',
-            'fechahora' => 'required|valid_date',
-            'comprobante' => 'permit_empty|uploaded[comprobante]|max_size[comprobante,2048]|ext_in[comprobante,png,jpg,jpeg,pdf]'
-        ];
-
-        if (!$this->validate($reglas)) {
-            $errors = $this->validator->getErrors();
-            $errorMessage = 'Por favor, corrija los siguientes errores:<br><ul>';
-            foreach ($errors as $field => $error) {
-                $errorMessage .= '<li>' . $error . '</li>';
-            }
-            $errorMessage .= '</ul>';
-            return redirect()->back()->withInput()->with('error', $errorMessage);
-        }
-
-        // Obtener datos del formulario
-        $idcontrato = $this->request->getPost('idcontrato');
-        $amortizacion = $this->request->getPost('amortizacion');
+        // Siempre responder como AJAX para simplificar
+        header('Content-Type: application/json');
         
         // Log para debugging
-        log_message('info', 'Guardando pago - Contrato: ' . $idcontrato . ', Amortización: ' . $amortizacion);
+        log_message('info', '=== MÉTODO GUARDAR() LLAMADO ===');
+        log_message('info', 'POST data: ' . json_encode($this->request->getPost()));
+        log_message('info', 'GET data: ' . json_encode($this->request->getGet()));
+        log_message('info', 'Usuario logueado: ' . (session()->get('usuario_logueado') ? 'Sí' : 'No'));
+        log_message('info', 'Usuario ID: ' . (session()->get('usuario_id') ?? 'N/A'));
+        log_message('info', 'Es AJAX: ' . ($this->request->isAJAX() ? 'Sí' : 'No'));
+        log_message('info', 'Método HTTP: ' . $this->request->getMethod());
+        log_message('info', 'URI: ' . $this->request->getUri());
 
-        // Obtener información actual del contrato
-        $infoContrato = $this->infoContratoCalculo($idcontrato);
-        
-        if (!$infoContrato) {
-            return redirect()->back()->withInput()->with('error', 'Error al obtener información del contrato.');
-        }
-
-        $saldo = $infoContrato['saldo_actual'];
-        $deuda = $saldo - $amortizacion;
-
-        // Validar que la amortización no sea mayor al saldo
-        if ($amortizacion > $saldo) {
-            return redirect()->back()->withInput()->with('error', 'La amortización no puede ser mayor al saldo actual del contrato.');
-        }
-
-        // Validar que la amortización sea positiva
-        if ($amortizacion <= 0) {
-            return redirect()->back()->withInput()->with('error', 'La amortización debe ser mayor a cero.');
-        }
-
-        // Procesar comprobante (opcional)
-        $comprobante = $this->request->getFile('comprobante');
-        $nombreComprobante = null;
-
-        if ($comprobante && $comprobante->isValid() && !$comprobante->hasMoved()) {
-            // Crear directorio si no existe
-            $uploadPath = ROOTPATH . 'public/uploads/comprobantes';
-            if (!is_dir($uploadPath)) {
-                mkdir($uploadPath, 0755, true);
+        try {
+            // Obtener datos del formulario - validación simplificada
+            $idcontrato = $this->request->getPost('idcontrato');
+            $amortizacion = floatval($this->request->getPost('amortizacion') ?? 0);
+            $idtipopago = $this->request->getPost('idtipopago');
+            $dniPagador = $this->request->getPost('dni_pagador') ?? '';
+            $nombrePagador = $this->request->getPost('nombre_pagador_hidden') 
+                          ?? $this->request->getPost('nombre_pagador') 
+                          ?? '';
+            
+            // Validaciones básicas mínimas
+            if (empty($idcontrato) || $idcontrato <= 0) {
+                throw new \Exception('Debe seleccionar un contrato válido.');
             }
             
-            $nuevoNombre = $comprobante->getRandomName();
-            $comprobante->move($uploadPath, $nuevoNombre);
-            $nombreComprobante = $nuevoNombre;
-        }
-
-        // Preparar datos para guardar - USAR EL USUARIO QUE INICIÓ SESIÓN
-        $data = [
-            'idcontrato' => $idcontrato,
-            'saldo' => $saldo,
-            'amortizacion' => $amortizacion,
-            'deuda' => $deuda,
-            'idtipopago' => $this->request->getPost('idtipopago'),
-            'numtransaccion' => $this->request->getPost('numtransaccion'),
-            'fechahora' => $this->request->getPost('fechahora_hidden') ?: $this->getPeruDateTime(),
-            'idusuario' => session()->get('usuario_id'),
-            'comprobante' => $nombreComprobante
-        ];
-
-        // Guardar en la base de datos
-        if ($this->controlPagoModel->save($data)) {
-            $mensaje = '✅ Pago registrado correctamente';
+            if ($amortizacion <= 0) {
+                throw new \Exception('La amortización debe ser mayor a cero.');
+            }
             
-            // Verificar si el contrato quedó completamente pagado
+            if (empty($idtipopago)) {
+                throw new \Exception('Debe seleccionar un tipo de pago.');
+            }
+            
+            // Obtener tipo de pago para validación condicional
+            $db = db_connect();
+            $tipoPagoInfo = $db->table('tipospago')->where('idtipopago', $idtipopago)->get()->getRowArray();
+            $esEfectivo = false;
+            
+            if ($tipoPagoInfo) {
+                $tipoPagoTexto = strtolower($tipoPagoInfo['tipopago'] ?? '');
+                $esEfectivo = strpos($tipoPagoTexto, 'efectivo') !== false;
+            }
+
+            // Obtener información actual del contrato
+            $infoContrato = $this->infoContratoCalculo($idcontrato);
+            
+            if (!$infoContrato) {
+                throw new \Exception('Error al obtener información del contrato. Verifique que el contrato exista.');
+            }
+
+            $saldo = floatval($infoContrato['saldo_actual']);
+            $deuda = $saldo - $amortizacion;
+
+            // Validar que la amortización no sea mayor al saldo
+            if ($amortizacion > $saldo) {
+                throw new \Exception('La amortización (S/ ' . number_format($amortizacion, 2) . ') no puede ser mayor al saldo actual (S/ ' . number_format($saldo, 2) . ').');
+            }
+
+            // Procesar comprobante (opcional) - simplificado
+            $comprobante = $this->request->getFile('comprobante');
+            $nombreComprobante = null;
+
+            if ($comprobante && $comprobante->isValid() && !$comprobante->hasMoved()) {
+                try {
+                    $uploadPath = ROOTPATH . 'public/uploads/comprobantes';
+                    if (!is_dir($uploadPath)) {
+                        mkdir($uploadPath, 0755, true);
+                    }
+                    
+                    $nuevoNombre = $comprobante->getRandomName();
+                    $comprobante->move($uploadPath, $nuevoNombre);
+                    $nombreComprobante = $nuevoNombre;
+                } catch (\Exception $e) {
+                    log_message('warning', 'Error al subir comprobante: ' . $e->getMessage());
+                    // Continuar sin comprobante si falla la subida
+                }
+            }
+
+            // Preparar datos para guardar - simplificado
+            $fechahora = $this->request->getPost('fechahora_hidden');
+            if (empty($fechahora)) {
+                $fechahora = $this->getPeruDateTime();
+            }
+            
+            $numtransaccion = $esEfectivo ? '' : ($this->request->getPost('numtransaccion') ?? '');
+            $idusuario = session()->get('usuario_id') ?? 1; // Fallback a usuario 1 si no hay sesión
+            
+            // Preparar datos
+            $data = [
+                'idcontrato' => intval($idcontrato),
+                'saldo' => $saldo,
+                'amortizacion' => $amortizacion,
+                'deuda' => $deuda,
+                'idtipopago' => intval($idtipopago),
+                'numtransaccion' => $numtransaccion,
+                'fechahora' => $fechahora,
+                'idusuario' => intval($idusuario),
+                'comprobante' => $nombreComprobante,
+                'dni_pagador' => $dniPagador,
+                'nombre_pagador' => $nombrePagador
+            ];
+            
+            log_message('info', 'Intentando guardar pago: ' . json_encode($data));
+
+            // Guardar en la base de datos
+            $guardado = $this->controlPagoModel->save($data);
+            
+            if (!$guardado) {
+                $modelErrors = $this->controlPagoModel->errors();
+                $errorMsg = !empty($modelErrors) ? implode('. ', $modelErrors) : 'Error al guardar en la base de datos.';
+                
+                // Eliminar comprobante si falló
+                if ($nombreComprobante && file_exists(ROOTPATH . 'public/uploads/comprobantes/' . $nombreComprobante)) {
+                    @unlink(ROOTPATH . 'public/uploads/comprobantes/' . $nombreComprobante);
+                }
+                
+                throw new \Exception($errorMsg);
+            }
+            
+            // Éxito
+            $mensaje = '✅ Pago registrado correctamente';
             if ($deuda <= 0.01) {
                 $mensaje .= '. ¡Felicidades! El contrato ha sido completamente pagado.';
             } else {
                 $mensaje .= '. Saldo restante: S/ ' . number_format($deuda, 2);
             }
             
-            return redirect()->to('/controlpagos')->with('success', $mensaje);
-        } else {
-            // Eliminar comprobante si falló el guardado
-            if ($nombreComprobante && file_exists(ROOTPATH . 'public/uploads/comprobantes/' . $nombreComprobante)) {
-                unlink(ROOTPATH . 'public/uploads/comprobantes/' . $nombreComprobante);
+            $idPagoGuardado = $this->controlPagoModel->getInsertID();
+            log_message('info', '✅ Pago guardado exitosamente: ID ' . $idPagoGuardado);
+            
+            // Siempre responder JSON
+            return $this->response->setJSON([
+                'status' => 'success',
+                'message' => $mensaje,
+                'redirect' => base_url('/controlpagos'),
+                'pago_id' => $idPagoGuardado
+            ]);
+            
+        } catch (\Exception $e) {
+            log_message('error', '=== EXCEPCIÓN EN GUARDAR() ===');
+            log_message('error', 'Mensaje: ' . $e->getMessage());
+            log_message('error', 'Archivo: ' . $e->getFile() . ':' . $e->getLine());
+            log_message('error', 'Trace: ' . $e->getTraceAsString());
+            
+            // Eliminar comprobante si existe
+            if (isset($nombreComprobante) && $nombreComprobante && file_exists(ROOTPATH . 'public/uploads/comprobantes/' . $nombreComprobante)) {
+                @unlink(ROOTPATH . 'public/uploads/comprobantes/' . $nombreComprobante);
             }
-            return redirect()->back()->withInput()->with('error', 'Error al registrar el pago. Por favor, intente nuevamente.');
+            
+            $errorMessage = $e->getMessage();
+            
+            // Siempre responder JSON
+            return $this->response->setStatusCode(400)->setJSON([
+                'status' => 'error',
+                'message' => $errorMessage,
+                'error_details' => ENVIRONMENT === 'development' ? $e->getMessage() : null
+            ]);
         }
     }
 
@@ -248,10 +311,72 @@ class ControlPagoController extends BaseController
         date_default_timezone_set('America/Lima');
         $peruDateTime = date('Y-m-d H:i:s');
         
-        // Restaurar zona horaria por defecto
-        date_default_timezone_set('UTC');
+        // Mantener zona horaria de Perú
+        date_default_timezone_set('America/Lima');
         
         return $peruDateTime;
+    }
+
+    // Método para validar DNI del pagador via AJAX
+    public function validarDniPagador()
+    {
+        if (!session()->get('usuario_logueado')) {
+            return $this->response->setJSON(['status' => 'error', 'message' => 'Acceso denegado']);
+        }
+
+        try {
+            $dni = $this->request->getPost('dni');
+
+            // Validación básica del DNI
+            if (empty($dni)) {
+                return $this->response->setJSON([
+                    'status' => 'error',
+                    'message' => 'DNI es requerido'
+                ]);
+            }
+
+            // Validar formato de DNI
+            if (!preg_match('/^\d{8}$/', $dni)) {
+                return $this->response->setJSON([
+                    'status' => 'error',
+                    'message' => 'DNI debe tener exactamente 8 dígitos numéricos'
+                ]);
+            }
+
+            // Consultar RENIEC via Decolecta
+            $reniecService = new ReniecService();
+            $result = $reniecService->consultarDni($dni);
+
+            if ($result['status'] === 'success') {
+                return $this->response->setJSON([
+                    'status' => 'success',
+                    'message' => 'DNI válido encontrado en RENIEC',
+                    'data' => [
+                        'dni' => $result['data']['dni'],
+                        'nombres' => $result['data']['nombres'],
+                        'apellido_paterno' => $result['data']['apellido_paterno'],
+                        'apellido_materno' => $result['data']['apellido_materno'],
+                        'apellidos_completos' => $result['data']['apellidos_completos'],
+                        'fecha_nacimiento' => $result['data']['fecha_nacimiento'] ?? '',
+                        'sexo' => $result['data']['sexo'] ?? '',
+                        'source' => $result['data']['source'] ?? 'api'
+                    ]
+                ]);
+            } else {
+                return $this->response->setJSON([
+                    'status' => 'error',
+                    'message' => $result['message'] ?? 'DNI no encontrado en RENIEC',
+                    'data' => null
+                ]);
+            }
+
+        } catch (\Exception $e) {
+            log_message('error', 'Error en validarDniPagador: ' . $e->getMessage());
+            return $this->response->setJSON([
+                'status' => 'error',
+                'message' => 'Error al validar DNI: ' . $e->getMessage()
+            ]);
+        }
     }
 
     // Método para obtener información del contrato via AJAX

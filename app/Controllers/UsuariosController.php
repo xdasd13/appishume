@@ -556,6 +556,20 @@ class UsuariosController extends BaseController
                 ]);
             }
 
+            // Verificar si el usuario está intentando desactivar su propia cuenta
+            $usuarioActual = session()->get('usuario_id');
+            $esPropiaCuenta = ($idusuario == $usuarioActual);
+
+            // Prevenir que un usuario desactive su propia cuenta
+            if ($esPropiaCuenta) {
+                log_message('warning', 'Usuario intentó desactivar su propia cuenta - ID: ' . $idusuario);
+                return $this->response->setJSON([
+                    'success' => false,
+                    'message' => 'No puedes desactivar tu propia cuenta',
+                    'self_account' => true
+                ]);
+            }
+
             // Usar soft delete (cambiar estado a 0) en lugar de eliminar físicamente
             $result = $this->usuarioModel->update($idusuario, ['estado' => 0]);
 

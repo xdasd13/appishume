@@ -17,7 +17,7 @@ body {
     margin: 0;
     padding: 0;
     min-height: 100vh;
-    background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
+    background: linear-gradient(135deg, #222222, #b21f1f, #fdbb2d);
     font-family: 'Poppins', sans-serif;
     display: flex;
     align-items: center;
@@ -102,7 +102,7 @@ body {
 .btn-login {
     width: 100%;
     padding: 1rem;
-    background: linear-gradient(135deg, #1a2a6c, #2c3e50);
+    background: linear-gradient(135deg, #f58600, #f58600);
     color: white;
     border: none;
     border-radius: 12px;

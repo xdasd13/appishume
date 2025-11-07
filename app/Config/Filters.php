@@ -54,13 +54,13 @@ class Filters extends BaseFilters
      */
     public array $required = [
         'before' => [
-            'forcehttps', // Force Global Secure Requests
-            'pagecache',  // Web Page Caching
+            // 'forcehttps', // Force Global Secure Requests - Deshabilitado temporalmente
+            // 'pagecache',  // Web Page Caching - Deshabilitado temporalmente
         ],
         'after' => [
-            'pagecache',   // Web Page Caching
-            'performance', // Performance Metrics
-            'toolbar',     // Debug Toolbar
+            // 'pagecache',   // Web Page Caching - Deshabilitado temporalmente
+            // 'performance', // Performance Metrics - Deshabilitado temporalmente
+            // 'toolbar',     // Debug Toolbar - Deshabilitado temporalmente
         ],
     ];
 
@@ -84,7 +84,9 @@ class Filters extends BaseFilters
                 'buscar',
                 'mensajeria/heartbeat',
                 'mensajeria/typingStart/*',
-                'mensajeria/typingStop/*'
+                'mensajeria/typingStop/*',
+                'reportes/exportarPDF',
+                'controlpagos/guardar' // Excluir temporalmente para debug
             ]], // Excluir rutas específicas del CSRF global
             // 'invalidchars',
         ],

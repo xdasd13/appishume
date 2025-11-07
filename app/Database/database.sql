@@ -2,12 +2,6 @@
 CREATE DATABASE IF NOT EXISTS ishume;
 USE ishume;
 
--- ELIMINAR TABLAS EXISTENTES (si es necesario)
-DROP TABLE IF EXISTS equipos, controlpagos, entregables, servicioscontratados, 
-contratos, cotizaciones, usuarios, clientes, empresas, personas, 
-servicios, listacondiciones, tipospago, tipoeventos, tipocontrato, 
-condiciones, categorias, cargos;
-
 -- TABLAS MAESTRAS
 CREATE TABLE cargos (
     idcargo INT AUTO_INCREMENT PRIMARY KEY,
@@ -138,6 +132,8 @@ CREATE TABLE controlpagos (
     fechahora DATETIME,
     idusuario INT,
     comprobante VARCHAR(255) NULL,
+    dni_pagador VARCHAR(8) NULL,
+    nombre_pagador VARCHAR(255) NULL,
     CONSTRAINT fk_pago_contrato FOREIGN KEY (idcontrato) REFERENCES contratos(idcontrato),
     CONSTRAINT fk_pago_tipopago FOREIGN KEY (idtipopago) REFERENCES tipospago(idtipopago),
     CONSTRAINT fk_pago_usuario FOREIGN KEY (idusuario) REFERENCES usuarios(idusuario)
@@ -175,11 +171,10 @@ CREATE TABLE listacondiciones (
     CONSTRAINT fk_listacondicion_tipocontrato FOREIGN KEY (idtipocontrato) REFERENCES tipocontrato(idtipocontrato)
 );
 
--- =============================================================================
--- INSERCIÓN DE DATOS EN ORDEN CORRECTO
--- =============================================================================
 
--- 1. DATOS BÁSICOS (Catálogos)
+-- INSERCIÓN DE DATOS 
+
+-- 1. DATOS BÁSICOS (cargos)
 INSERT INTO cargos (cargo) VALUES 
 ('Gerente/a de Proyectos'),
 ('Coordinador/a de Eventos'),
@@ -584,9 +579,8 @@ INSERT INTO listacondiciones (idcondicion, idtipocontrato) VALUES
 (1, 3), (5, 3),
 (2, 2), (3, 2);
 
--- =============================================================================
+
 -- CONSULTAS DE VERIFICACIÓN
--- =============================================================================
 
 -- Verificar que no hay DNIs duplicados
 SELECT 'Verificación de DNIs duplicados' as verificación;
@@ -629,5 +623,3 @@ JOIN tipoeventos te ON c.idtipoevento = te.idtipoevento
 WHERE c.fechaevento >= CURDATE()
 ORDER BY c.fechaevento ASC
 LIMIT 10;
-
-SELECT 'Base de datos ISHUME creada y poblada exitosamente!' as mensaje_final;

@@ -17,11 +17,34 @@ $routes->get('auth/check-session', 'AuthController::checkSession');
 $routes->get('welcome', 'Home::index', ['filter' => 'auth']);
 $routes->get('dashboard', 'AuthController::dashboard', ['filter' => 'auth']);
 
-// Rutas SIMPLES para usuarios (sin autenticación por ahora)
-$routes->get('usuarios-simple', 'UsuariosControllerSimple::index');
-$routes->get('usuarios-simple/crear', 'UsuariosControllerSimple::crear');
-$routes->post('usuarios-simple/guardar', 'UsuariosControllerSimple::guardar');
-$routes->delete('usuarios-simple/eliminar/(:num)', 'UsuariosControllerSimple::eliminar/$1');
+// ==================== RUTAS DE MENSAJERÍA (TODOS LOS USUARIOS AUTENTICADOS) ====================
+$routes->group('', ['filter' => 'auth'], function($routes) {
+    // Páginas principales de mensajería
+    $routes->get('mensajeria', 'MensajeriaController::index');
+    $routes->get('mensajeria/enviar', 'MensajeriaController::enviar');
+    $routes->get('mensajeria/conversacion/(:num)', 'MensajeriaController::conversacion/$1');
+    $routes->get('mensajeria/configuracion', 'MensajeriaController::configuracion');
+    
+    // APIs AJAX para mensajería
+    $routes->post('mensajeria/procesarEnvio', 'MensajeriaController::procesarEnvio');
+    $routes->post('mensajeria/eliminarMensaje', 'MensajeriaController::eliminarMensaje');
+    $routes->get('mensajeria/buscarUsuarios', 'MensajeriaController::buscarUsuarios');
+    $routes->get('mensajeria/getConversaciones', 'MensajeriaController::getConversaciones');
+    $routes->get('mensajeria/getMensajesConversacion/(:num)', 'MensajeriaController::getMensajesConversacion/$1');
+    $routes->post('mensajeria/heartbeat', 'MensajeriaController::heartbeat');
+    $routes->get('mensajeria/getPresence/(:num)', 'MensajeriaController::getPresence/$1');
+    $routes->get('mensajeria/typingStatus/(:num)', 'MensajeriaController::typingStatus/$1');
+    $routes->post('mensajeria/typingStart/(:num)', 'MensajeriaController::typingStart/$1');
+    $routes->post('mensajeria/typingStop/(:num)', 'MensajeriaController::typingStop/$1');
+    
+    // APIs AJAX para notificaciones
+    $routes->get('mensajeria/getMensajesNoLeidos', 'MensajeriaController::getMensajesNoLeidos');
+    $routes->get('mensajeria/getNotificacionesNoLeidas', 'MensajeriaController::getNotificacionesNoLeidas');
+    $routes->get('mensajeria/getNotificacionesRecientes', 'MensajeriaController::getNotificacionesRecientes');
+    $routes->post('mensajeria/marcarNotificacionLeida', 'MensajeriaController::marcarNotificacionLeida');
+    $routes->post('mensajeria/marcarTodasNotificacionesLeidas', 'MensajeriaController::marcarTodasNotificacionesLeidas');
+    $routes->post('mensajeria/actualizarConfiguracion', 'MensajeriaController::actualizarConfiguracion');
+});
 
 // ==================== RUTAS ADMINISTRATIVAS (SOLO ADMINISTRADORES) ====================
 $routes->group('', ['filter' => 'admin'], function($routes) {
@@ -52,18 +75,20 @@ $routes->group('', ['filter' => 'admin'], function($routes) {
     // Validación de teléfonos (solo admins pueden validar teléfonos)
     $routes->post('usuarios/validarTelefono', 'UsuariosController::validarTelefono');
     $routes->post('usuarios/infoTelefono', 'UsuariosController::infoTelefono');
-    $routes->get('usuarios/testValidacion', 'UsuariosController::testValidacion');
     
     // Control de Pagos (SOLO ADMINISTRADORES)
     $routes->get('controlpagos', [ControlPagoController::class, 'index']);
     $routes->get('controlpagos/crear', [ControlPagoController::class, 'crear']);
-    $routes->post('controlpagos/guardar', [ControlPagoController::class, 'guardar']);
+    $routes->post('controlpagos/validarDniPagador', [ControlPagoController::class, 'validarDniPagador']);
     $routes->get('controlpagos/ver/(:num)', [ControlPagoController::class, 'ver']);
     $routes->get('controlpagos/por-contrato/(:num)', [ControlPagoController::class, 'porContrato']);
     $routes->get('controlpagos/infoContrato/(:num)', [ControlPagoController::class, 'infoContrato']);
     $routes->get('controlpagos/descargarComprobante/(:num)', [ControlPagoController::class, 'descargarComprobante']);
     $routes->get('controlpagos/generarVoucher/(:num)', [ControlPagoController::class, 'generarVoucher']);
 });
+
+// Ruta para guardar pagos - SIN FILTROS temporalmente para debug
+$routes->post('controlpagos/guardar', [ControlPagoController::class, 'guardar']);
 
 // ==================== RUTAS PARA TRABAJADORES Y SUPERVISORES ====================
 $routes->group('', ['filter' => 'trabajador'], function($routes) {
@@ -89,7 +114,6 @@ $routes->group('', ['filter' => 'trabajador'], function($routes) {
     // Cronograma (trabajadores pueden ver sus asignaciones)
     $routes->get('cronograma', 'Cronograma::index');
     $routes->get('cronograma/proyectos', 'Cronograma::proyectos');
-    $routes->get('cronograma/debug-proyectos', 'Cronograma::debugProyectos'); // Ruta temporal de debug
     $routes->get('proyectos', 'Cronograma::todosLosProyectos');
     $routes->get('cronograma/proyecto/(:num)', 'Cronograma::verProyecto/$1');
     $routes->get('cronograma/eventos', 'Cronograma::getEventos');
@@ -164,5 +188,4 @@ $routes->group('', ['filter' => 'auth'], function($routes) {
     $routes->get('reportes', 'ReportesController::index');
     $routes->post('reportes/generar', 'ReportesController::generar');
     $routes->post('reportes/exportarPDF', 'ReportesController::exportarPDF');
-    $routes->post('reportes/exportarExcel', 'ReportesController::exportarExcel');
 });

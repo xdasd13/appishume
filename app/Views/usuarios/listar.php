@@ -141,17 +141,30 @@
                                         <div class="action-buttons-container">
                                             <?php if ($usuario->estado == 1): ?>
                                                 <!-- USUARIO ACTIVO -->
+                                                <?php 
+                                                    $esPropiaCuenta = ($usuario->idusuario == session()->get('usuario_id'));
+                                                ?>
                                                 <div class="btn-group-actions">
                                                     <a href="<?= base_url('usuarios/editar/' . $usuario->idusuario) ?>" 
                                                        class="btn btn-outline-primary"
                                                        aria-label="Editar usuario <?= htmlspecialchars($usuario->nombres) ?>">
                                                         <i class="fas fa-edit me-1" aria-hidden="true"></i> Editar
                                                     </a>
-                                                    <button onclick="confirmarEliminacion(<?= $usuario->idusuario ?>, '<?= htmlspecialchars(addslashes($usuario->nombres)) ?>')" 
-                                                            class="btn btn-outline-danger"
-                                                            aria-label="Desactivar usuario <?= htmlspecialchars($usuario->nombres) ?>">
-                                                        <i class="fas fa-user-times me-1" aria-hidden="true"></i> Desactivar
-                                                    </button>
+                                                    <?php if ($esPropiaCuenta): ?>
+                                                        <button class="btn btn-outline-secondary" 
+                                                                disabled
+                                                                data-bs-toggle="tooltip" 
+                                                                title="No puedes desactivar tu propia cuenta"
+                                                                aria-label="No puedes desactivar tu propia cuenta">
+                                                            <i class="fas fa-user-shield me-1" aria-hidden="true"></i> Tu Cuenta
+                                                        </button>
+                                                    <?php else: ?>
+                                                        <button onclick="confirmarEliminacion(<?= $usuario->idusuario ?>, '<?= htmlspecialchars(addslashes($usuario->nombres)) ?>')" 
+                                                                class="btn btn-outline-danger"
+                                                                aria-label="Desactivar usuario <?= htmlspecialchars($usuario->nombres) ?>">
+                                                            <i class="fas fa-user-times me-1" aria-hidden="true"></i> Desactivar
+                                                        </button>
+                                                    <?php endif; ?>
                                                 </div>
                                             <?php else: ?>
                                                 <!-- USUARIO DESACTIVADO -->
@@ -250,13 +263,40 @@
     // Función de eliminación
     async function confirmarEliminacion(id, nombre) {
         try {
+            // Obtener ID del usuario actual desde la sesión
+            const usuarioActual = <?= session()->get('usuario_id') ?? 'null' ?>;
+            const esPropiaCuenta = (id == usuarioActual);
+            
+            let htmlContent = `
+                <p>Está a punto de desactivar las credenciales de:</p>
+                <p><strong>${nombre}</strong></p>
+            `;
+            
+            if (esPropiaCuenta) {
+                // Si intenta desactivar su propia cuenta, mostrar alerta y detener
+                await Swal.fire({
+                    title: 'Acción No Permitida',
+                    html: `
+                        <div style="text-align: center;">
+                            <i class="fas fa-user-shield fa-3x text-warning mb-3"></i>
+                            <p><strong>No puedes desactivar tu propia cuenta</strong></p>
+                            <p class="text-muted">Por seguridad, debes pedirle a otro administrador que desactive tu cuenta.</p>
+                        </div>
+                    `,
+                    icon: 'warning',
+                    confirmButtonColor: '#4e73df',
+                    confirmButtonText: 'Entendido'
+                });
+                return; // Detener la ejecución
+            }
+            
+            htmlContent += `
+                <p class="text-danger"><small><i class="fas fa-exclamation-triangle"></i> Esta acción desactivará el acceso del usuario al sistema.</small></p>
+            `;
+            
             const result = await Swal.fire({
-                title: '¿Desacivar Credenciales?',
-                html: `
-                    <p>Está a punto de desactivar las credenciales de:</p>
-                    <p><strong>${nombre}</strong></p>
-                    <p class="text-danger"><small><i class="fas fa-exclamation-triangle"></i> Esta acción desactivará el acceso del usuario al sistema.</small></p>
-                `,
+                title: '¿Desactivar Credenciales?',
+                html: htmlContent,
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonColor: '#dc3545',
@@ -348,7 +388,24 @@
                 });
                 location.reload();
             } else {
-                throw new Error(data.message || 'Error desconocido');
+                // Si intentó desactivar su propia cuenta
+                if (data.self_account === true) {
+                    await Swal.fire({
+                        title: 'Acción No Permitida',
+                        html: `
+                            <div style="text-align: center;">
+                                <i class="fas fa-user-shield fa-3x text-warning mb-3"></i>
+                                <p><strong>No puedes desactivar tu propia cuenta</strong></p>
+                                <p class="text-muted">Por seguridad, debes pedirle a otro administrador que desactive tu cuenta.</p>
+                            </div>
+                        `,
+                        icon: 'warning',
+                        confirmButtonColor: '#4e73df',
+                        confirmButtonText: 'Entendido'
+                    });
+                } else {
+                    throw new Error(data.message || 'Error desconocido');
+                }
             }
         } catch (error) {
             console.error('Error:', error);
