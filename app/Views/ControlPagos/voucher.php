@@ -173,15 +173,15 @@
                     </div>
                     <div class="info-item">
                         <div class="info-label">RUC</div>
-                        <div class="info-value"><?= $empresa['ruc'] ?? 'N/A' ?></div>
+                        <div class="info-value">10727174040</div>
                     </div>
                     <div class="info-item">
                         <div class="info-label">Dirección</div>
-                        <div class="info-value"><?= $empresa['direccion'] ?? 'N/A' ?></div>
+                        <div class="info-value">Av. Luis massaro     791    </div>
                     </div>
                     <div class="info-item">
                         <div class="info-label">Teléfono</div>
-                        <div class="info-value"><?= $empresa['telefono'] ?? 'N/A' ?></div>
+                        <div class="info-value">991157028</div>
                     </div>
                 </div>
             </div>
