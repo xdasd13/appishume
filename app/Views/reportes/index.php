@@ -240,7 +240,6 @@
 
 <?= $footer; ?>
 
-<!-- Scripts específicos para reportes - Cargados después del footer -->
 <script>
 $(document).ready(function() {
     let reporteActual = null;

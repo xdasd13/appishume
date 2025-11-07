@@ -14,13 +14,13 @@
                         </div>
                     </div>
                     <div class="card-body">
-                        <?php if (session('errors')): ?>
+                        <?php if (session()->getFlashdata('errors')): ?>
                             <div class="alert alert-danger alert-dismissible fade show" role="alert">
                                 <i class="fas fa-exclamation-triangle mr-2"></i>
                                 <strong>Error de validación:</strong>
                                 <ul class="mb-0 mt-2">
-                                    <?php foreach (session('errors') as $error): ?>
-                                        <li><?= $error ?></li>
+                                    <?php foreach (session()->getFlashdata('errors') as $error): ?>
+                                        <li><?= htmlspecialchars($error) ?></li>
                                     <?php endforeach; ?>
                                 </ul>
                                 <button type="button" class="close" data-dismiss="alert" aria-label="Close">
@@ -29,10 +29,20 @@
                             </div>
                         <?php endif; ?>
                         
-                        <?php if (session('error')): ?>
+                        <?php if (session()->getFlashdata('error')): ?>
                             <div class="alert alert-danger alert-dismissible fade show" role="alert">
                                 <i class="fas fa-exclamation-circle mr-2"></i>
-                                <?= session('error') ?>
+                                <?= nl2br(htmlspecialchars(session()->getFlashdata('error'))) ?>
+                                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                        <?php endif; ?>
+                        
+                        <?php if (session()->getFlashdata('success')): ?>
+                            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                                <i class="fas fa-check-circle mr-2"></i>
+                                <?= htmlspecialchars(session()->getFlashdata('success')) ?>
                                 <button type="button" class="close" data-dismiss="alert" aria-label="Close">
                                     <span aria-hidden="true">&times;</span>
                                 </button>
@@ -200,10 +210,10 @@ $(document).ready(function() {
             error.addClass('invalid-feedback');
             element.closest('.form-group').append(error);
         },
-        highlight: function (element, errorClass, validClass) {
+        highlight: function (element) {
             $(element).addClass('is-invalid');
         },
-        unhighlight: function (element, errorClass, validClass) {
+        unhighlight: function (element) {
             $(element).removeClass('is-invalid');
         }
     });

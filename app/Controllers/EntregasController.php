@@ -130,9 +130,9 @@ class EntregasController extends BaseController
 
         if (!$this->validate($reglas)) {
             $errors = $this->validator->getErrors();
-            $errorMessage = 'Por favor, corrija los siguientes errores:\n\n';
+            $errorMessage = 'Por favor, corrija los siguientes errores:' . "\n\n";
             foreach ($errors as $field => $error) {
-                $errorMessage .= '• ' . $error . '\n';
+                $errorMessage .= '• ' . $error . "\n";
             }
             return redirect()->back()->withInput()->with('error', $errorMessage);
         }

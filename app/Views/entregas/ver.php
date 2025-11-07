@@ -4,20 +4,30 @@
     <div class="page-inner">
         
 
-        <?php if (session('success')): ?>
+        <?php if (session()->getFlashdata('success')): ?>
             <div class="alert alert-success alert-dismissible fade show" role="alert">
                 <i class="fas fa-check-circle mr-2"></i>
-                <?= session('success') ?>
+                <?= htmlspecialchars(session()->getFlashdata('success')) ?>
                 <button type="button" class="close" data-dismiss="alert" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
         <?php endif; ?>
         
-        <?php if (session('error')): ?>
+        <?php if (session()->getFlashdata('error')): ?>
             <div class="alert alert-danger alert-dismissible fade show" role="alert">
                 <i class="fas fa-exclamation-circle mr-2"></i>
-                <?= session('error') ?>
+                <?= nl2br(htmlspecialchars(session()->getFlashdata('error'))) ?>
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+        <?php endif; ?>
+        
+        <?php if (session()->getFlashdata('info')): ?>
+            <div class="alert alert-info alert-dismissible fade show" role="alert">
+                <i class="fas fa-info-circle mr-2"></i>
+                <?= htmlspecialchars(session()->getFlashdata('info')) ?>
                 <button type="button" class="close" data-dismiss="alert" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
