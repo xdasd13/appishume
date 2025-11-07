@@ -63,24 +63,15 @@
                             </div>
                         </div>
                         
+                        <!-- Información de fecha (solo lectura) -->
+                        <div class="alert alert-info mb-4">
+                            <i class="fas fa-info-circle mr-2"></i>
+                            <strong>Fecha de Entrega:</strong> <?= date('d/m/Y H:i', strtotime($entrega['fechahoraentrega'])) ?>
+                            <small class="d-block mt-1">La fecha de entrega no se puede modificar. Solo puede editar el formato y el comprobante.</small>
+                        </div>
+
                         <form action="<?= base_url('entregas/actualizar/'.$entrega['identregable']) ?>" method="post" class="form-validate" enctype="multipart/form-data">
                             <?= csrf_field() ?>
-                            <div class="row">
-                                <div class="col-md-12">
-                                    <div class="form-group">
-                                        <label for="fechahoraentrega" class="form-label">
-                                            <i class="fas fa-calendar-alt mr-2 text-success"></i>Fecha y Hora de Entrega *
-                                        </label>
-                                        <div class="input-group">
-                                            <input type="datetime-local" class="form-control" id="fechahoraentrega" name="fechahoraentrega" value="<?= str_replace(' ', 'T', $entrega['fechahoraentrega']) ?>" required>
-                                            <div class="input-group-append">
-                                                <span class="input-group-text"><i class="fas fa-calendar-check"></i></span>
-                                            </div>
-                                        </div>
-                                        <small class="form-text text-muted">Modifique la fecha y hora programada para la entrega</small>
-                                    </div>
-                                </div>
-                            </div>
                             
                             <div class="row">
                                 <div class="col-md-12">
@@ -89,7 +80,7 @@
                                             <i class="fas fa-sticky-note mr-2 text-info"></i>Formato de Entrega *
                                         </label>
                                         <textarea class="form-control" id="observaciones" name="observaciones" rows="3" required><?= $entrega['observaciones'] ?></textarea>
-                                        <small class="form-text text-muted">Describa el formato de entrega (físico/digital) y especificaciones</small>
+                                        <small class="form-text text-muted">Describa el formato de entrega y especificaciones</small>
                                     </div>
                                 </div>
                             </div>
@@ -189,24 +180,16 @@ $(document).ready(function() {
     // Validación del formulario con jQuery Validate
     $('.form-validate').validate({
         rules: {
-            fechahoraentrega: {
-                required: true
-            },
             observaciones: {
-                required: true,
-                minlength: 10
+                required: true
             },
             comprobante_entrega: {
                 extension: "pdf"
             }
         },
         messages: {
-            fechahoraentrega: {
-                required: "La fecha de entrega es requerida"
-            },
             observaciones: {
-                required: "Por favor describa el formato de entrega",
-                minlength: "Debe describir mínimo 10 caracteres"
+                required: "Por favor describa el formato de entrega"
             },
             comprobante_entrega: {
                 extension: "Solo se permiten archivos PDF"

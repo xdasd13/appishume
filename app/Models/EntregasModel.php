@@ -19,60 +19,6 @@ class EntregasModel extends Model
     ];
     protected $returnType = 'array';
 
-    public function obtenerEntregasCompletas()
-    {
-        $builder = $this->db->table('entregables e');
-        $builder->select('e.identregable, e.fechahoraentrega, e.fecha_real_entrega, e.estado, e.observaciones, e.comprobante_entrega,
-                         p.nombres as nombre_cliente, p.apellidos as apellido_cliente,
-                         s.servicio, sc.direccion, sc.fechahoraservicio,
-                         per.nombres as nombre_entrega, per.apellidos as apellido_entrega,
-                         sc.cantidad, sc.precio,
-                         CASE 
-                             WHEN e.estado = "completada" THEN "✅ ENTREGADO"
-                             WHEN e.estado = "pendiente" AND e.fechahoraentrega < NOW() THEN "⚠️ VENCIDA"
-                             WHEN e.estado = "pendiente" THEN "⏳ EN POSTPRODUCCIÓN"
-                             ELSE "❓ DESCONOCIDO"
-                         END as estado_visual,
-                         DATEDIFF(e.fechahoraentrega, NOW()) as dias_restantes');
-        $builder->join('servicioscontratados sc', 'sc.idserviciocontratado = e.idserviciocontratado');
-        $builder->join('cotizaciones c', 'c.idcotizacion = sc.idcotizacion');
-        $builder->join('clientes cl', 'cl.idcliente = c.idcliente');
-        $builder->join('personas p', 'p.idpersona = cl.idpersona', 'left');
-        $builder->join('servicios s', 's.idservicio = sc.idservicio');
-        $builder->join('personas per', 'per.idpersona = e.idpersona', 'left');
-        $builder->orderBy('e.fechahoraentrega', 'DESC');
-
-        return $builder->get()->getResultArray();
-    }
-
-    public function obtenerEntregasPendientes()
-    {
-        $builder = $this->db->table('entregables e');
-        $builder->select('e.identregable, e.fechahoraentrega, e.fecha_real_entrega, e.estado, e.observaciones, e.comprobante_entrega,
-                         p.nombres as nombre_cliente, p.apellidos as apellido_cliente,
-                         s.servicio, sc.direccion, sc.fechahoraservicio,
-                         per.nombres as nombre_entrega, per.apellidos as apellido_entrega,
-                         sc.cantidad, sc.precio,
-                         DATEDIFF(e.fechahoraentrega, sc.fechahoraservicio) as dias_postproduccion,
-                         DATEDIFF(e.fechahoraentrega, NOW()) as dias_restantes,
-                         CASE 
-                             WHEN e.estado = "pendiente" AND e.fechahoraentrega < NOW() THEN "vencida"
-                             WHEN e.estado = "pendiente" THEN "pendiente"
-                             ELSE "completada"
-                         END as estado_entrega');
-        $builder->join('servicioscontratados sc', 'sc.idserviciocontratado = e.idserviciocontratado');
-        $builder->join('cotizaciones c', 'c.idcotizacion = sc.idcotizacion');
-        $builder->join('clientes cl', 'cl.idcliente = c.idcliente');
-        $builder->join('personas p', 'p.idpersona = cl.idpersona');
-        $builder->join('servicios s', 's.idservicio = sc.idservicio');
-        $builder->join('personas per', 'per.idpersona = e.idpersona', 'left');
-
-        $builder->where('e.estado', 'pendiente');
-        $builder->orderBy('e.fechahoraentrega', 'ASC');
-
-        return $builder->get()->getResultArray();
-    }
-
     public function obtenerEntregaCompleta($id)
     {
         // Maneja clientes que pueden ser personas naturales o empresas usando COALESCE y CASE
@@ -308,33 +254,6 @@ class EntregasModel extends Model
             }
         }
         return null;
-    }
-
-    public function obtenerEntregasCompletasConDetalle()
-    {
-        $builder = $this->db->table('entregables e');
-        $builder->select('e.identregable, e.fechahoraentrega, e.fecha_real_entrega, e.estado, e.observaciones, e.comprobante_entrega,
-                     p.nombres as nombre_cliente, p.apellidos as apellido_cliente,
-                     s.servicio, sc.direccion, sc.fechahoraservicio,
-                     per.nombres as nombre_entrega, per.apellidos as apellido_entrega,
-                     sc.cantidad, sc.precio, contr.idcontrato,
-                     CASE 
-                         WHEN e.estado = "completada" THEN "Completada"
-                         WHEN e.estado = "pendiente" AND e.fechahoraentrega < NOW() THEN "Vencida"
-                         WHEN e.estado = "pendiente" THEN "Pendiente"
-                         ELSE "Desconocido"
-                     END as estado_visual');
-        $builder->join('servicioscontratados sc', 'sc.idserviciocontratado = e.idserviciocontratado', 'left');
-        $builder->join('cotizaciones c', 'c.idcotizacion = sc.idcotizacion', 'left');
-        $builder->join('contratos contr', 'contr.idcotizacion = c.idcotizacion', 'left');
-        $builder->join('clientes cl', 'cl.idcliente = c.idcliente', 'left');
-        $builder->join('personas p', 'p.idpersona = cl.idpersona', 'left');
-        $builder->join('servicios s', 's.idservicio = sc.idservicio', 'left');
-        $builder->join('personas per', 'per.idpersona = e.idpersona', 'left');
-
-        $builder->orderBy('e.fechahoraentrega', 'DESC');
-
-        return $builder->get()->getResultArray();
     }
 
     public function obtenerTodasLasEntregas()

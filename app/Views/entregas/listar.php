@@ -131,7 +131,7 @@
                 </div>
                 <div class="card-body">
                     <div class="table-responsive">
-                        <table class="table table-striped table-hover" id="contratos-table">
+                        <table class="table table-striped" id="contratos-table">
                             <thead>
                                 <tr>
                                     <th>#</th>
@@ -231,17 +231,6 @@
             },
             "responsive": true
         });
-
-        // Sweet Alert para cuando todas las entregas ya fueron registradas
-        <?php if (session('info')): ?>
-            Swal.fire({
-                title: '¡Todas las entregas completadas!',
-                text: '<?= session('info') ?>',
-                icon: 'success',
-                confirmButtonText: 'Entendido',
-                confirmButtonColor: '#28a745'
-            });
-        <?php endif; ?>
     });
 </script>
 

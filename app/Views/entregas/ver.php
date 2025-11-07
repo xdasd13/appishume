@@ -2,36 +2,7 @@
 
 <div class="container">
     <div class="page-inner">
-        <div class="page-header">
-            <h4 class="page-title">
-                <i class="fas fa-truck-loading mr-2"></i>Detalle de Entrega
-            </h4>
-            <ul class="breadcrumbs">
-                <li class="nav-home">
-                    <a href="<?= base_url('dashboard') ?>">
-                        <i class="fas fa-home"></i>
-                    </a>
-                </li>
-                <li class="separator">
-                    <i class="fas fa-angle-right"></i>
-                </li>
-                <li class="nav-item">
-                    <a href="<?= base_url('entregas') ?>">Entregas</a>
-                </li>
-                <li class="separator">
-                    <i class="fas fa-angle-right"></i>
-                </li>
-                <li class="nav-item">
-                    <a href="<?= base_url('entregas/completadas') ?>">Completadas</a>
-                </li>
-                <li class="separator">
-                    <i class="fas fa-angle-right"></i>
-                </li>
-                <li class="nav-item">
-                    <span>Entrega #<?= $entrega['identregable'] ?></span>
-                </li>
-            </ul>
-        </div>
+        
 
         <?php if (session('success')): ?>
             <div class="alert alert-success alert-dismissible fade show" role="alert">
@@ -73,7 +44,7 @@
                                 <table class="table table-sm table-bordered">
                                     <tr>
                                         <th class="bg-light">Nombre</th>
-                                        <td><?= isset($entrega['nombre_cliente']) ? $entrega['nombre_cliente'] : 'No disponible' ?> <?= isset($entrega['apellido_cliente']) ? $entrega['apellido_cliente'] : '' ?></td>
+                                        <td><?= isset($entrega['nombre_cliente']) ? $entrega['nombre_cliente'] : 'No disponible' ?></td>
                                     </tr>
                                     <tr>
                                         <th class="bg-light">Documento</th>
@@ -152,13 +123,10 @@
                                     <tr>
                                         <th class="bg-light">Fecha/Hora Entrega</th>
                                         <td>
-                                            <span class="font-weight-bold">
-                                                <?= isset($entrega['fechahoraentrega']) && !empty($entrega['fechahoraentrega']) ? date('d/m/Y H:i', strtotime($entrega['fechahoraentrega'])) : 'No disponible' ?>
-                                            </span>
                                             <?php if(isset($entrega['estado']) && $entrega['estado'] == 'completada' && isset($entrega['fecha_real_entrega']) && !empty($entrega['fecha_real_entrega'])): ?>
-                                                <div class="text-muted small">
-                                                    Entregado: <?= date('d/m/Y H:i', strtotime($entrega['fecha_real_entrega'])) ?>
-                                                </div>
+                                                <?= date('d/m/Y H:i', strtotime($entrega['fecha_real_entrega'])) ?>
+                                            <?php else: ?>
+                                                <?= isset($entrega['fechahoraentrega']) && !empty($entrega['fechahoraentrega']) ? date('d/m/Y H:i', strtotime($entrega['fechahoraentrega'])) : 'No disponible' ?>
                                             <?php endif; ?>
                                         </td>
                                     </tr>
@@ -184,6 +152,9 @@
                                 <i class="fas fa-arrow-left mr-2"></i>Volver
                             </a>
                             <div>
+                                <a href="<?= base_url('entregas/editar/' . $entrega['identregable']) ?>" class="btn btn-warning mr-2">
+                                    <i class="fas fa-edit mr-2"></i>Editar
+                                </a>
                                 <a href="<?= base_url('entregas/imprimir/' . $entrega['identregable']) ?>" target="_blank" class="btn btn-info">
                                     <i class="fas fa-print mr-2"></i>Imprimir
                                 </a>

@@ -14,37 +14,6 @@
                         </div>
                     </div>
                     <div class="card-body">
-                        <!-- Notificaciones con SweetAlert2 -->
-                        <?php if (session()->getFlashdata('success')): ?>
-                            <script>
-                                document.addEventListener('DOMContentLoaded', function() {
-                                    Swal.fire({
-                                        icon: 'success',
-                                        title: '¡Éxito!',
-                                        text: '<?= addslashes(session()->getFlashdata('success')) ?>',
-                                        confirmButtonColor: '#28a745',
-                                        timer: 4000,
-                                        timerProgressBar: true
-                                    });
-                                });
-                            </script>
-                        <?php endif; ?>
-                        
-                        <?php if (session()->getFlashdata('error')): ?>
-                            <script>
-                                document.addEventListener('DOMContentLoaded', function() {
-                                    Swal.fire({
-                                        icon: 'error',
-                                        title: 'Error',
-                                        text: '<?= addslashes(session()->getFlashdata('error')) ?>',
-                                        confirmButtonColor: '#dc3545',
-                                        confirmButtonText: 'Entendido',
-                                        allowOutsideClick: false
-                                    });
-                                });
-                            </script>
-                        <?php endif; ?>
-
                         <!-- Tarjeta con información del usuario actual que realizará la entrega -->
                         <div class="alert alert-info mb-4">
                             <div class="d-flex align-items-center">
@@ -130,7 +99,7 @@
                                             <i class="fas fa-sticky-note mr-2 text-info"></i>Formato de Entrega *
                                         </label>
                                         <textarea class="form-control" id="observaciones" name="observaciones" rows="3" placeholder="Ej: USB físico, link digital, cuadros 30x40, etc." required><?= old('observaciones') ?></textarea>
-                                        <small class="form-text text-muted mt-2">Describa el formato de entrega (físico/digital) y especificaciones</small>
+                                        <small class="form-text text-muted mt-2">Describa el formato de entrega y especificaciones</small>
                                     </div>
                                 </div>
                             </div>
@@ -142,7 +111,7 @@
                                             <i class="fas fa-file-pdf mr-2 text-danger"></i>Comprobante de Entrega (PDF) *
                                         </label>
                                         <div class="custom-file">
-                                            <input type="file" class="custom-file-input" id="comprobante_entrega" name="comprobante_entrega" accept=".pdf" required>
+                                            <input type="file" class="custom-file-input" id="comprobante_entrega" name="comprobante_entrega" accept=".pdf">
                                             <label class="custom-file-label" for="comprobante_entrega">Seleccionar archivo</label>
                                         </div>
                                         <small class="form-text text-muted">Suba el comprobante de entrega en formato PDF (máx. 5MB)</small>
@@ -199,6 +168,9 @@ $(document).ready(function() {
         var fileName = $(this).val().split('\\').pop();
         if (fileName) {
             $(this).next('.custom-file-label').html(fileName);
+            // Limpiar el error visual si había
+            $(this).removeClass('is-invalid');
+            $('.custom-file-label').css('border-color', '');
         } else {
             $(this).next('.custom-file-label').html('Seleccionar archivo');
         }
@@ -268,6 +240,37 @@ $(document).ready(function() {
         return date.toLocaleDateString('es-ES');
     }
     
+    // Validación del comprobante ANTES de enviar el formulario
+    $('#btn-registrar').on('click', function(e) {
+        var comprobante = $('#comprobante_entrega')[0].files.length;
+        if (comprobante === 0) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            // Mostrar alerta bonita y centrada
+            Swal.fire({
+                title: 'Comprobante Requerido',
+                text: 'Debe seleccionar un archivo PDF como comprobante de entrega para poder guardar.',
+                icon: 'warning',
+                confirmButtonText: 'Entendido',
+                confirmButtonColor: '#ffc107',
+                customClass: {
+                    popup: 'swal2-popup-centered'
+                }
+            });
+            
+            // Marcar visualmente el campo
+            $('#comprobante_entrega').addClass('is-invalid');
+            $('.custom-file-label').css('border-color', '#dc3545');
+            
+            // Scroll al campo
+            $('html, body').animate({
+                scrollTop: $('#comprobante_entrega').offset().top - 100
+            }, 500);
+            
+            return false;
+        }
+    });
 
     // Validación del formulario con jQuery Validate
     $('.form-validate').validate({
@@ -279,8 +282,7 @@ $(document).ready(function() {
                 required: true
             },
             observaciones: {
-                required: true,
-                minlength: 10
+                required: true
             },
             comprobante_entrega: {
                 required: true
@@ -294,8 +296,7 @@ $(document).ready(function() {
                 required: "Por favor seleccione un servicio"
             },
             observaciones: {
-                required: "Por favor describa el formato de entrega",
-                minlength: "Debe describir mínimo 10 caracteres"
+                required: "Por favor describa el formato de entrega"
             },
             comprobante_entrega: {
                 required: "El comprobante de entrega es obligatorio"
@@ -317,22 +318,6 @@ $(document).ready(function() {
             var $submitBtn = $('#btn-registrar');
             if ($submitBtn.hasClass('btn-processing')) {
                 return false;
-            }
-            
-            // Verificar si hay comprobante antes de enviar
-            var comprobante = $('#comprobante_entrega').val();
-            if (!comprobante || comprobante === '') {
-                // Mostrar SweetAlert de advertencia
-                Swal.fire({
-                    title: 'Comprobante Obligatorio',
-                    text: 'Debe seleccionar un archivo PDF como comprobante de entrega.',
-                    icon: 'warning',
-                    confirmButtonText: 'Entendido',
-                    confirmButtonColor: '#dc3545',
-                    allowOutsideClick: false
-                });
-                
-                return false; // Prevenir envío del formulario
             }
             
             $submitBtn.addClass('btn-processing').html('<i class="fas fa-spinner fa-spin mr-2"></i>Procesando...');

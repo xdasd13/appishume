@@ -1,26 +1,6 @@
 <?= $this->include('Layouts/header') ?>
 
 <div class="page-inner">
-    <!-- Header del módulo -->
-    <div class="page-header">
-        <h4 class="page-title">
-            <i class="fas fa-chart-bar mr-2"></i>
-            Reportes Dinámicos
-        </h4>
-        <ul class="breadcrumbs">
-            <li class="nav-home">
-                <a href="<?= base_url('welcome') ?>">
-                    <i class="icon-home"></i>
-                </a>
-            </li>
-            <li class="separator">
-                <i class="icon-arrow-right"></i>
-            </li>
-            <li class="nav-item">
-                <span>Reportes</span>
-            </li>
-        </ul>
-    </div>
 
     <!-- Tarjetas de estadísticas rápidas -->
     <div class="row mb-4">
@@ -74,7 +54,7 @@
                         <div class="col-7 col-stats">
                             <div class="numbers">
                                 <p class="card-category">Exportaciones</p>
-                                <h4 class="card-title">PDF/Excel</h4>
+                                <h4 class="card-title">PDF</h4>
                             </div>
                         </div>
                     </div>
@@ -168,16 +148,10 @@
                 </div>
                 <div class="card-body">
                     <div class="row">
-                        <div class="col-6">
+                        <div class="col-12">
                             <button type="button" class="btn btn-danger btn-block" id="exportar-pdf">
                                 <i class="fas fa-file-pdf mr-2"></i>
-                                PDF
-                            </button>
-                        </div>
-                        <div class="col-6">
-                            <button type="button" class="btn btn-success btn-block" id="exportar-excel">
-                                <i class="fas fa-file-excel mr-2"></i>
-                                Excel
+                                Exportar PDF
                             </button>
                         </div>
                     </div>
@@ -412,6 +386,7 @@ $(document).ready(function() {
         $.ajax({
             url: '<?= base_url("reportes/generar") ?>',
             method: 'POST',
+            dataType: 'html',
             data: {
                 tipo_reporte: reporteActual,
                 filtros: filtros,
@@ -450,21 +425,39 @@ $(document).ready(function() {
                 
                 let mensajeError = 'Error al generar el reporte';
                 
-                // Manejar diferentes tipos de errores
-                if (xhr.status === 403) {
-                    mensajeError = 'No tiene permisos para generar reportes. Contacte al administrador.';
-                } else if (xhr.status === 500) {
-                    mensajeError = 'Error interno del servidor. Intente nuevamente o contacte al administrador.';
-                } else if (xhr.status === 404) {
-                    mensajeError = 'El servicio de reportes no está disponible.';
-                } else if (xhr.status === 0) {
-                    mensajeError = 'Error de conexión. Verifique su conexión a internet.';
+                // Intentar obtener el mensaje de error del servidor
+                if (xhr.responseJSON && xhr.responseJSON.error) {
+                    mensajeError = xhr.responseJSON.error;
+                } else if (xhr.responseText) {
+                    try {
+                        const response = JSON.parse(xhr.responseText);
+                        if (response.error) {
+                            mensajeError = response.error;
+                        }
+                    } catch(e) {
+                        // No es JSON, usar mensaje por defecto
+                    }
                 }
                 
-                // Mostrar error como texto en lugar de modal
+                // Manejar diferentes tipos de errores solo si no hay mensaje del servidor
+                if (mensajeError === 'Error al generar el reporte') {
+                    if (xhr.status === 403) {
+                        mensajeError = 'No tiene permisos para generar reportes. Contacte al administrador.';
+                    } else if (xhr.status === 500) {
+                        mensajeError = 'Error interno del servidor. Intente nuevamente.';
+                    } else if (xhr.status === 404) {
+                        mensajeError = 'El servicio de reportes no está disponible.';
+                    } else if (xhr.status === 0) {
+                        mensajeError = 'Error de conexión. Verifique su conexión a internet.';
+                    }
+                }
+                
+                // Mostrar error como texto
                 mostrarErrorComoTexto('Error', mensajeError, 'error');
                 
                 console.error('Error en reporte:', xhr);
+                console.error('Status:', xhr.status);
+                console.error('Response:', xhr.responseText);
                 $('#estado-inicial').show();
             }
         });
@@ -472,22 +465,21 @@ $(document).ready(function() {
 
     // Limpiar filtros
     $('#limpiar-filtros').on('click', function() {
+        console.log('Limpiando filtros...');
+        
         // Limpiar inputs de texto y fecha
         $('#filtros-dinamicos input[type="text"], #filtros-dinamicos input[type="date"]').val('');
         
         // Restablecer selects a "todos"
         $('#filtros-dinamicos select').each(function() {
-            const $select = $(this);
-            const $todosOption = $select.find('option[value="todos"]');
-            if ($todosOption.length > 0) {
-                $select.val('todos');
-            } else {
-                $select.val('');
-            }
+            $(this).val('todos').trigger('change');
         });
         
+        // Limpiar objeto de filtros
         filtrosActuales = {};
         actualizarContadorFiltros();
+        
+        console.log('Filtros limpiados');
     });
 
     // Actualizar reporte
@@ -546,39 +538,6 @@ $(document).ready(function() {
                 mostrarErrorComoTexto('Error', mensajeError, 'error');
             }
         });
-    });
-
-    // Exportar Excel
-    $('#exportar-excel').on('click', function() {
-        if (!reporteActual) {
-            mostrarErrorComoTexto('Error', 'Por favor genera un reporte primero', 'error');
-            return;
-        }
-
-        const filtros = {};
-        $('#filtros-dinamicos input, #filtros-dinamicos select').each(function() {
-            const valor = $(this).val();
-            if (valor && valor !== 'todos') {
-                filtros[$(this).attr('name')] = valor;
-            }
-        });
-
-        // Mostrar loading
-        mostrarErrorComoTexto('Exportando Excel', 'Generando archivo Excel...', 'info');
-
-        // Crear formulario temporal para descarga (para archivos binarios)
-        const form = $('<form method="POST" action="<?= base_url("reportes/exportarExcel") ?>" target="_blank"></form>');
-        form.append($('<input type="hidden" name="tipo_reporte">').val(reporteActual));
-        form.append($('<input type="hidden" name="filtros">').val(JSON.stringify(filtros)));
-        form.append($('<input type="hidden" name="<?= csrf_token() ?>">').val('<?= csrf_hash() ?>'));
-        $('body').append(form);
-        form.submit();
-        form.remove();
-        
-        // Ocultar mensaje de loading después de un momento
-        setTimeout(function() {
-            $('#area-errores').hide();
-        }, 2000);
     });
 
     // Funciones auxiliares

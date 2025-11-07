@@ -91,13 +91,6 @@
                 <p>Dashboard</p>
               </a>
             </li>
-            <li class="nav-item">
-              <a href="<?= base_url('mensajeria') ?>">
-                <i class="fas fa-comments"></i>
-                <p>Mensajería</p>
-                <span id="badge-mensajes-sidebar" class="badge bg-danger ms-1" style="display: none; font-size: 0.7em;">0</span>
-              </a>
-            </li>
 
             <!-- Separador -->
             <li class="nav-section">

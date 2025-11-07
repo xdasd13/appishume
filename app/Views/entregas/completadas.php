@@ -47,7 +47,7 @@
             </div>
 
             <div class="table-responsive">
-              <table class="table table-hover table-striped" id="entregas-table">
+              <table class="table table-striped" id="entregas-table">
                 <thead>
                   <tr>
                     <th>#</th>
@@ -102,8 +102,11 @@
                     </td>
                     <td>
                       <div class="btn-group">
-                        <a href="<?= base_url('entregas/ver/' . $e['identregable']) ?>" class="btn btn-sm btn-primary">
-                          <i class="fas fa-eye"></i> Ver Detalle
+                        <a href="<?= base_url('entregas/ver/' . $e['identregable']) ?>" class="btn btn-sm btn-primary" title="Ver detalle completo">
+                          <i class="fas fa-eye"></i> Ver
+                        </a>
+                        <a href="<?= base_url('entregas/editar/' . $e['identregable']) ?>" class="btn btn-sm btn-warning" title="Editar formato y comprobante">
+                          <i class="fas fa-edit"></i> Editar
                         </a>
                       </div>
                     </td>

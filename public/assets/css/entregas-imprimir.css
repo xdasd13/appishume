@@ -1,78 +1,81 @@
 body {
             font-family: Arial, sans-serif;
-            font-size: 14px;
-            line-height: 1.6;
-            margin: 20px;
+            font-size: 10px;
+            line-height: 1.2;
+            margin: 12px;
             color: #333;
             background: white;
         }
         
         .header {
             text-align: center;
-            border-bottom: 3px solid #007bff;
-            padding-bottom: 20px;
-            margin-bottom: 30px;
+            border-bottom: 1px solid #007bff;
+            padding-bottom: 4px;
+            margin-bottom: 6px;
         }
         
         .company-name {
-            font-size: 28px;
+            font-size: 16px;
             font-weight: bold;
             color: #007bff;
-            margin-bottom: 10px;
+            margin-bottom: 2px;
         }
         
         .document-title {
-            font-size: 24px;
+            font-size: 14px;
             font-weight: bold;
             color: #333;
-            margin: 20px 0;
-            border: 2px solid #007bff;
-            padding: 15px;
+            margin: 5px 0;
+            border: 1px solid #007bff;
+            padding: 5px;
             background-color: #f8f9fa;
             text-align: center;
         }
         
         .section {
-            margin-bottom: 25px;
+            margin-bottom: 6px;
             border: 1px solid #dee2e6;
-            border-radius: 5px;
+            border-radius: 2px;
         }
         
         .section-header {
             background-color: #007bff;
             color: white;
-            padding: 10px 15px;
+            padding: 3px 8px;
             font-weight: bold;
+            font-size: 11px;
             margin: 0;
-            border-radius: 5px 5px 0 0;
+            border-radius: 2px 2px 0 0;
         }
         
         .section-body {
-            padding: 20px;
+            padding: 5px 8px;
         }
         
         .info-row {
             display: flex;
-            margin-bottom: 10px;
+            margin-bottom: 2px;
             border-bottom: 1px solid #eee;
-            padding-bottom: 8px;
+            padding-bottom: 2px;
         }
         
         .info-label {
             font-weight: bold;
-            width: 200px;
+            width: 110px;
             flex-shrink: 0;
+            font-size: 10px;
         }
         
         .info-value {
             flex: 1;
+            font-size: 10px;
         }
         
         .status-badge {
-            padding: 8px 15px;
-            border-radius: 20px;
+            padding: 3px 8px;
+            border-radius: 10px;
             font-weight: bold;
-            font-size: 12px;
+            font-size: 9px;
         }
         
         .status-completed {
@@ -86,38 +89,38 @@ body {
         }
         
         .signatures {
-            margin-top: 40px;
-            border-top: 2px solid #007bff;
-            padding-top: 30px;
+            margin-top: 8px;
+            border-top: 1px solid #007bff;
+            padding-top: 6px;
         }
         
         .signature-box {
             border: 1px solid #dee2e6;
-            height: 100px;
-            margin: 10px 0;
+            height: 45px;
+            margin: 5px 0;
         }
         
         .footer {
-            margin-top: 30px;
-            font-size: 12px;
+            margin-top: 6px;
+            font-size: 8px;
             color: #6c757d;
             text-align: center;
             border-top: 1px solid #dee2e6;
-            padding-top: 15px;
+            padding-top: 4px;
         }
         
         .print-buttons {
             text-align: center;
-            margin-top: 30px;
-            padding: 20px;
+            margin-top: 20px;
+            padding: 15px;
         }
         
         .print-buttons button {
-            padding: 15px 30px;
+            padding: 10px 20px;
             border: none;
             border-radius: 5px;
-            font-size: 16px;
-            margin: 0 10px;
+            font-size: 14px;
+            margin: 0 8px;
             cursor: pointer;
         }
         
@@ -134,33 +137,64 @@ body {
         @media print {
             body {
                 margin: 0;
-                padding: 15px;
+                padding: 8px;
+                font-size: 9px;
             }
             .print-buttons {
                 display: none !important;
             }
+            .header {
+                margin-bottom: 4px;
+                padding-bottom: 3px;
+            }
+            .company-name {
+                font-size: 14px;
+            }
+            .document-title {
+                font-size: 12px;
+                margin: 3px 0;
+                padding: 4px;
+            }
             .section {
                 page-break-inside: avoid;
                 break-inside: avoid;
+                margin-bottom: 4px;
             }
             .section-header {
                 page-break-after: avoid;
                 break-after: avoid;
+                padding: 2px 6px;
+                font-size: 10px;
+            }
+            .section-body {
+                padding: 4px 6px;
             }
             .info-row {
                 page-break-inside: avoid;
                 break-inside: avoid;
+                margin-bottom: 1px;
+                padding-bottom: 1px;
+            }
+            .info-label {
+                width: 90px;
+                font-size: 9px;
+            }
+            .info-value {
+                font-size: 9px;
             }
             .signatures {
                 page-break-inside: avoid;
                 break-inside: avoid;
+                margin-top: 6px;
+                padding-top: 4px;
             }
-            .document-title {
-                page-break-after: avoid;
-                break-after: avoid;
+            .signature-box {
+                height: 40px;
+                margin: 4px 0;
             }
-            .header {
-                page-break-after: avoid;
-                break-after: avoid;
+            .footer {
+                margin-top: 4px;
+                padding-top: 3px;
+                font-size: 7px;
             }
         }

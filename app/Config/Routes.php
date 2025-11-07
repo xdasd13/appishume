@@ -17,37 +17,6 @@ $routes->get('auth/check-session', 'AuthController::checkSession');
 $routes->get('welcome', 'Home::index', ['filter' => 'auth']);
 $routes->get('dashboard', 'AuthController::dashboard', ['filter' => 'auth']);
 
-// ==================== RUTAS DE MENSAJERÍA (TODOS LOS USUARIOS AUTENTICADOS) ====================
-$routes->group('', ['filter' => 'auth'], function($routes) {
-    // Páginas principales de mensajería
-    $routes->get('mensajeria', 'MensajeriaController::index');
-    $routes->get('mensajeria/enviar', 'MensajeriaController::enviar');
-    $routes->get('mensajeria/conversacion/(:num)', 'MensajeriaController::conversacion/$1');
-    $routes->get('mensajeria/configuracion', 'MensajeriaController::configuracion');
-    
-    // APIs AJAX para mensajería
-    $routes->post('mensajeria/procesarEnvio', 'MensajeriaController::procesarEnvio');
-    $routes->post('mensajeria/eliminarMensaje', 'MensajeriaController::eliminarMensaje');
-    $routes->get('mensajeria/buscarUsuarios', 'MensajeriaController::buscarUsuarios');
-    $routes->get('mensajeria/getConversaciones', 'MensajeriaController::getConversaciones');
-    $routes->get('mensajeria/getMensajesConversacion/(:num)', 'MensajeriaController::getMensajesConversacion/$1');
-    $routes->post('mensajeria/heartbeat', 'MensajeriaController::heartbeat');
-    $routes->get('mensajeria/getPresence/(:num)', 'MensajeriaController::getPresence/$1');
-    $routes->get('mensajeria/typingStatus/(:num)', 'MensajeriaController::typingStatus/$1');
-    $routes->post('mensajeria/typingStart/(:num)', 'MensajeriaController::typingStart/$1');
-    $routes->post('mensajeria/typingStop/(:num)', 'MensajeriaController::typingStop/$1');
-    
-    // APIs AJAX para notificaciones
-    $routes->get('mensajeria/getMensajesNoLeidos', 'MensajeriaController::getMensajesNoLeidos');
-    $routes->get('mensajeria/getNotificacionesNoLeidas', 'MensajeriaController::getNotificacionesNoLeidas');
-    $routes->get('mensajeria/getNotificacionesRecientes', 'MensajeriaController::getNotificacionesRecientes');
-    $routes->post('mensajeria/marcarNotificacionLeida', 'MensajeriaController::marcarNotificacionLeida');
-    $routes->post('mensajeria/marcarTodasNotificacionesLeidas', 'MensajeriaController::marcarTodasNotificacionesLeidas');
-    $routes->post('mensajeria/actualizarConfiguracion', 'MensajeriaController::actualizarConfiguracion');
-});
-
-
-
 // Rutas SIMPLES para usuarios (sin autenticación por ahora)
 $routes->get('usuarios-simple', 'UsuariosControllerSimple::index');
 $routes->get('usuarios-simple/crear', 'UsuariosControllerSimple::crear');
