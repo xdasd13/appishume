@@ -1,9 +1,7 @@
 <?php
 // Esta vista se carga dinámicamente en el panel de resultados
+// Chart.js se carga globalmente en el header
 ?>
-
-<!-- Cargar Chart.js si no está cargado -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 
 <style>
 /* Estilos para los botones de vista */
@@ -495,8 +493,12 @@ $(document).ready(function() {
     });
     <?php endif; ?>
     
-    // Inicializar gráficos
-    inicializarGraficos();
+    // Inicializar gráficos (verificar que Chart.js esté disponible)
+    if (typeof Chart !== 'undefined') {
+        inicializarGraficos();
+    } else {
+        console.warn('Chart.js no está cargado. Los gráficos no estarán disponibles.');
+    }
     
     // Manejar cambio de vista
     $('.vista-btn').on('click', function() {
@@ -559,6 +561,12 @@ function cambiarVista(vista) {
 
 // ==================== FUNCIONES DE GRÁFICOS ====================
 function inicializarGraficos() {
+    // Verificar que Chart.js esté disponible
+    if (typeof Chart === 'undefined') {
+        console.error('Chart.js no está disponible. No se pueden crear gráficos.');
+        return;
+    }
+    
     if (datosReporte.length === 0) return;
     
     // Preparar datos según el tipo de reporte
@@ -614,6 +622,12 @@ function prepararDatosGraficos() {
 function crearGraficoPrincipal(datos) {
     const ctx = document.getElementById('grafico-principal');
     if (!ctx) return;
+    
+    // Verificar que Chart.js esté disponible
+    if (typeof Chart === 'undefined') {
+        console.error('Chart.js no disponible en crearGraficoPrincipal');
+        return;
+    }
     
     graficoPrincipal = new Chart(ctx, {
         type: 'bar',
@@ -671,6 +685,12 @@ function crearGraficoDistribucion(datos) {
     const ctx = document.getElementById('grafico-distribucion');
     if (!ctx) return;
     
+    // Verificar que Chart.js esté disponible
+    if (typeof Chart === 'undefined') {
+        console.error('Chart.js no disponible en crearGraficoDistribucion');
+        return;
+    }
+    
     // Preparar datos para gráfico circular
     const colores = generarColores(datos.labels.length);
     
@@ -715,6 +735,12 @@ function crearGraficoDistribucion(datos) {
 function crearGraficoTendencias(datos) {
     const ctx = document.getElementById('grafico-tendencias');
     if (!ctx) return;
+    
+    // Verificar que Chart.js esté disponible
+    if (typeof Chart === 'undefined') {
+        console.error('Chart.js no disponible en crearGraficoTendencias');
+        return;
+    }
     
     const datasets = [{
         label: obtenerLabelDataset1(),
@@ -795,6 +821,12 @@ function crearGraficoTendencias(datos) {
 
 function actualizarGraficoPrincipal(tipo) {
     if (!graficoPrincipal) return;
+    
+    // Verificar que Chart.js esté disponible
+    if (typeof Chart === 'undefined') {
+        console.error('Chart.js no disponible en actualizarGraficoPrincipal');
+        return;
+    }
     
     graficoPrincipal.config.type = tipo;
     
