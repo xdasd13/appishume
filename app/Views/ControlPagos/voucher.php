@@ -1,21 +1,43 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<link rel="stylesheet" href="<?= base_url('assets/css/ControlPagos-voucher.css') ?>">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Voucher de Pago - #<?= $pago['idpagos'] ?></title>
-    
+    <title>Comprobante de Pago - #<?= $pago['idpagos'] ?></title>
+    <link rel="stylesheet" href="<?= base_url('assets/css/ControlPagos-voucher.css') ?>">
+    <style>
+        /* Estilos adicionales para impresión */
+        @media print {
+            body {
+                margin: 0;
+                padding: 0;
+                background: white;
+                font-size: 12px;
+            }
+            .voucher-container {
+                max-width: 100%;
+                margin: 0;
+                box-shadow: none;
+                border-radius: 0;
+            }
+            .print-button {
+                display: none;
+            }
+            .voucher-header {
+                background: #2c3e50 !important;
+                -webkit-print-color-adjust: exact;
+                color: white !important;
+            }
+        }
+    </style>
 </head>
 <body>
     <div class="voucher-container">
         <div class="voucher-header">
-            <div class="watermark">VOUCHER</div>
-            <?php if (!empty($empresa['logo'])): ?>
-                <img src="<?= base_url('uploads/logo/' . $empresa['logo']) ?>" alt="Logo" class="logo">
-            <?php endif; ?>
+            <div class="watermark">ISHUME</div>
             <h1>COMPROBANTE DE PAGO</h1>
             <p>N° <?= str_pad($pago['idpagos'], 6, '0', STR_PAD_LEFT) ?></p>
+            <p class="company-name">ISHUME Productora Audiovisual</p>
         </div>
         
         <div class="voucher-body">
@@ -45,6 +67,32 @@
                     <div class="info-item">
                         <div class="info-label">Registrado por</div>
                         <div class="info-value"><?= $pago['nombreusuario'] ?? 'N/A' ?></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="voucher-section">
+                <h3>Información del Pagador</h3>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <div class="info-label">DNI del Pagador</div>
+                        <div class="info-value">
+                            <?php if (!empty($pago['dni_pagador'])): ?>
+                                <strong><?= htmlspecialchars($pago['dni_pagador']) ?></strong>
+                            <?php else: ?>
+                                <span class="text-muted">No registrado</span>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Nombre Completo</div>
+                        <div class="info-value">
+                            <?php if (!empty($pago['nombre_pagador'])): ?>
+                                <strong><?= htmlspecialchars($pago['nombre_pagador']) ?></strong>
+                            <?php else: ?>
+                                <span class="text-muted">No registrado</span>
+                            <?php endif; ?>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -121,7 +169,7 @@
                 <div class="info-grid">
                     <div class="info-item">
                         <div class="info-label">Empresa</div>
-                        <div class="info-value"><?= $empresa['razonsocial'] ?? 'N/A' ?></div>
+                        <div class="info-value">ISHUME Productora Audiovisual</div>
                     </div>
                     <div class="info-item">
                         <div class="info-label">RUC</div>
@@ -145,16 +193,17 @@
             <div class="signature-area">
                 <div class="signature-line"></div>
                 <p>Firma y Sello Autorizado</p>
+                <p><strong>ISHUME Productora Audiovisual</strong></p>
             </div>
         </div>
     </div>
     
     <button class="print-button" onclick="window.print()">
-        <i class="fas fa-print"></i> Imprimir Voucher
+        <i class="fas fa-print"></i> Imprimir Comprobante
     </button>
     
     <script>
-        // Auto-print cuando se carga la página (opcional)
+        // Auto-print cuando se carga la página
         window.onload = function() {
             // Descomenta la siguiente línea si quieres que se imprima automáticamente
             // window.print();

@@ -29,8 +29,8 @@ class ControlPagoController extends BaseController
         $filtro_estado = $this->request->getGet('filtro_estado');
         $filtro_fecha = $this->request->getGet('filtro_fecha');
         
-        // Obtener pagos con filtros
-        $datos['pagos'] = $this->controlPagoModel->obtenerPagosCompletos($filtro_contrato, $filtro_estado, $filtro_fecha);
+        // Obtener pagos con filtros - SOLO ÚLTIMOS PAGOS POR CONTRATO
+        $datos['pagos'] = $this->controlPagoModel->obtenerUltimosPagosPorContrato($filtro_contrato, $filtro_estado, $filtro_fecha);
         
         // Obtener contratos para el filtro
         $datos['contratos'] = $this->contratoModel->obtenerContratosConClientes();
@@ -56,9 +56,8 @@ class ControlPagoController extends BaseController
             return redirect()->to('/login')->with('error', 'Acceso denegado.');
         }
 
-        // Obtener contratos para el formulario
-        $contratoModel = new ContratoModel();
-        $datos['contratos'] = $contratoModel->obtenerContratosConClientes();
+        // Obtener SOLO contratos con deuda para el formulario
+        $datos['contratos'] = $this->contratoModel->obtenerContratosConDeuda();
 
         // Obtener tipos de pago desde la base de datos
         $db = db_connect();
@@ -122,6 +121,7 @@ class ControlPagoController extends BaseController
             $nombrePagador = $this->request->getPost('nombre_pagador_hidden') 
                           ?? $this->request->getPost('nombre_pagador') 
                           ?? '';
+            $subir_comprobante = $this->request->getPost('subir_comprobante') ?? 'no';
             
             // Validaciones básicas mínimas
             if (empty($idcontrato) || $idcontrato <= 0) {
@@ -161,11 +161,11 @@ class ControlPagoController extends BaseController
                 throw new \Exception('La amortización (S/ ' . number_format($amortizacion, 2) . ') no puede ser mayor al saldo actual (S/ ' . number_format($saldo, 2) . ').');
             }
 
-            // Procesar comprobante (opcional) - simplificado
+            // Procesar comprobante (opcional) - según selección del usuario
             $comprobante = $this->request->getFile('comprobante');
             $nombreComprobante = null;
 
-            if ($comprobante && $comprobante->isValid() && !$comprobante->hasMoved()) {
+            if ($subir_comprobante === 'si' && $comprobante && $comprobante->isValid() && !$comprobante->hasMoved()) {
                 try {
                     $uploadPath = ROOTPATH . 'public/uploads/comprobantes';
                     if (!is_dir($uploadPath)) {
@@ -177,8 +177,10 @@ class ControlPagoController extends BaseController
                     $nombreComprobante = $nuevoNombre;
                 } catch (\Exception $e) {
                     log_message('warning', 'Error al subir comprobante: ' . $e->getMessage());
-                    // Continuar sin comprobante si falla la subida
+                    throw new \Exception('Error al subir el comprobante: ' . $e->getMessage());
                 }
+            } elseif ($subir_comprobante === 'si' && (!$comprobante || !$comprobante->isValid())) {
+                throw new \Exception('Debe seleccionar un archivo de comprobante válido.');
             }
 
             // Preparar datos para guardar - simplificado
@@ -569,8 +571,7 @@ class ControlPagoController extends BaseController
 
             // Contar contratos con deuda y pagados
             if (!in_array($pago['idcontrato'], $contratosProcesados)) {
-                $ultimoPago = $this->controlPagoModel->obtenerUltimoPagoContrato($pago['idcontrato']);
-                if ($ultimoPago && $ultimoPago['deuda'] <= 0.01) {
+                if ($pago['deuda'] <= 0.01) {
                     $estadisticas['contratos_pagados']++;
                 } else {
                     $estadisticas['contratos_con_deuda']++;
