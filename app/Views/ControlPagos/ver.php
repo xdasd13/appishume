@@ -186,6 +186,7 @@
                                                     <th>Amortización (S/)</th>
                                                     <th>Deuda (S/)</th>
                                                     <th>Tipo Pago</th>
+                                                    <th>Pagador</th>
                                                     <th>Acciones</th>
                                                 </tr>
                                             </thead>
@@ -201,6 +202,16 @@
                                                                 <?= number_format($historial['deuda'], 2) ?>
                                                             </td>
                                                             <td><?= $historial['tipopago'] ?></td>
+                                                            <td>
+                                                                <?php if (!empty($historial['dni_pagador'])): ?>
+                                                                    <div>
+                                                                        <small><strong>DNI:</strong> <?= htmlspecialchars($historial['dni_pagador']) ?></small><br>
+                                                                        <small><?= htmlspecialchars($historial['nombre_pagador'] ?? 'N/A') ?></small>
+                                                                    </div>
+                                                                <?php else: ?>
+                                                                    <span class="badge badge-secondary">No registrado</span>
+                                                                <?php endif; ?>
+                                                            </td>
                                                             <td>
                                                                 <div class="form-button-action">
                                                                     <a href="<?= base_url('/controlpagos/ver/' . $historial['idpagos']) ?>" 
@@ -223,7 +234,7 @@
                                                     <?php endforeach; ?>
                                                 <?php else: ?>
                                                     <tr>
-                                                        <td colspan="7" class="text-center">No se encontraron pagos para este contrato</td>
+                                                        <td colspan="8" class="text-center">No se encontraron pagos para este contrato</td>
                                                     </tr>
                                                 <?php endif; ?>
                                             </tbody>

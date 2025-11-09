@@ -14,13 +14,13 @@
                         </div>
                     </div>
                     <div class="card-body">
-                        <?php if (session('errors')): ?>
+                        <?php if (session()->getFlashdata('errors')): ?>
                             <div class="alert alert-danger alert-dismissible fade show" role="alert">
                                 <i class="fas fa-exclamation-triangle mr-2"></i>
                                 <strong>Error de validación:</strong>
                                 <ul class="mb-0 mt-2">
-                                    <?php foreach (session('errors') as $error): ?>
-                                        <li><?= $error ?></li>
+                                    <?php foreach (session()->getFlashdata('errors') as $error): ?>
+                                        <li><?= htmlspecialchars($error) ?></li>
                                     <?php endforeach; ?>
                                 </ul>
                                 <button type="button" class="close" data-dismiss="alert" aria-label="Close">
@@ -29,10 +29,20 @@
                             </div>
                         <?php endif; ?>
                         
-                        <?php if (session('error')): ?>
+                        <?php if (session()->getFlashdata('error')): ?>
                             <div class="alert alert-danger alert-dismissible fade show" role="alert">
                                 <i class="fas fa-exclamation-circle mr-2"></i>
-                                <?= session('error') ?>
+                                <?= nl2br(htmlspecialchars(session()->getFlashdata('error'))) ?>
+                                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                        <?php endif; ?>
+                        
+                        <?php if (session()->getFlashdata('success')): ?>
+                            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                                <i class="fas fa-check-circle mr-2"></i>
+                                <?= htmlspecialchars(session()->getFlashdata('success')) ?>
                                 <button type="button" class="close" data-dismiss="alert" aria-label="Close">
                                     <span aria-hidden="true">&times;</span>
                                 </button>
@@ -63,30 +73,21 @@
                             </div>
                         </div>
                         
+                        <!-- Información de fecha (solo lectura) -->
+                        <div class="alert alert-info mb-4">
+                            <i class="fas fa-info-circle mr-2"></i>
+                            <strong>Fecha de Entrega:</strong> <?= date('d/m/Y H:i', strtotime($entrega['fechahoraentrega'])) ?>
+                            <small class="d-block mt-1">La fecha de entrega no se puede modificar. Solo puede editar el formato y el comprobante.</small>
+                        </div>
+
                         <form action="<?= base_url('entregas/actualizar/'.$entrega['identregable']) ?>" method="post" class="form-validate" enctype="multipart/form-data">
                             <?= csrf_field() ?>
-                            <div class="row">
-                                <div class="col-md-12">
-                                    <div class="form-group">
-                                        <label for="fechahoraentrega" class="form-label">
-                                            <i class="fas fa-calendar-alt mr-2 text-success"></i>Fecha y Hora de Entrega *
-                                        </label>
-                                        <div class="input-group">
-                                            <input type="datetime-local" class="form-control" id="fechahoraentrega" name="fechahoraentrega" value="<?= str_replace(' ', 'T', $entrega['fechahoraentrega']) ?>" required>
-                                            <div class="input-group-append">
-                                                <span class="input-group-text"><i class="fas fa-calendar-check"></i></span>
-                                            </div>
-                                        </div>
-                                        <small class="form-text text-muted">Modifique la fecha y hora programada para la entrega</small>
-                                    </div>
-                                </div>
-                            </div>
                             
                             <div class="row">
                                 <div class="col-md-12">
                                     <div class="form-group">
                                         <label for="observaciones" class="form-label">
-                                            <i class="fas fa-sticky-note mr-2 text-info"></i>Formato de Entrega *
+                                            <i class="fas fa-sticky-note mr-2 text-info"></i>Formato de Entrega
                                         </label>
                                         <textarea class="form-control" id="observaciones" name="observaciones" rows="3"><?= $entrega['observaciones'] ?></textarea>
                                         <small class="form-text text-muted">Describa el formato de entrega (físico/digital) y especificaciones</small>
@@ -189,9 +190,6 @@ $(document).ready(function() {
     // Validación del formulario con jQuery Validate
     $('.form-validate').validate({
         rules: {
-            fechahoraentrega: {
-                required: true
-            },
             observaciones: {
                 required: false
             },
@@ -200,9 +198,6 @@ $(document).ready(function() {
             }
         },
         messages: {
-            fechahoraentrega: {
-                required: "La fecha de entrega es requerida"
-            },
             observaciones: {
                 required: "Por favor describa el formato de entrega"
             },
@@ -215,10 +210,10 @@ $(document).ready(function() {
             error.addClass('invalid-feedback');
             element.closest('.form-group').append(error);
         },
-        highlight: function (element, errorClass, validClass) {
+        highlight: function (element) {
             $(element).addClass('is-invalid');
         },
-        unhighlight: function (element, errorClass, validClass) {
+        unhighlight: function (element) {
             $(element).removeClass('is-invalid');
         }
     });

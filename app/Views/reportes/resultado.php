@@ -1,6 +1,93 @@
 <?php
 // Esta vista se carga dinámicamente en el panel de resultados
+// Chart.js se carga globalmente en el header
 ?>
+
+<style>
+/* Estilos para los botones de vista */
+.vista-btn {
+    font-weight: 600;
+    padding: 8px 16px;
+    border-radius: 6px;
+}
+
+.vista-btn.active {
+    background-color: #007bff !important;
+    color: white !important;
+    border-color: #007bff !important;
+}
+
+.vista-btn:not(.active) {
+    background-color: white;
+    color: #007bff;
+    border-color: #007bff;
+}
+
+.vista-btn:not(.active):hover {
+    background-color: #e7f1ff;
+}
+
+/* Estilos para botones de acción */
+.btn-group .btn {
+    padding: 8px 12px;
+}
+
+.btn-info {
+    background-color: #17a2b8 !important;
+    border-color: #17a2b8 !important;
+}
+
+.btn-success {
+    background-color: #28a745 !important;
+    border-color: #28a745 !important;
+}
+
+.btn-secondary {
+    background-color: #6c757d !important;
+    border-color: #6c757d !important;
+}
+
+/* Estilos para las tarjetas de estadísticas */
+.card-stats {
+    border: none;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.card-stats:hover {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    transform: translateY(-2px);
+}
+
+/* Estilos para las tarjetas de datos */
+.card-hover {
+    border: 1px solid #e3e6f0;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+}
+
+.card-hover:hover {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    transform: translateY(-3px);
+}
+
+/* Animaciones */
+.animate-fade-in {
+    animation: fadeIn 0.5s ease-in;
+}
+
+.animate-slide-in {
+    animation: slideIn 0.4s ease-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideIn {
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+</style>
 
 <!-- Header del reporte con animación -->
 <div class="report-header mb-4 animate-slide-in">
@@ -19,25 +106,25 @@
         <div class="col-md-6 text-right">
             <!-- Selector de vista -->
             <div class="btn-group mr-2" role="group">
-                <button type="button" class="btn btn-outline-light btn-sm vista-btn active" data-vista="tabla">
-                    <i class="fas fa-table"></i> Tabla
+                <button type="button" class="btn btn-primary btn-sm vista-btn active" data-vista="tabla">
+                    <i class="fas fa-table mr-1"></i> Tabla
                 </button>
-                <button type="button" class="btn btn-outline-light btn-sm vista-btn" data-vista="graficos">
-                    <i class="fas fa-chart-pie"></i> Gráficos
+                <button type="button" class="btn btn-outline-primary btn-sm vista-btn" data-vista="graficos">
+                    <i class="fas fa-chart-pie mr-1"></i> Gráficos
                 </button>
-                <button type="button" class="btn btn-outline-light btn-sm vista-btn" data-vista="tarjetas">
-                    <i class="fas fa-th-large"></i> Tarjetas
+                <button type="button" class="btn btn-outline-primary btn-sm vista-btn" data-vista="tarjetas">
+                    <i class="fas fa-th-large mr-1"></i> Tarjetas
                 </button>
             </div>
             <!-- Botones de acción -->
             <div class="btn-group" role="group">
-                <button type="button" class="btn btn-light btn-sm" onclick="verDetalle()">
+                <button type="button" class="btn btn-info btn-sm" title="Ver detalles" onclick="verDetalle()">
                     <i class="fas fa-eye"></i>
                 </button>
-                <button type="button" class="btn btn-light btn-sm" onclick="exportarReporte()">
+                <button type="button" class="btn btn-success btn-sm" title="Descargar" onclick="exportarReporte()">
                     <i class="fas fa-download"></i>
                 </button>
-                <button type="button" class="btn btn-light btn-sm" onclick="imprimirReporte()">
+                <button type="button" class="btn btn-secondary btn-sm" title="Imprimir" onclick="imprimirReporte()">
                     <i class="fas fa-print"></i>
                 </button>
             </div>
@@ -341,16 +428,27 @@
 
 <!-- Scripts para reportes interactivos -->
 <script>
-// Datos del reporte para gráficos
-const datosReporte = <?= json_encode($datos['datos'] ?? []) ?>;
-const estadisticasReporte = <?= json_encode($datos['estadisticas'] ?? []) ?>;
-const tipoReporte = '<?= $tipo_reporte ?>';
+// Datos del reporte para gráficos (usando var para permitir redeclaración)
+var datosReporte = <?= json_encode($datos['datos'] ?? []) ?>;
+var estadisticasReporte = <?= json_encode($datos['estadisticas'] ?? []) ?>;
+var tipoReporte = '<?= $tipo_reporte ?>';
+
+// Destruir gráficos anteriores si existen
+if (typeof graficoPrincipal !== 'undefined' && graficoPrincipal) {
+    graficoPrincipal.destroy();
+}
+if (typeof graficoDistribucion !== 'undefined' && graficoDistribucion) {
+    graficoDistribucion.destroy();
+}
+if (typeof graficoTendencias !== 'undefined' && graficoTendencias) {
+    graficoTendencias.destroy();
+}
 
 // Variables globales para gráficos
-let graficoPrincipal = null;
-let graficoDistribucion = null;
-let graficoTendencias = null;
-let tablaReporte = null;
+var graficoPrincipal = null;
+var graficoDistribucion = null;
+var graficoTendencias = null;
+var tablaReporte = null;
 
 $(document).ready(function() {
     // Animación de contadores
@@ -395,17 +493,23 @@ $(document).ready(function() {
     });
     <?php endif; ?>
     
-    // Inicializar gráficos
-    inicializarGraficos();
+    // Inicializar gráficos (verificar que Chart.js esté disponible)
+    if (typeof Chart !== 'undefined') {
+        inicializarGraficos();
+    } else {
+        console.warn('Chart.js no está cargado. Los gráficos no estarán disponibles.');
+    }
     
     // Manejar cambio de vista
     $('.vista-btn').on('click', function() {
         const vista = $(this).data('vista');
         cambiarVista(vista);
         
-        // Actualizar botones activos
-        $('.vista-btn').removeClass('active');
-        $(this).addClass('active');
+        // Actualizar botones activos con estilos
+        $('.vista-btn').each(function() {
+            $(this).removeClass('active btn-primary').addClass('btn-outline-primary');
+        });
+        $(this).removeClass('btn-outline-primary').addClass('active btn-primary');
     });
     
     // Cambio de tipo de gráfico principal
@@ -457,6 +561,12 @@ function cambiarVista(vista) {
 
 // ==================== FUNCIONES DE GRÁFICOS ====================
 function inicializarGraficos() {
+    // Verificar que Chart.js esté disponible
+    if (typeof Chart === 'undefined') {
+        console.error('Chart.js no está disponible. No se pueden crear gráficos.');
+        return;
+    }
+    
     if (datosReporte.length === 0) return;
     
     // Preparar datos según el tipo de reporte
@@ -512,6 +622,12 @@ function prepararDatosGraficos() {
 function crearGraficoPrincipal(datos) {
     const ctx = document.getElementById('grafico-principal');
     if (!ctx) return;
+    
+    // Verificar que Chart.js esté disponible
+    if (typeof Chart === 'undefined') {
+        console.error('Chart.js no disponible en crearGraficoPrincipal');
+        return;
+    }
     
     graficoPrincipal = new Chart(ctx, {
         type: 'bar',
@@ -569,6 +685,12 @@ function crearGraficoDistribucion(datos) {
     const ctx = document.getElementById('grafico-distribucion');
     if (!ctx) return;
     
+    // Verificar que Chart.js esté disponible
+    if (typeof Chart === 'undefined') {
+        console.error('Chart.js no disponible en crearGraficoDistribucion');
+        return;
+    }
+    
     // Preparar datos para gráfico circular
     const colores = generarColores(datos.labels.length);
     
@@ -613,6 +735,12 @@ function crearGraficoDistribucion(datos) {
 function crearGraficoTendencias(datos) {
     const ctx = document.getElementById('grafico-tendencias');
     if (!ctx) return;
+    
+    // Verificar que Chart.js esté disponible
+    if (typeof Chart === 'undefined') {
+        console.error('Chart.js no disponible en crearGraficoTendencias');
+        return;
+    }
     
     const datasets = [{
         label: obtenerLabelDataset1(),
@@ -693,6 +821,12 @@ function crearGraficoTendencias(datos) {
 
 function actualizarGraficoPrincipal(tipo) {
     if (!graficoPrincipal) return;
+    
+    // Verificar que Chart.js esté disponible
+    if (typeof Chart === 'undefined') {
+        console.error('Chart.js no disponible en actualizarGraficoPrincipal');
+        return;
+    }
     
     graficoPrincipal.config.type = tipo;
     
@@ -829,20 +963,8 @@ function verDetalle() {
 }
 
 function exportarReporte() {
-    Swal.fire({
-        title: 'Exportar Reporte',
-        html: 'Selecciona el formato de exportación:',
-        showCancelButton: true,
-        confirmButtonText: 'PDF',
-        cancelButtonText: 'Excel',
-        reverseButtons: true
-    }).then((result) => {
-        if (result.isConfirmed) {
-            $('#exportar-pdf').click();
-        } else if (result.dismiss === Swal.DismissReason.cancel) {
-            $('#exportar-excel').click();
-        }
-    });
+    // Exportar directamente a PDF sin modal
+    $('#exportar-pdf').click();
 }
 
 function imprimirReporte() {

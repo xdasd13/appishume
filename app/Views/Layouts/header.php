@@ -57,6 +57,9 @@
   <!-- jQuery -->
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  
+  <!-- Chart.js para gráficos -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 </head>
 
 <body>
@@ -89,13 +92,6 @@
               <a href="<?= base_url('welcome') ?>">
                 <i class="fas fa-home"></i>
                 <p>Dashboard</p>
-              </a>
-            </li>
-            <li class="nav-item">
-              <a href="<?= base_url('mensajeria') ?>">
-                <i class="fas fa-comments"></i>
-                <p>Mensajería</p>
-                <span id="badge-mensajes-sidebar" class="badge bg-danger ms-1" style="display: none; font-size: 0.7em;">0</span>
               </a>
             </li>
 

@@ -14,35 +14,35 @@
                         </div>
                     </div>
                     <div class="card-body">
-                        <!-- Notificaciones con SweetAlert2 -->
+                        <!-- Notificaciones -->
                         <?php if (session()->getFlashdata('success')): ?>
-                            <script>
-                                document.addEventListener('DOMContentLoaded', function () {
-                                    Swal.fire({
-                                        icon: 'success',
-                                        title: '¡Éxito!',
-                                        text: '<?= addslashes(session()->getFlashdata('success')) ?>',
-                                        confirmButtonColor: '#28a745',
-                                        timer: 4000,
-                                        timerProgressBar: true
-                                    });
-                                });
-                            </script>
+                            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                                <i class="fas fa-check-circle mr-2"></i>
+                                <?= htmlspecialchars(session()->getFlashdata('success')) ?>
+                                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
                         <?php endif; ?>
 
                         <?php if (session()->getFlashdata('error')): ?>
-                            <script>
-                                document.addEventListener('DOMContentLoaded', function () {
-                                    Swal.fire({
-                                        icon: 'error',
-                                        title: 'Error',
-                                        text: '<?= addslashes(session()->getFlashdata('error')) ?>',
-                                        confirmButtonColor: '#dc3545',
-                                        confirmButtonText: 'Entendido',
-                                        allowOutsideClick: false
-                                    });
-                                });
-                            </script>
+                            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                                <i class="fas fa-exclamation-circle mr-2"></i>
+                                <?= nl2br(htmlspecialchars(session()->getFlashdata('error'))) ?>
+                                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                        <?php endif; ?>
+
+                        <?php if (session()->getFlashdata('info')): ?>
+                            <div class="alert alert-info alert-dismissible fade show" role="alert">
+                                <i class="fas fa-info-circle mr-2"></i>
+                                <?= htmlspecialchars(session()->getFlashdata('info')) ?>
+                                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
                         <?php endif; ?>
 
                         <!-- Tarjeta con información del usuario actual que realizará la entrega -->
@@ -138,7 +138,7 @@
                                 <div class="col-md-12">
                                     <div class="form-group">
                                         <label for="observaciones" class="form-label">
-                                            <i class="fas fa-sticky-note mr-2 text-info"></i>Formato de Entrega *
+                                            <i class="fas fa-sticky-note mr-2 text-info"></i>Formato de Entrega
                                         </label>
                                         <textarea class="form-control" id="observaciones" name="observaciones" rows="3"
                                             placeholder="Ej: USB físico, link digital, cuadros 30x40, etc."><?= old('observaciones') ?></textarea>
@@ -157,7 +157,7 @@
                                         </label>
                                         <div class="custom-file">
                                             <input type="file" class="custom-file-input" id="comprobante_entrega"
-                                                name="comprobante_entrega" accept=".pdf" required>
+                                                name="comprobante_entrega" accept=".pdf">
                                             <label class="custom-file-label" for="comprobante_entrega">Seleccionar
                                                 archivo</label>
                                         </div>
@@ -178,7 +178,7 @@
                             </div>
 
                             <div class="form-group mt-4">
-                                <button type="submit" id="btn-registrar" class="btn btn-primary btn-lg">
+                                <button type="button" id="btn-registrar" class="btn btn-primary btn-lg">
                                     <i class="fas fa-truck mr-2"></i>Registrar Entrega
                                 </button>
                                 <a href="<?= base_url('entregas') ?>" class="btn btn-outline-secondary btn-lg ml-2">
@@ -287,77 +287,85 @@
         }
 
 
-        // Validación del formulario con jQuery Validate
-        $('.form-validate').validate({
-            rules: {
-                idcontrato: {
-                    required: true
-                },
-                idserviciocontratado: {
-                    required: true
-                },
-                observaciones: {
-                    required: false
-                },
-                comprobante_entrega: {
-                    required: true
-                }
-            },
-            messages: {
-                idcontrato: {
-                    required: "Debe seleccionar un contrato pagado para registrar la entrega"
-                },
-                idserviciocontratado: {
-                    required: "Por favor seleccione un servicio"
-                },
-                observaciones: {
-                    required: "Por favor describa el formato de entrega"
-                },
-                comprobante_entrega: {
-                    required: "El comprobante de entrega es obligatorio"
-                }
-            },
-            errorElement: 'span',
-            errorPlacement: function (error, element) {
-                error.addClass('invalid-feedback');
-                element.closest('.form-group').append(error);
-            },
-            highlight: function (element) {
-                $(element).addClass('is-invalid');
-            },
-            unhighlight: function (element) {
-                $(element).removeClass('is-invalid');
-            },
-            submitHandler: function (form) {
-                // Prevenir múltiples envíos
-                var $submitBtn = $('#btn-registrar');
-                if ($submitBtn.hasClass('btn-processing')) {
-                    return false;
-                }
-
-                // Verificar si hay comprobante antes de enviar
-                var comprobante = $('#comprobante_entrega').val();
-                if (!comprobante || comprobante === '') {
-                    // Mostrar SweetAlert de advertencia
-                    Swal.fire({
-                        title: 'Comprobante Obligatorio',
-                        text: 'Debe seleccionar un archivo PDF como comprobante de entrega.',
-                        icon: 'warning',
-                        confirmButtonText: 'Entendido',
-                        confirmButtonColor: '#dc3545',
-                        allowOutsideClick: false
-                    });
-
-                    return false; // Prevenir envío del formulario
-                }
-
-                $submitBtn.addClass('btn-processing').html('<i class="fas fa-spinner fa-spin mr-2"></i>Procesando...');
-
-                // Enviar formulario
-                form.submit();
-
+        // Validar y enviar formulario al hacer click en el botón
+        $('#btn-registrar').on('click', function(e) {
+            e.preventDefault();
+            
+            var $btn = $(this);
+            if ($btn.hasClass('btn-processing')) {
                 return false;
             }
+
+            // Validar campos básicos primero
+            var idcontrato = $('#idcontrato').val();
+            var idservicio = $('#idserviciocontratado').val();
+            var comprobanteInput = document.getElementById('comprobante_entrega');
+
+            // Validar contrato
+            if (!idcontrato || idcontrato === '') {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Contrato Requerido',
+                    text: 'Debe seleccionar un contrato pagado para registrar la entrega',
+                    confirmButtonText: 'Entendido',
+                    confirmButtonColor: '#3085d6'
+                });
+                return false;
+            }
+
+            // Validar servicio
+            if (!idservicio || idservicio === '') {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Servicio Requerido',
+                    text: 'Por favor seleccione un servicio',
+                    confirmButtonText: 'Entendido',
+                    confirmButtonColor: '#3085d6'
+                });
+                return false;
+            }
+
+            // Validar comprobante - MUY IMPORTANTE
+            if (!comprobanteInput.files || comprobanteInput.files.length === 0) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Comprobante Obligatorio',
+                    html: '<p style="font-size: 16px;">Debe seleccionar un archivo PDF como comprobante de entrega.</p><p style="color: #666; margin-top: 10px;">El comprobante de entrega es un campo obligatorio.</p>',
+                    confirmButtonText: 'Entendido',
+                    confirmButtonColor: '#dc3545',
+                    allowOutsideClick: false
+                });
+                return false;
+            }
+
+            // Validar que sea PDF
+            var file = comprobanteInput.files[0];
+            if (file.type !== 'application/pdf') {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Formato Incorrecto',
+                    html: '<p style="font-size: 16px;">El archivo debe ser un PDF.</p><p style="color: #666; margin-top: 10px;">Por favor seleccione un archivo con extensión .pdf</p>',
+                    confirmButtonText: 'Entendido',
+                    confirmButtonColor: '#dc3545'
+                });
+                return false;
+            }
+
+            // Validar tamaño (5MB)
+            if (file.size > 5242880) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Archivo Demasiado Grande',
+                    html: '<p style="font-size: 16px;">El archivo excede el tamaño máximo permitido.</p><p style="color: #666; margin-top: 10px;">El tamaño máximo es de 5MB. Por favor seleccione un archivo más pequeño.</p>',
+                    confirmButtonText: 'Entendido',
+                    confirmButtonColor: '#dc3545'
+                });
+                return false;
+            }
+
+            // Si todo está bien, enviar formulario
+            $btn.addClass('btn-processing').html('<i class="fas fa-spinner fa-spin mr-2"></i>Procesando...');
+            $('.form-validate').submit();
         });
 
     });

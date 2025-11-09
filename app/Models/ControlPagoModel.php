@@ -59,6 +59,57 @@ class ControlPagoModel extends Model
         return $builder->get()->getResultArray();
     }
 
+    // NUEVO MÉTODO: Obtener solo los últimos pagos por contrato - CORREGIDO
+    public function obtenerUltimosPagosPorContrato($filtro_contrato = null, $filtro_estado = null, $filtro_fecha = null)
+    {
+        // Primero obtener los IDs de los últimos pagos por contrato
+        $subquery = $this->db->table('controlpagos p2')
+            ->select('MAX(p2.idpagos) as ultimo_pago_id')
+            ->groupBy('p2.idcontrato')
+            ->get();
+        
+        $ultimosIds = array_column($subquery->getResultArray(), 'ultimo_pago_id');
+
+        if (empty($ultimosIds)) {
+            return [];
+        }
+
+        $builder = $this->db->table('controlpagos p');
+        $builder->select('p.*, 
+                         tp.tipopago, 
+                         u.nombreusuario,
+                         CONCAT(per.nombres, " ", per.apellidos) as nombre_completo,
+                         per.nombres, per.apellidos, 
+                         emp.razonsocial');
+        $builder->join('tipospago tp', 'tp.idtipopago = p.idtipopago', 'left');
+        $builder->join('usuarios u', 'u.idusuario = p.idusuario', 'left');
+        $builder->join('contratos c', 'c.idcontrato = p.idcontrato', 'left');
+        $builder->join('clientes cl', 'cl.idcliente = c.idcliente', 'left');
+        $builder->join('personas per', 'per.idpersona = cl.idpersona', 'left');
+        $builder->join('empresas emp', 'emp.idempresa = cl.idempresa', 'left');
+        $builder->whereIn('p.idpagos', $ultimosIds);
+        $builder->orderBy('p.fechahora', 'DESC');
+
+        // Aplicar filtros
+        if (!empty($filtro_contrato)) {
+            $builder->where('p.idcontrato', $filtro_contrato);
+        }
+
+        if (!empty($filtro_estado)) {
+            if ($filtro_estado == 'completo') {
+                $builder->where('p.deuda', 0);
+            } elseif ($filtro_estado == 'pendiente') {
+                $builder->where('p.deuda >', 0);
+            }
+        }
+
+        if (!empty($filtro_fecha)) {
+            $builder->like('p.fechahora', $filtro_fecha, 'after');
+        }
+
+        return $builder->get()->getResultArray();
+    }
+
     public function obtenerPago($id)
     {
         $builder = $this->db->table('controlpagos p');
