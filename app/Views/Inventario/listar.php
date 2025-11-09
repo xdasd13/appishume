@@ -347,11 +347,6 @@
 </div>
 
 <?= $footer ?>
-
-<!-- Estilos CSS Mejorados -->
-
-
-<!-- JavaScript Mejorado -->
 <script>
 // CSRF helper
 function getCookie(name) {

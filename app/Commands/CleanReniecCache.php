@@ -25,7 +25,6 @@ class CleanReniecCache extends BaseCommand
         '--stats'   => 'Mostrar estadísticas detalladas del cache'
     ];
 
-
     public function run(array $params)
     {
         CLI::write('=== Limpieza de Cache RENIEC ===', 'yellow');
