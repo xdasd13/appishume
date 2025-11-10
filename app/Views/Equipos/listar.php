@@ -209,14 +209,30 @@
         </div>
     </div>
 
+    <!-- Mensaje informativo para trabajadores -->
+    <?php if (isset($es_trabajador) && $es_trabajador): ?>
+        <div class="row mb-3">
+            <div class="col-12">
+                <div class="alert alert-info d-flex align-items-center" role="alert">
+                    <i class="fas fa-info-circle me-3 fs-4"></i>
+                    <div>
+                        <strong>Vista de Trabajador:</strong> Este tablero muestra únicamente los servicios asignados a ti. 
+                        Solo puedes gestionar tus propias asignaciones.
+                    </div>
+                </div>
+            </div>
+        </div>
+    <?php endif; ?>
+
     <!-- Tablero Kanban-->
     <div class="row">
         <div class="col-12">
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h4 class="mb-0 text-dark">
-                    <i class="fas fa-columns me-2 text-primary"></i>Tablero Kanban
+                    <i class="fas fa-columns me-2 text-primary"></i>
+                    <?= isset($es_trabajador) && $es_trabajador ? 'Mi Tablero de Trabajo' : 'Tablero Kanban' ?>
                 </h4>
-                <?php if (isset($servicio)): ?>
+                <?php if (isset($servicio) && (!isset($es_trabajador) || !$es_trabajador)): ?>
                     <a href="<?= base_url('equipos/asignar/' . $servicio['idserviciocontratado']) ?>"
                         class="btn btn-primary">
                         <i class="fas fa-plus me-2"></i>Asignar Técnico
@@ -547,6 +563,9 @@ function renderClienteCard(array $clienteData, string $estado): string
 ?>
 <script>
     const BASE_URL = '<?= base_url() ?>';
+    const ES_TRABAJADOR = <?= isset($es_trabajador) && $es_trabajador ? 'true' : 'false' ?>;
+    const USUARIO_ACTUAL_ID = <?= isset($usuario_actual_id) ? $usuario_actual_id : 'null' ?>;
+    
     <?php if (session()->getFlashdata('success')): ?>
         window.FLASH_SUCCESS = '<?= addslashes(session()->getFlashdata('success')) ?>';
     <?php endif; ?>
