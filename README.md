@@ -245,7 +245,7 @@ Este proyecto está bajo la Licencia MIT. Ver el archivo `LICENSE` para más det
 
 ## 👨‍💻 Autor
 
-**Fabian Alonso**
+**Equipo Ishume**
 - GitHub: [@xdasd13](https://github.com/xdasd13)
 - Proyecto: [ISHUME](https://github.com/xdasd13/appishume)
 
