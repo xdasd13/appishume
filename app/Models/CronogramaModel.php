@@ -220,6 +220,7 @@ class CronogramaModel extends Model
                 LEFT JOIN equipos eq ON sc.idserviciocontratado = eq.idserviciocontratado
                 WHERE sc.fechahoraservicio >= NOW()
                 AND sc.fechahoraservicio <= DATE_ADD(NOW(), INTERVAL 14 DAY)
+                AND COALESCE(eq.estadoservicio, 'Pendiente') != 'Completado'
                 ORDER BY sc.fechahoraservicio ASC
                 LIMIT $limite
             ";
