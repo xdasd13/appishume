@@ -111,7 +111,7 @@ const UsuariosConfig = {
             CANCELAR: 'Cancelar'
         },
         PROCESANDO: {
-            TITULO: 'Creando..',
+            TITULO: 'Creando...',
             TEXTO: 'Guardando información del usuario...'
         },
         EXITO: {
