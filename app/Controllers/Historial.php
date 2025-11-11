@@ -104,15 +104,8 @@ class Historial extends BaseController
                 'hora' => date('H:i:s', strtotime($item->fecha)),
                 'dia' => $this->obtenerNombreDia($item->fecha),
                 'usuario' => $item->usuario_nombre,
-                'accion' => $this->obtenerTextoAccion($item),
-                'detalles' => [
-                    'equipo' => $item->equipo_descripcion,
-                    'servicio' => $item->servicio,
-                    'categoria' => $item->categoria,
-                    'cliente' => $item->cliente_nombre,
-                    'estado_anterior' => $item->estado_anterior,
-                    'estado_nuevo' => $item->estado_nuevo
-                ]
+                'accion_tipo' => $item->accion,
+                'accion' => $this->generarTextoAccionHTML($item)
             ];
         }, $historial);
     }
@@ -125,21 +118,54 @@ class Historial extends BaseController
         return $dias[$numeroDia];
     }
 
-    // Obtener texto descriptivo de la acción realizada
-    private function obtenerTextoAccion(object $item): string
+    // Generar HTML completo de la acción con estilos
+    private function generarTextoAccionHTML(object $item): string
     {
+        $html = '';
+        
         switch ($item->accion) {
             case 'cambiar_estado':
-                return "Cambió estado de '{$item->estado_anterior}' a '{$item->estado_nuevo}'";
+                $badgeAnterior = $this->obtenerBadgeEstado($item->estado_anterior);
+                $badgeNuevo = $this->obtenerBadgeEstado($item->estado_nuevo);
+                
+                $html .= '<p class="mb-2"><strong>Cambió estado:</strong> ' . esc($item->equipo_descripcion) . '</p>';
+                $html .= '<div class="mb-2">';
+                $html .= $badgeAnterior . ' <i class="fas fa-arrow-right mx-2"></i> ' . $badgeNuevo;
+                $html .= '</div>';
+                $html .= '<div>';
+                $html .= '<span class="detail-item"><i class="fas fa-briefcase"></i>' . esc($item->servicio) . '</span>';
+                $html .= '<span class="detail-item"><i class="fas fa-user"></i>' . esc($item->cliente_nombre) . '</span>';
+                $html .= '</div>';
+                break;
             
             case 'crear':
-                return "Creó nuevo equipo";
+                $html .= '<p class="mb-2"><strong>Creó nuevo equipo:</strong> ' . esc($item->equipo_descripcion) . '</p>';
+                $html .= '<span class="detail-item"><i class="fas fa-briefcase"></i>' . esc($item->servicio) . '</span>';
+                break;
             
             case 'reasignar':
-                return "Reasignó equipo";
+                $html .= '<p class="mb-2"><strong>Reasignó equipo:</strong> ' . esc($item->equipo_descripcion) . '</p>';
+                $html .= '<span class="detail-item"><i class="fas fa-briefcase"></i>' . esc($item->servicio) . '</span>';
+                break;
             
             default:
-                return ucfirst($item->accion);
+                $html .= '<p>' . ucfirst($item->accion) . '</p>';
         }
+        
+        return $html;
+    }
+    
+    // Obtener badge HTML según el estado
+    private function obtenerBadgeEstado(string $estado): string
+    {
+        $clases = [
+            'Pendiente' => 'badge-pendiente',
+            'En Proceso' => 'badge-proceso',
+            'Completado' => 'badge-completado',
+            'Programado' => 'badge-programado'
+        ];
+        
+        $clase = $clases[$estado] ?? 'badge-pendiente';
+        return '<span class="estado-badge ' . $clase . '">' . esc($estado) . '</span>';
     }
 }
