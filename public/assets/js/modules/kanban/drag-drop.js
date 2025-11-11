@@ -115,7 +115,7 @@ const KanbanDragDrop = {
             text: mensaje,
             icon: 'warning',
             confirmButtonText: 'Entendido',
-            confirmButtonColor: '#6c757d'
+            confirmButtonColor: '#000000ff'
         });
     },
 
@@ -128,7 +128,7 @@ const KanbanDragDrop = {
             confirmButtonText: 'Sí, cambiar',
             cancelButtonText: 'Cancelar',
             confirmButtonColor: '#0d6efd',
-            cancelButtonColor: '#6c757d'
+            cancelButtonColor: '#000000ff'
         });
 
         return result.isConfirmed;
