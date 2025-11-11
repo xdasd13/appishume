@@ -16,19 +16,19 @@
                 <!-- Estadísticas rápidas -->
                 <?php if (isset($estadisticas)): ?>
                     <div class="d-flex gap-2">
-                        <div class="badge bg-secondary fs-6 px-3 py-2">
+                        <div class="badge fs-6 px-3 py-2" style="background-color: #7c3aed; color: white; font-family: 'Poppins', sans-serif; font-weight: 600;">
                             <i class="fas fa-calendar-alt me-1"></i>
                             Programados: <?= $estadisticas['Programado'] ?? 0 ?>
                         </div>
-                        <div class="badge bg-warning fs-6 px-3 py-2">
+                        <div class="badge fs-6 px-3 py-2" style="background-color: #f59e0b; color: white; font-family: 'Poppins', sans-serif; font-weight: 600;">
                             <i class="fas fa-clock me-1"></i>
                             Pendientes: <?= $estadisticas['Pendiente'] ?? 0 ?>
                         </div>
-                        <div class="badge bg-info fs-6 px-3 py-2">
+                        <div class="badge fs-6 px-3 py-2" style="background-color: #3b82f6; color: white; font-family: 'Poppins', sans-serif; font-weight: 600;">
                             <i class="fas fa-spinner me-1"></i>
                             En Proceso: <?= $estadisticas['En Proceso'] ?? 0 ?>
                         </div>
-                        <div class="badge bg-success fs-6 px-3 py-2">
+                        <div class="badge fs-6 px-3 py-2" style="background-color: #10b981; color: white; font-family: 'Poppins', sans-serif; font-weight: 600;">
                             <i class="fas fa-check-circle me-1"></i>
                             Completados: <?= $estadisticas['Completado'] ?? 0 ?>
                         </div>
@@ -257,10 +257,10 @@
                         <?php
                         // Configuración de columnas KISS - 4 estados
                         $columnas = [
-                            'Programado' => ['color' => 'secondary', 'icono' => 'fas fa-calendar-alt'],
-                            'Pendiente' => ['color' => 'warning', 'icono' => 'fas fa-clock'],
-                            'En Proceso' => ['color' => 'info', 'icono' => 'fas fa-spinner'],
-                            'Completado' => ['color' => 'success', 'icono' => 'fas fa-check-circle']
+                            'Programado' => ['color' => '#7c3aed', 'icono' => 'fas fa-calendar-alt'],
+                            'Pendiente' => ['color' => '#f59e0b', 'icono' => 'fas fa-clock'],
+                            'En Proceso' => ['color' => '#3b82f6', 'icono' => 'fas fa-spinner'],
+                            'Completado' => ['color' => '#10b981', 'icono' => 'fas fa-check-circle']
                         ];
                         ?>
 
@@ -268,10 +268,10 @@
                             <div class="col-lg-3 col-md-6">
                                 <div class="kanban-column">
                                     <!-- Header de columna -->
-                                    <div class="kanban-column-header bg-<?= $config['color'] ?>">
-                                        <h5 class="text-center text-white mb-0">
+                                    <div class="kanban-column-header" style="background-color: <?= $config['color'] ?>; color: white;">
+                                        <h5 class="text-center text-white mb-0" style="font-family: 'Poppins', sans-serif; font-weight: 700; letter-spacing: 0.3px;">
                                             <i class="<?= $config['icono'] ?> me-2"></i><?= $estado ?>
-                                            <span class="badge bg-light text-dark ms-2">
+                                            <span class="badge bg-white text-dark ms-2" style="font-family: 'Poppins', sans-serif; font-weight: 600;">
                                                 <?= count($equiposKanban[$estado]) ?>
                                             </span>
                                         </h5>
@@ -361,10 +361,10 @@ function renderEquipoCard(array $equipo, string $estado): string
         data-cliente="<?= esc(strtolower($equipo['cliente_nombre'])) ?>"
         data-servicio="<?= esc(strtolower($equipo['servicio'])) ?>"
         data-tecnico="<?= esc(strtolower($equipo['nombre_completo'])) ?>" data-usuario-id="<?= $equipo['idusuario'] ?>"
-        data-fecha="<?= $equipo['fechahoraservicio'] ?>" draggable="true">
+        data-fecha="<?= $equipo['fechahoraservicio'] ?>" draggable="true" style="font-family: 'Poppins', sans-serif;">
         <!-- Header de tarjeta -->
         <div class="card-header-kanban">
-            <span class="badge bg-<?= $colorEstado ?> text-white">
+            <span class="badge text-white" style="background-color: <?= $colorEstado ?>; font-family: 'Poppins', sans-serif; font-weight: 600;">
                 <i class="<?= $iconoEstado ?> me-1"></i><?= $estado ?>
             </span>
             <span class="kanban-card-id text-muted">#<?= $equipo['idequipo'] ?></span>
@@ -373,13 +373,13 @@ function renderEquipoCard(array $equipo, string $estado): string
         <!-- Cuerpo de tarjeta -->
         <div class="card-body-kanban">
             <div class="mb-2">
-                <strong class="text-primary d-block" style="font-size: 1.1rem;">
+                <strong class="text-primary d-block" style="font-size: 1.1rem; font-family: 'Poppins', sans-serif; font-weight: 700;">
                     <i class="fas fa-user-circle me-1"></i><?= esc($equipo['cliente_nombre']) ?>
                 </strong>
-                <div class="text-success fw-bold mb-1" style="font-size: 0.95rem;">
+                <div class="text-success fw-bold mb-1" style="font-size: 0.95rem; font-family: 'Poppins', sans-serif; font-weight: 600;">
                     <i class="fas fa-concierge-bell me-1"></i><?= esc($equipo['servicio']) ?>
                 </div>
-                <small class="text-muted">
+                <small class="text-muted" style="font-family: 'Poppins', sans-serif;">
                     <i class="fas fa-user me-1"></i><?= esc($nombreCorto) ?>
                     <span class="ms-2">
                         <i class="fas fa-briefcase me-1"></i><?= esc($equipo['cargo']) ?>
@@ -388,23 +388,23 @@ function renderEquipoCard(array $equipo, string $estado): string
             </div>
 
             <div class="description-container mb-3">
-                <p class="description-text mb-0" title="<?= esc($equipo['descripcion']) ?>">
+                <p class="description-text mb-0" title="<?= esc($equipo['descripcion']) ?>" style="font-family: 'Poppins', sans-serif;">
                     <?= esc($descripcionCorta) ?>
                 </p>
                 <?php if (strlen($equipo['descripcion']) > 80): ?>
-                    <button class="btn btn-link btn-sm p-0 text-decoration-none" onclick="toggleDescription(this)">
+                    <button class="btn btn-link btn-sm p-0 text-decoration-none" onclick="toggleDescription(this)" style="font-family: 'Poppins', sans-serif;">
                         <small>Ver más</small>
                     </button>
                 <?php endif; ?>
             </div>
 
             <div class="mb-2">
-                <div class="text-muted small mb-1">
+                <div class="text-muted small mb-1" style="font-family: 'Poppins', sans-serif;">
                     <i class="fas fa-calendar me-1"></i>
                     <strong>Fecha:</strong> <?= date('d/m/Y H:i', strtotime($equipo['fechahoraservicio'])) ?>
                 </div>
                 <?php if (!empty($equipo['cliente_telefono'])): ?>
-                    <div class="text-muted small mb-1">
+                    <div class="text-muted small mb-1" style="font-family: 'Poppins', sans-serif;">
                         <i class="fas fa-phone me-1"></i>
                         <strong>Tel:</strong> <?= esc($equipo['cliente_telefono']) ?>
                     </div>
@@ -439,12 +439,12 @@ function renderEquipoCard(array $equipo, string $estado): string
  */
 function renderClienteCard(array $clienteData, string $estado): string
 {
-    // Mapeo local de colores e iconos
+    // Mapeo local de colores e iconos - Paleta Vibrante
     $colores = [
-        'Programado' => 'secondary',
-        'Pendiente' => 'warning',
-        'En Proceso' => 'info',
-        'Completado' => 'success'
+        'Programado' => '#7c3aed',
+        'Pendiente' => '#f59e0b',
+        'En Proceso' => '#3b82f6',
+        'Completado' => '#10b981'
     ];
 
     $iconos = [
@@ -454,22 +454,22 @@ function renderClienteCard(array $clienteData, string $estado): string
         'Completado' => 'fas fa-check-circle'
     ];
 
-    $colorEstado = $colores[$estado] ?? 'secondary';
+    $colorEstado = $colores[$estado] ?? '#6b7280';
     $iconoEstado = $iconos[$estado] ?? 'fas fa-question-circle';
 
     ob_start();
     ?>
     <div class="kanban-card kanban-card-cliente" data-cliente-id="<?= $clienteData['idcliente'] ?>"
-        data-status="<?= $estado ?>">
+        data-status="<?= $estado ?>" style="font-family: 'Poppins', sans-serif;">
         <!-- Header de tarjeta de cliente -->
         <div class="card-header-kanban"
-            style="background: linear-gradient(135deg, #FF9900, #F57C00); color: white; padding: 12px;">
+            style="background: linear-gradient(135deg, #ff6b35, #ff4d00); color: white; padding: 12px; font-family: 'Poppins', sans-serif;">
             <div style="display: flex; justify-content: space-between; align-items: center;">
                 <div>
-                    <strong style="font-size: 1.1rem; display: block;">
+                    <strong style="font-size: 1.1rem; display: block; font-family: 'Poppins', sans-serif; font-weight: 700;">
                         <i class="fas fa-user-circle me-2"></i><?= esc($clienteData['cliente_nombre']) ?>
                     </strong>
-                    <small style="opacity: 0.9;">
+                    <small style="opacity: 0.9; font-family: 'Poppins', sans-serif;">
                         <i class="fas fa-phone me-1"></i><?= esc($clienteData['cliente_telefono'] ?? 'Sin teléfono') ?>
                     </small>
                 </div>
