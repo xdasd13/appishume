@@ -3,7 +3,7 @@
 
 <head>
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <title>Ishume - Sistema de Gestión de Proyectos</title>
+  <title>Ishume - Dashboard</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
   <meta content="width=device-width, initial-scale=1.0, shrink-to-fit=no" name="viewport" />
   <meta name="csrf-token" content="<?= csrf_hash() ?>" />
@@ -410,7 +410,7 @@
               <li class="nav-item topbar-user dropdown hidden-caret">
                 <a class="dropdown-toggle profile-pic" data-bs-toggle="dropdown" href="#" aria-expanded="false">
                   <div class="avatar-sm">
-                    <img src="<?= base_url() . 'assets/img/profile.jpg' ?>" alt="Avatar"
+                    <img src="<?= base_url() . 'assets/img/user.png' ?>" alt="Avatar"
                       class="avatar-img rounded-circle" />
                   </div>
                   <span class="profile-username">
