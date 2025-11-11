@@ -35,167 +35,223 @@
             </div>
         </div>
     </div>
-    <!-- Tabla de Historial -->
+    <!-- Historial de Actividades -->
     <div class="row">
         <div class="col-12">
-            <div class="card shadow-sm">
-                <div class="card-body p-0">
-                    <!-- Loading -->
-                    <div id="loading" class="text-center py-5" style="display: none;">
-                        <div class="spinner-border text-warning" role="status">
-                            <span class="visually-hidden">Cargando...</span>
+            <!-- Loading -->
+            <div id="loading" class="text-center py-5" style="display: none;">
+                <div class="spinner-border text-warning" role="status"></div>
+                <p class="mt-3 text-muted">Buscando actividades...</p>
+            </div>
+
+            <!-- Actividades Container -->
+            <div id="tabla-container">
+                <?php if (empty($historial)): ?>
+                    <div class="card text-center py-5">
+                        <div class="card-body">
+                            <i class="fas fa-history fa-3x text-muted mb-3"></i>
+                            <h4 class="text-muted">No hay actividades registradas</h4>
+                            <p class="text-muted">Las actividades del sistema aparecerán aquí</p>
                         </div>
-                        <p class="mt-3 text-muted">Buscando actividades...</p>
                     </div>
-
-                    <!-- Tabla -->
-                    <div id="tabla-container" class="table-responsive">
-                        <table class="table table-hover mb-0">
-                            <thead class="table-light">
-                                <tr>
-                                    <th width="10%">Fecha</th>
-                                    <th width="8%">Hora</th>
-                                    <th width="10%">Día</th>
-                                    <th width="15%">Usuario</th>
-                                    <th width="57%">Cambio Realizado</th>
-                                </tr>
-                            </thead>
-                            <tbody id="tabla-body">
-                                <?php if (empty($historial)): ?>
-                                    <tr>
-                                        <td colspan="5" class="text-center py-5">
-                                            <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
-                                            <p class="text-muted mb-0">No se encontraron actividades</p>
-                                        </td>
-                                    </tr>
-                                <?php else: ?>
-                                    <?php foreach ($historial as $item): ?>
-                                        <tr>
-                                            <!-- Fecha -->
-                                            <td class="align-middle">
-                                                <span class="text-dark fw-medium">
-                                                    <?= date('d/m/Y', strtotime($item->fecha)) ?>
-                                                </span>
-                                            </td>
-
-                                            <!-- Hora -->
-                                            <td class="align-middle">
-                                                <span class="badge bg-secondary">
-                                                    <?= date('H:i:s', strtotime($item->fecha)) ?>
-                                                </span>
-                                            </td>
-
-                                            <!-- Día -->
-                                            <td class="align-middle">
-                                                <span class="text-muted">
-                                                    <?= obtenerNombreDia($item->fecha) ?>
-                                                </span>
-                                            </td>
-
-                                            <!-- Usuario -->
-                                            <td class="align-middle">
-                                                <div class="d-flex align-items-center">
-                                                    <span class="fw-medium text-dark">
-                                                        <?= esc($item->usuario_nombre) ?>
-                                                    </span>
-                                                </div>
-                                            </td>
-
-                                            <!-- Cambio Realizado -->
-                                            <td class="align-middle">
-                                                <?= generarTextoAccion($item) ?>
-                                            </td>
-                                        </tr>
-                                    <?php endforeach; ?>
-                                <?php endif; ?>
-                            </tbody>
-                        </table>
+                <?php else: ?>
+                    <div id="tabla-body" class="activity-grid">
+                        <?php foreach ($historial as $index => $item): ?>
+                            <div class="activity-card-compact">
+                                <div class="card-header-compact">
+                                    <div class="icon-compact <?= obtenerClaseIcono($item->accion) ?>">
+                                        <i class="<?= obtenerIcono($item->accion) ?>"></i>
+                                    </div>
+                                    <div class="user-name"><?= esc($item->usuario_nombre) ?></div>
+                                </div>
+                                <div class="card-meta-compact">
+                                    <span><i class="fas fa-calendar"></i> <?= date('d/m/Y', strtotime($item->fecha)) ?></span>
+                                    <span><i class="fas fa-clock"></i> <?= date('H:i', strtotime($item->fecha)) ?></span>
+                                </div>
+                                <div class="card-body-compact">
+                                    <?= generarTextoAccionSimple($item) ?>
+                                </div>
+                            </div>
+                        <?php endforeach; ?>
                     </div>
-                </div>
+                <?php endif; ?>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Estilos CSS -->
+<!-- Estilos CSS Grid Compacto -->
 <style>
-    /* Tabla responsiva */
-    .table-responsive {
-        max-height: 600px;
-        overflow-y: auto;
+/* Grid de 3 columnas responsivo */
+.activity-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+}
+
+/* Card compacta */
+.activity-card-compact {
+    background: white;
+    border-radius: 8px;
+    padding: 16px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+    transition: all 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.activity-card-compact:hover {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+    transform: translateY(-2px);
+}
+
+/* Header compacto */
+.card-header-compact {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid #f8f9fa;
+}
+
+.icon-compact {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    color: white;
+    flex-shrink: 0;
+}
+
+.icon-cambiar {
+    background: #FF9900;
+}
+
+.icon-crear {
+    background: #2ECC71;
+}
+
+.icon-reasignar {
+    background: #9B59B6;
+}
+
+.icon-default {
+    background: #3498DB;
+}
+
+.user-name {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #2c3e50;
+    line-height: 1.3;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+}
+
+/* Meta compacta */
+.card-meta-compact {
+    display: flex;
+    gap: 12px;
+    font-size: 0.8rem;
+    color: #7f8c8d;
+    flex-wrap: wrap;
+}
+
+.card-meta-compact span {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.card-meta-compact i {
+    color: #FF9900;
+    font-size: 0.75rem;
+}
+
+/* Body compacto */
+.card-body-compact {
+    color: #34495e;
+    font-size: 0.875rem;
+    line-height: 1.5;
+}
+
+.card-body-compact p {
+    margin: 0 0 8px 0;
+}
+
+.card-body-compact strong {
+    color: #2c3e50;
+    font-size: 0.85rem;
+}
+
+/* Badges de estado */
+.estado-badge {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin: 0 4px;
+}
+
+.badge-pendiente {
+    background: #FFF3CD;
+    color: #856404;
+}
+
+.badge-proceso {
+    background: #D1ECF1;
+    color: #0C5460;
+}
+
+.badge-completado {
+    background: #D4EDDA;
+    color: #155724;
+}
+
+.badge-programado {
+    background: #FFE5D9;
+    color: #D84315;
+}
+
+/* Detalles */
+.detail-item {
+    display: inline-block;
+    margin-right: 10px;
+    color: #7f8c8d;
+    font-size: 0.8rem;
+}
+
+.detail-item i {
+    color: #FF9900;
+    margin-right: 4px;
+    font-size: 0.75rem;
+}
+
+/* Responsive */
+@media (max-width: 1200px) {
+    .activity-grid {
+        grid-template-columns: repeat(2, 1fr);
     }
+}
 
-
-    /* Badges de estado */
-    .badge-estado {
-        padding: 4px 10px;
-        border-radius: 12px;
-        font-size: 11px;
-        font-weight: 600;
-        text-transform: uppercase;
+@media (max-width: 768px) {
+    .activity-grid {
+        grid-template-columns: 1fr;
     }
-
-    .badge-pendiente {
-        background-color: #fff3cd;
-        color: #856404;
+    
+    .card-meta-compact {
+        flex-direction: column;
+        gap: 6px;
     }
-
-    .badge-proceso {
-        background-color: #cfe2ff;
-        color: #084298;
-    }
-
-    .badge-completado {
-        background-color: #d1e7dd;
-        color: #0f5132;
-    }
-
-    /* Scrollbar personalizado */
-    .table-responsive::-webkit-scrollbar {
-        width: 8px;
-    }
-
-    .table-responsive::-webkit-scrollbar-track {
-        background: #f1f1f1;
-        border-radius: 4px;
-    }
-
-    .table-responsive::-webkit-scrollbar-thumb {
-        background: #ffc107;
-        border-radius: 4px;
-    }
-
-    .table-responsive::-webkit-scrollbar-thumb:hover {
-        background: #ff9800;
-    }
-
-    /* Responsive */
-    @media (max-width: 768px) {
-        .table thead {
-            display: none;
-        }
-
-        .table tbody tr {
-            display: block;
-            margin-bottom: 15px;
-            border: 1px solid #dee2e6;
-            border-radius: 8px;
-        }
-
-        .table tbody td {
-            display: block;
-            text-align: right;
-            padding: 10px 15px;
-            border: none;
-        }
-
-        .table tbody td:before {
-            content: attr(data-label);
-            float: left;
-            font-weight: bold;
-            color: #6c757d;
-        }
-    }
+}
 </style>
 
 <!-- JavaScript -->
@@ -208,21 +264,24 @@
         const tablaContainer = document.getElementById('tabla-container');
         const filtroUsuario = document.getElementById('filtroUsuario').value;
 
+        console.log('Filtro seleccionado:', filtroUsuario); // Debug
+
         // Mostrar loading
         loadingElement.style.display = 'block';
         tablaContainer.style.opacity = '0.5';
+
+        // Preparar datos del formulario
+        const formData = new FormData();
+        formData.append('usuario', filtroUsuario);
+        formData.append('<?= csrf_token() ?>', '<?= csrf_hash() ?>');
 
         // Hacer petición AJAX
         fetch('<?= base_url('historial/buscar') ?>', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
                 'X-Requested-With': 'XMLHttpRequest'
             },
-            body: JSON.stringify({
-                usuario: filtroUsuario,
-                '<?= csrf_token() ?>': '<?= csrf_hash() ?>'
-            })
+            body: formData
         })
             .then(response => response.json())
             .then(data => {
@@ -244,49 +303,73 @@
     }
 
     /**
-     * Actualizar contenido de la tabla
+     * Actualizar contenido con cards compactas en grid
      */
     function actualizarTabla(historial) {
         const tablaBody = document.getElementById('tabla-body');
 
         if (historial.length === 0) {
             tablaBody.innerHTML = `
-            <tr>
-                <td colspan="5" class="text-center py-5">
-                    <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
-                    <p class="text-muted mb-0">No se encontraron actividades</p>
-                </td>
-            </tr>
-        `;
+                <div class="card text-center py-5" style="grid-column: 1 / -1;">
+                    <div class="card-body">
+                        <i class="fas fa-history fa-3x text-muted mb-3"></i>
+                        <h4 class="text-muted">No se encontraron actividades</h4>
+                        <p class="text-muted">Las actividades del sistema aparecerán aquí</p>
+                    </div>
+                </div>
+            `;
             return;
         }
 
         let html = '';
-        historial.forEach(item => {
-            const inicial = item.usuario.charAt(0).toUpperCase();
+        historial.forEach((item, index) => {
+            const iconClass = getIconClass(item.accion_tipo);
+            const icono = getIcono(item.accion_tipo);
+            
             html += `
-            <tr>
-                <td class="align-middle">
-                    <span class="text-dark fw-medium">${item.fecha}</span>
-                </td>
-                <td class="align-middle">
-                    <span class="badge bg-secondary">${item.hora}</span>
-                </td>
-                <td class="align-middle">
-                    <span class="text-muted">${item.dia}</span>
-                </td>
-                <td class="align-middle">
-                    <div class="d-flex align-items-center">
-                        <div class="avatar-circle me-2">${inicial}</div>
-                        <span class="fw-medium text-dark">${item.usuario}</span>
+                <div class="activity-card-compact">
+                    <div class="card-header-compact">
+                        <div class="icon-compact ${iconClass}">
+                            <i class="${icono}"></i>
+                        </div>
+                        <div class="user-name">${item.usuario}</div>
                     </div>
-                </td>
-                <td class="align-middle">${item.accion}</td>
-            </tr>
-        `;
+                    <div class="card-meta-compact">
+                        <span><i class="fas fa-calendar"></i> ${item.fecha}</span>
+                        <span><i class="fas fa-clock"></i> ${item.hora}</span>
+                    </div>
+                    <div class="card-body-compact">
+                        ${item.accion}
+                    </div>
+                </div>
+            `;
         });
 
         tablaBody.innerHTML = html;
+    }
+    
+    /**
+     * Obtener clase de icono según tipo de acción
+     */
+    function getIconClass(tipo) {
+        const clases = {
+            'cambiar_estado': 'icon-cambiar',
+            'crear': 'icon-crear',
+            'reasignar': 'icon-reasignar'
+        };
+        return clases[tipo] || 'icon-default';
+    }
+    
+    /**
+     * Obtener icono FontAwesome según tipo de acción
+     */
+    function getIcono(tipo) {
+        const iconos = {
+            'cambiar_estado': 'fas fa-exchange-alt',
+            'crear': 'fas fa-plus-circle',
+            'reasignar': 'fas fa-user-cog'
+        };
+        return iconos[tipo] || 'fas fa-info-circle';
     }
 
     /**
@@ -314,55 +397,126 @@ function obtenerNombreDia($fecha)
 }
 
 /**
- * Generar texto descriptivo del cambio realizado
+ * Obtener clase de icono según la acción
  */
-function generarTextoAccion($item)
+function obtenerClaseIcono($accion)
 {
-    $html = '<div class="d-flex flex-column">';
+    $clases = [
+        'cambiar_estado' => 'icon-cambiar',
+        'crear' => 'icon-crear',
+        'reasignar' => 'icon-reasignar'
+    ];
+    return $clases[$accion] ?? 'icon-default';
+}
+
+/**
+ * Obtener icono FontAwesome según la acción
+ */
+function obtenerIcono($accion)
+{
+    $iconos = [
+        'cambiar_estado' => 'fas fa-exchange-alt',
+        'crear' => 'fas fa-plus-circle',
+        'reasignar' => 'fas fa-user-cog'
+    ];
+    return $iconos[$accion] ?? 'fas fa-info-circle';
+}
+
+/**
+ * Obtener color de avatar rotativo
+ */
+function obtenerColorAvatar($index)
+{
+    $colores = ['avatar-orange', 'avatar-purple', 'avatar-blue', 'avatar-green'];
+    return $colores[$index % 4];
+}
+
+/**
+ * Generar texto de acción simple y limpio
+ */
+function generarTextoAccionSimple($item)
+{
+    $html = '';
 
     switch ($item->accion) {
         case 'cambiar_estado':
-            $badgeAnterior = obtenerBadgeEstado($item->estado_anterior);
-            $badgeNuevo = obtenerBadgeEstado($item->estado_nuevo);
+            $badgeAnterior = obtenerBadgeEstadoSimple($item->estado_anterior);
+            $badgeNuevo = obtenerBadgeEstadoSimple($item->estado_nuevo);
 
-            $html .= '<div class="mb-1">';
-            $html .= '<strong>Cambió estado:</strong> ' . esc($item->equipo_descripcion);
+            $html .= '<p class="mb-2"><strong>Cambió estado:</strong> ' . esc($item->equipo_descripcion) . '</p>';
+            $html .= '<div class="mb-2">';
+            $html .= $badgeAnterior . ' <i class="fas fa-arrow-right mx-2"></i> ' . $badgeNuevo;
             $html .= '</div>';
-            $html .= '<div class="d-flex align-items-center gap-2">';
-            $html .= $badgeAnterior;
-            $html .= '<i class="fas fa-arrow-right text-muted"></i>';
-            $html .= $badgeNuevo;
+            $html .= '<div>';
+            $html .= '<span class="detail-item"><i class="fas fa-briefcase"></i>' . esc($item->servicio) . '</span>';
+            $html .= '<span class="detail-item"><i class="fas fa-user"></i>' . esc($item->cliente_nombre) . '</span>';
             $html .= '</div>';
-            $html .= '<small class="text-muted mt-1">';
-            $html .= '<i class="fas fa-briefcase"></i> ' . esc($item->servicio);
-            $html .= ' | <i class="fas fa-user"></i> ' . esc($item->cliente_nombre);
-            $html .= '</small>';
             break;
 
         case 'crear':
-            $html .= '<div class="mb-1">';
-            $html .= '<strong>Creó nuevo equipo:</strong> ' . esc($item->equipo_descripcion);
-            $html .= '</div>';
-            $html .= '<small class="text-muted">';
-            $html .= '<i class="fas fa-briefcase"></i> ' . esc($item->servicio);
-            $html .= '</small>';
+            $html .= '<p class="mb-2"><strong>Creó nuevo equipo:</strong> ' . esc($item->equipo_descripcion) . '</p>';
+            $html .= '<span class="detail-item"><i class="fas fa-briefcase"></i>' . esc($item->servicio) . '</span>';
             break;
 
         case 'reasignar':
-            $html .= '<div class="mb-1">';
-            $html .= '<strong>Reasignó equipo:</strong> ' . esc($item->equipo_descripcion);
-            $html .= '</div>';
-            $html .= '<small class="text-muted">';
-            $html .= '<i class="fas fa-briefcase"></i> ' . esc($item->servicio);
-            $html .= '</small>';
+            $html .= '<p class="mb-2"><strong>Reasignó equipo:</strong> ' . esc($item->equipo_descripcion) . '</p>';
+            $html .= '<span class="detail-item"><i class="fas fa-briefcase"></i>' . esc($item->servicio) . '</span>';
             break;
 
         default:
-            $html .= ucfirst($item->accion);
+            $html .= '<p>' . ucfirst($item->accion) . '</p>';
     }
 
-    $html .= '</div>';
     return $html;
+}
+
+/**
+ * Obtener badge simple según el estado
+ */
+function obtenerBadgeEstadoSimple($estado)
+{
+    $clases = [
+        'Pendiente' => 'badge-pendiente',
+        'En Proceso' => 'badge-proceso',
+        'Completado' => 'badge-completado',
+        'Programado' => 'badge-programado'
+    ];
+
+    $clase = $clases[$estado] ?? 'badge-pendiente';
+    return '<span class="estado-badge ' . $clase . '">' . esc($estado) . '</span>';
+}
+
+/**
+ * Obtener badge moderno según el estado
+ */
+function obtenerBadgeEstadoModerno($estado)
+{
+    $clases = [
+        'Pendiente' => 'badge-pendiente',
+        'En Proceso' => 'badge-proceso',
+        'Completado' => 'badge-completado',
+        'Programado' => 'badge-programado'
+    ];
+
+    $iconos = [
+        'Pendiente' => 'fas fa-clock',
+        'En Proceso' => 'fas fa-spinner',
+        'Completado' => 'fas fa-check-circle',
+        'Programado' => 'fas fa-calendar-check'
+    ];
+
+    $clase = $clases[$estado] ?? 'badge-pendiente';
+    $icono = $iconos[$estado] ?? 'fas fa-info-circle';
+
+    return '<span class="estado-badge ' . $clase . '"><i class="' . $icono . '"></i>' . esc($estado) . '</span>';
+}
+
+/**
+ * Generar texto descriptivo del cambio realizado (versión antigua para compatibilidad)
+ */
+function generarTextoAccion($item)
+{
+    return generarTextoAccionSimple($item);
 }
 
 /**
