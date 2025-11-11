@@ -167,12 +167,19 @@ class EquipoService
     /**
      * Obtiene estadísticas de equipos por estado
      * 
+     * @param int|null $usuarioId Filtrar por usuario específico (para trabajadores)
      * @return array
      */
-    public function obtenerEstadisticas(): array
+    public function obtenerEstadisticas(?int $usuarioId = null): array
     {
         $builder = $this->db->table('equipos');
         $builder->select('estadoservicio, COUNT(*) as total');
+        
+        // Filtrar por usuario si se especifica
+        if ($usuarioId) {
+            $builder->where('idusuario', $usuarioId);
+        }
+        
         $builder->groupBy('estadoservicio');
         $resultados = $builder->get()->getResultArray();
 

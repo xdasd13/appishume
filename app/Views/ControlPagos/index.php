@@ -116,14 +116,14 @@
             <div class="card card-3d animate__animated animate__fadeInUp">
                 <div class="card-header">
                     <div class="d-flex align-items-center">
-                        <h4 class="card-title">Contratos y Entregas</h4>
+                        <h4 class="card-title">Control de Pagos</h4>
                         <a href="<?= base_url('controlpagos/crear') ?>" class="btn btn-primary btn-round ml-auto">
                             <i class="fas fa-plus mr-2"></i>Nuevo Pago
                         </a>
                     </div>
                 </div>
                 <div class="card-body">
-                    <!-- Filtros originales funcionando -->
+                    <!-- Filtros mejorados -->
                     <form method="get" action="<?= base_url('/controlpagos') ?>" class="mb-4">
                         <div class="row">
                             <div class="col-md-3">
@@ -285,18 +285,14 @@
 
 <?= $footer ?>
 
-<!-- Estilos CSS para mejoras visuales -->
-
-
-<!-- Scripts para la funcionalidad de la página -->
 <script>
 $(document).ready(function() {
-    // Inicializar DataTable
+    // Inicializar DataTable con ordenamiento por ID descendente
     var table = $('#pagos-table').DataTable({
         "language": {
             "url": "//cdn.datatables.net/plug-ins/1.10.21/i18n/Spanish.json"
         },
-        "order": [[0, "desc"]],
+        "order": [[0, "desc"]], // Ordenar por ID descendente
         "responsive": true,
         "pageLength": 10,
         "lengthMenu": [[10, 25, 50, -1], [10, 25, 50, "Todos"]],
@@ -327,7 +323,6 @@ $(document).ready(function() {
             cancelButtonColor: '#6c757d'
         }).then((result) => {
             if (result.isConfirmed) {
-                // Mostrar notificación de descarga iniciada
                 const Toast = Swal.mixin({
                     toast: true,
                     position: "top-end",
@@ -341,7 +336,6 @@ $(document).ready(function() {
                     title: 'Descarga iniciada'
                 });
                 
-                // Proceder con la descarga
                 window.open(url, '_blank');
             }
         });
@@ -363,7 +357,6 @@ $(document).ready(function() {
             cancelButtonColor: '#6c757d'
         }).then((result) => {
             if (result.isConfirmed) {
-                // Mostrar notificación de generación
                 const Toast = Swal.mixin({
                     toast: true,
                     position: "top-end",
@@ -377,7 +370,6 @@ $(document).ready(function() {
                     title: 'Generando voucher...'
                 });
                 
-                // Abrir voucher en nueva ventana
                 window.open(url, '_blank');
             }
         });

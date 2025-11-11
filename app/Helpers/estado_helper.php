@@ -102,10 +102,10 @@ if (!function_exists('getColorEstado')) {
     function getColorEstado(string $estado): string
     {
         return match ($estado) {
-            'Programado' => 'secondary',  // 🔘 Gris - Aún no iniciado
-            'Pendiente' => 'warning',     // 🟡 Amarillo - Listo para iniciar
-            'En Proceso' => 'info',       // 🔵 Azul - En ejecución
-            'Completado' => 'success',    // 🟢 Verde - Finalizado
+            'Programado' => 'secondary',  // Gris - Aún no iniciado
+            'Pendiente' => 'warning',     // Amarillo - Listo para iniciar
+            'En Proceso' => 'info',       // Azul - En ejecución
+            'Completado' => 'success',    // Verde - Finalizado
             default => 'secondary'
         };
     }

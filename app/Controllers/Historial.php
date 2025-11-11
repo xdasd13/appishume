@@ -1,28 +1,17 @@
 <?php
-
 namespace App\Controllers;
 
 use App\Controllers\BaseController;
 use App\Models\AuditoriaKanbanModel;
 use App\Models\UsuarioModel;
 
-/**
- * Controlador de Historial de Actividades
- * 
- * Gestiona el registro de cambios realizados en el tablero Kanban.
- * Permite visualizar y filtrar las actividades por usuario.
- * 
- * @author ISHUME Team
- * @version 2.0
- */
+// Controlador de Historial de Actividades
 class Historial extends BaseController
 {
     private AuditoriaKanbanModel $auditoriaModel;
     private UsuarioModel $usuarioModel;
 
-    /**
-     * Constructor - Inicializa los modelos necesarios
-     */
+    // Constructor
     public function __construct()
     {
         $this->auditoriaModel = new AuditoriaKanbanModel();
@@ -105,15 +94,7 @@ class Historial extends BaseController
         }
     }
 
-    /**
-     * Formatear historial para respuesta JSON
-     * 
-     * Convierte los objetos del historial en arrays con formato específico
-     * para la tabla de actividades.
-     * 
-     * @param array $historial Array de objetos del historial
-     * @return array Array formateado para JSON
-     */
+   // Formatear historial para respuesta JSON
     private function formatearHistorial(array $historial): array
     {
         return array_map(function($item) {
@@ -136,12 +117,7 @@ class Historial extends BaseController
         }, $historial);
     }
 
-    /**
-     * Obtener nombre del día de la semana en español
-     * 
-     * @param string $fecha Fecha en formato Y-m-d H:i:s
-     * @return string Nombre del día (Lunes, Martes, etc.)
-     */
+    // Obtener nombre del día de la semana en español
     private function obtenerNombreDia(string $fecha): string
     {
         $dias = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
@@ -149,12 +125,7 @@ class Historial extends BaseController
         return $dias[$numeroDia];
     }
 
-    /**
-     * Generar texto descriptivo de la acción realizada
-     * 
-     * @param object $item Objeto con datos de la actividad
-     * @return string Texto descriptivo de la acción
-     */
+    // Obtener texto descriptivo de la acción realizada
     private function obtenerTextoAccion(object $item): string
     {
         switch ($item->accion) {

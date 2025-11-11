@@ -99,13 +99,21 @@ class EquipoModel extends Model
      * Obtiene equipos agrupados por estado para el Kanban
      * KISS: método específico para la vista
      * Ordenamiento: Más recientes primero (por fecha de asignación DESC)
+     * 
+     * @param int|null $servicioId Filtrar por servicio específico
+     * @param int|null $usuarioId Filtrar por usuario específico (para trabajadores)
      */
-    public function getEquiposParaKanban(?int $servicioId = null): array
+    public function getEquiposParaKanban(?int $servicioId = null, ?int $usuarioId = null): array
     {
         $query = $this->getBaseQuery();
         
         if ($servicioId) {
             $query->where('e.idserviciocontratado', $servicioId);
+        }
+        
+        // Filtrar por usuario si se especifica (para trabajadores)
+        if ($usuarioId) {
+            $query->where('e.idusuario', $usuarioId);
         }
         
         // Ordenar por fecha de asignación más reciente primero (DESC)

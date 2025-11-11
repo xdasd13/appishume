@@ -38,14 +38,29 @@ class Equipos extends BaseController
     /**
      * Vista principal del tablero Kanban
      * KISS: método simple y claro
+     * Filtra automáticamente por usuario si es trabajador
      */
     public function index(): string
     {
+        // Obtener información del usuario logueado
+        $tipoUsuario = session()->get('tipo_usuario') ?? session()->get('usuario_tipo');
+        $usuarioId = session()->get('usuario_id') ?? session()->get('idusuario');
+        
+        // Determinar si se debe filtrar por usuario
+        $filtrarPorUsuario = null;
+        
+        // Si es trabajador, solo mostrar sus propios equipos
+        if ($tipoUsuario === 'trabajador' && $usuarioId) {
+            $filtrarPorUsuario = $usuarioId;
+        }
+        
         $data = [
-            'titulo' => 'Gestión de Equipos',
-            'equiposKanban' => $this->equipoModel->getEquiposParaKanban(),
-            'estadisticas' => $this->equipoService->obtenerEstadisticas(),
-            'tecnicos' => $this->equipoService->obtenerTodosTecnicos()
+            'titulo' => $tipoUsuario === 'trabajador' ? 'Mis Asignaciones' : 'Gestión de Equipos',
+            'equiposKanban' => $this->equipoModel->getEquiposParaKanban(null, $filtrarPorUsuario),
+            'estadisticas' => $this->equipoService->obtenerEstadisticas($filtrarPorUsuario),
+            'tecnicos' => $this->equipoService->obtenerTodosTecnicos(),
+            'es_trabajador' => $tipoUsuario === 'trabajador',
+            'usuario_actual_id' => $usuarioId
         ];
         
         return $this->render('equipos/listar', $data);
@@ -323,6 +338,8 @@ class Equipos extends BaseController
                       ?? session()->get('usuario_id') 
                       ?? session()->get('user_id');
             
+            $tipoUsuario = session()->get('tipo_usuario') ?? session()->get('usuario_tipo');
+            
             log_message('info', 'Datos de sesión completos: ' . json_encode([
                 'usuario_logueado' => session()->get('usuario_logueado'),
                 'usuario_id' => session()->get('usuario_id'),
@@ -330,6 +347,27 @@ class Equipos extends BaseController
                 'tipo_usuario' => session()->get('tipo_usuario'),
                 'usuario_tipo' => session()->get('usuario_tipo')
             ]));
+            
+            // VALIDACIÓN DE SEGURIDAD: Si es trabajador, verificar que el equipo le pertenece
+            if ($tipoUsuario === 'trabajador' && $usuarioId) {
+                $equipo = $this->equipoModel->find($equipoId);
+                if (!$equipo) {
+                    log_message('warning', "Trabajador {$usuarioId} intentó actualizar equipo inexistente {$equipoId}");
+                    return $this->response->setJSON([
+                        'success' => false,
+                        'message' => 'Equipo no encontrado'
+                    ]);
+                }
+                
+                // Verificar que el equipo pertenece al trabajador
+                if ($equipo['idusuario'] != $usuarioId) {
+                    log_message('warning', "Trabajador {$usuarioId} intentó actualizar equipo {$equipoId} que pertenece a usuario {$equipo['idusuario']}");
+                    return $this->response->setJSON([
+                        'success' => false,
+                        'message' => 'No tienes permiso para modificar esta asignación'
+                    ]);
+                }
+            }
             
             if (!$usuarioId) {
                 log_message('warning', 'Usuario no encontrado en sesión, buscando usuario por defecto');

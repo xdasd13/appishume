@@ -70,6 +70,21 @@ const KanbanDragDrop = {
 
         if (currentStatus === newStatus) return;
 
+        // Validación adicional: Si es trabajador, verificar que la tarjeta le pertenece
+        if (typeof ES_TRABAJADOR !== 'undefined' && ES_TRABAJADOR && typeof USUARIO_ACTUAL_ID !== 'undefined') {
+            const cardUsuarioId = parseInt(currentCard.dataset.usuarioId);
+            if (cardUsuarioId !== USUARIO_ACTUAL_ID) {
+                Swal.fire({
+                    title: 'Acceso Denegado',
+                    text: 'Solo puedes modificar tus propias asignaciones',
+                    icon: 'error',
+                    confirmButtonText: 'Entendido',
+                    confirmButtonColor: '#dc3545'
+                });
+                return;
+            }
+        }
+
         const validation = KanbanValidation.validateTransition(currentStatus, newStatus);
         if (!validation.valido) {
             this.showValidationError(validation.mensaje);
