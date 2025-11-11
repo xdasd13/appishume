@@ -126,10 +126,10 @@
 
                             <div class="project-actions">
                                 <a href="<?= base_url('clientes/ver/' . $proyecto['idcliente']) ?>"
-                                    class="project-btn btn-primary">
+                                    class="project-btn btn-blue">
                                     <i class="fas fa-user"></i> Ver Cliente
                                 </a>
-                                <a href="<?= base_url('cronograma') ?>" class="project-btn btn-secondary">
+                                <a href="<?= base_url('cronograma') ?>" class="project-btn btn-orange">
                                     <i class="fas fa-calendar"></i> Cronograma
                                 </a>
                             </div>
