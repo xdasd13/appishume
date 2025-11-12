@@ -95,7 +95,7 @@
 
 /* Colores por estado - Paleta Vibrante */
 .kanban-card[data-status="Pendiente"]{
-    border-left-color: #700bf5; 
+    border-left-color: #f59e0b; 
 }
 
 .kanban-card[data-status="Programado"] {
