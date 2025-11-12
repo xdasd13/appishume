@@ -390,14 +390,14 @@ INSERT INTO servicioscontratados (idcotizacion, idservicio, cantidad, precio, fe
 (1, 6, 1, 1800.00, '2025-11-15 14:00:00', 'Club Campestre La Pradera, Km 15 Carretera Central'),
 (1, 11, 1, 950.00, '2025-11-15 14:30:00', 'Club Campestre La Pradera, Km 15 Carretera Central'),
 (1, 14, 1, 1200.00, '2025-11-15 13:00:00', 'Club Campestre La Pradera, Km 15 Carretera Central'),
-(1, 18, 80, 2800.00, '2025-11-15 18:00:00', 'Club Campestre La Pradera, Km 15 Carretera Central'),
+(1, 18, 5, 2800.00, '2025-11-15 18:00:00', 'Club Campestre La Pradera, Km 15 Carretera Central'),
 (1, 22, 1, 650.00, '2025-11-15 20:00:00', 'Club Campestre La Pradera, Km 15 Carretera Central'),
 
 -- Cotización 2: Quinceañero Carlos Torres (Nov 08)
 (2, 1, 1, 450.00, '2025-11-08 18:00:00', 'Salón de Eventos Villa Real, Av. Universitaria 2345, Los Olivos'),
 (2, 5, 1, 850.00, '2025-11-08 17:30:00', 'Salón de Eventos Villa Real, Av. Universitaria 2345, Los Olivos'),
 (2, 10, 1, 400.00, '2025-11-08 17:00:00', 'Salón de Eventos Villa Real, Av. Universitaria 2345, Los Olivos'),
-(2, 17, 50, 1750.00, '2025-11-08 19:30:00', 'Salón de Eventos Villa Real, Av. Universitaria 2345, Los Olivos'),
+(2, 17, 4, 1750.00, '2025-11-08 19:30:00', 'Salón de Eventos Villa Real, Av. Universitaria 2345, Los Olivos'),
 (2, 22, 1, 650.00, '2025-11-08 20:00:00', 'Salón de Eventos Villa Real, Av. Universitaria 2345, Los Olivos'),
 
 -- Cotización 3: Evento Corporativo (Nov 20)
@@ -416,32 +416,32 @@ INSERT INTO servicioscontratados (idcotizacion, idservicio, cantidad, precio, fe
 (5, 1, 1, 450.00, '2025-11-25 11:00:00', 'Parroquia San Pedro, Av. Proceres 567, San Juan de Miraflores'),
 (5, 5, 1, 850.00, '2025-11-25 10:30:00', 'Parroquia San Pedro, Av. Proceres 567, San Juan de Miraflores'),
 (5, 13, 1, 550.00, '2025-11-25 10:00:00', 'Parroquia San Pedro, Av. Proceres 567, San Juan de Miraflores'),
-(5, 17, 40, 1400.00, '2025-11-25 13:00:00', 'Av. Proceres 567, San Juan de Miraflores'),
+(5, 17, 2, 1400.00, '2025-11-25 13:00:00', 'Av. Proceres 567, San Juan de Miraflores'),
 
 -- Cotización 6: Matrimonio María Chávez (Nov 28)
 (6, 2, 1, 1200.00, '2025-11-28 16:00:00', 'Casa Hacienda San José, Pachacamac'),
 (6, 7, 1, 2200.00, '2025-11-28 15:30:00', 'Casa Hacienda San José, Pachacamac'),
 (6, 11, 1, 950.00, '2025-11-28 15:00:00', 'Casa Hacienda San José, Pachacamac'),
-(6, 18, 60, 2100.00, '2025-11-28 19:00:00', 'Casa Hacienda San José, Pachacamac'),
+(6, 18, 6, 2100.00, '2025-11-28 19:00:00', 'Casa Hacienda San José, Pachacamac'),
 (6, 22, 1, 650.00, '2025-11-28 21:00:00', 'Casa Hacienda San José, Pachacamac'),
 
 -- Cotización 7: Quinceañero Juan Ramírez (Nov 30)
 (7, 1, 1, 450.00, '2025-11-30 18:00:00', 'Salón Los Jardines, Av. La Marina 2345, Pueblo Libre'),
 (7, 5, 1, 850.00, '2025-11-30 17:30:00', 'Salón Los Jardines, Av. La Marina 2345, Pueblo Libre'),
 (7, 10, 1, 400.00, '2025-11-30 17:00:00', 'Salón Los Jardines, Av. La Marina 2345, Pueblo Libre'),
-(7, 17, 35, 1225.00, '2025-11-30 20:00:00', 'Salón Los Jardines, Av. La Marina 2345, Pueblo Libre'),
+(7, 17, 3, 1225.00, '2025-11-30 20:00:00', 'Salón Los Jardines, Av. La Marina 2345, Pueblo Libre'),
 
 -- Cotización 8: Conferencia Empresa (Dic 05)
 (8, 3, 2, 1600.00, '2025-12-05 08:00:00', 'Centro de Convenciones Lima, Av. Javier Prado 2890'),
 (8, 8, 1, 1500.00, '2025-12-05 07:30:00', 'Centro de Convenciones Lima, Av. Javier Prado 2890'),
 (8, 12, 1, 750.00, '2025-12-05 07:45:00', 'Centro de Convenciones Lima, Av. Javier Prado 2890'),
-(8, 17, 150, 5250.00, '2025-12-05 12:00:00', 'Centro de Convenciones Lima, Av. Javier Prado 2890'),
+(8, 17, 1, 5250.00, '2025-12-05 12:00:00', 'Centro de Convenciones Lima, Av. Javier Prado 2890'),
 
 -- Cotización 9: Quinceañero Lucía Vásquez (Dic 07)
 (9, 2, 1, 1200.00, '2025-12-07 18:00:00', 'Club Social El Dorado, Av. Aviación 4567, San Borja'),
 (9, 6, 1, 1800.00, '2025-12-07 17:30:00', 'Club Social El Dorado, Av. Aviación 4567, San Borja'),
 (9, 11, 1, 950.00, '2025-12-07 17:00:00', 'Club Social El Dorado, Av. Aviación 4567, San Borja'),
-(9, 18, 70, 2450.00, '2025-12-07 20:00:00', 'Club Social El Dorado, Av. Aviación 4567, San Borja'),
+(9, 18, 2, 2450.00, '2025-12-07 20:00:00', 'Club Social El Dorado, Av. Aviación 4567, San Borja'),
 (9, 22, 1, 650.00, '2025-12-07 21:30:00', 'Club Social El Dorado, Av. Aviación 4567, San Borja'),
 
 -- Cotización 10: Evento Corporativo (Dic 10)
@@ -449,13 +449,13 @@ INSERT INTO servicioscontratados (idcotizacion, idservicio, cantidad, precio, fe
 (10, 7, 1, 2200.00, '2025-12-10 18:30:00', 'Hotel Marriott, Malecón de la Reserva, Miraflores'),
 (10, 11, 1, 950.00, '2025-12-10 18:00:00', 'Hotel Marriott, Malecón de la Reserva, Miraflores'),
 (10, 15, 1, 380.00, '2025-12-10 17:30:00', 'Hotel Marriott, Malecón de la Reserva, Miraflores'),
-(10, 17, 80, 2800.00, '2025-12-10 21:00:00', 'Hotel Marriott, Malecón de la Reserva, Miraflores'),
+(10, 17, 2, 2800.00, '2025-12-10 21:00:00', 'Hotel Marriott, Malecón de la Reserva, Miraflores'),
 
 -- Cotización 11: Matrimonio Roberto Flores (Dic 12)
 (11, 1, 1, 450.00, '2025-12-12 11:00:00', 'Parroquia Virgen del Carmen, Av. Aviación 4567, San Borja'),
 (11, 5, 1, 850.00, '2025-12-12 10:30:00', 'Parroquia Virgen del Carmen, Av. Aviación 4567, San Borja'),
 (11, 13, 1, 550.00, '2025-12-12 10:00:00', 'Parroquia Virgen del Carmen, Av. Aviación 4567, San Borja'),
-(11, 17, 45, 1575.00, '2025-12-12 13:30:00', 'Av. Aviación 4567, San Borja'),
+(11, 17, 4, 1575.00, '2025-12-12 13:30:00', 'Av. Aviación 4567, San Borja'),
 (11, 23, 1, 400.00, '2025-12-12 14:00:00', 'Av. Aviación 4567, San Borja'),
 
 -- Cotización 12: Matrimonio Carmen Gutiérrez (Dic 14)
@@ -464,20 +464,20 @@ INSERT INTO servicioscontratados (idcotizacion, idservicio, cantidad, precio, fe
 (12, 9, 1, 600.00, '2025-12-14 16:00:00', 'Country Club Lima, Av. Golf Los Incas, Surco'),
 (12, 11, 1, 950.00, '2025-12-14 15:30:00', 'Country Club Lima, Av. Golf Los Incas, Surco'),
 (12, 14, 1, 1200.00, '2025-12-14 15:00:00', 'Country Club Lima, Av. Golf Los Incas, Surco'),
-(12, 18, 100, 3500.00, '2025-12-14 19:30:00', 'Country Club Lima, Av. Golf Los Incas, Surco'),
+(12, 18, 3, 3500.00, '2025-12-14 19:30:00', 'Country Club Lima, Av. Golf Los Incas, Surco'),
 (12, 22, 1, 650.00, '2025-12-14 22:00:00', 'Country Club Lima, Av. Golf Los Incas, Surco'),
 
 -- Cotización 13: Matrimonio Miguel Castillo (Dic 18)
 (13, 1, 1, 450.00, '2025-12-18 19:00:00', 'Restaurante Campestre Los Sauces, Cieneguilla'),
 (13, 5, 1, 850.00, '2025-12-18 18:30:00', 'Restaurante Campestre Los Sauces, Cieneguilla'),
 (13, 10, 1, 400.00, '2025-12-18 18:00:00', 'Restaurante Campestre Los Sauces, Cieneguilla'),
-(13, 18, 50, 1750.00, '2025-12-18 21:00:00', 'Restaurante Campestre Los Sauces, Cieneguilla'),
+(13, 18, 5, 1750.00, '2025-12-18 21:00:00', 'Restaurante Campestre Los Sauces, Cieneguilla'),
 (13, 22, 1, 650.00, '2025-12-18 22:00:00', 'Restaurante Campestre Los Sauces, Cieneguilla'),
 
 -- Cotización 14: Quinceañero Sofía Paredes (Dic 20)
 (14, 3, 1, 800.00, '2025-12-20 18:00:00', 'Salón de Eventos Miraflores, Jr. Libertad 234, Miraflores'),
 (14, 5, 1, 850.00, '2025-12-20 17:30:00', 'Salón de Eventos Miraflores, Jr. Libertad 234, Miraflores'),
-(14, 17, 60, 2100.00, '2025-12-20 19:30:00', 'Salón de Eventos Miraflores, Jr. Libertad 234, Miraflores'),
+(14, 17, 6, 2100.00, '2025-12-20 19:30:00', 'Salón de Eventos Miraflores, Jr. Libertad 234, Miraflores'),
 (14, 19, 1, 280.00, '2025-12-20 20:30:00', 'Salón de Eventos Miraflores, Jr. Libertad 234, Miraflores'),
 
 -- Cotización 15: Matrimonio Pedro Ccama (Dic 27)
@@ -485,27 +485,27 @@ INSERT INTO servicioscontratados (idcotizacion, idservicio, cantidad, precio, fe
 (15, 7, 1, 2200.00, '2025-12-27 17:30:00', 'Hacienda Villa Verde, Lurín'),
 (15, 11, 1, 950.00, '2025-12-27 17:00:00', 'Hacienda Villa Verde, Lurín'),
 (15, 14, 1, 1200.00, '2025-12-27 16:30:00', 'Hacienda Villa Verde, Lurín'),
-(15, 18, 90, 3150.00, '2025-12-27 20:00:00', 'Hacienda Villa Verde, Lurín'),
+(15, 18, 2, 3150.00, '2025-12-27 20:00:00', 'Hacienda Villa Verde, Lurín'),
 (15, 24, 1, 1200.00, '2025-12-27 22:00:00', 'Hacienda Villa Verde, Lurín'),
 
 -- Cotización 16: Matrimonio Valeria Huamán (Ene 10, 2026)
 (16, 2, 1, 1200.00, '2026-01-10 16:00:00', 'Club Campestre Las Flores, Cieneguilla'),
 (16, 6, 1, 1800.00, '2026-01-10 15:30:00', 'Club Campestre Las Flores, Cieneguilla'),
 (16, 11, 1, 950.00, '2026-01-10 15:00:00', 'Club Campestre Las Flores, Cieneguilla'),
-(16, 18, 70, 2450.00, '2026-01-10 19:00:00', 'Club Campestre Las Flores, Cieneguilla'),
+(16, 18, 2, 2450.00, '2026-01-10 19:00:00', 'Club Campestre Las Flores, Cieneguilla'),
 (16, 22, 1, 650.00, '2026-01-10 21:00:00', 'Club Campestre Las Flores, Cieneguilla'),
 
 -- Cotización 17: Evento Corporativo (Ene 15, 2026)
 (17, 3, 1, 800.00, '2026-01-15 09:00:00', 'Centro Empresarial, Calle Los Negocios 567, Miraflores'),
 (17, 8, 1, 1500.00, '2026-01-15 08:30:00', 'Centro Empresarial, Calle Los Negocios 567, Miraflores'),
 (17, 12, 1, 750.00, '2026-01-15 08:45:00', 'Centro Empresarial, Calle Los Negocios 567, Miraflores'),
-(17, 17, 120, 4200.00, '2026-01-15 12:00:00', 'Centro Empresarial, Calle Los Negocios 567, Miraflores'),
+(17, 17, 2, 4200.00, '2026-01-15 12:00:00', 'Centro Empresarial, Calle Los Negocios 567, Miraflores'),
 
 -- Cotización 18: Quinceañero Diego Poma (Ene 20, 2026)
 (18, 1, 1, 450.00, '2026-01-20 18:00:00', 'Salón de Eventos Comas, Av. Universitaria 5678, Comas'),
 (18, 5, 1, 850.00, '2026-01-20 17:30:00', 'Salón de Eventos Comas, Av. Universitaria 5678, Comas'),
 (18, 10, 1, 400.00, '2026-01-20 17:00:00', 'Salón de Eventos Comas, Av. Universitaria 5678, Comas'),
-(18, 17, 50, 1750.00, '2026-01-20 20:00:00', 'Salón de Eventos Comas, Av. Universitaria 5678, Comas'),
+(18, 17, 3, 1750.00, '2026-01-20 20:00:00', 'Salón de Eventos Comas, Av. Universitaria 5678, Comas'),
 (18, 23, 1, 400.00, '2026-01-20 19:00:00', 'Salón de Eventos Comas, Av. Universitaria 5678, Comas'),
 
 -- Cotización 19: Matrimonio Camila Cruz (Ene 25, 2026)
@@ -513,7 +513,7 @@ INSERT INTO servicioscontratados (idcotizacion, idservicio, cantidad, precio, fe
 (19, 7, 1, 2200.00, '2026-01-25 16:30:00', 'Casa Hacienda El Paraíso, Pachacamac'),
 (19, 11, 1, 950.00, '2026-01-25 16:00:00', 'Casa Hacienda El Paraíso, Pachacamac'),
 (19, 14, 1, 1200.00, '2026-01-25 15:30:00', 'Casa Hacienda El Paraíso, Pachacamac'),
-(19, 18, 85, 2975.00, '2026-01-25 19:30:00', 'Casa Hacienda El Paraíso, Pachacamac'),
+(19, 18, 2, 2975.00, '2026-01-25 19:30:00', 'Casa Hacienda El Paraíso, Pachacamac'),
 (19, 22, 1, 650.00, '2026-01-25 22:00:00', 'Casa Hacienda El Paraíso, Pachacamac');
 
 -- 9. CONTROL DE PAGOS
