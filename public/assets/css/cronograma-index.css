@@ -1,18 +1,20 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+
 :root {
-        --color-primary: #ff9800;
-        --color-primary-dark: #e68900;
-        --color-primary-light: #ffb74d;
-        --color-dark:rgb(255, 255, 255);
-        --color-surface: #2d2d2d;
-        --color-surface-light: #3d3d3d;
+        --color-primary: #ff8a05;
+        --color-primary-dark: #d97706;
+        --color-primary-light: #ffe0bf;
+        --color-dark: #f5f6f8;
+        --color-surface: #ffffff;
+        --color-surface-light: #f2f3f7;
         --color-white: #ffffff;
-        --color-text-primary: #ffffff;
-        --color-text-secondary: #cccccc;
-        --color-text-muted: #999999;
-        --color-border: #404040;
-        --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.3);
-        --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
-        --border-radius: 8px;
+        --color-text-primary: #1c1c1f;
+        --color-text-secondary: #4c4c55;
+        --color-text-muted: #7b7b85;
+        --color-border: #e2e3ea;
+        --shadow-sm: 0 6px 18px rgba(10, 10, 10, 0.08);
+        --shadow-md: 0 18px 40px rgba(10, 10, 10, 0.12);
+        --border-radius: 12px;
         --spacing-sm: 8px;
         --spacing-md: 16px;
         --spacing-lg: 24px;
@@ -22,9 +24,9 @@
     body {
         background-color: var(--color-dark);
         color: var(--color-text-primary);
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+        font-family: 'Poppins', 'Segoe UI', 'Roboto', sans-serif;
         font-size: 14px;
-        line-height: 1.5;
+        line-height: 1.6;
         margin: 0;
         padding: 0;
     }
@@ -37,10 +39,11 @@
 
     /* Typography */
     h1 {
-        font-size: 28px;
+        font-size: 32px;
         font-weight: 600;
         color: var(--color-text-primary);
         margin: 0 0 var(--spacing-lg) 0;
+        letter-spacing: -0.5px;
     }
 
     h2 {
@@ -81,14 +84,15 @@
     .stat-icon {
         width: 56px;
         height: 56px;
-        background-color: var(--color-primary);
+        background: linear-gradient(145deg, var(--color-primary), var(--color-primary-dark));
         color: var(--color-white);
-        border-radius: var(--border-radius);
+        border-radius: 16px;
         display: flex;
         align-items: center;
         justify-content: center;
         font-size: 24px;
         flex-shrink: 0;
+        box-shadow: var(--shadow-sm);
     }
 
     .stat-info h3 {
@@ -100,10 +104,11 @@
     }
 
     .stat-info p {
-        font-size: 14px;
+        font-size: 13px;
         color: var(--color-text-secondary);
-        margin: 4px 0 0 0;
+        margin: 6px 0 0 0;
         font-weight: 500;
+        letter-spacing: 0.2px;
     }
 
     /* Cards */
@@ -113,16 +118,16 @@
         border-radius: var(--border-radius);
         box-shadow: var(--shadow-sm);
         margin-bottom: var(--spacing-xl);
+        overflow: hidden;
     }
 
     .card-header {
-        background-color: var(--color-primary);
         color: var(--color-white);
         padding: var(--spacing-md) var(--spacing-lg);
-        border-radius: var(--border-radius) var(--border-radius) 0 0;
         display: flex;
         align-items: center;
         gap: var(--spacing-sm);
+        border-bottom: 2px solid var(--color-primary);
     }
 
     .card-header h2 {
@@ -137,29 +142,34 @@
 
     .card-body {
         padding: var(--spacing-lg);
+        background-color: var(--color-surface);
     }
 
     /* Calendar */
     .fc {
         background: transparent;
+        font-family: 'Poppins', 'Segoe UI', 'Roboto', sans-serif;
+        color: var(--color-text-primary);
     }
 
     .fc-toolbar {
-        background-color: var(--color-surface-light);
+        background-color: var(--color-surface);
         border: 1px solid var(--color-border);
         border-radius: var(--border-radius);
         padding: var(--spacing-md);
         margin-bottom: var(--spacing-md);
+        box-shadow: var(--shadow-sm);
     }
 
     .fc .fc-button-primary {
         background-color: var(--color-primary);
         border-color: var(--color-primary);
         color: var(--color-white);
-        font-weight: 500;
+        font-weight: 600;
         font-size: 13px;
-        padding: 6px 12px;
-        border-radius: 4px;
+        padding: 6px 14px;
+        border-radius: 999px;
+        letter-spacing: 0.4px;
     }
 
     .fc .fc-button-primary:hover:not(:disabled) {
@@ -172,26 +182,30 @@
     }
 
     .fc-daygrid-event {
-        background-color: var(--color-primary);
-        border-color: var(--color-primary);
+        background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
+        border-color: transparent;
         color: var(--color-white);
         font-size: 12px;
-        border-radius: 4px;
-        padding: 2px 4px;
+        border-radius: 6px;
+        padding: 3px 6px;
+        box-shadow: 0 6px 15px rgba(255, 138, 5, 0.25);
     }
 
     .fc-toolbar-title {
         color: var(--color-text-primary);
-        font-size: 18px;
+        font-size: 20px;
         font-weight: 600;
     }
 
     .fc-col-header-cell {
         background-color: var(--color-surface-light);
+        color: var(--color-text-secondary);
+        font-weight: 600;
     }
 
     .fc-day-today {
-        background-color: rgba(255, 152, 0, 0.1);
+        background-color: rgba(0, 0, 0, 0.12);
+        border: 1px solid rgba(255, 138, 5, 0.4);
     }
 
     /* Table */
@@ -204,26 +218,25 @@
         width: 100%;
         border-collapse: collapse;
         margin: 0;
-        background-color: transparent;
+        background-color: var(--color-surface);
     }
 
     .table th {
-        background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
+        background: #0f0f11;
         color: #ffffff;
-        font-weight: 700;
-        font-size: 14px;
+        font-weight: 600;
+        font-size: 13px;
         padding: 14px 16px;
         text-align: left;
         border: none;
-        text-transform: uppercase;
         letter-spacing: 0.5px;
+        border-bottom: 3px solid var(--color-primary);
     }
 
     .table th i {
         margin-right: 6px;
         color: #ffffff;
         font-size: 15px;
-        opacity: 0.9;
     }
 
     .table th:first-child {
@@ -259,37 +272,37 @@
     /* Badges */
     .badge {
         display: inline-block;
-        padding: 4px 8px;
+        padding: 5px 10px;
         font-size: 11px;
         font-weight: 600;
         text-transform: uppercase;
         letter-spacing: 0.5px;
-        border-radius: 4px;
+        border-radius: 999px;
         line-height: 1;
     }
 
     .badge-programado {
-        background-color: #FFF9E6;
-        color: #FF9900;
-        border: 1px solid #FF9900;
+        background-color: #7c3aed;
+        color: var(--color-surface);
+        border: 1px solid #7c3aed;
     }
 
     .badge-en-proceso {
-        background-color: #FEF5E7;
-        color: #E67E22;
-        border: 1px solid #E67E22;
+        background-color: #3b82f6;
+        color: #ffffff;
+        border: #3b82f6;
     }
 
     .badge-completado {
-        background-color: #E8F8EF;
-        color: #27AE60;
-        border: 1px solid #27AE60;
+        background-color: #10b981;
+        color: #ffffff;
+        border: 1px solid #10b981;
     }
 
     .badge-pendiente {
-        background-color: #F8F9F9;
-        color: #7F8C8D;
-        border: 1px solid #7F8C8D;
+        background-color: #f59e0b;
+        color: #ffffff;
+        border: 1px solid #f59e0b;
     }
 
     /* Buttons */
@@ -297,15 +310,16 @@
         display: inline-flex;
         align-items: center;
         gap: var(--spacing-sm);
-        padding: 6px 12px;
+        padding: 8px 16px;
         font-size: 12px;
-        font-weight: 500;
+        font-weight: 600;
         text-decoration: none;
-        border-radius: 4px;
+        border-radius: 999px;
         border: 1px solid transparent;
         cursor: pointer;
         transition: all 0.2s ease;
         line-height: 1;
+        box-shadow: var(--shadow-sm);
     }
 
     .btn-orange {
@@ -314,28 +328,8 @@
         border-color: var(--color-primary);
     }
 
-    .btn-orange:hover {
-        background-color: var(--color-primary-dark);
-        border-color: var(--color-primary-dark);
-        color: var(--color-white);
-        text-decoration: none;
-    }
 
-    .btn-outline-white {
-        background-color: transparent;
-        color: var(--color-text-primary);
-        border: 2px solid var(--color-primary);
-        font-weight: 600;
-    }
-
-    .btn-outline-white:hover {
-        background-color: var(--color-primary);
-        color: #ffffff;
-        border-color: var(--color-primary);
-        text-decoration: none;
-        transform: translateY(-1px);
-        box-shadow: 0 2px 8px rgba(255, 152, 0, 0.3);
-    }
+  
 
     .btn + .btn {
         margin-left: var(--spacing-sm);
@@ -372,7 +366,8 @@
 
         .btn {
             font-size: 11px;
-            padding: 4px 8px;
+            padding: 6px 12px;
+            border-radius: 999px;
         }
 
         .stat-icon {
@@ -406,8 +401,4 @@
         .btn + .btn {
             margin-left: 0;
         }
-    }
-
-    h1{
-        color: #1a1a1a;
     }

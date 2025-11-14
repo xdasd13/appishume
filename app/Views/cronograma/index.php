@@ -50,10 +50,6 @@
 
     <!-- Calendario -->
     <div class="card">
-        <div class="card-header">
-            <i class="fas fa-calendar-alt"></i>
-            <h2>Cronograma de Servicios</h2>
-        </div>
         <div class="card-body">
             <div id="calendar"></div>
         </div>
@@ -164,7 +160,7 @@
                     icon: 'question',
                     showCancelButton: true,
                     confirmButtonColor: '#ff9800',
-                    cancelButtonColor: '#6C757D',
+                    cancelButtonColor: '#222222ff',
                     confirmButtonText: 'Sí, crear',
                     cancelButtonText: 'Cancelar'
                 }).then((result) => {
