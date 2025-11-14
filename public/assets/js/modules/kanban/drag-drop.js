@@ -143,7 +143,13 @@ const KanbanDragDrop = {
                 didOpen: () => Swal.showLoading()
             });
 
-            const response = await fetch(BASE_URL + 'equipos/actualizar-estado', {
+            const endpoint = (typeof ENDPOINT_ACTUALIZAR_ESTADO !== 'undefined' && ENDPOINT_ACTUALIZAR_ESTADO)
+                ? ENDPOINT_ACTUALIZAR_ESTADO
+                : (BASE_URL.endsWith('/') ? BASE_URL : BASE_URL + '/') + 'equipos/actualizar-estado';
+
+            console.debug('[Kanban] POST actualizar-estado →', endpoint, { id: cardId, estado: newStatus });
+
+            const response = await fetch(endpoint, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -153,6 +159,11 @@ const KanbanDragDrop = {
             });
 
             if (!response.ok) {
+                console.error('[Kanban] Error HTTP en actualizar-estado', {
+                    endpoint,
+                    status: response.status,
+                    statusText: response.statusText
+                });
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
 
@@ -167,7 +178,7 @@ const KanbanDragDrop = {
 
         } catch (error) {
             Swal.close();
-            console.error('Error:', error);
+            console.error('[Kanban] Excepción en updateCardStatus:', error);
             KanbanUI.showNotification('Error de conexión', 'error');
             return false;
         }

@@ -152,6 +152,8 @@ $routes->group('', ['filter' => 'admin'], function($routes) {
     $routes->post('equipos/saveEquipo', 'Equipos::guardar'); // Alias para compatibilidad
     $routes->post('equipos/actualizar', 'Equipos::actualizar');
     $routes->post('equipos/verificar-disponibilidad', 'Equipos::verificarDisponibilidad');
+    // Permitir a administradores actualizar estado desde el Kanban
+    $routes->post('equipos/actualizar-estado', 'Equipos::actualizarEstado');
     
     // APIs administrativas de cronograma
     $routes->post('cronograma/actualizar-estado', 'Cronograma::actualizarEstado');

@@ -566,6 +566,9 @@ function renderClienteCard(array $clienteData, string $estado): string
     const ES_TRABAJADOR = <?= isset($es_trabajador) && $es_trabajador ? 'true' : 'false' ?>;
     const USUARIO_ACTUAL_ID = <?= isset($usuario_actual_id) ? $usuario_actual_id : 'null' ?>;
     
+    // Endpoint absoluto para actualizar estado (evita problemas de concatenación de URL)
+    const ENDPOINT_ACTUALIZAR_ESTADO = '<?= base_url('equipos/actualizar-estado') ?>';
+    
     <?php if (session()->getFlashdata('success')): ?>
         window.FLASH_SUCCESS = '<?= addslashes(session()->getFlashdata('success')) ?>';
     <?php endif; ?>

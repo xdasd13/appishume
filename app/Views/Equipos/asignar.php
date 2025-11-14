@@ -173,7 +173,7 @@
         </div>
 
         <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-            <a href="<?= base_url('equipos/porServicio/' . $servicio['idserviciocontratado']) ?>"
+            <a href="<?= base_url('equipos') ?>"
                 class="btn btn-secondary me-md-2">
                 <i class="fas fa-arrow-left"></i> Cancelar
             </a>

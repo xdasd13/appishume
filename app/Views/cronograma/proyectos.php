@@ -1,9 +1,12 @@
 <?= $header ?>
 <link rel="stylesheet" href="<?= base_url('assets/css/cronograma-proyectos.css') ?>">
+<link rel="stylesheet" href="<?= base_url('assets/css/leaflet-routes.css') ?>">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" />
 <!-- Leaflet CSS -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<!-- OSRM para rutas -->
+<script src="https://cdn.jsdelivr.net/npm/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.umd.js"></script>
 
 <div class="container">
     <div class="dashboard-header">
@@ -109,7 +112,10 @@
                                     <div class="detail-label">Ubicación Principal</div>
                                     <div class="detail-value"
                                         style="display: flex; justify-content: space-between; align-items: center; gap: 10px;">
-                                        <span style="flex: 1;"><?= esc($proyecto['direccion_principal']) ?></span>
+                                        <a href="#" class="location-link" onclick="LeafletRoutes.openRoute('<?= addslashes(esc($proyecto['direccion_principal'])) ?>'); return false;" 
+                                           title="Ver ruta hacia esta ubicación">
+                                            <i class="fas fa-directions"></i><?= esc($proyecto['direccion_principal']) ?>
+                                        </a>
                                     </div>
                                 </div>
                             </div>
@@ -126,10 +132,10 @@
 
                             <div class="project-actions">
                                 <a href="<?= base_url('clientes/ver/' . $proyecto['idcliente']) ?>"
-                                    class="project-btn btn-primary">
+                                    class="project-btn btn-blue">
                                     <i class="fas fa-user"></i> Ver Cliente
                                 </a>
-                                <a href="<?= base_url('cronograma') ?>" class="project-btn btn-secondary">
+                                <a href="<?= base_url('cronograma') ?>" class="project-btn btn-orange">
                                     <i class="fas fa-calendar"></i> Cronograma
                                 </a>
                             </div>
@@ -151,4 +157,5 @@
         </div>
     </div>
 </div>
+<script src="<?= base_url('assets/js/leaflet-routes.js') ?>"></script>
 <?= $footer ?>
