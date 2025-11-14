@@ -409,7 +409,7 @@
               <!-- Usuario -->
               <li class="nav-item topbar-user dropdown hidden-caret">
                 <a class="dropdown-toggle profile-pic" data-bs-toggle="dropdown" href="#" aria-expanded="false">
-                  <div class="avatar-sm">
+                  <div class="avatar-xs">
                     <img src="<?= base_url() . 'assets/img/user.png' ?>" alt="Avatar"
                       class="avatar-img rounded-circle" />
                   </div>

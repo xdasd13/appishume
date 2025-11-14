@@ -10,7 +10,7 @@
     top: 0;
     bottom: 0;
     width: 2px;
-    background: #dee2e6;
+    background: #e5e7eb;
 }
 
 .timeline-item {
@@ -26,7 +26,7 @@
     height: 30px;
     border-radius: 50%;
     background: white;
-    border: 2px solid #dee2e6;
+    border: 2px solid #e5e7eb;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -34,35 +34,41 @@
 }
 
 .timeline-content {
-    background: #f8f9fa;
+    background: #ffffff;
     padding: 15px;
-    border-radius: 8px;
-    border-left: 4px solid #007bff;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    border-radius: 10px;
+    border-left: 4px solid #e97f1b;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    font-family: 'Poppins', sans-serif;
 }
 
 .timeline-title {
-    color: #495057;
+    color: #1f2937;
     font-weight: 600;
     margin-bottom: 8px;
+    font-family: 'Poppins', sans-serif;
 }
 
 .timeline-meta {
     margin-bottom: 8px;
+    font-family: 'Poppins', sans-serif;
 }
 
 .timeline-date {
-    border-top: 1px solid #dee2e6;
+    border-top: 1px solid #e5e7eb;
     padding-top: 8px;
     margin-top: 8px;
 }
 
 .card {
-    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
-    border: 1px solid rgba(0, 0, 0, 0.125);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    font-family: 'Poppins', sans-serif;
 }
 
 .card-header {
-    background-color: #f8f9fa;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.125);
+    background-color: #ffffff;
+    border-bottom: 2px solid #f3f4f6;
+    font-family: 'Poppins', sans-serif;
 }
