@@ -1,4 +1,4 @@
-USE ishume;
+USE ishumeProyectos;
 
 -- TABLA DE CATEGORÍAS DE EQUIPOS
 CREATE TABLE cateEquipo (

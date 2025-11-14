@@ -54,8 +54,6 @@
                             <p class="text-muted">Las actividades del sistema aparecerán aquí</p>
                         </div>
                     </div>
-<<<<<<< HEAD
-
                     <!-- Tabla -->
                     <div id="tabla-container" class="table-responsive">
                         <table class="table mb-0" style="font-family: 'Poppins', sans-serif;">
@@ -118,7 +116,6 @@
                                 <?php endif; ?>
                             </tbody>
                         </table>
-=======
                 <?php else: ?>
                     <div id="tabla-body" class="activity-grid">
                         <?php foreach ($historial as $index => $item): ?>
@@ -138,7 +135,6 @@
                                 </div>
                             </div>
                         <?php endforeach; ?>
->>>>>>> aa3e16825e81315d9c592466ba9d17cf06daa271
                     </div>
                 <?php endif; ?>
             </div>

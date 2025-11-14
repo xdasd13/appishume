@@ -31,7 +31,7 @@ CI_ENVIRONMENT = development
 #--------------------------------------------------------------------
 
 database.default.hostname = localhost
-database.default.database = ishume
+database.default.database = ishumeProyectos
 database.default.username = root
 database.default.password = 
 database.default.DBDriver = MySQLi

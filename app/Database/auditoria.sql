@@ -1,4 +1,4 @@
-USE ishume;
+USE ishumeProyectos;
 
 -- 1. CREAR TABLA DE AUDITORÍA
 CREATE TABLE auditoria_kanban (

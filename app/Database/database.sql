@@ -1,6 +1,6 @@
 -- CREAR BASE DE DATOS
-CREATE DATABASE IF NOT EXISTS ishume;
-USE ishume;
+CREATE DATABASE IF NOT EXISTS ishumeProyectos;
+USE ishumeProyectos;
 
 -- TABLAS MAESTRAS
 CREATE TABLE cargos (
