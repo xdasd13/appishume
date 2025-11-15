@@ -54,68 +54,6 @@
                             <p class="text-muted">Las actividades del sistema aparecerán aquí</p>
                         </div>
                     </div>
-                    <!-- Tabla -->
-                    <div id="tabla-container" class="table-responsive">
-                        <table class="table mb-0" style="font-family: 'Poppins', sans-serif;">
-                            <thead style="background-color: #000000ff; border-bottom: 2px solid #ff6b35;">
-                                <tr>
-                                    <th width="10%" style="font-weight: 700; color: #ffffff; padding: 12px 15px;">Fecha</th>
-                                    <th width="8%" style="font-weight: 700; color: #ffffff; padding: 12px 15px;">Hora</th>
-                                    <th width="10%" style="font-weight: 700; color: #ffffff; padding: 12px 15px;">Día</th>
-                                    <th width="15%" style="font-weight: 700; color: #ffffff; padding: 12px 15px;">Usuario</th>
-                                    <th width="57%" style="font-weight: 700; color: #ffffff; padding: 12px 15px;">Cambio Realizado</th>
-                                </tr>
-                            </thead>
-                            <tbody id="tabla-body">
-                                <?php if (empty($historial)): ?>
-                                    <tr>
-                                        <td colspan="5" class="text-center py-5" style="border: none; color: #000000ff; padding: 2rem 1rem;">
-                                            <i class="fas fa-inbox fa-3x mb-3" style="color: #d1d5db;"></i>
-                                            <p class="mb-0">No se encontraron actividades</p>
-                                        </td>
-                                    </tr>
-                                <?php else: ?>
-                                    <?php foreach ($historial as $item): ?>
-                                        <tr style="border-bottom: 1px solid #f3f4f6; background-color: #ffffff;">
-                                            <!-- Fecha -->
-                                            <td class="align-middle" style="padding: 12px 15px; color: #1f2937; font-weight: 500; font-family: 'Poppins', sans-serif;">
-                                                <span>
-                                                    <?= date('d/m/Y', strtotime($item->fecha)) ?>
-                                                </span>
-                                            </td>
-
-                                            <!-- Hora -->
-                                            <td class="align-middle" style="padding: 12px 15px;">
-                                                <span class="badge" style="background-color: #fd8700ff; color: white; font-family: 'Poppins', sans-serif; font-weight: 600; padding: 4px 10px;">
-                                                    <?= date('H:i:s', strtotime($item->fecha)) ?>
-                                                </span>
-                                            </td>
-
-                                            <!-- Día -->
-                                            <td class="align-middle" style="padding: 12px 15px; color: #000000ff; font-family: 'Poppins', sans-serif;">
-                                                <span>
-                                                    <?= obtenerNombreDia($item->fecha) ?>
-                                                </span>
-                                            </td>
-
-                                            <!-- Usuario -->
-                                            <td class="align-middle" style="padding: 12px 15px;">
-                                                <div class="d-flex align-items-center">
-                                                    <span style="font-weight: 500; color: #1f2937; font-family: 'Poppins', sans-serif;">
-                                                        <?= esc($item->usuario_nombre) ?>
-                                                    </span>
-                                                </div>
-                                            </td>
-
-                                            <!-- Cambio Realizado -->
-                                            <td class="align-middle" style="padding: 12px 15px; color: #374151; font-family: 'Poppins', sans-serif;">
-                                                <?= generarTextoAccion($item) ?>
-                                            </td>
-                                        </tr>
-                                    <?php endforeach; ?>
-                                <?php endif; ?>
-                            </tbody>
-                        </table>
                 <?php else: ?>
                     <div id="tabla-body" class="activity-grid">
                         <?php foreach ($historial as $index => $item): ?>

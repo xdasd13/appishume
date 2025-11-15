@@ -3,7 +3,7 @@
   --ishume-primary: #F29100; /* orange from logo */
   --ishume-primary-2: #FF8A3D; /* lighter orange for gradients */
   --ishume-dark-1: #0F1117; /* charcoal */
-  --ishume-dark-2: #151A22; /* slightly lighter charcoal */
+  --ishume-dark-2: #000000; /* slightly lighter charcoal */
   --ishume-text: #FFFFFF;
   --ishume-muted: rgba(255, 255, 255, 0.75);
 }
