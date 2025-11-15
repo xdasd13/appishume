@@ -1,0 +1,138 @@
+/**
+ * Estilos para el sistema de rutas con MapLibre + OpenRouteService
+ */
+
+#mapLibreMap {
+    border-radius: 12px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+    background: #f8fafc;
+}
+
+.maplibregl-canvas {
+    border-radius: 12px;
+}
+
+.maplibregl-ctrl-group {
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+    overflow: hidden;
+}
+
+.maplibregl-ctrl-group button {
+    width: 34px;
+    height: 34px;
+}
+
+/* Modal */
+#routeModal .modal-dialog {
+    max-width: 960px;
+}
+
+#routeModal .modal-header {
+    background: linear-gradient(135deg, #eb7d23 0%, #f7b11a 100%);
+    border: none;
+    color: #fff;
+}
+
+#routeModal .modal-title {
+    font-weight: 600;
+}
+
+#routeModal .modal-body {
+    background: #f9fafb;
+}
+
+#mapContainer {
+    height: 480px;
+    border-radius: 12px;
+    overflow: hidden;
+    background: #e5e7eb;
+}
+
+#routeInfo .stats {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+#routeInfo .stat-card {
+    flex: 1 1 200px;
+    background: white;
+    border-radius: 10px;
+    padding: 14px 18px;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
+}
+
+#routeInfo .stat-card strong {
+    display: block;
+    color: #0f172a;
+    font-size: 0.9rem;
+    margin-bottom: 4px;
+}
+
+#routeInfo .stat-card span {
+    color: #2563eb;
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+#loadingRoute {
+    padding: 28px 0;
+    text-align: center;
+}
+
+#loadingRoute p {
+    margin-top: 10px;
+    color: #475569;
+}
+
+#openGoogleMaps {
+    display: none;
+}
+
+/* Mensajes */
+#routeModal .alert-info {
+    background: #dbeafe;
+    color: #1e3a8a;
+    border: none;
+}
+
+#routeModal .alert-danger {
+    background: #fee2e2;
+    color: #7f1d1d;
+    border: none;
+}
+
+.location-link {
+    cursor: pointer;
+    color: #2563eb;
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.2s ease;
+}
+
+.location-link:hover {
+    color: #1d4ed8;
+}
+
+/* Responsive */
+@media (max-width: 992px) {
+    #mapContainer {
+        height: 420px;
+    }
+}
+
+@media (max-width: 768px) {
+    #routeModal .modal-dialog {
+        margin: 12px;
+    }
+
+    #mapContainer {
+        height: 360px;
+    }
+
+    #routeInfo .stats {
+        flex-direction: column;
+    }
+}
