@@ -1,12 +1,20 @@
 <?= $header ?>
 <link rel="stylesheet" href="<?= base_url('assets/css/cronograma-proyectos.css') ?>">
-<link rel="stylesheet" href="<?= base_url('assets/css/leaflet-routes.css') ?>">
+<link rel="stylesheet" href="<?= base_url('assets/css/maplibre-routes.css') ?>">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" />
-<!-- Leaflet CSS -->
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<!-- OSRM para rutas -->
-<script src="https://cdn.jsdelivr.net/npm/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.umd.js"></script>
+<!-- MapLibre GL -->
+<link rel="stylesheet" href="https://unpkg.com/maplibre-gl@3.6.1/dist/maplibre-gl.css"
+    crossorigin="anonymous" referrerpolicy="no-referrer">
+<script src="https://unpkg.com/maplibre-gl@3.6.1/dist/maplibre-gl.js" crossorigin="anonymous" defer></script>
+
+<script>
+    window.ORS_API_KEY = '<?= esc(getenv('ORS_API_KEY') ?? '') ?>';
+    window.DEFAULT_PROJECT_LOCATION = {
+        name: 'Av. Luis Massaro 791, Chincha Alta 11702',
+        lat: -13.4192,
+        lng: -76.1325
+    };
+</script>
 
 <div class="container">
     <div class="dashboard-header">
@@ -112,8 +120,9 @@
                                     <div class="detail-label">Ubicación Principal</div>
                                     <div class="detail-value"
                                         style="display: flex; justify-content: space-between; align-items: center; gap: 10px;">
-                                        <a href="#" class="location-link" onclick="LeafletRoutes.openRoute('<?= addslashes(esc($proyecto['direccion_principal'])) ?>'); return false;" 
-                                           title="Ver ruta hacia esta ubicación">
+                                        <a href="#" class="location-link"
+                                            onclick="MapLibreRoutes.openRoute('<?= addslashes(esc($proyecto['direccion_principal'])) ?>'); return false;"
+                                            title="Ver ruta hacia esta ubicación">
                                             <i class="fas fa-directions"></i><?= esc($proyecto['direccion_principal']) ?>
                                         </a>
                                     </div>
@@ -157,5 +166,5 @@
         </div>
     </div>
 </div>
-<script src="<?= base_url('assets/js/leaflet-routes.js') ?>"></script>
+<script src="<?= base_url('assets/js/maplibre-routes.js') ?>"></script>
 <?= $footer ?>
