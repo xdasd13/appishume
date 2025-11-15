@@ -191,29 +191,29 @@
         background: var(--color-white);
     }
     
-    /* CORRECCIÓN DEFINITIVA: Texto oscuro para los badges */
+    /* Texto oscuro para los badges */
     .status-programado {
-        color: #FF9900 !important;
+        color: #7c3aed !important;
         background: #FFF9E6 !important;
-        border: 1px solid #FF9900 !important;
+        border: 1px solid #7c3aed !important;
     }
     
     .status-en-proceso {
-        color: #E67E22 !important;
+        color: #f59e0b !important;
         background: #FEF5E7 !important;
-        border: 1px solid #E67E22 !important;
+        border: 1px solid #f59e0b !important;
     }
     
     .status-completado {
-        color: #27AE60 !important;
+        color: #10b981 !important;
         background: #E8F8EF !important;
-        border: 1px solid #27AE60 !important;
+        border: 1px solid #10b981 !important;
     }
     
     .status-pendiente {
-        color: #7F8C8D !important;
+        color: #f59e0b !important;
         background: #F8F9F9 !important;
-        border: 1px solid #7F8C8D !important;
+        border: 1px solid #f59e0b !important;
     }
     
     .status-activo {
@@ -353,15 +353,10 @@
     }
     
     .btn-blue {
-        background: #3498DB;
+        background: #000000;
         color: #ffffff;
     }
     
-    .btn-blue:hover {
-        background: #2980B9;
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
-    }
     
     .btn-orange {
         background: #FF9900;
