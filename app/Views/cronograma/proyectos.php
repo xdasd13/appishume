@@ -63,37 +63,45 @@
                                             <div class="servicio-item" style="margin-bottom: 8px; padding: 8px; background: #f8f9fa; border-radius: 6px; border-left: 3px solid 
                                             <?php
                                             if ($servicio['estado'] == 'Completado')
-                                                echo '#27AE60';
+                                                echo '#10b981';
                                             elseif ($servicio['estado'] == 'En Proceso')
-                                                echo '#E67E22';
+                                                echo '#3b82f6';
                                             elseif ($servicio['estado'] == 'Programado')
-                                                echo '#FF9900';
+                                                echo '#7c3aed';
                                             else
-                                                echo '#7F8C8D';
+                                                echo '#f59e0b';
                                             ?>;">
-                                                <div style="display: flex; justify-content: space-between; align-items: center;">
-                                                    <strong style="color: #2c3e50; font-size: 0.95rem;">
-                                                        <i class="fas fa-check-circle me-1" style="font-size: 0.8rem;"></i>
-                                                        <?= esc($servicio['servicio']) ?>
-                                                    </strong>
-                                                    <span class="badge" style="font-size: 0.7rem; padding: 3px 8px;
-                                                    <?php
-                                                    if ($servicio['estado'] == 'Completado')
-                                                        echo 'background: #27AE60;';
-                                                    elseif ($servicio['estado'] == 'En Proceso')
-                                                        echo 'background: #E67E22;';
-                                                    elseif ($servicio['estado'] == 'Programado')
-                                                        echo 'background: #FF9900;';
-                                                    else
-                                                        echo 'background: #7F8C8D;';
-                                                    ?> color: white;">
-                                                        <?= esc($servicio['estado']) ?>
-                                                    </span>
+                                                <div style="display: flex; justify-content: space-between; align-items: center; gap: 12px;">
+                                                    <div>
+                                                        <strong style="color: #2c3e50; font-size: 0.95rem;">
+                                                            <i class="fas fa-check-circle me-1" style="font-size: 0.8rem;"></i>
+                                                            <?= esc($servicio['servicio']) ?>
+                                                        </strong>
+                                                        <small style="display:block;color:#7f8c8d;margin-top:4px;">
+                                                            <i class="fas fa-calendar me-1"></i>
+                                                            <?= date('d/m/Y H:i', strtotime($servicio['fechahoraservicio'])) ?>
+                                                        </small>
+                                                    </div>
+                                                    <div style="display:flex; align-items:center; gap:8px;">
+                                                        <span class="badge" style="font-size: 0.7rem; padding: 3px 8px;
+                                                        <?php
+                                                        if ($servicio['estado'] == 'Completado')
+                                                            echo 'background: #10b981;';
+                                                        elseif ($servicio['estado'] == 'En Proceso')
+                                                            echo 'background: #3b82f6;';
+                                                        elseif ($servicio['estado'] == 'Programado')
+                                                            echo 'background: #7c3aed;';
+                                                        else
+                                                            echo 'background: #f59e0b;';
+                                                        ?> color: white;">
+                                                            <?= esc($servicio['estado']) ?>
+                                                        </span>
+                                                        <a href="<?= base_url('equipos/asignar/' . $servicio['idserviciocontratado']) ?>" class="btn btn-sm btn-outline-primary"
+                                                            title="Asignar técnico" style="white-space: nowrap;">
+                                                            <i class="fas fa-user-plus"></i>
+                                                        </a>
+                                                    </div>
                                                 </div>
-                                                <small style="color: #7f8c8d; display: block; margin-top: 4px;">
-                                                    <i class="fas fa-calendar me-1"></i>
-                                                    <?= date('d/m/Y H:i', strtotime($servicio['fechahoraservicio'])) ?>
-                                                </small>
                                             </div>
                                         <?php endforeach; ?>
                                     </div>
