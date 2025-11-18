@@ -165,6 +165,11 @@
                       <span class="sub-item">Historial de actividades</span>
                     </a>
                   </li>
+                  <li>
+                    <a href="<?= base_url('/equipos/vencidos') ?>">
+                      <span class="sub-item text-danger">Proyectos Vencidos</span>
+                    </a>
+                  </li>
                 </ul>
               </div>
             </li>
@@ -322,49 +327,32 @@
 
             <ul class="navbar-nav topbar-nav ms-md-auto align-items-center">
 
-              <!-- Notificaciones de Proyectos -->
-              <li class="nav-item topbar-icon dropdown hidden-caret">
-                <a class="nav-link dropdown-toggle" href="#" id="projectNotif" role="button" data-bs-toggle="dropdown"
+              <!-- Notificaciones del sistema -->
+              <li 
+                class="nav-item topbar-icon dropdown hidden-caret" 
+                id="notificationDropdown"
+                data-api-list="<?= base_url('api/notifications') ?>"
+                data-api-recent="<?= base_url('api/notifications/recent') ?>"
+                data-api-count="<?= base_url('api/notifications/unread-count') ?>"
+                data-api-mark="<?= base_url('api/notifications/mark-read') ?>"
+                data-api-mark-all="<?= base_url('api/notifications/mark-all-read') ?>"
+              >
+                <a class="nav-link dropdown-toggle position-relative" href="#" role="button" data-bs-toggle="dropdown"
                   aria-haspopup="true" aria-expanded="false">
-                  <i class="fas fa-tasks"></i>
-                  <span class="notification">3</span>
+                  <i class="fas fa-bell"></i>
+                  <span class="notification d-none" id="notificationCount">0</span>
                 </a>
-                <ul class="dropdown-menu notif-box animated fadeIn" aria-labelledby="projectNotif">
+                <ul class="dropdown-menu notif-box animated fadeIn" aria-labelledby="notificationDropdown">
                   <li>
-                    <div class="dropdown-title">
-                      Notificaciones de Proyectos
+                    <div class="dropdown-title d-flex justify-content-between align-items-center">
+                      <span>Notificaciones</span>
+                      <button type="button" class="btn btn-link btn-sm p-0" id="markAllNotifications">Marcar todas</button>
                     </div>
                   </li>
                   <li>
                     <div class="notif-scroll scrollbar-outer">
-                      <div class="notif-center">
-                        <a href="#">
-                          <div class="notif-icon notif-warning">
-                            <i class="fas fa-exclamation-triangle"></i>
-                          </div>
-                          <div class="notif-content">
-                            <span class="block">Proyecto próximo a vencer</span>
-                            <span class="time">2 días restantes</span>
-                          </div>
-                        </a>
-                        <a href="#">
-                          <div class="notif-icon notif-success">
-                            <i class="fas fa-check-circle"></i>
-                          </div>
-                          <div class="notif-content">
-                            <span class="block">Entrega completada</span>
-                            <span class="time">1 hora</span>
-                          </div>
-                        </a>
-                        <a href="#">
-                          <div class="notif-icon notif-primary">
-                            <i class="fas fa-plus"></i>
-                          </div>
-                          <div class="notif-content">
-                            <span class="block">Nuevo proyecto asignado</span>
-                            <span class="time">3 horas</span>
-                          </div>
-                        </a>
+                      <div class="notif-center" id="notificationList">
+                        <div class="text-muted small text-center py-3">Cargando notificaciones...</div>
                       </div>
                     </div>
                   </li>
