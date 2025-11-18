@@ -10,6 +10,8 @@ use App\Models\EquipoModel;
 use App\Models\PersonaModel;
 use App\Models\ServicioModel;
 use App\Models\CronogramaModel;
+use Dompdf\Dompdf;
+use Dompdf\Options;
 
 class ReportesController extends BaseController
 {
@@ -801,12 +803,37 @@ class ReportesController extends BaseController
                 ]);
             }
             
+            // Generar HTML para el PDF
             $html = $this->generarHTMLParaPDF($datos, $metadata, $filtros);
             
-            return $this->response->setContentType('text/html')->setBody($html);
+            // Configurar opciones de DomPDF
+            $options = new Options();
+            $options->set('isHtml5ParserEnabled', true);
+            $options->set('isRemoteEnabled', true);
+            $options->set('defaultFont', 'Arial');
+            $options->set('isPhpEnabled', true);
+            
+            // Crear instancia de DomPDF
+            $dompdf = new Dompdf($options);
+            $dompdf->loadHtml($html);
+            $dompdf->setPaper('A4', 'landscape'); // Usar landscape para tablas anchas
+            
+            // Renderizar PDF
+            $dompdf->render();
+            
+            // Generar nombre de archivo
+            $nombreArchivo = 'reporte_' . $tipo_reporte . '_' . date('Y-m-d_His') . '.pdf';
+            
+            // Enviar PDF como descarga
+            $this->response->setHeader('Content-Type', 'application/pdf');
+            $this->response->setHeader('Content-Disposition', 'attachment; filename="' . $nombreArchivo . '"');
+            $this->response->setBody($dompdf->output());
+            
+            return $this->response;
             
         } catch (\Exception $e) {
             log_message('error', 'Error exportando PDF: ' . $e->getMessage());
+            log_message('error', 'Stack trace: ' . $e->getTraceAsString());
             return $this->response->setJSON(['error' => 'Error al exportar PDF: ' . $e->getMessage()]);
         }
     }
@@ -814,35 +841,93 @@ class ReportesController extends BaseController
 
     private function generarHTMLParaPDF($datos, $metadata, $filtros)
     {
+        // Mapeo de campos a labels más amigables
+        $labels = [
+            'idcontrato' => 'ID Contrato',
+            'cliente' => 'Cliente',
+            'cliente_completo' => 'Cliente Completo',
+            'tipo_evento' => 'Tipo Evento',
+            'fechaevento' => 'Fecha Evento',
+            'monto_total' => 'Monto Total',
+            'deuda_actual' => 'Deuda Actual',
+            'total_pagado' => 'Total Pagado',
+            'estado_pago' => 'Estado Pago',
+            'identregable' => 'ID Entrega',
+            'fechahoraentrega' => 'Fecha Entrega',
+            'fecha_real_entrega' => 'Fecha Real',
+            'estado' => 'Estado',
+            'observaciones' => 'Observaciones',
+            'servicio' => 'Servicio',
+            'direccion' => 'Dirección',
+            'estado_visual' => 'Estado Visual',
+            'idequipo' => 'ID Equipo',
+            'descripcion' => 'Descripción',
+            'estadoservicio' => 'Estado Servicio',
+            'fecha_asignacion' => 'Fecha Asignación',
+            'tecnico' => 'Técnico',
+            'cargo' => 'Cargo',
+            'fechahoraservicio' => 'Fecha Servicio',
+            'idcliente' => 'ID Cliente',
+            'tipo_cliente' => 'Tipo Cliente',
+            'documento' => 'Documento',
+            'telefono' => 'Teléfono',
+            'total_contratos' => 'Total Contratos',
+            'monto_total_contratado' => 'Monto Total',
+            'contratos_pagados' => 'Contratos Pagados',
+            'contratos_con_deuda' => 'Con Deuda',
+            'idserviciocontratado' => 'ID Servicio',
+            'estado_proyecto' => 'Estado Proyecto',
+            'responsable' => 'Responsable',
+            'cargo_responsable' => 'Cargo',
+            'progreso_porcentaje' => 'Progreso %',
+            'precioregular' => 'Precio Regular',
+            'precio_contratado' => 'Precio Contratado',
+            'diferencia_precio' => 'Diferencia',
+            'margen_porcentaje' => 'Margen %',
+            'cantidad_contratada' => 'Cantidad',
+            'ingresos_totales' => 'Ingresos',
+            'costo_base_total' => 'Costo Base',
+            'ganancia_total' => 'Ganancia',
+            'clientes_unicos' => 'Clientes Únicos'
+        ];
+
         $html = '<!DOCTYPE html>
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>' . $metadata['nombre'] . '</title>
+    <title>' . htmlspecialchars($metadata['nombre']) . '</title>
     <style>
-        body { font-family: Arial, sans-serif; margin: 20px; }
-        .header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #333; padding-bottom: 20px; }
-        .header h1 { color: #333; margin: 0; }
-        .header p { color: #666; margin: 5px 0; }
-        .info { margin-bottom: 20px; }
-        .info h3 { color: #555; margin-bottom: 10px; }
-        .info p { margin: 5px 0; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-        th { background-color: #f2f2f2; font-weight: bold; }
-        .stats { margin-top: 20px; }
-        .stats h3 { color: #555; }
-        .stats p { margin: 5px 0; }
-        @media print {
-            body { margin: 0; }
-            .no-print { display: none; }
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; font-size: 10px; padding: 15px; }
+        .header { text-align: center; margin-bottom: 20px; border-bottom: 3px solid #333; padding-bottom: 15px; }
+        .header h1 { color: #333; margin: 0; font-size: 18px; }
+        .header p { color: #666; margin: 3px 0; font-size: 11px; }
+        .info { margin-bottom: 15px; padding: 10px; background-color: #f9f9f9; border-left: 4px solid #007bff; }
+        .info h3 { color: #555; margin-bottom: 8px; font-size: 12px; }
+        .info p { margin: 3px 0; font-size: 10px; }
+        .stats { margin-top: 15px; margin-bottom: 15px; padding: 10px; background-color: #f0f0f0; border-radius: 5px; }
+        .stats h3 { color: #555; margin-bottom: 8px; font-size: 12px; }
+        .stats-grid { display: table; width: 100%; }
+        .stats-item { display: table-cell; padding: 5px; font-size: 9px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 8px; }
+        th, td { border: 1px solid #333; padding: 5px; text-align: left; }
+        th { background-color: #333; color: white; font-weight: bold; font-size: 9px; }
+        td { background-color: #fff; }
+        tr:nth-child(even) td { background-color: #f9f9f9; }
+        .text-right { text-align: right; }
+        .text-center { text-align: center; }
+        .badge { padding: 2px 6px; border-radius: 3px; font-size: 8px; font-weight: bold; }
+        .badge-success { background-color: #28a745; color: white; }
+        .badge-warning { background-color: #ffc107; color: #333; }
+        .badge-info { background-color: #17a2b8; color: white; }
+        .badge-danger { background-color: #dc3545; color: white; }
+        .footer { margin-top: 20px; padding-top: 10px; border-top: 1px solid #ddd; text-align: center; font-size: 9px; color: #666; }
     </style>
 </head>
 <body>
     <div class="header">
-        <h1>' . $metadata['nombre'] . '</h1>
-        <p>' . $metadata['descripcion'] . '</p>
+        <h1>' . htmlspecialchars($metadata['nombre']) . '</h1>
+        <p>' . htmlspecialchars($metadata['descripcion']) . '</p>
         <p>Generado el: ' . date('d/m/Y H:i', strtotime($metadata['fecha_generacion'])) . '</p>
     </div>';
 
@@ -852,14 +937,38 @@ class ReportesController extends BaseController
             
             if (!empty($filtros['fecha_desde']) && !empty($filtros['fecha_hasta'])) {
                 $html .= '<p><strong>Período:</strong> ' . date('d/m/Y', strtotime($filtros['fecha_desde'])) . ' - ' . date('d/m/Y', strtotime($filtros['fecha_hasta'])) . '</p>';
+            } elseif (!empty($filtros['fecha_desde'])) {
+                $html .= '<p><strong>Desde:</strong> ' . date('d/m/Y', strtotime($filtros['fecha_desde'])) . '</p>';
+            } elseif (!empty($filtros['fecha_hasta'])) {
+                $html .= '<p><strong>Hasta:</strong> ' . date('d/m/Y', strtotime($filtros['fecha_hasta'])) . '</p>';
             }
             
             if (!empty($filtros['estado_entrega']) && $filtros['estado_entrega'] !== 'todos') {
                 $html .= '<p><strong>Estado de Entrega:</strong> ' . ucfirst($filtros['estado_entrega']) . '</p>';
             }
             
+            if (!empty($filtros['estado_pago']) && $filtros['estado_pago'] !== 'todos') {
+                $html .= '<p><strong>Estado de Pago:</strong> ' . ucfirst($filtros['estado_pago']) . '</p>';
+            }
+            
             if (!empty($filtros['tipo_evento']) && $filtros['tipo_evento'] !== 'todos') {
-                $html .= '<p><strong>Tipo de Evento:</strong> ' . $filtros['tipo_evento'] . '</p>';
+                $html .= '<p><strong>Tipo de Evento:</strong> ' . htmlspecialchars($filtros['tipo_evento']) . '</p>';
+            }
+            
+            if (!empty($filtros['tecnico']) && $filtros['tecnico'] !== 'todos') {
+                $html .= '<p><strong>Técnico:</strong> ' . htmlspecialchars($filtros['tecnico']) . '</p>';
+            }
+            
+            if (!empty($filtros['estado_equipo']) && $filtros['estado_equipo'] !== 'todos') {
+                $html .= '<p><strong>Estado del Equipo:</strong> ' . htmlspecialchars($filtros['estado_equipo']) . '</p>';
+            }
+            
+            if (!empty($filtros['tipo_cliente']) && $filtros['tipo_cliente'] !== 'todos') {
+                $html .= '<p><strong>Tipo de Cliente:</strong> ' . ucfirst($filtros['tipo_cliente']) . '</p>';
+            }
+            
+            if (!empty($filtros['servicio']) && $filtros['servicio'] !== 'todos') {
+                $html .= '<p><strong>Servicio:</strong> ' . htmlspecialchars($filtros['servicio']) . '</p>';
             }
             
             $html .= '</div>';
@@ -867,18 +976,29 @@ class ReportesController extends BaseController
 
         if (isset($datos['estadisticas'])) {
             $html .= '<div class="stats">
-                <h3>Estadísticas</h3>';
+                <h3>Estadísticas Generales</h3>
+                <div class="stats-grid">';
             
+            $contador = 0;
             foreach ($datos['estadisticas'] as $key => $value) {
                 $label = ucfirst(str_replace('_', ' ', $key));
                 if (is_numeric($value)) {
-                    $html .= '<p><strong>' . $label . ':</strong> ' . number_format($value, 2) . '</p>';
+                    if (strpos($key, 'monto') !== false || strpos($key, 'precio') !== false || strpos($key, 'ganancia') !== false || strpos($key, 'ingreso') !== false || strpos($key, 'costo') !== false || strpos($key, 'deuda') !== false || strpos($key, 'total') !== false) {
+                        $valorFormateado = 'S/ ' . number_format($value, 2);
+                    } else {
+                        $valorFormateado = number_format($value, 2);
+                    }
                 } else {
-                    $html .= '<p><strong>' . $label . ':</strong> ' . $value . '</p>';
+                    $valorFormateado = htmlspecialchars($value);
+                }
+                $html .= '<div class="stats-item"><strong>' . $label . ':</strong> ' . $valorFormateado . '</div>';
+                $contador++;
+                if ($contador % 3 == 0) {
+                    $html .= '</div><div class="stats-grid">';
                 }
             }
             
-            $html .= '</div>';
+            $html .= '</div></div>';
         }
 
         if (!empty($datos['datos'])) {
@@ -888,8 +1008,8 @@ class ReportesController extends BaseController
             
             $primerRegistro = $datos['datos'][0];
             foreach (array_keys($primerRegistro) as $campo) {
-                $label = ucfirst(str_replace('_', ' ', $campo));
-                $html .= '<th>' . $label . '</th>';
+                $label = $labels[$campo] ?? ucfirst(str_replace('_', ' ', $campo));
+                $html .= '<th>' . htmlspecialchars($label) . '</th>';
             }
             
             $html .= '</tr>
@@ -898,8 +1018,37 @@ class ReportesController extends BaseController
             
             foreach ($datos['datos'] as $registro) {
                 $html .= '<tr>';
-                foreach ($registro as $valor) {
-                    $html .= '<td>' . htmlspecialchars($valor) . '</td>';
+                foreach ($registro as $campo => $valor) {
+                    $html .= '<td';
+                    
+                    // Formatear valores según el tipo de campo
+                    if (strpos($campo, 'fecha') !== false && $valor) {
+                        $valorFormateado = date('d/m/Y', strtotime($valor));
+                    } elseif (strpos($campo, 'monto') !== false || strpos($campo, 'precio') !== false || strpos($campo, 'ganancia') !== false || strpos($campo, 'ingreso') !== false || strpos($campo, 'costo') !== false || strpos($campo, 'deuda') !== false || strpos($campo, 'total') !== false) {
+                        $valorFormateado = 'S/ ' . number_format($valor, 2);
+                        $html .= ' class="text-right"';
+                    } elseif ($campo === 'estado_pago') {
+                        $badgeClass = $valor === 'Pagado' ? 'badge-success' : 'badge-warning';
+                        $valorFormateado = '<span class="badge ' . $badgeClass . '">' . htmlspecialchars($valor) . '</span>';
+                        $html .= ' class="text-center"';
+                    } elseif ($campo === 'estado' || $campo === 'estado_visual' || $campo === 'estadoservicio' || $campo === 'estado_proyecto') {
+                        $badgeClass = 'badge-info';
+                        if ($valor === 'completada' || $valor === 'Completado' || $valor === 'Entregado') $badgeClass = 'badge-success';
+                        elseif ($valor === 'pendiente' || $valor === 'Pendiente') $badgeClass = 'badge-warning';
+                        elseif ($valor === 'En Proceso') $badgeClass = 'badge-info';
+                        $valorFormateado = '<span class="badge ' . $badgeClass . '">' . htmlspecialchars($valor) . '</span>';
+                        $html .= ' class="text-center"';
+                    } elseif ($campo === 'progreso_porcentaje') {
+                        $valorFormateado = number_format($valor, 0) . '%';
+                        $html .= ' class="text-center"';
+                    } elseif ($campo === 'margen_porcentaje') {
+                        $valorFormateado = number_format($valor, 2) . '%';
+                        $html .= ' class="text-right"';
+                    } else {
+                        $valorFormateado = htmlspecialchars($valor ?? '');
+                    }
+                    
+                    $html .= '>' . $valorFormateado . '</td>';
                 }
                 $html .= '</tr>';
             }
@@ -909,12 +1058,13 @@ class ReportesController extends BaseController
         }
 
         $html .= '
-    <div class="no-print" style="margin-top: 30px; text-align: center;">
-        <button onclick="window.print()" style="padding: 10px 20px; font-size: 16px; background-color: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer;">Imprimir PDF</button>
+    <div class="footer">
+        <p>Reporte generado por IShume - ' . date('d/m/Y H:i:s') . '</p>
     </div>
 </body>
 </html>';
 
         return $html;
     }
+
 }

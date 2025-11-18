@@ -74,7 +74,7 @@
                                             <i class="fas fa-file-contract mr-2 text-primary"></i>Contrato Pagado *
                                         </label>
                                         <?php if (isset($contrato)): ?>
-                                            <input type="hidden" name="idcontrato" value="<?= $contrato['idcontrato'] ?>">
+                                            <input type="hidden" name="idcontrato" id="idcontrato" value="<?= $contrato['idcontrato'] ?>">
                                             <input type="text" class="form-control"
                                                 value="Contrato #<?= $contrato['idcontrato'] ?> - <?= $contrato['cliente_nombre'] ?> (<?= date('d/m/Y', strtotime($contrato['fechaevento'])) ?>)"
                                                 readonly>
@@ -297,12 +297,13 @@
             }
 
             // Validar campos básicos primero
-            var idcontrato = $('#idcontrato').val();
+            // Buscar el valor del contrato tanto en select como en input hidden
+            var idcontrato = $('#idcontrato').val() || $('input[name="idcontrato"]').val();
             var idservicio = $('#idserviciocontratado').val();
             var comprobanteInput = document.getElementById('comprobante_entrega');
 
             // Validar contrato
-            if (!idcontrato || idcontrato === '') {
+            if (!idcontrato || idcontrato === '' || idcontrato === null) {
                 Swal.fire({
                     icon: 'warning',
                     title: 'Contrato Requerido',

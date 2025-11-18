@@ -531,7 +531,7 @@ $(document).ready(function() {
             filtros: JSON.stringify(filtros)
         };
         
-        // Hacer petición AJAX para exportar
+        // Hacer petición AJAX para exportar PDF
         $.ajax({
             url: '<?= base_url("reportes/exportarPDF") ?>',
             method: 'POST',
@@ -539,22 +539,63 @@ $(document).ready(function() {
                 'X-Requested-With': 'XMLHttpRequest'
             },
             data: postData,
-            success: function(response) {
-                // Si es HTML (PDF), abrir en nueva ventana
-                if (typeof response === 'string' && response.includes('<!DOCTYPE html>')) {
-                    const nuevaVentana = window.open('', '_blank');
-                    nuevaVentana.document.write(response);
-                    nuevaVentana.document.close();
-                    $('#area-errores').hide();
-                } else if (typeof response === 'object' && response.error) {
-                    // Si es JSON con error
-                    mostrarErrorComoTexto('Error', response.error, 'error');
+            xhrFields: {
+                responseType: 'blob' // Esperar respuesta binaria
+            },
+            success: function(data, status, xhr) {
+                // Ocultar mensaje de carga
+                $('#area-errores').hide();
+                
+                // Verificar si es un PDF o un error JSON
+                const contentType = xhr.getResponseHeader('Content-Type');
+                
+                if (contentType && contentType.includes('application/pdf')) {
+                    // Es un PDF, crear blob y descargar
+                    const blob = new Blob([data], { type: 'application/pdf' });
+                    const url = window.URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    link.href = url;
+                    
+                    // Obtener nombre del archivo del header Content-Disposition
+                    const contentDisposition = xhr.getResponseHeader('Content-Disposition');
+                    let filename = 'reporte.pdf';
+                    if (contentDisposition) {
+                        const filenameMatch = contentDisposition.match(/filename="(.+)"/);
+                        if (filenameMatch) {
+                            filename = filenameMatch[1];
+                        }
+                    }
+                    
+                    link.download = filename;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    window.URL.revokeObjectURL(url);
+                    
+                    // Mostrar mensaje de éxito
+                    mostrarErrorComoTexto('Éxito', 'PDF descargado correctamente', 'success');
+                    setTimeout(() => {
+                        $('#area-errores').hide();
+                    }, 3000);
+                } else if (contentType && contentType.includes('application/json')) {
+                    // Es un error JSON
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        try {
+                            const jsonResponse = JSON.parse(e.target.result);
+                            if (jsonResponse.error) {
+                                mostrarErrorComoTexto('Error', jsonResponse.error, 'error');
+                            }
+                        } catch (err) {
+                            mostrarErrorComoTexto('Error', 'Error al procesar la respuesta del servidor', 'error');
+                        }
+                    };
+                    reader.readAsText(data);
                 } else {
                     // Respuesta inesperada
                     mostrarErrorComoTexto('Error', 'Respuesta del servidor no reconocida', 'error');
-                    console.error('Respuesta inesperada:', response);
+                    console.error('Respuesta inesperada:', contentType);
                 }
-                
             },
             error: function(xhr, status, error) {
                 let mensajeError = 'Error al exportar PDF';
@@ -686,6 +727,10 @@ function mostrarErrorComoTexto(titulo, mensaje, tipo) {
         claseAlerta = 'alert-warning';
         tipoClase = 'alert-warning-custom';
         icono = 'fas fa-exclamation-triangle';
+    } else if (tipo === 'success') {
+        claseAlerta = 'alert-success';
+        tipoClase = 'alert-success-custom';
+        icono = 'fas fa-check-circle';
     }
     
     // Crear HTML del error usando clases CSS
