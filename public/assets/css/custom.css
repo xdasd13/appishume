@@ -397,7 +397,192 @@
 .modal-content {
     border-radius: 15px;
     border: none;
-    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 15px 35px rgb(0, 0, 0);
+}
+
+/* ==================== Proyectos Vencidos ==================== */
+.vencidos-header h2 {
+    font-size: 2.1rem;
+    font-weight: 700;
+    color: #000000;
+}
+
+.vencidos-header .alert-icon {
+    font-size: 1.6rem;
+    margin-right: 0.4rem;
+    color: #f59e0b;
+}
+
+.btn-return {
+    border-radius: 999px;
+    padding: 0.65rem 1.4rem;
+    font-weight: 600;
+    background: #2563eb;
+    color: #fff;
+    border: none;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+
+
+.btn-refresh {
+    border-radius: 999px;
+    padding: 0.65rem 1.4rem;
+    font-weight: 600;
+    border: 1px solid #e2e8f0;
+    color: #0f172a;
+    background: #fff;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+
+.vencidos-table-card {
+    border: none;
+    border-radius: 18px;
+    box-shadow: 0 25px 60px rgba(15, 23, 42, 0.12);
+    overflow: hidden;
+    background: #fff;
+}
+
+.vencidos-table {
+    margin-bottom: 0;
+}
+
+.vencidos-table thead th {
+    background: #131313;
+    color: #fff;
+    text-transform: uppercase;
+    font-size: 0.82rem;
+    letter-spacing: 0.08em;
+    border: none;
+    padding: 1rem 0.75rem;
+    cursor: default;
+}
+
+.vencidos-table thead th i {
+    margin-right: 0.35rem;
+    color: #f59e0b;
+}
+
+.vencidos-table tbody tr:nth-child(even) {
+    background: #fafafa;
+}
+
+
+
+.vencidos-table tbody td {
+    padding: 1.25rem 0.75rem;
+    vertical-align: middle;
+    border-color: #f3f4f6;
+}
+
+.fecha-cell {
+    font-weight: 600;
+    color: #0f172a;
+}
+
+.fecha-cell span {
+    display: block;
+    color: #000000;
+    font-size: 0.84rem;
+    margin-top: 0.2rem;
+}
+
+.cliente-cell {
+    color: #0f172a;
+}
+
+.cliente-cell .client-name {
+    font-weight: 600;
+}
+
+.cliente-cell .client-meta {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.8rem;
+    color: #000000;
+}
+
+.cliente-cell .client-meta i {
+    color: #6b7280;
+}
+
+.servicio-cell,
+.lugar-cell {
+    color: #0f172a;
+}
+
+.truncate-2 {
+    display: -webkit-box;
+    line-clamp: 2;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.4rem 1rem;
+    border-radius: 999px;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    background: linear-gradient(135deg, #f59e0b, #f59e0b);
+    color: #fff;
+    font-size: 0.78rem;
+}
+
+.btn-equipos {
+    border-radius: 999px;
+    padding: 0.45rem 1.3rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    background: linear-gradient(135deg, #f59e0b, #fb923c);
+    border: none;
+    color: #fff;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.btn-equipos:hover {
+    transform: translateY(-2px);
+    color: #fff;
+    box-shadow: 0 18px 30px rgba(249, 115, 22, 0.45);
+}
+
+@media (max-width: 992px) {
+    .vencidos-table thead {
+        display: none;
+    }
+
+    .vencidos-table tbody tr {
+        display: block;
+        margin-bottom: 1rem;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 1rem;
+        background: #fff;
+    }
+
+    .vencidos-table tbody td {
+        display: flex;
+        justify-content: space-between;
+        padding: 0.35rem 0;
+        border: none;
+    }
+
+    .vencidos-table tbody td::before {
+        content: attr(data-label);
+        font-weight: 600;
+        color: #94a3b8;
+        text-transform: uppercase;
+        margin-right: 1rem;
+    }
 }
 
 .modal-header {
