@@ -46,6 +46,15 @@ $routes->group('', ['filter' => 'auth'], function($routes) {
     $routes->post('mensajeria/actualizarConfiguracion', 'MensajeriaController::actualizarConfiguracion');
 });
 
+// ==================== API REST DE NOTIFICACIONES ====================
+$routes->group('api/notifications', ['filter' => 'auth'], function($routes) {
+    $routes->get('/', 'NotificationController::index');
+    $routes->get('recent', 'NotificationController::recent');
+    $routes->get('unread-count', 'NotificationController::unreadCount');
+    $routes->post('mark-read/(:num)', 'NotificationController::markRead/$1');
+    $routes->post('mark-all-read', 'NotificationController::markAllRead');
+});
+
 // ==================== RUTAS ADMINISTRATIVAS (SOLO ADMINISTRADORES) ====================
 $routes->group('', ['filter' => 'admin'], function($routes) {
     // Gestión de trabajadores
@@ -148,6 +157,7 @@ $routes->group('', ['filter' => 'auth'], function($routes) {
 // ==================== RUTAS ADMINISTRATIVAS ADICIONALES ====================
 $routes->group('', ['filter' => 'admin'], function($routes) {
     // Gestión avanzada de equipos (solo admins pueden crear/modificar equipos)
+    $routes->get('equipos/vencidos', 'Equipos::vencidos');
     $routes->post('equipos/guardar', 'Equipos::guardar');
     $routes->post('equipos/saveEquipo', 'Equipos::guardar'); // Alias para compatibilidad
     $routes->post('equipos/actualizar', 'Equipos::actualizar');
@@ -157,10 +167,12 @@ $routes->group('', ['filter' => 'admin'], function($routes) {
     
     // APIs administrativas de cronograma
     $routes->post('cronograma/actualizar-estado', 'Cronograma::actualizarEstado');
-    $routes->get('cronograma/resumen-semanal', 'Cronograma::resumenSemanal');
-    $routes->get('cronograma/proyectos-estado/(:segment)', 'Cronograma::proyectosPorEstado/$1');
-    
-    
+    $routes->cli('cronograma/resumen-semanal', 'Cronograma::resumenSemanal');
+    $routes->cli('cronograma/proyectos-estado/(:segment)', 'Cronograma::proyectosPorEstado/$1');
+
+    // ==================== COMANDOS CLI ====================
+    $routes->cli('notifications/due-reminders', 'App\Commands\NotifyDueProjects::run');
+
     // Inventario (solo administradores)
 
 
