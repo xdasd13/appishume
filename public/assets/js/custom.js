@@ -1,6 +1,7 @@
 // Funcionalidades personalizadas para el sistema de control de pagos
 
 $(document).ready(function() {
+
     // Inicializar tooltips
     $('[data-toggle="tooltip"]').tooltip();
     
@@ -85,6 +86,201 @@ $(document).ready(function() {
     if ($(window).width() < 768) {
         $('.dropdown-menu').addClass('dropdown-menu-right');
     }
+});
+
+// ==================== Notificaciones del sistema ====================
+document.addEventListener('DOMContentLoaded', function() {
+    const notificationDropdown = document.getElementById('notificationDropdown');
+    const notificationCountBadge = document.getElementById('notificationCount');
+    const notificationList = document.getElementById('notificationList');
+    const markAllBtn = document.getElementById('markAllNotifications');
+
+    if (!notificationDropdown || !notificationCountBadge || !notificationList) {
+        return;
+    }
+
+    const endpoints = {
+        list: notificationDropdown.dataset.apiList,
+        recent: notificationDropdown.dataset.apiRecent,
+        count: notificationDropdown.dataset.apiCount,
+        mark: notificationDropdown.dataset.apiMark,
+        markAll: notificationDropdown.dataset.apiMarkAll,
+    };
+
+    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+    const defaultHeaders = {
+        'Accept': 'application/json',
+        'X-Requested-With': 'XMLHttpRequest'
+    };
+
+    const updateIntervalMs = 60000; // 1 minuto
+    let pollingInterval = null;
+
+    const fetchJSON = async (url, options = {}) => {
+        const config = {
+            method: 'GET',
+            headers: { ...defaultHeaders, ...(options.headers || {}) },
+            cache: 'no-cache',
+            credentials: 'same-origin',
+            ...options,
+        };
+
+        if (config.method !== 'GET' && csrfToken) {
+            config.headers['Content-Type'] = 'application/json';
+            config.headers['X-CSRF-TOKEN'] = csrfToken;
+        }
+
+        const response = await fetch(url, config);
+        if (!response.ok) {
+            throw new Error('Error en la petición');
+        }
+        return response.json();
+    };
+
+    const formatDateTime = (dateString) => {
+        if (!dateString) return '';
+        try {
+            return new Date(dateString).toLocaleString('es-PE', {
+                dateStyle: 'short',
+                timeStyle: 'short'
+            });
+        } catch (error) {
+            return dateString;
+        }
+    };
+
+    const renderNotifications = (notifications) => {
+        if (!notifications || notifications.length === 0) {
+            notificationList.innerHTML = '<div class="text-muted small text-center py-3">No tienes notificaciones pendientes</div>';
+            return;
+        }
+
+        const items = notifications.map(notif => {
+            const tipo = notif.tipo || 'sistema';
+            const iconClass = {
+                asignacion_proyecto: 'fas fa-briefcase',
+                vencimiento_proyecto: 'fas fa-exclamation-triangle',
+                mensaje: 'fas fa-envelope',
+                mensaje_importante: 'fas fa-envelope-open-text',
+                mensaje_urgente: 'fas fa-bolt'
+            }[tipo] || 'fas fa-bell';
+
+            const readClass = notif.leida ? 'notif-read' : 'notif-unread';
+            const url = notif.url || '#';
+            const notifId = notif.id;
+
+            return `
+                <a href="${url}" class="notification-item ${readClass}" data-notification-id="${notifId}" data-notification-url="${url}">
+                    <div class="notif-icon"><i class="${iconClass}"></i></div>
+                    <div class="notif-content">
+                        <span class="block fw-semibold">${notif.titulo || 'Notificación'}</span>
+                        <span class="text-muted small d-block">${notif.mensaje || ''}</span>
+                        <span class="time d-block small">${formatDateTime(notif.fecha_creacion)}</span>
+                    </div>
+                </a>
+            `;
+        }).join('');
+
+        notificationList.innerHTML = items;
+    };
+
+    const setLoadingState = () => {
+        notificationList.innerHTML = '<div class="text-muted small text-center py-3"><i class="fas fa-spinner fa-spin me-2"></i>Cargando notificaciones...</div>';
+    };
+
+    const updateCount = async () => {
+        try {
+            const { success, data } = await fetchJSON(endpoints.count);
+            if (success && data && typeof data.total === 'number') {
+                if (data.total > 0) {
+                    notificationCountBadge.textContent = data.total;
+                    notificationCountBadge.classList.remove('d-none');
+                } else {
+                    notificationCountBadge.classList.add('d-none');
+                }
+            }
+        } catch (error) {
+            console.error('Error al obtener contador de notificaciones', error);
+        }
+    };
+
+    const loadNotifications = async () => {
+        setLoadingState();
+        try {
+            const { success, data } = await fetchJSON(`${endpoints.recent}?limit=5`);
+            renderNotifications(success ? data : []);
+        } catch (error) {
+            console.error('Error al cargar notificaciones', error);
+            notificationList.innerHTML = '<div class="text-danger small text-center py-3">No se pudieron cargar las notificaciones</div>';
+        }
+    };
+
+    const markNotificationAsRead = async (notificationId) => {
+        if (!notificationId) return false;
+        try {
+            const url = `${endpoints.mark}/${notificationId}`;
+            const { success } = await fetchJSON(url, { method: 'POST', body: JSON.stringify({}) });
+            if (success) {
+                updateCount();
+            }
+            return success;
+        } catch (error) {
+            console.error('Error al marcar notificación como leída', error);
+            return false;
+        }
+    };
+
+    const markAllAsRead = async () => {
+        try {
+            const { success } = await fetchJSON(endpoints.markAll, { method: 'POST', body: JSON.stringify({}) });
+            if (success) {
+                updateCount();
+                loadNotifications();
+            }
+        } catch (error) {
+            console.error('Error al marcar todas las notificaciones', error);
+        }
+    };
+
+    notificationList.addEventListener('click', async (event) => {
+        const item = event.target.closest('[data-notification-id]');
+        if (!item) {
+            return;
+        }
+        event.preventDefault();
+        const notificationId = item.dataset.notificationId;
+        const targetUrl = item.dataset.notificationUrl || '#';
+
+        const marked = await markNotificationAsRead(notificationId);
+        if (marked) {
+            item.classList.remove('notif-unread');
+            item.classList.add('notif-read');
+        }
+
+        if (targetUrl && targetUrl !== '#') {
+            window.location.href = targetUrl;
+        }
+    });
+
+    if (markAllBtn) {
+        markAllBtn.addEventListener('click', function(event) {
+            event.preventDefault();
+            markAllAsRead();
+        });
+    }
+
+    $('#notificationDropdown').on('show.bs.dropdown', function() {
+        loadNotifications();
+    });
+
+    updateCount();
+    pollingInterval = setInterval(updateCount, updateIntervalMs);
+
+    window.addEventListener('beforeunload', function() {
+        if (pollingInterval) {
+            clearInterval(pollingInterval);
+        }
+    });
 });
 
 // Funciones utilitarias
