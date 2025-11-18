@@ -116,6 +116,8 @@ class EquipoModel extends Model
             $query->where('e.idusuario', $usuarioId);
         }
         
+        $query->where('e.estadoservicio !=', 'Vencido');
+        
         // Ordenar por fecha de asignación más reciente primero (DESC)
         // Esto hace que las nuevas asignaciones aparezcan de primero
         $equipos = $query->orderBy('e.fecha_asignacion', 'DESC')
@@ -141,6 +143,32 @@ class EquipoModel extends Model
         }
 
         return $agrupados;
+    }
+
+    public function marcarServiciosVencidos(?string $fechaReferencia = null): int
+    {
+        $fecha = $fechaReferencia ?? date('Y-m-d H:i:s');
+
+        $sql = "
+            UPDATE equipos e
+            INNER JOIN servicioscontratados sc ON sc.idserviciocontratado = e.idserviciocontratado
+            SET e.estadoservicio = 'Vencido'
+            WHERE COALESCE(e.estadoservicio, 'Pendiente') NOT IN ('Completado', 'Vencido')
+              AND sc.fechahoraservicio < ?
+        ";
+
+        $this->db->query($sql, [$fecha]);
+
+        return $this->db->affectedRows();
+    }
+
+    public function getEquiposVencidos(): array
+    {
+        return $this->getBaseQuery()
+            ->where('e.estadoservicio', 'Vencido')
+            ->orderBy('sc.fechahoraservicio', 'DESC')
+            ->get()
+            ->getResultArray();
     }
 
     /**
