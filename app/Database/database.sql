@@ -358,30 +358,17 @@ INSERT INTO cotizaciones (idcliente, idtipocontrato, idusuariocrea, fechacotizac
 (4, 1, 2, '2025-11-01', '2025-11-22', 1),
 (6, 1, 2, '2025-11-02', '2025-11-25', 1),
 (7, 1, 6, '2025-11-03', '2025-11-28', 1),
-(8, 1, 6, '2025-11-04', '2025-11-30', 2),
 
 -- Diciembre 2025
-(9, 3, 1, '2025-11-05', '2025-12-05', 4),
-(10, 1, 2, '2025-11-06', '2025-12-07', 2),
-(11, 4, 1, '2025-11-07', '2025-12-10', 3),
-(12, 1, 6, '2025-11-08', '2025-12-12', 1),
-(13, 1, 2, '2025-11-10', '2025-12-14', 1),
-(15, 1, 6, '2025-11-12', '2025-12-18', 1),
-(16, 1, 2, '2025-11-15', '2025-12-20', 2),
-(17, 1, 1, '2025-11-18', '2025-12-27', 1),
-
--- Enero 2026
-(18, 1, 2, '2025-12-01', '2026-01-10', 1),
-(19, 4, 1, '2025-12-05', '2026-01-15', 3),
-(20, 1, 6, '2025-12-08', '2026-01-20', 2),
-(21, 1, 2, '2025-12-10', '2026-01-25', 1);
+(8, 1, 6, '2025-11-04', '2025-12-05', 2),
+(9, 3, 1, '2025-11-05', '2025-12-10', 4),
+(10, 1, 2, '2025-11-06', '2025-12-14', 2),
+(11, 4, 1, '2025-11-07', '2025-12-20', 3);
 
 -- 7. CONTRATOS
 INSERT INTO contratos (idcotizacion, idcliente, autorizapublicacion) VALUES 
 (1, 1, 1), (2, 2, 0), (3, 3, 1), (4, 4, 1), (5, 6, 0),
-(6, 7, 1), (7, 8, 1), (8, 9, 0), (9, 10, 1), (10, 11, 1),
-(11, 12, 0), (12, 13, 1), (13, 15, 1), (14, 16, 0), (15, 17, 1),
-(16, 18, 1), (17, 19, 0), (18, 20, 1), (19, 21, 1);
+(6, 7, 1), (7, 8, 1), (8, 8, 0), (9, 9, 1), (10, 10, 1), (11, 11, 0);
 
 -- 8. SERVICIOS CONTRATADOS
 INSERT INTO servicioscontratados (idcotizacion, idservicio, cantidad, precio, fechahoraservicio, direccion) VALUES 
@@ -431,90 +418,26 @@ INSERT INTO servicioscontratados (idcotizacion, idservicio, cantidad, precio, fe
 (7, 10, 1, 400.00, '2025-11-30 17:00:00', 'Salón Los Jardines de Chincha, Av. Luis Massaro 560, Chincha Alta'),
 (7, 17, 1, 1225.00, '2025-11-30 20:00:00', 'Salón Los Jardines de Chincha, Av. Luis Massaro 560, Chincha Alta'),
 
--- Cotización 8: Conferencia Empresa (Dic 05)
-(8, 3, 1, 1600.00, '2025-12-05 08:00:00', 'Centro de Convenciones Chincha, Av. Progreso 980, Pueblo Nuevo, Chincha Alta'),
-(8, 8, 1, 1500.00, '2025-12-05 07:30:00', 'Centro de Convenciones Chincha, Av. Progreso 980, Pueblo Nuevo, Chincha Alta'),
-(8, 12, 1, 750.00, '2025-12-05 07:45:00', 'Centro de Convenciones Chincha, Av. Progreso 980, Pueblo Nuevo, Chincha Alta'),
-(8, 17, 1, 5250.00, '2025-12-05 12:00:00', 'Centro de Convenciones Chincha, Av. Progreso 980, Pueblo Nuevo, Chincha Alta'),
+-- Cotización 8: Quinceañero (Dic 05)
+(8, 1, 1, 450.00, '2025-12-05 18:00:00', 'Centro de Convenciones Chincha, Av. Progreso 980, Pueblo Nuevo, Chincha Alta'),
+(8, 5, 1, 850.00, '2025-12-05 17:30:00', 'Centro de Convenciones Chincha, Av. Progreso 980, Pueblo Nuevo, Chincha Alta'),
+(8, 10, 1, 400.00, '2025-12-05 17:00:00', 'Centro de Convenciones Chincha, Av. Progreso 980, Pueblo Nuevo, Chincha Alta'),
+(8, 17, 1, 1750.00, '2025-12-05 20:00:00', 'Centro de Convenciones Chincha, Av. Progreso 980, Pueblo Nuevo, Chincha Alta'),
 
--- Cotización 9: Quinceañero Lucía Vásquez (Dic 07)
-(9, 2, 1, 1200.00, '2025-12-07 18:00:00', 'Club Social Chincha, Malecón Grau 210, Tambo de Mora, Chincha'),
-(9, 6, 1, 1800.00, '2025-12-07 17:30:00', 'Club Social Chincha, Malecón Grau 210, Tambo de Mora, Chincha'),
-(9, 11, 1, 950.00, '2025-12-07 17:00:00', 'Club Social Chincha, Malecón Grau 210, Tambo de Mora, Chincha'),
-(9, 18, 1, 2450.00, '2025-12-07 20:00:00', 'Club Social Chincha, Malecón Grau 210, Tambo de Mora, Chincha'),
-(9, 22, 1, 650.00, '2025-12-07 21:30:00', 'Club Social Chincha, Malecón Grau 210, Tambo de Mora, Chincha'),
+-- Cotización 9: Conferencia Empresa (Dic 10)
+(9, 3, 1, 1600.00, '2025-12-10 09:00:00', 'Hotel La Estación, Jr. Lima 540, Chincha Alta'),
+(9, 8, 1, 1500.00, '2025-12-10 08:30:00', 'Hotel La Estación, Jr. Lima 540, Chincha Alta'),
+(9, 12, 1, 750.00, '2025-12-10 08:45:00', 'Hotel La Estación, Jr. Lima 540, Chincha Alta'),
 
--- Cotización 10: Evento Corporativo (Dic 10)
-(10, 3, 1, 800.00, '2025-12-10 19:00:00', 'Hotel La Estación, Jr. Lima 540, Chincha Alta'),
-(10, 7, 1, 2200.00, '2025-12-10 18:30:00', 'Hotel La Estación, Jr. Lima 540, Chincha Alta'),
-(10, 11, 1, 950.00, '2025-12-10 18:00:00', 'Hotel La Estación, Jr. Lima 540, Chincha Alta'),
-(10, 15, 1, 380.00, '2025-12-10 17:30:00', 'Hotel La Estación, Jr. Lima 540, Chincha Alta'),
-(10, 17, 2, 2800.00, '2025-12-10 21:00:00', 'Hotel La Estación, Jr. Lima 540, Chincha Alta'),
+-- Cotización 10: Evento Corporativo (Dic 20)
+(10, 3, 1, 800.00, '2025-12-20 09:00:00', 'Centro Empresarial Chincha Sur, Calle Comercio 120, Chincha Alta'),
+(10, 8, 1, 1500.00, '2025-12-20 08:30:00', 'Centro Empresarial Chincha Sur, Calle Comercio 120, Chincha Alta'),
+(10, 12, 1, 750.00, '2025-12-20 08:45:00', 'Centro Empresarial Chincha Sur, Calle Comercio 120, Chincha Alta'),
 
--- Cotización 11: Matrimonio Roberto Flores (Dic 12)
-(11, 1, 1, 450.00, '2025-12-12 11:00:00', 'Parroquia San José, Jr. Santo Domingo 210, Chincha Alta'),
-(11, 5, 1, 850.00, '2025-12-12 10:30:00', 'Parroquia San José, Jr. Santo Domingo 210, Chincha Alta'),
-(11, 13, 1, 550.00, '2025-12-12 10:00:00', 'Parroquia San José, Jr. Santo Domingo 210, Chincha Alta'),
-(11, 17, 1, 1575.00, '2025-12-12 13:30:00', 'Jr. Santo Domingo 210, Chincha Alta'),
-(11, 23, 1, 400.00, '2025-12-12 14:00:00', 'Jr. Santo Domingo 210, Chincha Alta'),
-
--- Cotización 12: Matrimonio Carmen Gutiérrez (Dic 14)
-(12, 2, 1, 1200.00, '2025-12-14 17:00:00', 'Country Club Chincha, Av. Luis Massaro 600, Chincha Alta'),
-(12, 6, 1, 1800.00, '2025-12-14 16:30:00', 'Country Club Chincha, Av. Luis Massaro 600, Chincha Alta'),
-(12, 9, 1, 600.00, '2025-12-14 16:00:00', 'Country Club Chincha, Av. Luis Massaro 600, Chincha Alta'),
-(12, 11, 1, 950.00, '2025-12-14 15:30:00', 'Country Club Chincha, Av. Luis Massaro 600, Chincha Alta'),
-(12, 14, 1, 1200.00, '2025-12-14 15:00:00', 'Country Club Chincha, Av. Luis Massaro 600, Chincha Alta'),
-(12, 18, 1, 3500.00, '2025-12-14 19:30:00', 'Country Club Chincha, Av. Luis Massaro 600, Chincha Alta'),
-(12, 22, 1, 650.00, '2025-12-14 22:00:00', 'Country Club Chincha, Av. Luis Massaro 600, Chincha Alta'),
-
--- Cotización 13: Matrimonio Miguel Castillo (Dic 18)
-(13, 1, 1, 450.00, '2025-12-18 19:00:00', 'Restaurante Campestre Los Sauces, Fundo San Regis, El Carmen - Chincha'),
-(13, 5, 1, 850.00, '2025-12-18 18:30:00', 'Restaurante Campestre Los Sauces, Fundo San Regis, El Carmen - Chincha'),
-(13, 10, 1, 400.00, '2025-12-18 18:00:00', 'Restaurante Campestre Los Sauces, Fundo San Regis, El Carmen - Chincha'),
-(13, 18, 1, 1750.00, '2025-12-18 21:00:00', 'Restaurante Campestre Los Sauces, Fundo San Regis, El Carmen - Chincha'),
-(13, 22, 1, 650.00, '2025-12-18 22:00:00', 'Restaurante Campestre Los Sauces, Fundo San Regis, El Carmen - Chincha'),
-
--- Cotización 14: Quinceañero Sofía Paredes (Dic 20)
-(14, 3, 1, 800.00, '2025-12-20 18:00:00', 'Salón de Eventos Miraflores, Jr. Libertad 234, Grocio Prado, Chincha'),
-(14, 5, 1, 850.00, '2025-12-20 17:30:00', 'Salón de Eventos Miraflores, Jr. Libertad 234, Grocio Prado, Chincha'),
-(14, 17, 1, 2100.00, '2025-12-20 19:30:00', 'Salón de Eventos Miraflores, Jr. Libertad 234, Grocio Prado, Chincha'),
-(14, 19, 1, 280.00, '2025-12-20 20:30:00', 'Salón de Eventos Miraflores, Jr. Libertad 234, Grocio Prado, Chincha'),
-
--- Cotización 15: Matrimonio Pedro Ccama (Dic 27)
-(15, 2, 1, 1200.00, '2025-12-27 18:00:00', 'Hacienda Villa Verde, Fundo Villa Verde s/n, Chincha Baja'),
-(15, 7, 1, 2200.00, '2025-12-27 17:30:00', 'Hacienda Villa Verde, Fundo Villa Verde s/n, Chincha Baja'),
-(15, 11, 1, 950.00, '2025-12-27 17:00:00', 'Hacienda Villa Verde, Fundo Villa Verde s/n, Chincha Baja'),
-(15, 14, 1, 1200.00, '2025-12-27 16:30:00', 'Hacienda Villa Verde, Fundo Villa Verde s/n, Chincha Baja'),
-(15, 18, 1, 3150.00, '2025-12-27 20:00:00', 'Hacienda Villa Verde, Fundo Villa Verde s/n, Chincha Baja'),
-(15, 24, 1, 1200.00, '2025-12-27 22:00:00', 'Hacienda Villa Verde, Fundo Villa Verde s/n, Chincha Baja'),
-
--- Cotización 16: Matrimonio Valeria Huamán (Ene 10, 2026)
-(16, 2, 1, 1200.00, '2026-01-10 16:00:00', 'Club Campestre Las Flores, Calle Los Álamos s/n, Pueblo Nuevo, Chincha Alta'),
-(16, 6, 1, 1800.00, '2026-01-10 15:30:00', 'Club Campestre Las Flores, Calle Los Álamos s/n, Pueblo Nuevo, Chincha Alta'),
-(16, 11, 1, 950.00, '2026-01-10 15:00:00', 'Club Campestre Las Flores, Calle Los Álamos s/n, Pueblo Nuevo, Chincha Alta'),
-(16, 18, 1, 2450.00, '2026-01-10 19:00:00', 'Club Campestre Las Flores, Calle Los Álamos s/n, Pueblo Nuevo, Chincha Alta'),
-(16, 22, 1, 650.00, '2026-01-10 21:00:00', 'Club Campestre Las Flores, Calle Los Álamos s/n, Pueblo Nuevo, Chincha Alta'),
-
--- Cotización 17: Evento Corporativo (Ene 15, 2026)
-(17, 3, 1, 800.00, '2026-01-15 09:00:00', 'Centro Empresarial Chincha Sur, Calle Comercio 120, Chincha Alta'),
-(17, 8, 1, 1500.00, '2026-01-15 08:30:00', 'Centro Empresarial Chincha Sur, Calle Comercio 120, Chincha Alta'),
-(17, 12, 1, 750.00, '2026-01-15 08:45:00', 'Centro Empresarial Chincha Sur, Calle Comercio 120, Chincha Alta'),
-(17, 17, 1, 4200.00, '2026-01-15 12:00:00', 'Centro Empresarial Chincha Sur, Calle Comercio 120, Chincha Alta'),
-
--- Cotización 18: Quinceañero Diego Poma (Ene 20, 2026)
-(18, 1, 1, 450.00, '2026-01-20 18:00:00', 'Salón Cañaveral, Av. Tambo de Mora 210, Tambo de Mora, Chincha'),
-(18, 5, 1, 850.00, '2026-01-20 17:30:00', 'Salón Cañaveral, Av. Tambo de Mora 210, Tambo de Mora, Chincha'),
-(18, 10, 1, 400.00, '2026-01-20 17:00:00', 'Salón Cañaveral, Av. Tambo de Mora 210, Tambo de Mora, Chincha'),
-(18, 17, 1, 1750.00, '2026-01-20 20:00:00', 'Salón Cañaveral, Av. Tambo de Mora 210, Tambo de Mora, Chincha'),
-(18, 23, 1, 400.00, '2026-01-20 19:00:00', 'Salón Cañaveral, Av. Tambo de Mora 210, Tambo de Mora, Chincha'),
-
--- Cotización 19: Matrimonio Camila Cruz (Ene 25, 2026)
-(19, 2, 1, 1200.00, '2026-01-25 17:00:00', 'Casa Hacienda El Paraíso, Fundo El Paraíso, El Carmen - Chincha'),
-(19, 7, 1, 2200.00, '2026-01-25 16:30:00', 'Casa Hacienda El Paraíso, Fundo El Paraíso, El Carmen - Chincha'),
-(19, 11, 1, 950.00, '2026-01-25 16:00:00', 'Casa Hacienda El Paraíso, Fundo El Paraíso, El Carmen - Chincha'),
-(19, 14, 1, 1200.00, '2026-01-25 15:30:00', 'Casa Hacienda El Paraíso, Fundo El Paraíso, El Carmen - Chincha'),
-(19, 18, 2, 2975.00, '2026-01-25 19:30:00', 'Casa Hacienda El Paraíso, Fundo El Paraíso, El Carmen - Chincha'),
-(19, 22, 1, 650.00, '2026-01-25 22:00:00', 'Casa Hacienda El Paraíso, Fundo El Paraíso, El Carmen - Chincha');
+-- Cotización 11: Quinceañero (Dic 14)  
+(11, 2, 1, 1200.00, '2025-12-14 18:00:00', 'Country Club Chincha, Av. Luis Massaro 600, Chincha Alta'),
+(11, 6, 1, 1800.00, '2025-12-14 17:30:00', 'Country Club Chincha, Av. Luis Massaro 600, Chincha Alta'),
+(11, 11, 1, 950.00, '2025-12-14 17:00:00', 'Country Club Chincha, Av. Luis Massaro 600, Chincha Alta');
 
 -- 9. CONTROL DE PAGOS
 INSERT INTO controlpagos (idcontrato, saldo, amortizacion, deuda, idtipopago, numtransaccion, fechahora, idusuario) VALUES 
@@ -544,33 +467,29 @@ INSERT INTO controlpagos (idcontrato, saldo, amortizacion, deuda, idtipopago, nu
 
 -- 10. EQUIPOS
 INSERT INTO equipos (idserviciocontratado, idusuario, descripcion, estadoservicio) VALUES 
--- Servicios de cotización 1 (Boda Carlos García)
+-- Servicios de cotización 1 (Matrimonio Rosa Quispe - Nov 15)
 (1, 3, 'Equipo de sonido: mezcladora Allen & Heath, micrófonos inalámbricos, parlantes JBL', 'Completado'),
 (2, 4, 'Cobertura fotográfica: Canon EOS R5, lentes 24-70mm, flash Godox', 'Completado'),
 
--- Servicios de cotización 2 (Quinceañero María)
-(3, 3, 'Sistema de audio: consola digital, micrófonos de corbata, parlantes activos', 'En Proceso'),
-(4, 1, 'Luces LED decorativas: panel RGB, controlador DMX, efectos laser', 'Pendiente'),
+-- Servicios de cotización 2 (Quinceañero Carlos Torres - Nov 08)
+(7, 3, 'Sistema de audio: consola digital, micrófonos de corbata, parlantes activos', 'En Proceso'),
+(8, 1, 'Luces LED decorativas: panel RGB, controlador DMX, efectos laser', 'Pendiente'),
 
--- Servicios de cotización 3 (Evento Corporativo)
-(5, 2, 'Transmisión en vivo: cámaras 4K, encoder, plataforma streaming', 'Completado'),
-(6, 4, 'Fotografía corporativa: retratos ejecutivos, cobertura de presentaciones', 'Completado'),
+-- Servicios de cotización 3 (Evento Corporativo - Nov 20)
+(12, 2, 'Transmisión en vivo: cámaras 4K, encoder, plataforma streaming', 'Completado'),
+(13, 4, 'Fotografía corporativa: retratos ejecutivos, cobertura de presentaciones', 'Completado'),
 
--- Servicios de cotización 4 (Boda José)
-(7, 3, 'Audio para ceremonia: sistema inalámbrico, altavoces discretos', 'Pendiente'),
-(8, 1, 'DJ profesional: controlador Pioneer, biblioteca musical, micrófonos', 'Pendiente'),
+-- Servicios de cotización 4 (Matrimonio José Tasayco - Nov 22)
+(16, 3, 'Audio para ceremonia: sistema inalámbrico, altavoces discretos', 'Pendiente'),
+(17, 1, 'DJ profesional: controlador Pioneer, biblioteca musical, micrófonos', 'Pendiente'),
 
--- Servicios de cotización 5 (Conferencia)
-(9, 4, 'Fotografía corporativa para conferencia', 'Programado'),
+-- Servicios de cotización 6 (Matrimonio María Chávez - Nov 28)
+(24, 3, 'Sistema de sonido para ceremonia exterior', 'Pendiente'),
+(25, 2, 'Servicio de catering premium', 'Pendiente'),
 
--- Servicios de cotización 6 (Boda Ana)
-(10, 3, 'Sistema de sonido para ceremonia exterior', 'Pendiente'),
-(11, 2, 'Servicio de catering premium', 'Pendiente'),
-
--- Servicios de cotización 7 (Evento Robert Smith)
-(12, 4, 'Fotografía de eventos internacionales', 'Programado'),
-(13, 3, 'Sistema de sonido para evento empresarial', 'Programado'),
-(14, 1, 'Servicio de catering para ejecutivos', 'Programado');
+-- Servicios de cotización 7 (Quinceañero Juan Ramírez - Nov 30)
+(29, 4, 'Fotografía de eventos', 'Programado'),
+(30, 3, 'Sistema de sonido para evento', 'Programado');
 
 -- 11. LISTA DE CONDICIONES
 INSERT INTO listacondiciones (idcondicion, idtipocontrato) VALUES 

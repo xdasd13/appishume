@@ -166,23 +166,13 @@ class EquipoService
 
     /**
      * Obtiene estadísticas de equipos por estado
+     * Si no se filtra por usuario, incluye también servicios sin asignación
      * 
      * @param int|null $usuarioId Filtrar por usuario específico (para trabajadores)
      * @return array
      */
     public function obtenerEstadisticas(?int $usuarioId = null): array
     {
-        $builder = $this->db->table('equipos');
-        $builder->select('estadoservicio, COUNT(*) as total');
-        
-        // Filtrar por usuario si se especifica
-        if ($usuarioId) {
-            $builder->where('idusuario', $usuarioId);
-        }
-        
-        $builder->groupBy('estadoservicio');
-        $resultados = $builder->get()->getResultArray();
-
         // Flujo: Programado → Pendiente → En Proceso → Completado
         $estadisticas = [
             'Programado' => 0,
@@ -191,10 +181,68 @@ class EquipoService
             'Completado' => 0
         ];
 
-        foreach ($resultados as $resultado) {
-            $estado = $resultado['estadoservicio'];
-            if (isset($estadisticas[$estado])) {
-                $estadisticas[$estado] = (int)$resultado['total'];
+        // Si se filtra por usuario específico (trabajador), solo contar equipos asignados
+        if ($usuarioId) {
+            $builder = $this->db->table('equipos');
+            $builder->select('estadoservicio, COUNT(*) as total');
+            $builder->where('idusuario', $usuarioId);
+            $builder->where('estadoservicio !=', 'Vencido');
+            $builder->groupBy('estadoservicio');
+            $resultados = $builder->get()->getResultArray();
+
+            foreach ($resultados as $resultado) {
+                $estado = $resultado['estadoservicio'];
+                if (isset($estadisticas[$estado])) {
+                    $estadisticas[$estado] = (int)$resultado['total'];
+                }
+            }
+        } else {
+            // Vista general: contar TODOS los servicios contratados (con y sin asignación)
+            // IMPORTANTE: Usar DISTINCT o subconsulta para evitar duplicados cuando un servicio tiene múltiples equipos
+            // Solo mostrar servicios del año actual (2025) y que no estén vencidos
+            // Similar a como lo hace ProyectoModel, pero corrigiendo duplicados
+            $query = "
+                SELECT 
+                    COALESCE(
+                        (SELECT e.estadoservicio 
+                         FROM equipos e 
+                         WHERE e.idserviciocontratado = sc.idserviciocontratado 
+                           AND e.estadoservicio != 'Vencido'
+                         ORDER BY e.idequipo DESC 
+                         LIMIT 1), 
+                        'Pendiente'
+                    ) as estado,
+                    COUNT(DISTINCT sc.idserviciocontratado) as total
+                FROM servicioscontratados sc
+                WHERE COALESCE(
+                    (SELECT e.estadoservicio 
+                     FROM equipos e 
+                     WHERE e.idserviciocontratado = sc.idserviciocontratado 
+                       AND e.estadoservicio != 'Vencido'
+                     ORDER BY e.idequipo DESC 
+                     LIMIT 1), 
+                    'Pendiente'
+                ) != 'Vencido'
+                  AND YEAR(sc.fechahoraservicio) = YEAR(CURDATE())
+                  AND sc.fechahoraservicio >= CURDATE()
+                GROUP BY COALESCE(
+                    (SELECT e.estadoservicio 
+                     FROM equipos e 
+                     WHERE e.idserviciocontratado = sc.idserviciocontratado 
+                       AND e.estadoservicio != 'Vencido'
+                     ORDER BY e.idequipo DESC 
+                     LIMIT 1), 
+                    'Pendiente'
+                )
+            ";
+            
+            $resultados = $this->db->query($query)->getResultArray();
+
+            foreach ($resultados as $resultado) {
+                $estado = $resultado['estado'];
+                if (isset($estadisticas[$estado])) {
+                    $estadisticas[$estado] = (int)$resultado['total'];
+                }
             }
         }
 

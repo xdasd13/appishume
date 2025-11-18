@@ -327,6 +327,9 @@
 <?php
 function renderEquipoCard(array $equipo, string $estado): string
 {
+    // Verificar si el servicio tiene asignación (tiene idequipo)
+    $tieneAsignacion = !empty($equipo['idequipo']);
+    
     // Mapeo local de colores e iconos
     $colores = [
         'Programado' => 'secondary',
@@ -346,63 +349,82 @@ function renderEquipoCard(array $equipo, string $estado): string
     $iconoEstado = $iconos[$estado] ?? 'fas fa-question-circle';
 
     // Truncar descripción a 2 líneas (aproximadamente 80 caracteres)
-    $descripcionCorta = strlen($equipo['descripcion']) > 80
-        ? substr($equipo['descripcion'], 0, 80) . '...'
-        : $equipo['descripcion'];
+    $descripcion = $equipo['descripcion'] ?? 'Sin descripción asignada';
+    $descripcionCorta = strlen($descripcion) > 80
+        ? substr($descripcion, 0, 80) . '...'
+        : $descripcion;
 
-    // Nombre corto del técnico
-    $nombreCorto = !empty($equipo['nombre_completo'])
-        ? explode(' ', $equipo['nombre_completo'])[0] . ' ' . substr(explode(' ', $equipo['nombre_completo'])[1] ?? '', 0, 1) . '.'
-        : $equipo['nombreusuario'];
+    // Nombre corto del técnico (solo si hay asignación)
+    $nombreCorto = 'Sin asignar';
+    if ($tieneAsignacion && !empty($equipo['nombre_completo'])) {
+        $nombreCorto = explode(' ', $equipo['nombre_completo'])[0] . ' ' . substr(explode(' ', $equipo['nombre_completo'])[1] ?? '', 0, 1) . '.';
+    } elseif ($tieneAsignacion && !empty($equipo['nombreusuario'])) {
+        $nombreCorto = $equipo['nombreusuario'];
+    }
 
     ob_start();
     ?>
-    <div class="kanban-card" data-id="<?= $equipo['idequipo'] ?>" data-status="<?= $equipo['estadoservicio'] ?>"
-        data-cliente="<?= esc(strtolower($equipo['cliente_nombre'])) ?>"
-        data-servicio="<?= esc(strtolower($equipo['servicio'])) ?>"
-        data-tecnico="<?= esc(strtolower($equipo['nombre_completo'])) ?>" data-usuario-id="<?= $equipo['idusuario'] ?>"
-        data-fecha="<?= $equipo['fechahoraservicio'] ?>" draggable="true" style="font-family: 'Poppins', sans-serif;">
+    <div class="kanban-card" data-id="<?= $equipo['idequipo'] ?? '' ?>" data-status="<?= $equipo['estadoservicio'] ?? $estado ?>"
+        data-cliente="<?= esc(strtolower($equipo['cliente_nombre'] ?? '')) ?>"
+        data-servicio="<?= esc(strtolower($equipo['servicio'] ?? '')) ?>"
+        data-tecnico="<?= esc(strtolower($equipo['nombre_completo'] ?? 'Sin asignar')) ?>" 
+        data-usuario-id="<?= $equipo['idusuario'] ?? '' ?>"
+        data-fecha="<?= $equipo['fechahoraservicio'] ?? '' ?>" 
+        <?php if ($tieneAsignacion): ?>draggable="true"<?php endif; ?> 
+        style="font-family: 'Poppins', sans-serif;">
         <!-- Header de tarjeta -->
         <div class="card-header-kanban">
             <span class="badge text-white" style="background-color: <?= $colorEstado ?>; font-family: 'Poppins', sans-serif; font-weight: 600;">
                 <i class="<?= $iconoEstado ?> me-1"></i><?= $estado ?>
             </span>
-            <span class="kanban-card-id text-muted">#<?= $equipo['idequipo'] ?></span>
+            <?php if ($tieneAsignacion): ?>
+                <span class="kanban-card-id text-muted">#<?= $equipo['idequipo'] ?></span>
+            <?php else: ?>
+                <span class="kanban-card-id text-muted" style="font-style: italic;">Sin asignar</span>
+            <?php endif; ?>
         </div>
 
         <!-- Cuerpo de tarjeta -->
         <div class="card-body-kanban">
             <div class="mb-2">
                 <strong class="text-primary d-block" style="font-size: 1.1rem; font-family: 'Poppins', sans-serif; font-weight: 700;">
-                    <i class="fas fa-user-circle me-1"></i><?= esc($equipo['cliente_nombre']) ?>
+                    <i class="fas fa-user-circle me-1"></i><?= esc($equipo['cliente_nombre'] ?? 'Cliente no especificado') ?>
                 </strong>
                 <div class="text-success fw-bold mb-1" style="font-size: 0.95rem; font-family: 'Poppins', sans-serif; font-weight: 600;">
-                    <i class="fas fa-concierge-bell me-1"></i><?= esc($equipo['servicio']) ?>
+                    <i class="fas fa-concierge-bell me-1"></i><?= esc($equipo['servicio'] ?? 'Servicio') ?>
                 </div>
                 <small class="text-muted" style="font-family: 'Poppins', sans-serif;">
                     <i class="fas fa-user me-1"></i><?= esc($nombreCorto) ?>
-                    <span class="ms-2">
-                        <i class="fas fa-briefcase me-1"></i><?= esc($equipo['cargo']) ?>
-                    </span>
+                    <?php if ($tieneAsignacion && !empty($equipo['cargo'])): ?>
+                        <span class="ms-2">
+                            <i class="fas fa-briefcase me-1"></i><?= esc($equipo['cargo']) ?>
+                        </span>
+                    <?php endif; ?>
                 </small>
             </div>
 
-            <div class="description-container mb-3">
-                <p class="description-text mb-0" title="<?= esc($equipo['descripcion']) ?>" style="font-family: 'Poppins', sans-serif;">
-                    <?= esc($descripcionCorta) ?>
-                </p>
-                <?php if (strlen($equipo['descripcion']) > 80): ?>
-                    <button class="btn btn-link btn-sm p-0 text-decoration-none" onclick="toggleDescription(this)" style="font-family: 'Poppins', sans-serif;">
-                        <small>Ver más</small>
-                    </button>
-                <?php endif; ?>
-            </div>
+            <?php if ($tieneAsignacion && !empty($descripcion) && $descripcion !== 'Sin descripción asignada'): ?>
+                <div class="description-container mb-3">
+                    <p class="description-text mb-0" title="<?= esc($descripcion) ?>" style="font-family: 'Poppins', sans-serif;">
+                        <?= esc($descripcionCorta) ?>
+                    </p>
+                    <?php if (strlen($descripcion) > 80): ?>
+                        <button class="btn btn-link btn-sm p-0 text-decoration-none" onclick="toggleDescription(this)" style="font-family: 'Poppins', sans-serif;">
+                            <small>Ver más</small>
+                        </button>
+                    <?php endif; ?>
+                </div>
+            <?php elseif (!$tieneAsignacion): ?>
+    
+            <?php endif; ?>
 
             <div class="mb-2">
-                <div class="text-muted small mb-1" style="font-family: 'Poppins', sans-serif;">
-                    <i class="fas fa-calendar me-1"></i>
-                    <strong>Fecha:</strong> <?= date('d/m/Y H:i', strtotime($equipo['fechahoraservicio'])) ?>
-                </div>
+                <?php if (!empty($equipo['fechahoraservicio'])): ?>
+                    <div class="text-muted small mb-1" style="font-family: 'Poppins', sans-serif;">
+                        <i class="fas fa-calendar me-1"></i>
+                        <strong>Fecha:</strong> <?= date('d/m/Y H:i', strtotime($equipo['fechahoraservicio'])) ?>
+                    </div>
+                <?php endif; ?>
                 <?php if (!empty($equipo['cliente_telefono'])): ?>
                     <div class="text-muted small mb-1" style="font-family: 'Poppins', sans-serif;">
                         <i class="fas fa-phone me-1"></i>
@@ -420,10 +442,17 @@ function renderEquipoCard(array $equipo, string $estado): string
 
         <!-- Acciones de tarjeta -->
         <div class="card-actions">
-            <a href="<?= base_url('equipos/editar/' . $equipo['idequipo']) ?>" class="btn btn-sm btn-outline-primary"
-                title="Editar asignación" data-bs-toggle="tooltip">
-                <i class="fas fa-edit"></i>
-            </a>
+            <?php if ($tieneAsignacion): ?>
+                <a href="<?= base_url('equipos/editar/' . $equipo['idequipo']) ?>" class="btn btn-sm btn-outline-primary"
+                    title="Editar asignación" data-bs-toggle="tooltip">
+                    <i class="fas fa-edit"></i>
+                </a>
+            <?php else: ?>
+                <a href="<?= base_url('equipos/asignar/' . $equipo['idserviciocontratado']) ?>" class="btn btn-sm btn-outline-success"
+                    title="Asignar técnico" data-bs-toggle="tooltip">
+                    <i class="fas fa-user-plus"></i>
+                </a>
+            <?php endif; ?>
             <a href="<?= base_url('servicios/' . $equipo['idserviciocontratado']) ?>" class="btn btn-sm btn-outline-info"
                 title="Ver servicio completo" data-bs-toggle="tooltip">
                 <i class="fas fa-eye"></i>

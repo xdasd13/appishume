@@ -100,30 +100,97 @@ class EquipoModel extends Model
      * KISS: método específico para la vista
      * Ordenamiento: Más recientes primero (por fecha de asignación DESC)
      * 
+     * Si no se filtra por usuario (vista general), incluye también servicios sin asignación
+     * que aparecerán como "Pendiente"
+     * 
      * @param int|null $servicioId Filtrar por servicio específico
      * @param int|null $usuarioId Filtrar por usuario específico (para trabajadores)
      */
     public function getEquiposParaKanban(?int $servicioId = null, ?int $usuarioId = null): array
     {
-        $query = $this->getBaseQuery();
-        
-        if ($servicioId) {
-            $query->where('e.idserviciocontratado', $servicioId);
-        }
-        
-        // Filtrar por usuario si se especifica (para trabajadores)
+        // Si se filtra por usuario específico (trabajador), usar consulta tradicional
+        // Solo mostrar equipos asignados a ese usuario
         if ($usuarioId) {
+            $query = $this->getBaseQuery();
+            
+            if ($servicioId) {
+                $query->where('e.idserviciocontratado', $servicioId);
+            }
+            
             $query->where('e.idusuario', $usuarioId);
+            $query->where('e.estadoservicio !=', 'Vencido');
+            
+            $equipos = $query->orderBy('e.fecha_asignacion', 'DESC')
+                ->orderBy('e.idequipo', 'DESC')
+                ->get()
+                ->getResultArray();
+        } else {
+            // Vista general: incluir TODOS los servicios contratados (con y sin asignación)
+            // Similar a como lo hace ProyectoModel
+            // Si un servicio tiene múltiples asignaciones, solo mostrar la más reciente
+            $sql = "
+                SELECT 
+                    e.idequipo, 
+                    sc.idserviciocontratado, 
+                    e.idusuario, 
+                    e.descripcion, 
+                    COALESCE(e.estadoservicio, 'Pendiente') as estadoservicio, 
+                    e.fecha_asignacion,
+                    u.nombreusuario, 
+                    p.nombres, 
+                    p.apellidos, 
+                    c.cargo,
+                    s.servicio, 
+                    sc.direccion, 
+                    sc.fechahoraservicio, 
+                    co.fechaevento,
+                    te.evento as tipoevento,
+                    CONCAT(p.nombres, ' ', p.apellidos) as nombre_completo,
+                    IF(cl.idpersona IS NOT NULL, CONCAT(pc.nombres, ' ', pc.apellidos), 
+                       IF(cl.idempresa IS NOT NULL, emp.razonsocial, 'Cliente no especificado')) as cliente_nombre,
+                    IF(cl.idpersona IS NOT NULL, pc.telprincipal, 
+                       IF(cl.idempresa IS NOT NULL, emp.telefono, NULL)) as cliente_telefono,
+                    cl.idcliente
+                FROM servicioscontratados sc
+                INNER JOIN servicios s ON sc.idservicio = s.idservicio
+                INNER JOIN cotizaciones co ON sc.idcotizacion = co.idcotizacion
+                INNER JOIN clientes cl ON co.idcliente = cl.idcliente
+                LEFT JOIN personas pc ON cl.idpersona = pc.idpersona
+                LEFT JOIN empresas emp ON cl.idempresa = emp.idempresa
+                LEFT JOIN tipoeventos te ON co.idtipoevento = te.idtipoevento
+                LEFT JOIN (
+                    SELECT e1.*
+                    FROM equipos e1
+                    INNER JOIN (
+                        SELECT idserviciocontratado, MAX(idequipo) as max_idequipo
+                        FROM equipos
+                        WHERE estadoservicio != 'Vencido'
+                        GROUP BY idserviciocontratado
+                    ) e2 ON e1.idserviciocontratado = e2.idserviciocontratado 
+                         AND e1.idequipo = e2.max_idequipo
+                ) e ON sc.idserviciocontratado = e.idserviciocontratado
+                LEFT JOIN usuarios u ON e.idusuario = u.idusuario
+                LEFT JOIN personas p ON u.idpersona = p.idpersona
+                LEFT JOIN cargos c ON u.idcargo = c.idcargo
+                WHERE COALESCE(e.estadoservicio, 'Pendiente') != 'Vencido'
+                  AND YEAR(sc.fechahoraservicio) = YEAR(CURDATE())
+                  AND sc.fechahoraservicio >= CURDATE()
+            ";
+            
+            $params = [];
+            if ($servicioId) {
+                $sql .= " AND sc.idserviciocontratado = ?";
+                $params[] = $servicioId;
+            }
+            
+            $sql .= " ORDER BY sc.fechahoraservicio ASC, e.fecha_asignacion DESC, e.idequipo DESC";
+            
+            if (!empty($params)) {
+                $equipos = $this->db->query($sql, $params)->getResultArray();
+            } else {
+                $equipos = $this->db->query($sql)->getResultArray();
+            }
         }
-        
-        $query->where('e.estadoservicio !=', 'Vencido');
-        
-        // Ordenar por fecha de asignación más reciente primero (DESC)
-        // Esto hace que las nuevas asignaciones aparezcan de primero
-        $equipos = $query->orderBy('e.fecha_asignacion', 'DESC')
-            ->orderBy('e.idequipo', 'DESC')  // Fallback: ID más alto (más reciente) primero
-            ->get()
-            ->getResultArray();
 
         // Agrupar por estado para facilitar el renderizado
         // Flujo: Programado → Pendiente → En Proceso → Completado
@@ -135,7 +202,7 @@ class EquipoModel extends Model
         ];
 
         foreach ($equipos as $equipo) {
-            $estado = $equipo['estadoservicio'];
+            $estado = $equipo['estadoservicio'] ?? 'Pendiente';
             
             if (isset($agrupados[$estado])) {
                 $agrupados[$estado][] = $equipo;
