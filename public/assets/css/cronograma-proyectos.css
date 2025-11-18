@@ -140,8 +140,9 @@
     
     .projects-grid {
         display: grid;
-        grid-template-columns: repeat(3, 1fr);
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
         gap: 24px;
+        align-items: start;
     }
     
     .project-card {
@@ -151,7 +152,6 @@
         box-shadow: 0 8px 25px var(--color-shadow);
         transition: all 0.3s ease;
         border: 1px solid var(--color-border);
-        height: 100%;
         display: flex;
         flex-direction: column;
         opacity: 0;
@@ -250,6 +250,7 @@
         flex: 1;
         display: flex;
         flex-direction: column;
+        gap: 16px;
     }
     
     .project-detail {
@@ -286,7 +287,7 @@
     }
     
     .progress-container {
-        margin: 20px 0;
+        margin: 8px 0 0;
         background: var(--color-bg);
         border-radius: 12px;
         padding: 16px;
@@ -331,7 +332,7 @@
         grid-template-columns: 1fr 1fr;
         gap: 12px;
         margin-top: auto;
-        padding-top: 20px;
+        padding-top: 16px;
     }
     
     .project-btn {
