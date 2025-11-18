@@ -25,6 +25,8 @@
 - 🎬 **Servicios Audiovisuales** - Sonido, fotografía, iluminación, video, DJ, catering, decoración
 - 👥 **Asignación de Personal** - Gestión de técnicos y equipos de trabajo
 - 📊 **Tablero Kanban** - Seguimiento visual del estado de servicios (Programado → Pendiente → En Proceso → Completado)
+- 🔔 **Notificaciones Inteligentes** - Recordatorios por asignación y vencimiento con campana en la UI
+- ⏰ **Gestión de Proyectos Vencidos** - Estado automático *Vencido* y tablero dedicado para incidencias
 - 💰 **Control de Pagos** - Gestión de pagos, adelantos y comprobantes
 - 📦 **Gestión de Entregables** - Control de productos finales (fotos, videos, etc.)
 - 📈 **Reportes y Estadísticas** - Dashboards con métricas de productividad
@@ -64,15 +66,14 @@
 - PHP >= 8.0
 - MySQL >= 8.0
 - Composer
-- Apache/Nginx con mod_rewrite habilitado
 ```
 
 ### Pasos de Instalación
 
 1. **Clonar el repositorio**
 ```bash
-git clone https://github.com/xdasd13/appishume.git
-cd appishume
+git clone https://github.com/xdasd13/appishume1.git
+cd appishume1
 ```
 
 2. **Instalar dependencias**
@@ -83,33 +84,18 @@ composer install
 3. **Configurar base de datos**
 ```bash
 # Copiar archivo de configuración
-cp env .env
+cp envNO-BORRAR .env
 
 # Editar .env con tus credenciales
 database.default.hostname = localhost
-database.default.database = ishume_db
+database.default.database = ishumeProyectos
 database.default.username = tu_usuario
 database.default.password = tu_password
 ```
 
-4. **Importar base de datos**
-```bash
-mysql -u tu_usuario -p ishume_db < app/Database/database.sql
+4. **Acceder al sistema**
 ```
-
-5. **Configurar permisos**
-```bash
-chmod -R 777 writable/
-```
-
-6. **Iniciar servidor**
-```bash
-php spark serve
-```
-
-7. **Acceder al sistema**
-```
-URL: http://localhost:8080
+URL: http://appishume1.test
 Admin: admin@ishume.com / admin123
 ```
 
@@ -169,6 +155,19 @@ appishume/
 - Validaciones de transición de estados
 - Estadísticas en tiempo real
 
+### 🔔 Sistema de Notificaciones
+- Notificaciones automáticas al asignar o reasignar técnicos
+- Recordatorios 3 días antes de la fecha del servicio
+- Campana en el header con contador y dropdown interactivo
+- API REST (`/api/notifications`) para consumo vía AJAX
+- Marcar como leídas individual o masivamente
+
+### ⏰ Proyectos Vencidos
+- Estado *Vencido* gestionado desde el backend
+- Exclusión automática del tablero principal
+- Vista dedicada (`equipos/vencidos`) con filtros, estilos responsivos y datos del técnico
+- Sincronización diaria mediante comando `php spark notify:due`
+
 ### 💰 Control de Pagos
 - Registro de pagos y adelantos
 - Generación de comprobantes
@@ -225,33 +224,12 @@ appishume/
 
 ---
 
-## 🤝 Contribuir
-
-Las contribuciones son bienvenidas. Por favor:
-
-1. Fork el proyecto
-2. Crea una rama para tu feature (`git checkout -b feature/AmazingFeature`)
-3. Commit tus cambios (`git commit -m 'Add: Amazing Feature'`)
-4. Push a la rama (`git push origin feature/AmazingFeature`)
-5. Abre un Pull Request
-
----
-
 ## 📝 Licencia
 
 Este proyecto está bajo la Licencia MIT. Ver el archivo `LICENSE` para más detalles.
 
 ---
 
-## 👨‍💻 Autor
-
-**Equipo Ishume**
-- GitHub: [@xdasd13](https://github.com/xdasd13)
-- Proyecto: [ISHUME](https://github.com/xdasd13/appishume)
-
----
-
 <div align="center">
   <p>Hecho con ❤️ para la gestión eficiente de eventos</p>
-  <p>⭐ Si te gusta el proyecto, dale una estrella en GitHub ⭐</p>
 </div>
