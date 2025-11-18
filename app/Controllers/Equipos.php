@@ -5,6 +5,9 @@ namespace App\Controllers;
 use App\Controllers\BaseController;
 use App\Models\EquipoModel;
 use App\Services\EquipoService;
+use App\Services\NotificationService;
+use App\Services\DueReminderService;
+
 use App\Libraries\HistorialHelper;
 use App\Models\HistorialActividadesModel;
 
@@ -16,11 +19,15 @@ class Equipos extends BaseController
 {
     protected EquipoModel $equipoModel;
     protected EquipoService $equipoService;
+    protected NotificationService $notificationService;
+    protected DueReminderService $dueReminderService;
 
     public function __construct()
     {
         $this->equipoModel = new EquipoModel();
         $this->equipoService = new EquipoService();
+        $this->notificationService = new NotificationService();
+        $this->dueReminderService = new DueReminderService();
         helper(['estado', 'url']); // Cargar helpers necesarios
     }
 
@@ -45,7 +52,9 @@ class Equipos extends BaseController
         // Obtener información del usuario logueado
         $tipoUsuario = session()->get('tipo_usuario') ?? session()->get('usuario_tipo');
         $usuarioId = session()->get('usuario_id') ?? session()->get('idusuario');
-        
+
+        $this->equipoService->sincronizarVencidos();
+
         // Determinar si se debe filtrar por usuario
         $filtrarPorUsuario = null;
         
@@ -64,6 +73,20 @@ class Equipos extends BaseController
         ];
         
         return $this->render('equipos/listar', $data);
+    }
+
+    public function vencidos(): string
+    {
+        $this->equipoService->sincronizarVencidos();
+
+        $data = [
+            'titulo' => 'Proyectos Vencidos',
+            'equipos' => $this->equipoModel->getEquiposVencidos(),
+            'header' => view('Layouts/header', ['titulo' => 'Proyectos Vencidos']),
+            'footer' => view('Layouts/footer')
+        ];
+
+        return view('equipos/vencidos', $data);
     }
 
     /**
@@ -144,11 +167,16 @@ class Equipos extends BaseController
         $descripcion = $this->request->getPost('descripcion');
         $estado = $this->request->getPost('estadoservicio');
 
-        // Si es edición y no viene servicioId, obtenerlo del equipo existente
-        if ($equipoId && !$servicioId) {
+        $equipoExistente = null;
+        $previousUsuarioId = null;
+
+        if ($equipoId) {
             $equipoExistente = $this->equipoModel->asArray()->find($equipoId);
             if ($equipoExistente) {
-                $servicioId = $equipoExistente['idserviciocontratado'];
+                if (!$servicioId) {
+                    $servicioId = $equipoExistente['idserviciocontratado'];
+                }
+                $previousUsuarioId = $equipoExistente['idusuario'] ?? null;
             }
         }
 
@@ -212,6 +240,27 @@ class Equipos extends BaseController
                 $data['idserviciocontratado'] = $servicioId;
                 $success = $this->equipoModel->insert($data);
                 $mensaje = $success ? 'Técnico asignado correctamente' : 'Error al asignar técnico';
+            }
+
+            if ($success && $servicio) {
+                $clienteNombre = $servicio['cliente_nombre'] ?? 'Cliente';
+                $servicioNombre = $servicio['servicio'] ?? 'Servicio';
+                $shouldNotify = false;
+
+                if (!$equipoId) {
+                    $shouldNotify = true;
+                } elseif ($previousUsuarioId && (int)$previousUsuarioId !== $usuarioId) {
+                    $shouldNotify = true;
+                }
+
+                if ($shouldNotify) {
+                    $this->notificationService->createAssignmentNotification(
+                        $usuarioId,
+                        $clienteNombre,
+                        $servicioNombre,
+                        $servicioId
+                    );
+                }
             }
 
             // Si es AJAX, devolver JSON
