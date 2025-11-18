@@ -58,7 +58,6 @@
     <!-- Lista de próximos servicios -->
     <div class="card">
         <div class="card-header">
-            <i class="fas fa-list"></i>
             <h2>Próximos Servicios</h2>
         </div>
         <div class="card-body">
