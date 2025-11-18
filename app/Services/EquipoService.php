@@ -201,6 +201,11 @@ class EquipoService
         return $estadisticas;
     }
 
+    public function sincronizarVencidos(?string $fechaReferencia = null): int
+    {
+        return $this->equipoModel->marcarServiciosVencidos($fechaReferencia);
+    }
+
     /**
      * Actualiza el estado de un equipo con validación
      * 
