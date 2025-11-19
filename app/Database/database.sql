@@ -363,7 +363,8 @@ INSERT INTO cotizaciones (idcliente, idtipocontrato, idusuariocrea, fechacotizac
 (8, 1, 6, '2025-11-04', '2025-12-05', 2),
 (9, 3, 1, '2025-11-05', '2025-12-10', 4),
 (10, 1, 2, '2025-11-06', '2025-12-14', 2),
-(11, 4, 1, '2025-11-07', '2025-12-20', 3);
+(11, 4, 1, '2025-11-07', '2025-12-20', 3),
+(11, 1, 2, '2025-11-08', '2025-12-14', 2);
 
 -- 7. CONTRATOS
 INSERT INTO contratos (idcotizacion, idcliente, autorizapublicacion) VALUES 
